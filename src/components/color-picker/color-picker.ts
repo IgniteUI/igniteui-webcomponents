@@ -1,5 +1,5 @@
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -43,6 +43,8 @@ import { bindIf } from '#internals/utils/lit.js';
 import { all } from '#themes/color-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
+import IgcButtonComponent from '../button/button.js';
+import { renderConfirmButtons } from '../button/confirm-buttons.js';
 import IgcColorPanelComponent from '../color-panel/color-panel.js';
 import {
   panelColor,
@@ -54,7 +56,12 @@ import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
-import type { ColorFormat, ColorPanelView, ColorPickerMode } from '../types.js';
+import type {
+  ColorFormat,
+  ColorPanelView,
+  ColorPickerMode,
+  ColorPickerSelectionCommit,
+} from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcVisuallyHiddenComponent from '../visually-hidden/visually-hidden.js';
 import { colorPickerI18nConfig } from './i18n.js';
@@ -83,7 +90,8 @@ const Slots = setSlots(
   'custom-error',
   'invalid',
   'helper-text',
-  'clear-icon'
+  'clear-icon',
+  'footer'
 );
 
 /** The parts of the color panel that the picker exposes as its own. */
@@ -108,13 +116,14 @@ const exportedPanelParts = panelParts.join(', ');
  * @slot helper-text - Renders content below the picker.
  * @slot clear-icon - Renders the clear icon in input mode.
  * @slot - The color swatches and swatch groups. The picker shows them in the swatch list of its popup.
+ * @slot footer - Renders content below the color panel in the popup. In the confirm mode of `selectionCommit`, the preview, Cancel and Apply show after it.
  *
  * @fires igcOpening - Emitted before the user opens the picker dropdown. Cancelable.
  * @fires igcOpened - Emitted after the picker dropdown opens on a user action.
  * @fires igcClosing - Emitted before the user closes the picker dropdown. Cancelable.
  * @fires igcClosed - Emitted after the picker dropdown closes on a user action.
- * @fires igcInput - Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper.
- * @fires igcChange - Emitted when the focus leaves the component after the user changed the color.
+ * @fires igcInput - Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper. In the confirm mode of `selectionCommit`, these changes emit nothing.
+ * @fires igcChange - Emitted when the focus leaves the component after the user changed the color, and when the user applies the draft of the confirm mode.
  *
  * @csspart color-picker - The wrapper of the anchor, the label and the helper text.
  * @csspart anchor - The trigger element that opens the picker (the button in default mode, or the swatch prefix in input mode).
@@ -147,6 +156,13 @@ const exportedPanelParts = panelParts.join(', ');
  * @csspart view-switcher - The view switcher, rendered when `views` has both views.
  * @csspart view-button - A button of the view switcher.
  * @csspart active - Added to the view-button part of the view on screen.
+ * @csspart footer - The container below the color panel in the popup. It holds the `footer` slot and, in the confirm mode, the actions.
+ * @csspart actions - The container of the preview, Cancel and Apply in the confirm mode.
+ * @csspart preview - The preview of the initial color and the draft in the confirm mode.
+ * @csspart preview-initial - The button that shows the initial color and restores it.
+ * @csspart preview-current - The color of the draft.
+ * @csspart cancel-button - The Cancel button of the confirm mode.
+ * @csspart apply-button - The Apply button of the confirm mode.
  *
  * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
  *
@@ -172,6 +188,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
       IgcInputComponent,
       IgcPopoverComponent,
       IgcFocusTrapComponent,
+      IgcButtonComponent,
       IgcIconComponent,
       IgcColorPanelComponent,
       IgcValidationContainerComponent,
@@ -208,6 +225,12 @@ export default class IgcColorPickerComponent extends I18nMixin(
 
   private _color = ColorModel.empty();
 
+  /** The color in the popup in the confirm mode, until Apply. */
+  @state()
+  private _draft?: ColorModel;
+
+  private readonly _themes = addThemingController(this, all);
+
   private _activeView: ColorPanelView = 'gradient';
 
   /** The link of the color panel to this picker. */
@@ -218,6 +241,8 @@ export default class IgcColorPickerComponent extends I18nMixin(
     setActiveView: (view) => {
       this.activeView = view;
     },
+    isConfirmMode: () => this._isConfirmMode,
+    applyDraft: () => this._handleApply(),
   };
 
   @query(`#${HELPER_TEXT_ID}`)
@@ -225,6 +250,10 @@ export default class IgcColorPickerComponent extends I18nMixin(
 
   private get _isInputMode(): boolean {
     return this.mode === 'input';
+  }
+
+  private get _isConfirmMode(): boolean {
+    return this.selectionCommit === 'confirm';
   }
 
   /** The text input of input mode. After a mode change, the ref keeps the old anchor until the render. */
@@ -265,7 +294,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
     // The same color keeps the hue of a gray, which a color string does not
     // carry, as in the color panel.
     if (colorKey(color) !== colorKey(this._color)) {
-      this._color = color;
+      this._setColor(color);
     }
 
     this._updateColor();
@@ -319,6 +348,19 @@ export default class IgcColorPickerComponent extends I18nMixin(
   public mode: ColorPickerMode = 'default';
 
   /**
+   * When the changes of the user in the popup apply. With `confirm`, they
+   * change a draft: `value` keeps its color, and the popup shows the initial
+   * color beside the draft. Apply, or Enter on the canvas marker, a slider or
+   * a swatch, applies the draft with one `igcChange`. Cancel and every other
+   * close drop it.
+   *
+   * @attr selection-commit
+   * @default 'immediate'
+   */
+  @property({ attribute: 'selection-commit' })
+  public selectionCommit: ColorPickerSelectionCommit = 'immediate';
+
+  /**
    * Pre-defined color strings. The component renders them as swatches in the
    * swatch list of its popup, in front of the swatch children. An empty
    * string gives the no-color swatch.
@@ -363,13 +405,12 @@ export default class IgcColorPickerComponent extends I18nMixin(
   constructor() {
     super();
 
-    addThemingController(this, all);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
 
     addKeybindings(this, { skip: () => this.disabled })
-      .set(escapeKey, this._handleKeyboardClosing, { when: () => this.open })
+      .set(escapeKey, this._closeToAnchor, { when: () => this.open })
       .set([altKey, arrowDown], this._handleAnchorClick)
-      .set([altKey, arrowUp], this._handleKeyboardClosing);
+      .set([altKey, arrowUp], this._closeToAnchor);
 
     addContextProvider(this, {
       context: colorPickerContext,
@@ -381,6 +422,18 @@ export default class IgcColorPickerComponent extends I18nMixin(
       // A text input cannot have `aria-expanded`. The prefix button has it.
       state: () => ({ hasPopup: 'dialog' }),
     });
+  }
+
+  protected override willUpdate(props: PropertyValues<this>): void {
+    super.willUpdate(props);
+
+    // Every close but Apply drops the draft, also a close for `disabled`.
+    if (
+      (props.has('open') || props.has('selectionCommit')) &&
+      !(this.open && this._isConfirmMode)
+    ) {
+      this._draft = undefined;
+    }
   }
 
   protected override update(props: PropertyValues<this>): void {
@@ -427,7 +480,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
 
   //#region Event handlers
 
-  private async _handleKeyboardClosing(): Promise<void> {
+  private async _closeToAnchor(): Promise<void> {
     if (await this._hide(true)) {
       this._anchorRef.value?.focus();
     }
@@ -454,7 +507,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
       return;
     }
 
-    this._color = color;
+    this._setColor(color);
     // A commit of the text input, so no `igcInput`.
     this._writeFrom('user', () => this._updateColor());
   }
@@ -479,8 +532,24 @@ export default class IgcColorPickerComponent extends I18nMixin(
       return;
     }
 
-    this._color = ColorModel.empty();
+    this._setColor(ColorModel.empty());
     this._applyUserColor();
+  }
+
+  private _handleApply(): void {
+    this._writeFrom('user', () => {
+      if (this._draft) {
+        this._setColor(this._draft);
+        this._updateColor();
+      }
+
+      this._reportChange(this.value);
+    });
+    this._closeToAnchor();
+  }
+
+  private _handleRestoreClick(): void {
+    this._draft = undefined;
   }
 
   //#endregion
@@ -496,6 +565,12 @@ export default class IgcColorPickerComponent extends I18nMixin(
   private _applyUserColor(): void {
     this._writeFrom('user', () => this._updateColor());
     this._emitInputEvent();
+  }
+
+  /** A new color ends the draft. */
+  private _setColor(color: ColorModel): void {
+    this._color = color;
+    this._draft = undefined;
   }
 
   /**
@@ -515,9 +590,10 @@ export default class IgcColorPickerComponent extends I18nMixin(
   }
 
   /**
-   * Writes the color of the panel as a change of the user. A disabled picker
-   * renders its own color into the panel again, for an eye dropper pick that
-   * ends after the picker is disabled.
+   * Writes the color of the panel as a change of the user, or into the draft
+   * in the confirm mode. A disabled picker, or a closed one in the confirm
+   * mode, renders its own color into the panel again, for an eye dropper pick
+   * that ends after that. Returns whether the value changed.
    */
   private _takePanelColor(): boolean {
     const panel = this._panelRef.value;
@@ -526,13 +602,20 @@ export default class IgcColorPickerComponent extends I18nMixin(
       return false;
     }
 
-    if (this.disabled) {
+    if (this.disabled || (this._isConfirmMode && !this.open)) {
       this.requestUpdate();
       return false;
     }
 
     // The model of the panel keeps the hue of a gray.
-    this._color = panel[panelColor]();
+    const color = panel[panelColor]();
+
+    if (this._isConfirmMode) {
+      this._draft = color;
+      return false;
+    }
+
+    this._setColor(color);
     this._writeFrom('user', () => this._updateColor());
 
     return true;
@@ -586,14 +669,14 @@ export default class IgcColorPickerComponent extends I18nMixin(
    * `--_alpha-preview` paints the color with its real alpha over the whole
    * surface. Do not transpose the two. See the `swatch-preview` mixin.
    */
-  private _previewStyle(): ReturnType<typeof styleMap> {
-    const color = colorKey(this._color);
+  private _previewStyle(model = this._color): ReturnType<typeof styleMap> {
+    const color = colorKey(model);
 
     return bindIf(
       color,
       styleMap({
         '--_alpha-preview': color,
-        '--_color-preview': opaqueColor(this._color),
+        '--_color-preview': opaqueColor(model),
       })
     );
   }
@@ -687,7 +770,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
             ${ref(this._panelRef)}
             exportparts=${exportedPanelParts}
             .format=${this.format}
-            .value=${live(this.value)}
+            .value=${live(this._draft?.asString(this.format) ?? this.value)}
             .showAlpha=${this.showAlpha}
             .hideFormats=${this.hideFormats}
             .swatches=${this.swatches}
@@ -699,8 +782,61 @@ export default class IgcColorPickerComponent extends I18nMixin(
           >
             <slot></slot>
           </igc-color-panel>
+          ${this._renderFooter()}
         </div>
       </igc-focus-trap>
+    `;
+  }
+
+  private _renderFooter(): TemplateResult {
+    const confirm = this._isConfirmMode;
+
+    return html`
+      <div
+        part="footer"
+        ?hidden=${!(confirm || this._slots.hasAssignedElements('footer'))}
+      >
+        <slot name="footer"></slot>
+        ${confirm ? this._renderActions() : nothing}
+      </div>
+    `;
+  }
+
+  private _renderActions(): TemplateResult {
+    const strings = this.resourceStrings;
+    const draft = this._draft ?? this._color;
+
+    return html`
+      <div part="actions">
+        <div part="preview">
+          <button
+            type="button"
+            part="preview-initial"
+            aria-label=${strings.color_picker_initial_color}
+            ?data-empty=${this._color.isEmpty}
+            style=${this._previewStyle()}
+            @click=${this._handleRestoreClick}
+          ></button>
+          <span
+            part="preview-current"
+            ?data-empty=${draft.isEmpty}
+            style=${this._previewStyle(draft)}
+          ></span>
+        </div>
+        ${renderConfirmButtons({
+          theme: this._themes.theme,
+          cancel: {
+            part: 'cancel-button',
+            label: strings.color_picker_cancel,
+            onClick: this._closeToAnchor,
+          },
+          confirm: {
+            part: 'apply-button',
+            label: strings.color_picker_apply,
+            onClick: this._handleApply,
+          },
+        })}
+      </div>
     `;
   }
 

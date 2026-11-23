@@ -47,6 +47,32 @@
         border-radius: 0;
     }
 
+    // TODO: provisional until the design team gives the confirm footer, also
+    // the preview rules in `shared/color-picker.common.scss`.
+    [part~='footer'] {
+        display: grid;
+        row-gap: pad-block(rem(8px));
+        padding-inline: pad-inline(rem(16px));
+        padding-block-end: pad-block(rem(16px));
+    }
+
+    [part~='actions'] {
+        display: flex;
+        align-items: center;
+        gap: pad-inline(rem(8px));
+    }
+
+    [part~='preview'] {
+        display: inline-flex;
+        margin-inline-end: auto;
+    }
+
+    [part~='preview-initial'] {
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+    }
+
     // Box Trigger
     [part~='anchor'] {
         display: flex;

@@ -53,6 +53,7 @@
 |       2 | 2026-11-23 | Swatch elements and groups, the swatch listbox, the no-color swatch, `var()` swatches, the gradient and swatch views |
 |       3 | 2026-11-23 | Review fixes: one selected swatch, `var()` only, a plain swatch fill, the format names from the resource strings, the panel theme files |
 |       4 | 2026-11-23 | The `oklch` format |
+|       5 | 2026-11-23 | Enter applies the draft of a color picker in the confirm mode |
 
 ## Overview
 
@@ -175,7 +176,9 @@ The swatches of the panel are `igc-color-swatch` children. A swatch has a `color
   group. The list lays out the swatches in rows of eight; a group starts a new row and its swatches take the same
   columns. Without swatches, the list does not show.
 - **Pick.** A click, <kbd>Enter</kbd> or <kbd>Space</kbd> on a swatch sets its color as the value, in the current
-  format. A pick is one change: one `igcInput` and one `igcChange`.
+  format. A pick is one change: one `igcInput` and one `igcChange`. In the popup of a color picker in the
+  [confirm mode](../color-picker/spec.md#confirm-mode), <kbd>Enter</kbd> on a swatch, the canvas marker or a slider
+  also applies the draft.
 - **Selected swatch.** The first swatch that has the color of the value, alpha included, is selected: `aria-selected`
   is true and the swatch has the `ig-selected` custom state. The list is a single-select listbox, so a second swatch
   with the same color is not selected. A swatch of the `swatches` property also gets the `selected` part.
@@ -294,6 +297,7 @@ English text, and `resourceStrings` can replace them.
 | <kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd> | In the swatch list, moves the focus to the nearest swatch in the row above or below.     |
 | <kbd>Home</kbd> / <kbd>End</kbd>           | In the swatch list, moves the focus to the first or last swatch.                          |
 | <kbd>Enter</kbd> / <kbd>Space</kbd>        | In the swatch list, picks the focused swatch.                                             |
+| <kbd>Enter</kbd>                           | In a color picker in the confirm mode, on a swatch, the canvas marker or a slider, also applies the draft. |
 | <kbd>Tab</kbd>                             | Moves focus between the controls of the panel. The swatch list is one tab stop.          |
 
 The arrow keys in the swatch list move the focus only; they do not pick. The tab stop of the list is the focused

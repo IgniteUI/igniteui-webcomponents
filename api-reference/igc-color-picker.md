@@ -46,6 +46,12 @@ defineComponents(IgcColorPickerComponent);
   In `"default"` mode the anchor is a trigger button. In `"input"` mode the
   anchor is an editable text field with a color swatch prefix. The prefix
   also opens the picker.
+- `selectionCommit`: `'immediate' | 'confirm'`. Default: `'immediate'`. Attribute: `selection-commit`.
+  When the changes of the user in the popup apply. With `confirm`, they
+  change a draft: `value` keeps its color, and the popup shows the initial
+  color beside the draft. Apply, or Enter on the canvas marker, a slider or
+  a swatch, applies the draft with one `igcChange`. Cancel and every other
+  close drop it.
 - `swatches`: `string[]`. Default: `[]`. No attribute.
   Pre-defined color strings. The component renders them as swatches in the
   swatch list of its popup, in front of the swatch children. An empty
@@ -147,9 +153,9 @@ defineComponents(IgcColorPickerComponent);
 - `igcClosed`
   Emitted after the picker dropdown closes on a user action.
 - `igcInput`
-  Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper.
+  Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper. In the confirm mode of `selectionCommit`, these changes emit nothing.
 - `igcChange`
-  Emitted when the focus leaves the component after the user changed the color.
+  Emitted when the focus leaves the component after the user changed the color, and when the user applies the draft of the confirm mode.
 
 ## Slots
 
@@ -159,6 +165,7 @@ defineComponents(IgcColorPickerComponent);
 - `helper-text`: Renders content below the picker.
 - `clear-icon`: Renders the clear icon in input mode.
 - default: The color swatches and swatch groups. The picker shows them in the swatch list of its popup.
+- `footer`: Renders content below the color panel in the popup. In the confirm mode of `selectionCommit`, the preview, Cancel and Apply show after it.
 
 ## CSS parts
 
@@ -193,6 +200,13 @@ defineComponents(IgcColorPickerComponent);
 - `view-switcher`: The view switcher, rendered when `views` has both views.
 - `view-button`: A button of the view switcher.
 - `active`: Added to the view-button part of the view on screen.
+- `footer`: The container below the color panel in the popup. It holds the `footer` slot and, in the confirm mode, the actions.
+- `actions`: The container of the preview, Cancel and Apply in the confirm mode.
+- `preview`: The preview of the initial color and the draft in the confirm mode.
+- `preview-initial`: The button that shows the initial color and restores it.
+- `preview-current`: The color of the draft.
+- `cancel-button`: The Cancel button of the confirm mode.
+- `apply-button`: The Apply button of the confirm mode.
 
 ## CSS custom properties
 

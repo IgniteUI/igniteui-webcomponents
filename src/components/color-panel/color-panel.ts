@@ -23,6 +23,7 @@ import {
   arrowRight,
   arrowUp,
   endKey,
+  enterKey,
   isKey,
 } from '#internals/controllers/key-bindings.js';
 import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
@@ -110,6 +111,9 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
 
 /** The vertical distance in pixels within which two swatches share a row. */
 const ROW_TOLERANCE = 1;
+
+/** The controls where Enter applies the draft of a color picker in the confirm mode. */
+const valueControls = `${IgcColorSwatchComponent.tagName}, ${IgcPickerCanvasComponent.tagName}, input[type="range"]`;
 
 /**
  * A color selection surface that stays in the page.
@@ -373,6 +377,13 @@ export default class IgcColorPanelComponent extends I18nMixin(
       .set(endKey, this._handleAlphaInputCaretForward, {
         preventDefault: false,
       });
+
+    // After the roving focus, so the picker gets a swatch that Enter picks.
+    addKeybindings(this, {
+      skip: (_, event) => !getElementFromPath(valueControls, event),
+    }).set(enterKey, () => this._picker.value!.applyDraft(), {
+      when: () => this._picker.value?.isConfirmMode() ?? false,
+    });
   }
 
   //#region Lit lifecycle methods

@@ -39,6 +39,13 @@ export type ColorPickerContext = {
   setFormat: (format: ColorFormat) => void;
   /** Takes the view that the user picked in the panel. */
   setActiveView: (view: ColorPanelView) => void;
+  /** Whether the picker keeps the changes as a draft until Apply. */
+  isConfirmMode: () => boolean;
+  /**
+   * Applies the draft and closes the popup. In the confirm mode, the panel
+   * calls it for Enter on its canvas marker, sliders and swatches.
+   */
+  applyDraft: () => void;
 };
 
 /** The link of an `igc-color-swatch` to the `igc-color-panel` that shows it. */

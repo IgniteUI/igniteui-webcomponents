@@ -63,6 +63,35 @@ $input-theme: input-theme.$material;
         box-shadow: var-get($theme, 'picker-elevation');
     }
 
+    [part~='preview-initial'],
+    [part~='preview-current'] {
+        @include swatch-preview();
+
+        inline-size: var-get($theme, 'swatch-size');
+        block-size: var-get($theme, 'swatch-size');
+        border: var(--_anchor-border-size) solid var-get($theme, 'swatch-preview-border-color');
+
+        &[data-empty] {
+            @include empty-swatch();
+        }
+    }
+
+    [part~='preview-initial'] {
+        border-start-start-radius: var-get($theme, 'anchor-border-radius');
+        border-end-start-radius: var-get($theme, 'anchor-border-radius');
+
+        &:focus-visible {
+            outline: var(--_outline-size) solid var-get($theme, 'label-color');
+            outline-offset: var(--_anchor-border-size);
+        }
+    }
+
+    [part~='preview-current'] {
+        border-inline-start: none;
+        border-start-end-radius: var-get($theme, 'anchor-border-radius');
+        border-end-end-radius: var-get($theme, 'anchor-border-radius');
+    }
+
     [part='label'] {
         @include type-style('subtitle-1');
 

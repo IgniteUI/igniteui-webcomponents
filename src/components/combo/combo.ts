@@ -45,6 +45,7 @@ import {
 } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
+import { renderConfirmButtons } from '../button/confirm-buttons.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
@@ -1539,24 +1540,21 @@ export default class IgcComboComponent<
   }
 
   private _renderActions(): TemplateResult {
-    const indigo = this._themes.theme === 'indigo';
-
     return html`
       <div part="actions">
-        <igc-button
-          part="cancel-button"
-          variant=${indigo ? 'outlined' : 'flat'}
-          @click=${this._handleCancel}
-        >
-          ${this.resourceStrings.combo_cancel}
-        </igc-button>
-        <igc-button
-          part="apply-button"
-          variant=${indigo ? 'contained' : 'flat'}
-          @click=${this._handleApply}
-        >
-          ${this.resourceStrings.combo_apply}
-        </igc-button>
+        ${renderConfirmButtons({
+          theme: this._themes.theme,
+          cancel: {
+            part: 'cancel-button',
+            label: this.resourceStrings.combo_cancel,
+            onClick: this._handleCancel,
+          },
+          confirm: {
+            part: 'apply-button',
+            label: this.resourceStrings.combo_apply,
+            onClick: this._handleApply,
+          },
+        })}
       </div>
     `;
   }

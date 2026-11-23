@@ -29,6 +29,7 @@ export type CarouselIndicatorsOrientation = 'end' | 'start';
 export type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'oklch';
 export type ColorPanelView = 'gradient' | 'swatches';
 export type ColorPickerMode = 'default' | 'input';
+export type ColorPickerSelectionCommit = 'immediate' | 'confirm';
 /* jsonAPIPlainObject */
 export type DateRangeValue = { start: Date | null; end: Date | null };
 export type DividerType = 'solid' | 'dashed';

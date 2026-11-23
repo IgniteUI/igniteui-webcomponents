@@ -17,6 +17,7 @@
       - [The picker surface](#the-picker-surface)
       - [Swatches](#swatches)
       - [Copy and eye dropper](#copy-and-eye-dropper)
+      - [Confirm mode](#confirm-mode)
       - [Validation and form integration](#validation-and-form-integration)
       - [Labeling from the light DOM](#labeling-from-the-light-dom)
       - [Programmatic control](#programmatic-control)
@@ -39,6 +40,7 @@
     - [Disabled popup](#disabled-popup)
     - [Value state motion](#value-state-motion)
     - [Color panel](#color-panel)
+    - [Confirm mode](#confirm-mode-1)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -74,6 +76,7 @@
 |      23 | 2026-11-23 | Swatch children and groups, the swatch listbox and its keys, the no-color swatch, `var()` swatches, `views` and `active-view` |
 |      24 | 2026-11-23 | Review fixes: one selected swatch, the format names from the resource strings, the same color keeps the model |
 |      25 | 2026-11-23 | The `oklch` format |
+|      26 | 2026-11-23 | The confirm mode of `selection-commit`: the draft, the preview, Cancel and Apply, and the `footer` slot |
 
 ## Overview
 
@@ -99,6 +102,8 @@ validation and validation message projection.
 - **Predefined swatches**, as the `swatches` property or as `igc-color-swatch` children in labelled groups, with a
   no-color swatch and `var()` colors.
 - **Two popup views**, the gradient and the swatches, with a view switcher when both are available.
+- **Confirm mode**: with `selection-commit="confirm"`, the changes in the popup are a draft until Apply, beside a
+  preview of the initial color.
 - **Platform integrations**: the native `EyeDropper` API where available, and copy to clipboard.
 - **Form association**: submits under its name, supports reset, `required` and custom validation.
 - **Localization**: the accessible labels come from `igniteui-i18n-core` through `locale` and `resourceStrings`.
@@ -126,6 +131,8 @@ The `igc-color-picker` must:
   <kbd>Alt</kbd> + <kbd>Arrow Down</kbd>, restoring focus to the anchor.
 - emit `igcInput` on every interim interaction, and `igcChange` once, when the committed value has changed and focus
   leaves the component entirely.
+- in the confirm mode, keep the changes in the popup as a draft that does not change `value` and emits no events,
+  apply it with one `igcChange`, and drop it on Cancel and every other close.
 - project the validation messages and reference them from the anchor through `aria-describedby`.
 - expose styling hooks for the slider tracks and the current color through CSS custom properties.
 
@@ -146,6 +153,8 @@ As an end-user, I expect to be able to:
 - pick a color from anywhere on my screen using the eye dropper, where it is supported.
 - copy the selected color value to my clipboard.
 - choose from a set of predefined swatches when they are provided.
+- try colors and then apply or cancel them, when the app uses the confirm mode, and go back to the initial color from
+  the preview.
 - dismiss the picker with <kbd>Escape</kbd>, <kbd>Alt</kbd> + <kbd>Arrow Up</kbd>, or by clicking outside of it.
 - see a validation message when the field is required and left empty.
 
@@ -157,6 +166,8 @@ As a developer, I expect to be able to:
 - choose the anchor presentation through `mode`.
 - choose the serialization `format` of the emitted value.
 - provide a list of predefined `swatches`.
+- choose through `selection-commit` whether the changes in the popup apply at once or only on Apply.
+- add content below the color panel in the popup through the `footer` slot.
 - hide the format switcher with `hide-formats`, and show the alpha slider with `show-alpha`.
 - mark the control as required, disable it, and surface the validation state through the standard form-associated
   API and the message slots.
@@ -183,7 +194,8 @@ Every interim interaction emits `igcInput` and marks the control touched, so a c
 the invalid styles at once. When focus leaves the component entirely, it compares the color with the last reported
 color - the color of the last `igcChange` or the last value set from code, in any format - and emits `igcChange`
 exactly once if it changed. Dragging the canvas or the sliders, or typing, never emits `igcChange` by itself. A value set from code is
-not a user change, so it emits no `igcChange`, also while focus is inside the component.
+not a user change, so it emits no `igcChange`, also while focus is inside the component. In the
+[confirm mode](#confirm-mode), the changes in the popup wait for Apply.
 
 **Motion.** In input mode, a color that the user picks animates the input, such as the Material label that moves up. A
 value from code shows at once, also a value that an `igcChange` handler sets. The color picker suite covers a typed
@@ -323,6 +335,37 @@ The copy button writes the current value to the clipboard, silently ignoring a f
 eye dropper button is rendered enabled only when the platform implements the `EyeDropper` API; support is captured
 once, at construction time. Picking a color through it sets the value and emits `igcInput`.
 
+#### Confirm mode
+
+```html
+<igc-color-picker value="#ff0000" selection-commit="confirm"></igc-color-picker>
+```
+
+With `selection-commit="confirm"`, a change in the popup is a draft. The canvas, the sliders, the alpha input, the
+color value input, a swatch and the eye dropper change the draft, not `value`, and emit no `igcInput`. The anchor and
+the text field of the input mode show `value`. A format change applies at once, because it does not change the color.
+
+The footer of the popup shows a preview, Cancel and Apply. The preview has two halves: the initial color, which is
+`value`, and the draft. A click on the initial color restores it, and the popup stays open.
+
+- **Apply** writes the draft as a change of the user, emits one `igcChange` at once, and closes the popup. Without a
+  change since the last report, it emits nothing. <kbd>Enter</kbd> on the canvas marker, a slider or a swatch also
+  applies; on a swatch it picks the swatch first. <kbd>Space</kbd> on a swatch only picks it. <kbd>Enter</kbd> in the
+  color value input or the alpha input commits the text into the draft.
+- **Cancel**, <kbd>Escape</kbd>, <kbd>Alt</kbd> + <kbd>Arrow Up</kbd>, an outside click, a scroll close, `hide()`,
+  `open = false` and `disabled` drop the draft and emit no value events. A canceled `igcClosing` keeps the popup open:
+  Cancel then keeps the draft, and Apply has already written it, as the Apply of the combo does.
+- A new value from code ends the draft. A write of the same color keeps it, so a wrapper that writes every property
+  on each render does not drop it.
+- A click on the clear icon drops the draft, then clears the value as a user change. So does a commit of the text
+  field of the input mode.
+- An eye dropper pick that ends after the popup closes changes nothing.
+- A change of `selection-commit` to `immediate` drops the draft.
+
+The `footer` slot renders content below the color panel in both modes. In the confirm mode, the preview, Cancel and
+Apply show after it. Style them through the `actions`, `preview`, `preview-initial`, `preview-current`,
+`cancel-button` and `apply-button` parts, and change their texts through `resourceStrings`.
+
 #### Validation and form integration
 
 ```html
@@ -378,7 +421,8 @@ The component takes its resource strings from the `igniteui-i18n-core` package t
 `resourceStrings` properties. Without an explicit `locale`, it takes its own `lang`, else the locale of the nearest
 ancestor that has a `locale` (a component) or a `lang`, and then the global locale of the library. A key that the
 strings of a locale do not have falls back to its English value. Most strings are accessibility-only text. The visible
-ones are the placeholders of the alpha input and the format select, the format names and the view switcher texts.
+ones are the placeholders of the alpha input and the format select, the format names, the view switcher texts, and
+Cancel and Apply in the confirm mode.
 
 | Key                          | Default English value             | Used for                                                       |
 | ---------------------------- | --------------------------------- | -------------------------------------------------------------- |
@@ -402,8 +446,11 @@ ones are the placeholders of the alpha input and the format select, the format n
 | `color_picker_format_hsl`    | HSL                               | The name of the HSL format in the format select.               |
 | `color_picker_format_oklch`  | OKLCH                             | The name of the OKLCH format in the format select.             |
 | `color_picker_clear`         | Clear color                       | The name of the clear icon in input mode.                      |
+| `color_picker_apply`         | Apply                             | The text of the Apply button of the confirm mode.              |
+| `color_picker_cancel`        | Cancel                            | The text of the Cancel button of the confirm mode.             |
+| `color_picker_initial_color` | Initial color                     | The name of the preview button that restores the initial color. |
 
-The last nine keys are not in `igniteui-i18n-core` yet. Until they are, every locale shows the English text, and
+The last twelve keys are not in `igniteui-i18n-core` yet. Until they are, every locale shows the English text, and
 `resourceStrings` can replace them. Color values are locale-independent CSS strings.
 
 ### Keyboard interactions
@@ -420,6 +467,7 @@ The last nine keys are not in `igniteui-i18n-core` yet. Until they are, every lo
 | <kbd>Arrow</kbd> keys                      | In the swatch list, moves the focus to the previous or next swatch, or to the nearest swatch in the row above or below. |
 | <kbd>Home</kbd> / <kbd>End</kbd>           | In the swatch list, moves the focus to the first or last swatch.                       |
 | <kbd>Enter</kbd> / <kbd>Space</kbd>        | In the swatch list, picks the focused swatch.                                          |
+| <kbd>Enter</kbd>                           | In the confirm mode, on the canvas marker, a slider or a swatch, applies the draft and closes the popup. |
 | <kbd>Tab</kbd>                             | Moves focus between the interactive elements inside the open picker; focus is trapped while open. The swatch list is one tab stop. |
 
 All of the above are skipped while the component is `disabled`. A key that an IME handles, such as the <kbd>Enter</kbd> that commits a composition, does nothing here.
@@ -434,6 +482,7 @@ All of the above are skipped while the component is `disabled`. A key that an IM
 | format            | format          | No        | `ColorFormat`             | `hex`     | The color format of the string value. A format change renders `value` in the new notation. |
 | mode              | mode            | Yes       | `ColorPickerMode`         | `default` | Whether the anchor is a trigger button or an editable text field.        |
 | label             | label           | No        | `string \| undefined`     | -         | The label of the component.                                              |
+| selectionCommit   | selection-commit | No       | `ColorPickerSelectionCommit` | `immediate` | When the changes of the user in the popup apply. With `confirm`, they change a draft: `value` keeps its color, and the popup shows the initial color beside the draft. Apply, or Enter on the canvas marker, a slider or a swatch, applies the draft with one `igcChange`. Cancel and every other close drop it. |
 | swatches          | -               | No        | `string[]`                | `[]`      | Pre-defined color strings, rendered as swatches in front of the swatch children. An empty string gives the no-color swatch. |
 | views             | views           | No        | `string`                  | `gradient` | The views of the popup, a space-separated list of `gradient` and `swatches`. Both show a view switcher. |
 | activeView        | active-view     | No        | `ColorPanelView`          | `gradient` | The view on screen in the popup. The switcher sets it. A view that `views` does not have gives the first view of `views`. |
@@ -475,8 +524,8 @@ All of the above are skipped while the component is `disabled`. A key that an IM
 | igcOpened  | false       | -        | Emitted after the picker dropdown opens on a user action. |
 | igcClosing | true        | -        | Emitted before the user closes the picker dropdown. Cancelable. |
 | igcClosed  | false       | -        | Emitted after the picker dropdown closes on a user action. |
-| igcInput   | false       | `string` | Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper. |
-| igcChange  | false       | `string` | Emitted when the focus leaves the component after the user changed the color. |
+| igcInput   | false       | `string` | Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper. In the confirm mode, these changes emit nothing. |
+| igcChange  | false       | `string` | Emitted when the focus leaves the component after the user changed the color, and when the user applies the draft of the confirm mode. |
 
 The events of the inner inputs, format select and canvas stay inside the picker. Only the events in this table
 reach the listeners on the picker.
@@ -491,6 +540,7 @@ reach the listeners on the picker.
 | `custom-error`  | Renders content when setCustomValidity(message) is set.                          |
 | `invalid`       | Renders content when the component is in invalid state (validity.valid = false). |
 | (default)       | The `igc-color-swatch` and `igc-color-swatch-group` children, shown in the swatch list of the popup. |
+| `footer`        | Renders content below the color panel in the popup. In the confirm mode, the preview, Cancel and Apply show after it. |
 
 ### CSS Shadow parts
 
@@ -527,6 +577,13 @@ reach the listeners on the picker.
 | `view-switcher` | The view switcher, rendered when `views` has both views.                                 |
 | `view-button`   | A button of the view switcher.                                                           |
 | `active`        | Added to the view-button part of the view on screen.                                     |
+| `footer`        | The container below the color panel in the popup. It holds the `footer` slot and, in the confirm mode, the actions. |
+| `actions`       | The container of the preview, Cancel and Apply in the confirm mode.                      |
+| `preview`       | The preview of the initial color and the draft in the confirm mode.                      |
+| `preview-initial` | The button that shows the initial color and restores it.                               |
+| `preview-current` | The color of the draft.                                                                |
+| `cancel-button` | The Cancel button of the confirm mode.                                                   |
+| `apply-button`  | The Apply button of the confirm mode.                                                    |
 
 ### CSS custom states
 
@@ -586,7 +643,8 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 11. Swatches - a hidden swatch list by default, rendering the swatches and applying one, a pick by color and not by
     name. A swatch click while disabled changes nothing.
 12. Copy and eye dropper, in environments with and without platform support. An eye dropper pick that ends after
-    the picker is disabled changes nothing.
+    the picker is disabled changes nothing. In the confirm mode, a pick goes into the draft, and a pick that ends
+    after the popup closes changes nothing.
 13. Open and close - the pointer, keyboard and outside-click paths. A closed picker does not cancel <kbd>Escape</kbd>. An
     <kbd>Escape</kbd> that an IME handles keeps the picker open.
 14. Input mode - the anchor input, its label and its prefix. The clear icon shows only while a color is set and only
@@ -673,6 +731,23 @@ In input mode.
     and a click on a child swatch sets the value. The picker passes `views` and `active-view`, and a click on the view
     switcher sets the `activeView` of the picker.
 
+### Confirm mode
+
+36. The a11y audit. The footer shows the preview, Cancel and Apply only in the confirm mode, and the `footer` slot
+    content in both modes.
+37. A change in the popup is a draft: `value`, the anchor and the initial half of the preview keep the color, and no
+    value event is emitted. Apply writes the draft, emits one `igcChange`, closes and focuses the anchor; an Apply
+    without a change emits nothing.
+38. Cancel, Escape, Alt + Arrow Up, an outside click, a scroll close, `hide()`, `open = false` and disabling drop
+    the draft with no value events. A canceled `igcClosing` keeps the draft on Cancel, and Apply writes it.
+39. Enter on a swatch picks and applies, and Space only picks. Enter on the canvas marker and on a slider applies.
+    Enter in the color value input commits the text into the draft and does not apply. An alpha commit goes into the
+    draft. In the immediate mode, Enter on a slider does not close.
+40. The initial half of the preview restores the initial color. The text field of the input mode shows the value
+    during a draft. A new value from code ends the draft, and the same color keeps it. A format change keeps the
+    draft. The end of the confirm mode drops the draft. The clear icon drops the draft and clears as a user change,
+    and a commit of the text field of the input mode drops the draft.
+
 ## Assumptions and limitations
 
 - The eye dropper button is always rendered, but it is only enabled when the platform implements the `EyeDropper`
@@ -688,6 +763,7 @@ In input mode.
   sRGB syntax, so the component converts it to sRGB with relative color syntax.
 - The model is sRGB, so a wide-gamut color, such as `color(display-p3 1 0 0)`, clips to the sRGB gamut and does not
   come back as the same color.
+- The color panel alone has no confirm mode. Only the color picker keeps a draft.
 - A color that depends on its context is invalid. The component finds `currentcolor`, `var()`, `light-dark()` and the
   system colors by name, because the canvas of Chromium and WebKit resolves `currentcolor` to black and a system
   color to its light value.
@@ -711,6 +787,8 @@ In input mode.
   the keyboard clears the value through the text field.
 - The swatch list is a `listbox` of `option` swatches with `aria-selected`, and a swatch group is a named `group`. See
   the [color panel accessibility](../color-panel/spec.md#aria-roles-and-properties).
+- In the confirm mode, the initial half of the preview is a `button` named by `color_picker_initial_color`. The draft
+  half is decoration. Cancel and Apply are `igc-button` elements with their text.
 - While the picker is open, focus is trapped within it; the picker content is excluded from the tab order while
   closed.
 

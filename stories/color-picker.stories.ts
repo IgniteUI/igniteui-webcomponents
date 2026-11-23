@@ -80,6 +80,14 @@ const metadata: Meta<IgcColorPickerComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'default' } },
     },
+    selectionCommit: {
+      type: { name: 'enum', value: ['immediate', 'confirm'] },
+      description:
+        'When the changes of the user in the popup apply. With `confirm`, they\nchange a draft: `value` keeps its color, and the popup shows the initial\ncolor beside the draft. Apply, or Enter on the canvas marker, a slider or\na swatch, applies the draft with one `igcChange`. Cancel and every other\nclose drop it.',
+      options: ['immediate', 'confirm'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'immediate' } },
+    },
     views: {
       type: 'string',
       description:
@@ -148,6 +156,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     hideFormats: false,
     showAlpha: false,
     mode: 'default',
+    selectionCommit: 'immediate',
     views: 'gradient',
     activeView: 'gradient',
     required: false,
@@ -197,6 +206,14 @@ interface IgcColorPickerArgs {
    * also opens the picker.
    */
   mode: 'default' | 'input';
+  /**
+   * When the changes of the user in the popup apply. With `confirm`, they
+   * change a draft: `value` keeps its color, and the popup shows the initial
+   * color beside the draft. Apply, or Enter on the canvas marker, a slider or
+   * a swatch, applies the draft with one `igcChange`. Cancel and every other
+   * close drop it.
+   */
+  selectionCommit: 'immediate' | 'confirm';
   /**
    * The views of the popup, as a space-separated list of `gradient` and
    * `swatches`. With both views, a view switcher shows at the top.
@@ -328,7 +345,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'A fully interactive color picker. Use the controls panel to explore `mode`, `format`, `showAlpha`, `hideFormats`, `scrollStrategy` and the validation properties.',
+          'A fully interactive color picker. Use the controls panel to explore `mode`, `format`, `showAlpha`, `hideFormats`, `selectionCommit`, `scrollStrategy` and the validation properties.',
       },
     },
   },
@@ -345,6 +362,7 @@ export const Default: Story = {
         .name=${args.name}
         .format=${args.format}
         .mode=${args.mode}
+        .selectionCommit=${args.selectionCommit}
         .scrollStrategy=${args.scrollStrategy}
         .views=${args.views}
         .activeView=${args.activeView}
@@ -626,6 +644,38 @@ export const RecentColors: Story = {
       </div>
     `;
   },
+};
+
+export const ConfirmMode: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With `selection-commit="confirm"`, the changes in the popup are a draft. `value`, shown under the picker, keeps its color, and the picker emits no `igcInput`. Apply, or <kbd>Enter</kbd> on the canvas marker, a slider or a swatch, applies the draft with one `igcChange`. Cancel, <kbd>Escape</kbd> and an outside click drop it. The preview shows the initial color first and the draft second; a click on the initial color restores it. The text in the popup comes from the `footer` slot.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: () => html`
+    ${samples}
+    <div class="samples">
+      <div>
+        <igc-color-picker
+          label="Brand color"
+          value="#2a9d8f"
+          selection-commit="confirm"
+          show-alpha
+          .swatches=${palette}
+          @igcChange=${(event: Event) =>
+            showValue(event.currentTarget as IgcColorPickerComponent)}
+        >
+          <small slot="footer">Enter applies. Escape cancels.</small>
+        </igc-color-picker>
+        <output>#2a9d8f</output>
+      </div>
+    </div>
+  `,
 };
 
 export const ThemeEditor: Story = {

@@ -30,6 +30,12 @@ export interface IgcColorPickerPendingResourceStrings {
   color_picker_format_oklch?: string;
   /** The name of the clear icon in input mode. */
   color_picker_clear?: string;
+  /** The text of the Apply button of the confirm mode. */
+  color_picker_apply?: string;
+  /** The text of the Cancel button of the confirm mode. */
+  color_picker_cancel?: string;
+  /** The name of the preview button that restores the initial color. */
+  color_picker_initial_color?: string;
 }
 
 /** The resource strings of the color picker and the color panel. */
@@ -47,6 +53,9 @@ const PendingResourceStringsEN: Required<IgcColorPickerPendingResourceStrings> =
     color_picker_format_hsl: 'HSL',
     color_picker_format_oklch: 'OKLCH',
     color_picker_clear: 'Clear color',
+    color_picker_apply: 'Apply',
+    color_picker_cancel: 'Cancel',
+    color_picker_initial_color: 'Initial color',
   };
 
 /** The resource string of the name of each format in the format select. */

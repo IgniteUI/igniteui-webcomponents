@@ -13,7 +13,7 @@ import {
   setCurrentI18n,
 } from 'igniteui-i18n-core';
 import { ColorPickerResourceStringsBG } from 'igniteui-i18n-resources';
-import { spy, stub } from 'sinon';
+import { type SinonSpy, spy, stub } from 'sinon';
 import { internalsOf } from '#internals/controllers/internals.js';
 import {
   altKey,
@@ -21,7 +21,9 @@ import {
   arrowRight,
   arrowUp,
   endKey,
+  enterKey,
   escapeKey,
+  spaceBar,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
@@ -32,6 +34,7 @@ import {
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
+  axeHiddenLabelOptions,
   isFocused,
   isUnderPageLayer,
   withDocumentSheets,
@@ -94,6 +97,11 @@ async function pickSwatch(
     getPanelRoot(picker).querySelector<HTMLElement>('[part~="swatch"]')!
   );
   await elementUpdated(picker);
+}
+
+/** The text field of the input mode anchor. */
+function getAnchorField(picker: IgcColorPickerComponent): IgcInputComponent {
+  return picker.renderRoot.querySelector('igc-input[slot="anchor"]')!;
 }
 
 /** The native input of the input mode anchor, which the ARIA projection targets. */
@@ -1387,6 +1395,38 @@ describe('Color picker', () => {
         expect(picker.value).to.equal(value);
         expect(eventSpy).not.calledWith('igcInput');
       });
+
+      describe('in the confirm mode', () => {
+        beforeEach(async () => {
+          picker = await fixture<IgcColorPickerComponent>(
+            html`<igc-color-picker
+              value="#ff0000"
+              selection-commit="confirm"
+              open
+            ></igc-color-picker>`
+          );
+          simulateClick(
+            getPanelRoot(picker).querySelector('[part~="eye-dropper"]')!
+          );
+        });
+
+        it('takes a pick into the draft', async () => {
+          await new Promise((resolve) => setTimeout(resolve));
+          await elementUpdated(picker);
+
+          expect(picker.value).to.equal('#ff0000');
+          expect(getPanel(picker).value).to.equal('#112233');
+        });
+
+        it('ignores a pick that ends after the popup closes', async () => {
+          picker.open = false;
+          await new Promise((resolve) => setTimeout(resolve));
+          await elementUpdated(picker);
+
+          expect(picker.value).to.equal('#ff0000');
+          expect(getPanel(picker).value).to.equal('#ff0000');
+        });
+      });
     });
   });
 
@@ -1464,11 +1504,332 @@ describe('Color picker', () => {
     });
   });
 
+  describe('Confirm mode', () => {
+    beforeEach(async () => {
+      picker = await fixture<IgcColorPickerComponent>(
+        html`<igc-color-picker
+          value="#ff0000"
+          selection-commit="confirm"
+          open
+        ></igc-color-picker>`
+      );
+    });
+
+    function getPart(name: string): HTMLElement {
+      return picker.renderRoot.querySelector(`[part~="${name}"]`)!;
+    }
+
+    function valueEvents(eventSpy: SinonSpy): string[] {
+      return eventSpy
+        .getCalls()
+        .map((call) => call.args[0])
+        .filter((name) => name === 'igcInput' || name === 'igcChange');
+    }
+
+    it('is accessible', async () => {
+      await expect(picker).shadowDom.to.be.accessible(axeHiddenLabelOptions);
+      await expect(picker).lightDom.to.be.accessible(axeHiddenLabelOptions);
+    });
+
+    it('shows the preview, Cancel and Apply only in the confirm mode', async () => {
+      expect(getPart('footer').hidden).to.be.false;
+      expect(getPart('preview-initial').getAttribute('aria-label')).to.equal(
+        'Initial color'
+      );
+      expect(getPart('cancel-button').textContent!.trim()).to.equal('Cancel');
+      expect(getPart('apply-button').textContent!.trim()).to.equal('Apply');
+
+      picker.selectionCommit = 'immediate';
+      await elementUpdated(picker);
+
+      expect(getPart('footer').hidden).to.be.true;
+      expect(getPart('actions')).to.be.null;
+    });
+
+    it('shows the content of the footer slot in both modes', async () => {
+      const content = document.createElement('a');
+      content.slot = 'footer';
+      content.href = '#';
+      content.textContent = 'More colors';
+
+      picker.selectionCommit = 'immediate';
+      picker.append(content);
+      await elementUpdated(picker);
+
+      expect(getPart('footer').hidden).to.be.false;
+      expect(content.assignedSlot?.name).to.equal('footer');
+    });
+
+    it('keeps a change in the popup as a draft', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      await pickSwatch(picker, '#00ff00');
+
+      expect(picker.value).to.equal('#ff0000');
+      expect(getPanel(picker).value).to.equal('#00ff00');
+      expect(getAnchorPreview(picker).alpha).to.equal('rgb(255 0 0 / 1)');
+      expect(
+        getPart('preview-initial').style.getPropertyValue('--_alpha-preview')
+      ).to.equal('rgb(255 0 0 / 1)');
+      expect(
+        getPart('preview-current').style.getPropertyValue('--_alpha-preview')
+      ).to.equal('rgb(0 255 0 / 1)');
+      expect(valueEvents(eventSpy)).to.be.empty;
+    });
+
+    it('applies the draft with one igcChange and closes', async () => {
+      await pickSwatch(picker, '#00ff00');
+      const eventSpy = spy(picker, 'emitEvent');
+
+      simulateClick(getPart('apply-button'));
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#00ff00');
+      expect(picker.open).to.be.false;
+      expect(isFocused(getAnchor(picker))).to.be.true;
+      expect(valueEvents(eventSpy)).to.eql(['igcChange']);
+      expect(eventSpy).calledWith('igcChange', { detail: '#00ff00' });
+
+      // The focus leaves after the report.
+      picker.blur();
+      expect(valueEvents(eventSpy)).to.eql(['igcChange']);
+    });
+
+    it('emits no igcChange for an Apply without a change', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      simulateClick(getPart('apply-button'));
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+      expect(valueEvents(eventSpy)).to.be.empty;
+    });
+
+    for (const [name, close] of [
+      ['Cancel', () => simulateClick(getPart('cancel-button'))],
+      ['Escape', () => simulateKeyboard(picker, escapeKey)],
+      ['Alt + Arrow Up', () => simulateKeyboard(picker, [altKey, arrowUp])],
+      ['an outside click', () => simulateClick(document.body)],
+      [
+        'a scroll close',
+        async () => {
+          picker.scrollStrategy = 'close';
+          await elementUpdated(picker);
+          await simulateScroll(picker.parentElement!, { top: 0 });
+        },
+      ],
+      ['hide()', () => picker.hide()],
+      [
+        'open = false',
+        () => {
+          picker.open = false;
+        },
+      ],
+      [
+        'disabling',
+        () => {
+          picker.disabled = true;
+        },
+      ],
+    ] as const) {
+      it(`drops the draft on ${name}`, async () => {
+        const eventSpy = spy(picker, 'emitEvent');
+
+        await pickSwatch(picker, '#00ff00');
+        await close();
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.false;
+        expect(picker.value).to.equal('#ff0000');
+        expect(getPanel(picker).value).to.equal('#ff0000');
+        expect(valueEvents(eventSpy)).to.be.empty;
+      });
+    }
+
+    it('keeps the draft on Cancel, and applies it on Apply, when the app cancels the close', async () => {
+      picker.addEventListener('igcClosing', (event) => event.preventDefault());
+      await pickSwatch(picker, '#00ff00');
+
+      simulateClick(getPart('cancel-button'));
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+      expect(getPanel(picker).value).to.equal('#00ff00');
+
+      simulateClick(getPart('apply-button'));
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+      expect(picker.value).to.equal('#00ff00');
+    });
+
+    it('shows the value in the text field of the input mode', async () => {
+      picker.mode = 'input';
+      await elementUpdated(picker);
+      await pickSwatch(picker, '#00ff00');
+
+      expect(getAnchorField(picker).value).to.equal('#ff0000');
+      expect(getAnchorPreview(picker).alpha).to.equal('rgb(255 0 0 / 1)');
+    });
+
+    it('takes an alpha commit into the draft', async () => {
+      picker.showAlpha = true;
+      picker.format = 'rgb';
+      await elementUpdated(picker);
+      const eventSpy = spy(picker, 'emitEvent');
+
+      clearAlpha(picker);
+      typeIntoAlpha(picker, '40');
+      commitColorInput(getAlphaInput(picker), '40%');
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+      expect(picker.value).to.equal('rgb(255 0 0)');
+      expect(getPanel(picker).value).to.equal('rgb(255 0 0 / 0.4)');
+      expect(valueEvents(eventSpy)).to.be.empty;
+    });
+
+    it('applies on Enter on a swatch, and only picks on Space', async () => {
+      picker.swatches = ['#00ff00', '#0000ff'];
+      await elementUpdated(picker);
+      const [green, blue] =
+        getPanelRoot(picker).querySelectorAll<IgcColorSwatchComponent>(
+          '[part~="swatch"]'
+        );
+
+      blue.focus();
+      simulateKeyboard(blue, spaceBar);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+      expect(getPanel(picker).value).to.equal('#0000ff');
+
+      green.focus();
+      simulateKeyboard(green, enterKey);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+      expect(picker.value).to.equal('#00ff00');
+    });
+
+    it('applies on Enter on the canvas marker and on a slider', async () => {
+      const marker =
+        getCanvas(picker).renderRoot.querySelector<HTMLElement>(
+          '[part~="marker"]'
+        )!;
+
+      simulateKeyboard(marker, arrowDown);
+      simulateKeyboard(marker, enterKey);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+      expect(picker.value).to.not.equal('#ff0000');
+
+      await picker.show();
+      const hue = getHueSlider(picker);
+      simulateInput(hue, { value: '120' });
+      simulateKeyboard(hue, enterKey);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.false;
+      expect(ColorModel.parse(picker.value).h).to.be.closeTo(120, 1);
+    });
+
+    it('commits a typed color into the draft, and Enter there does not apply', async () => {
+      const input = getColorInput(picker);
+
+      commitColorInput(input, 'blue');
+      simulateKeyboard(input.renderRoot.querySelector('input')!, enterKey);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+      expect(picker.value).to.equal('#ff0000');
+      expect(getPanel(picker).value).to.equal('#0000ff');
+    });
+
+    it('restores the initial color from the preview', async () => {
+      await pickSwatch(picker, '#00ff00');
+
+      simulateClick(getPart('preview-initial'));
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+      expect(getPanel(picker).value).to.equal('#ff0000');
+    });
+
+    it('ends the draft for a new value from code, and keeps it for the same color', async () => {
+      await pickSwatch(picker, '#00ff00');
+
+      picker.value = 'rgb(255 0 0)';
+      await elementUpdated(picker);
+      expect(getPanel(picker).value).to.equal('#00ff00');
+
+      picker.value = '#0000ff';
+      await elementUpdated(picker);
+      expect(getPanel(picker).value).to.equal('#0000ff');
+    });
+
+    it('keeps the draft in a new format', async () => {
+      await pickSwatch(picker, '#00ff00');
+
+      picker.format = 'rgb';
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('rgb(255 0 0)');
+      expect(getPanel(picker).value).to.equal('rgb(0 255 0)');
+    });
+
+    it('drops the draft when the confirm mode ends', async () => {
+      await pickSwatch(picker, '#00ff00');
+
+      picker.selectionCommit = 'immediate';
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#ff0000');
+      expect(getPanel(picker).value).to.equal('#ff0000');
+    });
+
+    it('drops the draft and clears as a user change on the clear icon', async () => {
+      picker.mode = 'input';
+      await elementUpdated(picker);
+      await pickSwatch(picker, '#00ff00');
+      const eventSpy = spy(picker, 'emitEvent');
+
+      simulateClick(getPart('clear-icon'));
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('');
+      expect(getPanel(picker).value).to.equal('');
+      expect(valueEvents(eventSpy)).to.eql(['igcInput']);
+    });
+
+    it('drops the draft for a commit of the text field of the input mode', async () => {
+      picker.mode = 'input';
+      await elementUpdated(picker);
+      await pickSwatch(picker, '#00ff00');
+
+      commitColorInput(getAnchorField(picker), '#0000ff');
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#0000ff');
+      expect(getPanel(picker).value).to.equal('#0000ff');
+    });
+
+    it('keeps Enter for the controls in the immediate mode', async () => {
+      picker.selectionCommit = 'immediate';
+      await elementUpdated(picker);
+
+      const hue = getHueSlider(picker);
+      simulateKeyboard(hue, enterKey);
+      await elementUpdated(picker);
+
+      expect(picker.open).to.be.true;
+    });
+  });
+
   describe('Input mode', () => {
     function getInputAnchor(): IgcInputComponent {
-      return picker.renderRoot.querySelector<IgcInputComponent>(
-        'igc-input[slot="anchor"]'
-      )!;
+      return getAnchorField(picker);
     }
 
     beforeEach(async () => {

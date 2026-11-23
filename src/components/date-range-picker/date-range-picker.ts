@@ -24,6 +24,7 @@ import { all } from '#themes/date-range-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
+import { renderConfirmButtons } from '../button/confirm-buttons.js';
 import type { CommitPolicy } from '../date-picker/commit-session.js';
 import {
   IgcDatePickerBaseComponent,
@@ -567,22 +568,18 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   }
 
   protected override _renderDialogFooter() {
-    const isIndigo = this._themes.theme === 'indigo';
-
-    return html`
-      <igc-button
-        slot="footer"
-        @click=${this._dialogCancel}
-        variant=${isIndigo ? 'outlined' : 'flat'}
-        >${this.resourceStrings.date_range_picker_cancel_button}</igc-button
-      >
-      <igc-button
-        slot="footer"
-        @click=${this._dialogDone}
-        variant=${isIndigo ? 'contained' : 'flat'}
-        >${this.resourceStrings.date_range_picker_done_button}</igc-button
-      >
-    `;
+    return renderConfirmButtons({
+      theme: this._themes.theme,
+      slot: 'footer',
+      cancel: {
+        label: this.resourceStrings.date_range_picker_cancel_button,
+        onClick: this._dialogCancel,
+      },
+      confirm: {
+        label: this.resourceStrings.date_range_picker_done_button,
+        onClick: this._dialogDone,
+      },
+    });
   }
 
   protected _renderInput(
