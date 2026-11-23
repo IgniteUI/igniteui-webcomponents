@@ -1,11 +1,36 @@
 /** Shape of individual data modules in the QR code body. */
-export type QrDotStyle = 'square' | 'circle' | 'rounded' | 'squircle';
+export type QrDotStyle =
+  | 'square'
+  | 'circle'
+  | 'rounded'
+  | 'squircle'
+  | 'diamond'
+  | 'plus'
+  | 'liquid'
+  | 'horizontal-bars'
+  | 'vertical-bars';
 
 /** Shape of the inner dot inside each finder-pattern corner. */
-export type QrCornerDotStyle = 'square' | 'circle' | 'rounded' | 'squircle';
+export type QrCornerDotStyle =
+  | 'square'
+  | 'circle'
+  | 'rounded'
+  | 'squircle'
+  | 'leaf';
 
 /** Shape of the outer square of each finder-pattern corner. */
-export type QrCornerSquareStyle = 'square' | 'circle' | 'rounded' | 'squircle';
+export type QrCornerSquareStyle =
+  | 'square'
+  | 'circle'
+  | 'rounded'
+  | 'squircle'
+  | 'leaf';
+
+/** Paint of the dark modules: a gradient between two colors. Unset means a solid color. */
+export type QrGradient = 'linear' | 'radial';
+
+/** Shape of the logo, which fills the logo box. */
+export type QrLogoShape = 'square' | 'circle' | 'rounded' | 'squircle';
 
 /**
  * QR error correction level. Higher levels recover more data but reduce capacity.
@@ -14,7 +39,7 @@ export type QrCornerSquareStyle = 'square' | 'circle' | 'rounded' | 'squircle';
 export type QrErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 
 /**
- * QR data encoding mode, selected automatically based on the input string.
+ * QR data encoding mode of a segment. The encoder splits the value into the segments with the fewest bits.
  * - `numeric` - digits only; `alphanumeric` - digits + uppercase letters + a few symbols; `byte` - arbitrary UTF-8.
  */
 export type QrEncodingMode = 'numeric' | 'alphanumeric' | 'byte';

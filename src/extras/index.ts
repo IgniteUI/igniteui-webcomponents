@@ -1,1 +1,1 @@
-export * from './chat-markdown-renderer.js';
+export * from './chat-markdown-renderer/chat-markdown-renderer.js';

@@ -23,6 +23,7 @@ import {
   getDOMDate,
   getRenderedMonths,
 } from '#internals/testing/calendar.spec.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
@@ -2017,3 +2018,6 @@ describe('Date picker', () => {
     html`<igc-date-picker label="Label"></igc-date-picker>`
   );
 });
+
+// Outside the describe above, whose `beforeEach` builds an unused picker.
+runDisabledPopupTests(IgcDatePickerComponent);

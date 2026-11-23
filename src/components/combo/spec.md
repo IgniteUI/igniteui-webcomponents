@@ -61,6 +61,7 @@
     - [Form integration tests](#form-integration-tests)
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
+    - [Disabled popup](#disabled-popup)
     - [Value state motion](#value-state-motion)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -108,7 +109,8 @@
 |      33 | 2026-11-18 | A closed list has no active option, also after `open` changes from code or an app cancels the opening; a change of `showSelectAll` or `groupSelection` keeps the active option on its item; in single selection, the first match is active in the update of the typed text |
 |      34 | 2026-11-19 | A change of `name` moves the submitted values to the new name at once |
 |      35 | 2026-11-19 | Test scenarios: in single selection, a pick or a clear that the app cancels after the user types shows the kept selection again, and the clear button clears a value that has no record. The selection model keeps `value` in sync; the behavior does not change |
-|      36 | 2026-11-20 | A selection by the user animates the option checkboxes; a value from code, a new `data`, a reused row and a value that an `igcChange` handler keeps show at once |
+|      36 | 2026-11-23 | A disabled combo stays closed; the shared disabled popup suite |
+|      37 | 2026-11-20 | A selection by the user animates the option checkboxes; a value from code, a new `data`, a reused row and a value that an `igcChange` handler keeps show at once |
 
 ## Overview
 
@@ -602,7 +604,7 @@ that cancels it.
 | selectionCommit        | selection-commit           | No        | `'immediate' \| 'confirm'`          | `immediate`       | When the user's changes of the selection apply in multiple selection mode. With `confirm`, they change a pending selection while the list is open, and Enter or the Apply button applies it with one `igcChange`. Any other close drops it. While it exists, the selection methods change it too. |
 | itemTemplate           | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each combo item.                |
 | groupHeaderTemplate    | -                          | No        | `ComboGroupHeaderTemplate<T>`       | -                 | The template for the content of each group header.              |
-| open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open.                                |
+| open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open. A disabled form control stays closed. |
 | label                  | label                      | No        | `string \| undefined`               | -                 | The label of the control.                                       |
 | placeholder            | placeholder                | No        | `string \| undefined`               | -                 | The placeholder text of the control.                            |
 | placeholderSearch      | placeholder-search         | No        | `string`                            | from the resources | The placeholder text of the search input.                      |
@@ -655,7 +657,7 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 
 | Name              | Type signature                         | Description                                                                      |
 | ----------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                 | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                             |
+| show              | `(): Promise<boolean>`                 | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open or is a disabled form control, or when a later call replaces this one.                               |
 | hide              | `(): Promise<boolean>`                 | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                             |
 | toggle            | `(): Promise<boolean>`                 | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                         |
 | select            | `(items?: Item<T> \| Item<T>[]): void` | Selects options in the list by reference or by `valueKey` value. It does not emit `igcChange`. An object that `data` does not hold is selected as it is. Without an argument, it selects all the items of `data`, or clears the selection in single selection mode. |
@@ -840,7 +842,8 @@ the shadow DOM through `getComboDOM()`.
 
 #### Change events
 
-8. `igcChange` gives the new value, the items and the change type, and a cancel keeps the selection.
+8. `igcChange` gives the new value, the items and the change type, and a cancel keeps the selection. An item click
+   while disabled changes nothing.
 
 #### Clear button
 
@@ -1065,18 +1068,22 @@ The form-associated mixin gives the focus after the form checks and the rules of
 
 59. The `value-missing`, `custom-error` and `invalid` slots show for their state.
 
+### Disabled popup
+
+60. The shared runner `runDisabledPopupTests`, with the native input as the `aria-expanded` target.
+
 ### Value state motion
 
 In the Material theme.
 
-60. A click on an option starts transitions in its checkbox.
-61. A click on the clear icon starts transitions in the checkboxes of the options that it clears.
-62. A `value` from code starts no transitions in the checkbox of the option.
-63. A selection by the user marks the input as a user change, in single and multiple selection.
-64. A value that a canceling `igcChange` handler sets ends the user change, in single and multiple selection.
-65. A value that an `igcChange` handler sets in multiple selection ends the user change.
-66. A value from code right after a Space selection ends the user change.
-67. A value from code right after a clear with the clear icon ends the user change.
+61. A click on an option starts transitions in its checkbox.
+62. A click on the clear icon starts transitions in the checkboxes of the options that it clears.
+63. A `value` from code starts no transitions in the checkbox of the option.
+64. A selection by the user marks the input as a user change, in single and multiple selection.
+65. A value that a canceling `igcChange` handler sets ends the user change, in single and multiple selection.
+66. A value that an `igcChange` handler sets in multiple selection ends the user change.
+67. A value from code right after a Space selection ends the user change.
+68. A value from code right after a clear with the clear icon ends the user change.
 
 ### Not covered by the suite
 

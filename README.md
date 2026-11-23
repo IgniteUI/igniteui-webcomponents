@@ -189,23 +189,11 @@ The condition names are `igc-theme-material`, `igc-theme-bootstrap`, `igc-theme-
 
 The extras are opt-in add-ons that build on the public API of the components. A bundle that does not import them does not contain them. Each one has its own entry point, so it needs only its own dependencies.
 
-- `createMarkdownRenderer()` from `igniteui-webcomponents/extras` renders the chat messages from Markdown, with syntax highlighting. It imports the optional peer dependencies `marked` and `dompurify`, and loads `shiki` for the highlighting.
-- `bindComboDataSource()` from `igniteui-webcomponents/extras/combo-data-source` binds a combo to a server that searches and pages. It sets `totalItemCount` from the total of the server, so the list shows a placeholder row for each item to load, and `loading` while a search waits or a page loads.
-
-```ts
-import { bindComboDataSource } from 'igniteui-webcomponents/extras/combo-data-source';
-
-const binding = bindComboDataSource(combo, {
-  load: async ({ searchText, caseSensitive, startIndex, count }, signal) => {
-    const query = `q=${encodeURIComponent(searchText)}&case=${caseSensitive}&skip=${startIndex}&top=${count}`;
-    const response = await fetch(`/api/cities?${query}`, { signal });
-    const { items, total } = await response.json();
-    return { items, totalCount: total };
-  },
-});
-
-binding.dispose(); // removes the listeners, aborts the request in flight and clears `totalItemCount` and `loading`
-```
+| Extra | Entry point | Use |
+| ----- | ----------- | --- |
+| [Chat Markdown renderer](./src/extras/chat-markdown-renderer/README.md) | `igniteui-webcomponents/extras` | Renders the chat messages from Markdown, with syntax highlighting. |
+| [Combo data source](./src/extras/combo-data-source/README.md) | `igniteui-webcomponents/extras/combo-data-source` | Binds a combo to a server that searches and pages. |
+| [QR payloads](./src/extras/qr-payloads/README.md) | `igniteui-webcomponents/extras/qr-payloads` | Builds QR code values for a Wi-Fi login, a contact card, a SEPA payment and a calendar event. |
 
 ## Browser support
 

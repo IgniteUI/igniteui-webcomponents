@@ -1,5 +1,5 @@
 import type { ICalendarResourceStrings } from 'igniteui-i18n-core';
-import { html, nothing, type TemplateResult } from 'lit';
+import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -199,11 +199,6 @@ export abstract class IgcDatePickerBaseComponent<
   /** Whether a click on the editor or the label opens the dialog. */
   protected get _opensOnClick(): boolean {
     return !(this._isDropDown || this.readOnly);
-  }
-
-  /** Whether the calendar ignores input, while the picker is closed or disabled. */
-  protected get _isCalendarInert(): boolean {
-    return !this.open || this.disabled;
   }
 
   /** Dialog mode is always read-only, the rest depends on the configuration. */
@@ -508,6 +503,16 @@ export abstract class IgcDatePickerBaseComponent<
       .set(escapeKey, this._onEscapeKey, { when: () => this.open });
   }
 
+  protected override willUpdate(props: PropertyValues): void {
+    super.willUpdate(props);
+
+    // Disabling is not a confirm. Check the state, not a change: a draft can
+    // outlive `hide()`, and a fieldset changes no property.
+    if (this.disabled) {
+      this._session.cancel();
+    }
+  }
+
   //#endregion
 
   //#region Internal API
@@ -804,7 +809,7 @@ export abstract class IgcDatePickerBaseComponent<
         aria-labelledby=${id}
         role="dialog"
         selection=${this._shape.selection}
-        .inert=${this._isCalendarInert}
+        .inert=${!this.open}
         ?show-week-numbers=${this.showWeekNumbers}
         ?hide-outside-days=${this.hideOutsideDays}
         ?hide-header=${hideHeader}
@@ -867,7 +872,7 @@ export abstract class IgcDatePickerBaseComponent<
             .scrollStrategy=${this.scrollStrategy}
             @igcPopoverScrollClose=${this._handleClosing}
           >
-            <igc-focus-trap ?disabled=${this._isCalendarInert}>
+            <igc-focus-trap ?disabled=${!this.open}>
               ${this._renderPickerContent(id)}
             </igc-focus-trap>
           </igc-popover>
