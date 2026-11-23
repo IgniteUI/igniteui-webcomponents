@@ -23,6 +23,7 @@ import {
   getDOMDate,
   getRenderedMonths,
 } from '#internals/testing/calendar.spec.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
 import {
   checkDatesEqual,
   finishAnimationsFor,
@@ -32,6 +33,7 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
@@ -865,6 +867,28 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           ).to.eql([draft]);
         });
 
+        it('restores the range from before the draft when disabled (dialog)', async () => {
+          const { value, eventSpy } = await selectDraftInDialog();
+
+          picker.disabled = true;
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+          expect(picker.value).to.eql(value);
+          expect(eventSpy).not.calledWith('igcChange');
+        });
+
+        it('restores the range from before the draft when disabled after `hide()` (dialog)', async () => {
+          const { value, eventSpy } = await selectDraftInDialog();
+
+          await picker.hide();
+          picker.disabled = true;
+          await elementUpdated(picker);
+
+          expect(picker.value).to.eql(value);
+          expect(eventSpy).not.calledWith('igcChange');
+        });
+
         it('ignores Done, Cancel and Escape during the exit of `hide()` (dialog)', async () => {
           const { eventSpy } = await selectDraftInDialog();
           const draft = picker.value;
@@ -1543,6 +1567,42 @@ describe('Date range picker - common tests for single and two inputs mode', () =
     });
   });
 
+  describe('Value state motion', () => {
+    const input = () =>
+      picker.renderRoot.querySelector(
+        `${IgcDateRangeInputComponent.tagName}, ${IgcDateTimeInputComponent.tagName}`
+      )!;
+
+    function pickRange(): void {
+      const views = getCalendarDOM(calendar).views.allDays;
+      const day = CalendarDay.from(views[0].activeDate);
+      simulateClick(getDOMDate(day.set({ date: 10 }), views[0]));
+      simulateClick(getDOMDate(day.set({ date: 20 }), views[0]));
+    }
+
+    it('marks the input as a user change for a range from the calendar', async () => {
+      await picker.show();
+
+      pickRange();
+
+      expect(picker.value).to.not.be.null;
+      expect(isUserChange(input())).to.be.true;
+    });
+
+    it('shows a value that an igcChange handler sets at once', async () => {
+      const other = { start: new Date(2025, 5, 1), end: new Date(2025, 5, 10) };
+      picker.addEventListener('igcChange', () => {
+        picker.value = other;
+      });
+      await picker.show();
+
+      pickRange();
+
+      expect(picker.value).to.eql(other);
+      expect(isUserChange(input())).to.be.false;
+    });
+  });
+
   describe('Locale week start', () => {
     it('derives the calendar week start from the locale when `week-start` is not set', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
@@ -2077,3 +2137,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
     });
   }
 });
+
+// Outside the describe above, whose `beforeEach` builds an unused picker.
+runDisabledPopupTests(IgcDateRangePickerComponent);

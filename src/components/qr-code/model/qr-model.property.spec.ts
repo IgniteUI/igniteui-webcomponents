@@ -4,6 +4,10 @@ import {
   fc,
   SLOW_PROPERTY_RUNS,
 } from '#internals/testing/fast-check-setup.spec.js';
+import {
+  prepareQrDecoder,
+  readQrMatrix,
+} from '#internals/testing/qr-decoder.spec.js';
 import type { QrErrorCorrectionLevel } from '../types.js';
 import { EC_LEVEL_INDEX, encodeQR } from './encode.js';
 import { EC_BLOCKS_TABLE, getDataCodewordsCount } from './error-correction.js';
@@ -11,6 +15,7 @@ import { generateQRCodeMatrix } from './matrix.js';
 
 const EC_LEVELS = Object.keys(EC_LEVEL_INDEX) as QrErrorCorrectionLevel[];
 const ALPHANUMERIC = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+const TEXT_ENCODER = new TextEncoder();
 
 /**
  * Returns the total codewords of a version, from its module count (ISO/IEC 18004). The
@@ -42,7 +47,62 @@ const data = fc.oneof(
   fc.string({ unit: 'binary', minLength: 1, maxLength: 100 })
 );
 
+/** Runs that favor different modes, so that the encoder splits the value into segments. */
+const mixedData = fc
+  .array(
+    fc.oneof(
+      fc.stringMatching(/^\d{1,40}$/),
+      fc
+        .array(fc.constantFrom(...ALPHANUMERIC), {
+          minLength: 1,
+          maxLength: 40,
+        })
+        .map((chars) => chars.join('')),
+      fc.string({ unit: 'grapheme', minLength: 1, maxLength: 20 })
+    ),
+    { minLength: 1, maxLength: 8 }
+  )
+  .map((runs) => runs.join(''));
+
+const anyData = fc.oneof(data, mixedData);
+
+const SINGLE_MODES = ['numeric', 'alphanumeric', 'byte'] as const;
+
+/**
+ * Returns the bits of `value` as one segment of `mode` in a code of `version`, or `Infinity`
+ * when the mode cannot encode it (ISO/IEC 18004, 7.4). The oracle does not use the encoder.
+ */
+function singleModeBits(
+  value: string,
+  mode: (typeof SINGLE_MODES)[number],
+  version: number
+): number {
+  const group = version < 10 ? 0 : version < 27 ? 1 : 2;
+  const length = value.length;
+
+  switch (mode) {
+    case 'numeric':
+      return /^\d+$/.test(value)
+        ? 4 +
+            [10, 12, 14][group] +
+            10 * Math.floor(length / 3) +
+            [0, 4, 7][length % 3]
+        : Number.POSITIVE_INFINITY;
+    case 'alphanumeric':
+      return [...value].every((c) => ALPHANUMERIC.includes(c))
+        ? 4 +
+            [9, 11, 13][group] +
+            11 * Math.floor(length / 2) +
+            6 * (length % 2)
+        : Number.POSITIVE_INFINITY;
+    default:
+      return 4 + [8, 16, 16][group] + 8 * TEXT_ENCODER.encode(value).length;
+  }
+}
+
 describe('QR model properties', () => {
+  before(prepareQrDecoder);
+
   it('holds as many codewords per version as the symbol has room for', () => {
     fc.assert(
       fc.property(version, fc.nat(3), (v, ecIndex) => {
@@ -77,19 +137,47 @@ describe('QR model properties', () => {
     );
   });
 
-  it('picks the most compact mode for the characters of the data', () => {
+  it('encodes mixed data into the smallest version that holds it', () => {
     fc.assert(
-      fc.property(data, (value) => {
-        const { mode } = encodeQR(value, 'L');
+      fc.property(mixedData, ecLevel, (value, level) => {
+        const result = encodeQR(value, level);
 
-        if (/^\d+$/.test(value)) {
-          expect(mode).to.equal('numeric');
-        } else if ([...value].every((c) => ALPHANUMERIC.includes(c))) {
-          expect(mode).to.equal('alphanumeric');
-        } else {
-          expect(mode).to.equal('byte');
+        expect(result.codewords).to.have.lengthOf(
+          totalCodewords(result.version)
+        );
+        if (result.version > 1) {
+          expect(() => encodeQR(value, level, result.version - 1)).to.throw(
+            /Data too long/
+          );
+        }
+        expect(encodeQR(value, level, result.version)).to.deep.equal(result);
+      })
+    );
+  });
+
+  it('the segments never take more bits than the best single mode', () => {
+    fc.assert(
+      fc.property(anyData, ecLevel, (value, level) => {
+        const { mode, dataBits, version: v } = encodeQR(value, level);
+        const single = SINGLE_MODES.map((m) => singleModeBits(value, m, v));
+
+        expect(dataBits).to.be.at.most(Math.min(...single));
+        if (mode !== 'mixed') {
+          expect(dataBits).to.equal(single[SINGLE_MODES.indexOf(mode)]);
         }
       })
+    );
+  });
+
+  it('gives a decoder the bytes of the data back', async () => {
+    await fc.assert(
+      fc.asyncProperty(anyData, ecLevel, async (value, level) => {
+        const { matrix } = generateQRCodeMatrix(value, level);
+        expect(await readQrMatrix(matrix)).to.deep.equal(
+          TEXT_ENCODER.encode(value)
+        );
+      }),
+      { numRuns: SLOW_PROPERTY_RUNS }
     );
   });
 

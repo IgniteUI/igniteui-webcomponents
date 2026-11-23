@@ -47,9 +47,13 @@ $theme: $bootstrap;
     box-shadow: none;
     z-index: 1;
     border: 1px solid var-get($theme, 'border-color');
-    transition:
-        box-shadow 0.15s ease-out,
-        border 0.15s ease-out;
+
+    @include with-motion() {
+        transition:
+            box-shadow 0.15s ease-out,
+            border 0.15s ease-out;
+    }
+
     grid-area: 1 / 2;
     background-clip: padding-box;
 }
@@ -100,9 +104,13 @@ $theme: $bootstrap;
     position: relative;
     border-radius: none;
     min-width: auto;
-    transition:
-        box-shadow 0.15s ease-out,
-        border 0.15s ease-out;
+
+    @include with-motion() {
+        transition:
+            box-shadow 0.15s ease-out,
+            border 0.15s ease-out;
+    }
+
     font-size: var(--font);
 
     ::slotted(*) {

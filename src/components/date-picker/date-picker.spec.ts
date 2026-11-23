@@ -23,6 +23,7 @@ import {
   getDOMDate,
   getRenderedMonths,
 } from '#internals/testing/calendar.spec.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
@@ -43,6 +44,7 @@ import {
   simulateKeyboard,
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { formatString } from '#internals/utils/strings.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
@@ -1988,7 +1990,34 @@ describe('Date picker', () => {
     });
   });
 
+  describe('Value state motion', () => {
+    it('marks the input as a user change for a date from the calendar', async () => {
+      await picker.show();
+
+      selectCurrentDate(calendar);
+
+      expect(picker.value).to.not.be.null;
+      expect(isUserChange(dateTimeInput)).to.be.true;
+    });
+
+    it('shows a value that an igcChange handler sets at once', async () => {
+      const other = CalendarDay.today.add('day', 1).native;
+      picker.addEventListener('igcChange', () => {
+        picker.value = other;
+      });
+      await picker.show();
+
+      selectCurrentDate(calendar);
+
+      checkDatesEqual(picker.value as Date, other);
+      expect(isUserChange(dateTimeInput)).to.be.false;
+    });
+  });
+
   runFocusBeforeRenderTests(
     html`<igc-date-picker label="Label"></igc-date-picker>`
   );
 });
+
+// Outside the describe above, whose `beforeEach` builds an unused picker.
+runDisabledPopupTests(IgcDatePickerComponent);

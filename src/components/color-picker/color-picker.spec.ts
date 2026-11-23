@@ -22,6 +22,7 @@ import {
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
@@ -46,6 +47,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
@@ -1196,6 +1198,23 @@ describe('Color picker', () => {
 
       expect(picker.value).to.equal('#00ff00');
     });
+
+    it('ignores a swatch click while disabled', async () => {
+      picker.swatches = ['#00ff00'];
+      await elementUpdated(picker);
+      const { value } = picker;
+      const eventSpy = spy(picker, 'emitEvent');
+
+      picker.disabled = true;
+      await elementUpdated(picker);
+      picker.renderRoot
+        .querySelector<HTMLButtonElement>('button[part="swatch"]')!
+        .click();
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal(value);
+      expect(eventSpy).not.calledWith('igcInput');
+    });
   });
 
   describe('Copy and EyeDropper', () => {
@@ -1265,6 +1284,22 @@ describe('Color picker', () => {
         await elementUpdated(picker);
 
         expect(picker.value).to.equal('#112233');
+      });
+
+      it('ignores a pick that ends after the picker is disabled', async () => {
+        picker = await createDefaultColorPicker();
+        const { value } = picker;
+        const eventSpy = spy(picker, 'emitEvent');
+
+        picker.renderRoot
+          .querySelector<HTMLElement>('[part="eye-dropper"]')!
+          .click();
+        picker.disabled = true;
+        await new Promise((resolve) => setTimeout(resolve));
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal(value);
+        expect(eventSpy).not.calledWith('igcInput');
       });
     });
   });
@@ -1795,6 +1830,34 @@ describe('Color picker', () => {
     });
   });
 
+  describe('Value state motion', () => {
+    const anchor = () =>
+      picker.renderRoot.querySelector<IgcInputComponent>(
+        'igc-input[slot="anchor"]'
+      )!;
+
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+      picker.mode = 'input';
+      picker.open = true;
+      await elementUpdated(picker);
+    });
+
+    it('marks the input as a user change for a typed color', () => {
+      commitColorInput(getColorInput(picker), '#00ff00');
+
+      expect(picker.value).to.equal('#00ff00');
+      expect(isUserChange(anchor())).to.be.true;
+    });
+
+    it('shows a value from code after a typed color at once', () => {
+      commitColorInput(getColorInput(picker), '#00ff00');
+      picker.value = '#ff0000';
+
+      expect(isUserChange(anchor())).to.be.false;
+    });
+  });
+
   describe('Validation', () => {
     const spec = createFormAssociatedTestBed<IgcColorPickerComponent>(html`
       <igc-color-picker name="color-picker"></igc-color-picker>
@@ -1862,4 +1925,8 @@ describe('Color picker', () => {
   });
 
   runFocusBeforeRenderTests(html`<igc-color-picker></igc-color-picker>`);
+
+  runDisabledPopupTests(IgcColorPickerComponent, {
+    getAriaTarget: getAnchor,
+  });
 });

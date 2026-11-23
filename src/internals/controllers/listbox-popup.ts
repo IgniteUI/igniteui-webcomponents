@@ -122,7 +122,7 @@ interface ListboxPopupConfig<T> {
   focusItems?: boolean;
   /** Whether the keys work while the list is closed: a move selects and Enter opens. */
   closedKeys?: boolean;
-  /** Whether the host ignores all keys. */
+  /** Whether the host ignores keys and item clicks. */
   disabled?: () => boolean;
   /** Opens the list for Enter, with `closedKeys`. */
   show?: () => void;
@@ -324,6 +324,10 @@ class ListboxPopup<
 
   /** The user clicks in the list. */
   public readonly handleClick = (event: Event): void => {
+    if (this._isDisabled()) {
+      return;
+    }
+
     const item = getElementFromPath<T>(this._config.itemTag, event);
     this._applyIntent('pick', item && !item.disabled ? item : undefined);
   };

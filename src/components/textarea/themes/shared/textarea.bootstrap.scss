@@ -101,7 +101,10 @@ textarea {
     padding-inline: pad-inline(rem(8px), rem(10px), rem(14px));
     border-radius: var-get($theme, 'border-border-radius');
     z-index: 1;
-    transition: box-shadow .15s ease-out, border .15s ease-out;
+
+    @include with-motion() {
+        transition: box-shadow .15s ease-out, border .15s ease-out;
+    }
 }
 
 :host(:focus-within) {

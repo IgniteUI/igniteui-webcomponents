@@ -1,11 +1,16 @@
 @use 'styles/utilities' as *;
+@include value-state-transitions($on-host: true);
 
 :host {
     display: flex;
     align-items: center;
     position: relative;
     gap: rem(16px);
-    transition: background .15s ease-out;
+
+    @include with-motion() {
+        transition: background .15s ease-out;
+    }
+
     padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
     padding-block: pad-block(rem(2px), rem(4px), rem(8px));
 

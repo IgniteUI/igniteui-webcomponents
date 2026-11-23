@@ -55,6 +55,7 @@
 |       7 | 2026-10-29 | The backdrop is the native `::backdrop`; the `backdrop` and `animating` parts are removed; a change of `open` against a running transition ends it |
 |       8 | 2026-11-04 | A `hide()` in the task of `show()` closes the dialog at once |
 |       9 | 2026-11-05 | A dialog out of the document closes when `open` changes to `false`; an append makes an open dialog modal again |
+|      10 | 2026-11-20 | `open = true`, also on the first render and after an append, shows the backdrop at once; only `show()` fades it in |
 
 ## Overview
 
@@ -162,6 +163,8 @@ await dialog.toggle();
 The three methods animate the transition and resolve with whether it completed - `false` when the dialog was already
 in that state, when a newer transition superseded this one, or when a change of `open` ended it. Setting the `open`
 property instead opens or closes the dialog immediately, without animation and without emitting the close events.
+This includes the backdrop, also on the first render: only `show()` fades it in. An append of an open dialog and a
+reopen after a close that the dialog cannot cancel also show the backdrop at once.
 
 The dialog keeps its state when it moves in the document, or when you remove it and append it again: an open
 dialog, also one in its exit, is modal again after the append, and a dialog that closed while it was out of the
@@ -356,6 +359,11 @@ The suite lives in [`dialog.spec.ts`](./dialog.spec.ts) and runs in a real brows
     `open = false` during the entrance lets the next `show()` open the dialog. A `hide()` right after, also in the
     same task, closes the dialog, and the ended exit does not change the new one. A `hide()` in the task of `show()`
     shows no dialog.
+19. `show()` fades the backdrop in. These show the backdrop at once:
+    - `open = true`, and a first render with `open`;
+    - an `open` that opens the dialog again during the exit;
+    - an append of an open dialog;
+    - a reopen after a close that the dialog cannot cancel.
 
 ### Not covered by the suite
 

@@ -40,7 +40,7 @@ entry in `package.json` holds the same list.
 src/
 ├── animations/  # Animation players and presets            → #animations/*
 ├── components/  # One directory per component, each with its own spec.md
-├── extras/      # Opt-in add-ons, published under `igniteui-webcomponents/extras`
+├── extras/      # Opt-in add-ons, one directory each with a README.md, published under `igniteui-webcomponents/extras`
 ├── internals/   # Shared building blocks, never public API  → #internals/*
 ├── styles/      # Global SCSS: utilities, mixins, themes
 ├── theming/     # Theming controller and types             → #theming/*
@@ -286,6 +286,8 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addContextProvider` / `addAsyncContextConsumer`              | `#internals/controllers/context-provider.js`, `async-consumer.js` | Sharing state between a parent and its children through Lit context |
 | `createGroupRegistry`                                         | `#internals/controllers/group.js`           | Grouping peers by key, such as radios by `name`                |
 | `addI18nController`                                           | `#internals/i18n/i18n-controller.js`        | Localized resource strings                                     |
+| `addValueStateMotion` / `markInstant`                         | `#animations/value-state.js`                | Showing a change of value state from code at once, and animating only a change by the user; `markInstant` shows the changes of one frame at once |
+| `markUserChange` / `isUserChange`                             | `#internals/user-change.js`                 | Marking the update that a user action causes                   |
 
 For pointer resizing and dragging, use the `resizable()` and `draggable()` directives from
 `#internals/directives/`.
@@ -631,8 +633,11 @@ Each component has tests in `[component].spec.ts`. They cover:
   | `validity-helpers.spec.js` | Validity assertions and `runValidationContainerTests`. Await it.               |
   | `invoker-commands.spec.js` | `runInvokerCommandsTests`                                                      |
   | `helpers.spec.js`          | Animation, focus, scroll and style helpers, and `axeReflectedRelationsOptions` |
+  | `motion.spec.js`           | `transitionsIn` and `withTheme`                                                |
+  | `value-state.spec.js`      | `runValueStateMotionTests`                                                     |
   | `fast-check-setup.spec.js` | `fc` with the seed, `SLOW_PROPERTY_RUNS`, `orderedPair` and `withFixture`      |
   | `date-arbitraries.spec.js` | Date arbitraries, wall clocks and `assumeWallClock` for date properties        |
+  | `qr-decoder.spec.js`       | `prepareQrDecoder`, `readQr` for an image and `readQrMatrix` for a QR matrix   |
 
   Use the simulated events, not `element.click()` or a hand-built `KeyboardEvent`. They send
   the full event sequence of a real user interaction.
@@ -1058,7 +1063,8 @@ edits.
 
 ## Specifications
 
-Each public component directory has a `spec.md`: the behavioral contract of the component.
+Each public component directory has a `spec.md`: the behavioral contract of the component. An extra that no component
+specification covers, such as `src/extras/qr-payloads`, has one too.
 JSDoc documents one API member. The specification documents the whole component: its purpose,
 its behavior, its keyboard and assistive technology support, its test coverage, and its
 limits.

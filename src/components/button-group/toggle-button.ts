@@ -5,7 +5,11 @@ import {
   type TemplateResult,
 } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { buttonGroupContext } from '#internals/context.js';
+import { addValueStateMotion } from '#animations/value-state.js';
+import {
+  type ButtonGroupContext,
+  buttonGroupContext,
+} from '#internals/context.js';
 import {
   ariaBindings,
   hostAria,
@@ -51,6 +55,10 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   private readonly _focusRingManager = addKeyboardFocusRing(this);
   private readonly _context = addAsyncContextConsumer(this, buttonGroupContext);
 
+  private get _group(): ButtonGroupContext['instance'] | undefined {
+    return this._context.value?.instance;
+  }
+
   private _ownTabIndex?: string | null;
 
   @query('[part~="toggle"]', true)
@@ -84,6 +92,10 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   constructor() {
     super();
     addThemingController(this, all);
+    addValueStateMotion(this, {
+      target: () => this._nativeButton,
+      watch: () => [this.selected, this.disabled, this._group?.disabled],
+    });
   }
 
   public override disconnectedCallback(): void {
@@ -145,7 +157,7 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   }
 
   protected override render(): TemplateResult {
-    const group = this._context.value?.instance;
+    const group = this._group;
 
     // In a single selection group the button is a radio. The group can also disable it.
     const isRadio = group != null && group.selection !== 'multiple';

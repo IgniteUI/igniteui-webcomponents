@@ -13,6 +13,7 @@ import {
 import { cache } from 'lit/directives/cache.js';
 import { ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { markInstant } from '#animations/value-state.js';
 import { tabsHeaderPositionContext } from '#internals/context.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
@@ -539,6 +540,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<IgcTabsComponent
     for (const [index, each] of tabs.entries()) {
       each.selected = each === tab;
       each._setTabState(index + 1, tabs.length, each === tabStop);
+
+      // The first render shows the selected header at once.
+      if (this._domHelpers.firstRender) {
+        markInstant(each);
+      }
     }
 
     if (!changed) {

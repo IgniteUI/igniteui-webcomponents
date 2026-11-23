@@ -1,5 +1,6 @@
 import { isServer, type LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
+import { keepUserChangeWhile, markUserChange } from '#internals/user-change.js';
 import { trackLabels } from '../../controllers/aria-projection.js';
 import {
   addInternalsController,
@@ -626,6 +627,7 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       this._writeOrigin = origin;
 
       if (origin === 'user') {
+        markUserChange(this);
         this._setTouchedState();
       }
 
@@ -637,11 +639,27 @@ function BaseFormAssociated<T extends LitElementConstructor>(
         this._writeOrigin = previous;
       }
 
+      if (origin === 'user') {
+        this.__keepUserValue();
+      }
+
       if (isReported || origin === 'code' || origin === 'default') {
         this.__markValueReported();
       }
 
       return result;
+    }
+
+    /**
+     * Keeps the user change only while the value is the one that the user
+     * wrote. Another value, such as one that app code sets in an `igcChange`
+     * handler, ends it, also in an owned editor.
+     */
+    private __keepUserValue(): void {
+      const value = this._formValue.value;
+      keepUserChangeWhile(this, () =>
+        this._formValue.isSameValue(this._formValue.value, value)
+      );
     }
 
     /** Records a write that keeps the value, as a write of the current origin. */
@@ -664,6 +682,11 @@ function BaseFormAssociated<T extends LitElementConstructor>(
         force ||
         !this._formValue.isSameValue(this._formValue.value, this.__reported)
       ) {
+        // Before the event, so a value that its handler sets is not the user's.
+        if (this._writeOrigin === 'user') {
+          this.__keepUserValue();
+        }
+
         this.__markValueReported();
         (this as unknown as EventEmitterLike).emitEvent('igcChange', {
           detail,

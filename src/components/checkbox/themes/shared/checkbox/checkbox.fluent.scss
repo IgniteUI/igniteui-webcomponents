@@ -48,7 +48,10 @@ $disabled-fill-color: var-get($theme, 'disabled-fill-color');
         opacity: 1;
         stroke: var-get($theme, 'tick-color-hover');
         stroke-dashoffset: 0;
-        transition: opacity .1s ease-out;
+
+        @include with-motion() {
+            transition: opacity .1s ease-out;
+        }
     }
 
     [part='indicator checked'] {
@@ -68,7 +71,11 @@ $disabled-fill-color: var-get($theme, 'disabled-fill-color');
         height: inherit;
         content: '';
         transform: scale(.5);
-        transition: background .1s;
+
+        @include with-motion() {
+            transition: background .1s;
+        }
+
         background: var-get($theme, 'fill-color');
         z-index: 1;
     }

@@ -62,7 +62,11 @@ $theme: $indigo;
 [part~='container'] {
     border-start-start-radius: var-get($theme, 'box-border-radius');
     border-start-end-radius: var-get($theme, 'box-border-radius');
-    transition: background .25s $out-cubic;
+
+    @include with-motion() {
+        transition: background .25s $out-cubic;
+    }
+
     overflow: hidden;
     padding-inline-start: 0;
 
@@ -72,7 +76,10 @@ $theme: $indigo;
         bottom: 0%;
         width: 100%;
         border-block-end: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
-        transition: border-color .25s $out-cubic;
+
+        @include with-motion() {
+            transition: border-color .25s $out-cubic;
+        }
     }
 }
 

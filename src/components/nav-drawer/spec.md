@@ -35,6 +35,8 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
     - [Events and behaviors](#events-and-behaviors)
     - [Mini slot popover](#mini-slot-popover)
     - [Invoker commands](#invoker-commands-1)
+    - [Item motion](#item-motion)
+    - [First render motion](#first-render-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -52,6 +54,8 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
 |       5 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 |       6 | 2026-10-23 | A relative drawer makes a stacking context, so the z-index of the mini variant does not compete with the layers of the page; in the material theme an item makes a stacking context, so its highlight shows in front of the background of a relative drawer |
 |       7 | 2026-11-05 | The dialog stays modal until the exit ends, so the exit runs in all browsers; `hide()` and `igcClosed` come after the exit; fixed content of the shown drawer and mini variant is placed against the viewport; no motion with reduced motion |
+|       8 | 2026-11-20 | No item transitions with reduced motion |
+|       9 | 2026-11-20 | A drawer that is `open` on its first render shows at once, with no slide and no backdrop fade |
 
 ## Overview
 
@@ -118,6 +122,15 @@ Then the focus goes back to the element that had it before, also when that eleme
 motion, the drawer, the mini variant and the backdrop change at once.
 For the relative position it takes its place in the layout and pushes the content next to it. When a mini variant is
 provided, the compact rail is shown whenever the drawer is closed.
+
+**First render.** A drawer that is `open` on its first render shows at once: it does not slide in, and the backdrop does
+not fade in. This also applies when a framework renders the drawer open after a user action. Examples are
+`{show && <IgrNavDrawer open />}` in React and an `@if` block in Angular. To slide such a drawer in, call `show()`, also
+in the task that renders it. Or set `open` after the first render, for example after `updateComplete`. After the first
+render, a change of `open` animates.
+
+**Motion of the items.** `active` is view state, as the `selected` of a tab: a change fades, also from code, and the
+first render shows at once. With `prefers-reduced-motion: reduce`, the items do not animate.
 
 ### Developer experience
 
@@ -344,6 +357,19 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
 ### Invoker commands
 
 16. The shared suite checks that `--show`, `--hide` and `--toggle` call `show`, `hide` and `toggle`.
+
+### Item motion
+
+In the Indigo theme, for an item in a relative drawer. The Material item does not fade its active background.
+
+17. A change of `active` from code starts transitions.
+18. With reduced motion, a hover starts none.
+
+### First render motion
+
+19. A drawer that is open on its first render starts no transitions and is modal.
+20. A `show()` in the task that renders the drawer slides the drawer in.
+21. A change of `open` to `true` after the first render slides the drawer in and fades the backdrop in.
 
 ## Assumptions and limitations
 

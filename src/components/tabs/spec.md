@@ -15,6 +15,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
     - [Developer experience](#developer-experience)
       - [Basic initialization](#basic-initialization)
       - [Selection](#selection)
+      - [Content found by the browser](#content-found-by-the-browser)
       - [Alignment](#alignment)
       - [Header position](#header-position)
       - [Activation mode](#activation-mode)
@@ -46,6 +47,8 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
       - [Column layout](#column-layout)
       - [Column scrolling](#column-scrolling)
       - [Column themes](#column-themes)
+    - [Content found by the browser](#content-found-by-the-browser-1)
+    - [First render motion](#first-render-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -70,6 +73,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 |      12 | 2026-11-04 | `igcNavigate` is not composed, so it does not reach a shadow host around the tabs; `_parent` and `_top` count as `_self` in a page that is not in a frame |
 |      13 | 2026-11-05 | With `prefers-reduced-motion: reduce`, the scroll buttons and the selection scroll the header strip at once; the scroll buttons follow the `scroll-behavior` of the `tabs` part |
 |      14 | 2026-11-12 | Find-in-page and links to an element in a panel select its tab; a panel that is not selected has `hidden="until-found"` |
+|      15 | 2026-11-20 | The first render shows at once: the selected indicator and the colors of the selected header do not animate, also when the tabs show later than they render |
 
 ## Overview
 
@@ -183,6 +187,11 @@ Disabled tabs and values that match no tab are ignored.
 The `selected` attribute of the tabs also sets the selection, after each change of the tabs. When several tabs become
 selected at once, the last one in document order wins, as in the initial markup. A selected tab that moves keeps the
 selection.
+
+**Motion.** The first render shows at once: the selected indicator takes its place, and the selected header shows its
+colors, with no transition. This also applies to tabs that show for the first time later than they render, for example
+in a closed panel. The first render ends in the first frame after the header strip shows. After that, a selection
+change slides the indicator and fades the header colors, also when it comes from code.
 
 #### Content found by the browser
 
@@ -613,6 +622,13 @@ The groups below mirror the `describe` blocks.
 63. A height, padding and a border on `::part(tab-body)` do not give the hidden panels a box.
 64. A link tab is selected without following its link.
 65. A collapsed expansion panel in a panel opens, and the tab is selected.
+
+### First render motion
+
+66. The first render starts no transitions in the Material, Fluent and Indigo themes: the indicator does not slide in,
+    and the selected header does not fade in. This also applies to a tab that the application selects and to a column.
+67. Tabs that show for the first time after they render, as under a `display: none` parent, start no transitions.
+68. A selection change after the first render slides the indicator.
 
 ## Assumptions and limitations
 

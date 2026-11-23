@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { addValueStateMotion } from '#animations/value-state.js';
 import { helperText } from '#internals/controllers/aria-projection.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import { addRovingFocusController } from '#internals/controllers/roving-focus.js';
@@ -16,6 +17,7 @@ import { FormValueBooleanTransformers } from '#internals/mixins/forms/form-trans
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
 import { renderToggleShell } from '#internals/templates/toggle-shell.js';
+import { isUserChange, markUserChange } from '#internals/user-change.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { all } from '#themes/radio/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -219,6 +221,9 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     super();
 
     addThemingController(this, all);
+    addValueStateMotion(this, {
+      watch: () => [this.checked, this.disabled],
+    });
 
     addRovingFocusController(this, {
       keybindings: {
@@ -333,11 +338,17 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   /**
    * Unchecks the other radios of the group, as a native radio does. They stay
-   * pristine, so a new default still applies to them.
+   * pristine, so a new default still applies to them. A radio that the user
+   * checks animates them too.
    */
   private _uncheckOthers(): void {
+    const byUser = isUserChange(this);
+
     for (const radio of getGroupMembers(this, false)) {
       if (radio !== this && radio.checked) {
+        if (byUser) {
+          markUserChange(radio);
+        }
         radio._writeFrom('normalize', () => {
           radio.checked = false;
         });
@@ -348,7 +359,9 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   protected _navigate(radio: IgcRadioComponent): void {
     this._setTouchedState();
     radio.focus();
-    radio.checked = true;
+    radio._writeFrom('user', () => {
+      radio.checked = true;
+    });
     this._emitChange(radio);
   }
 

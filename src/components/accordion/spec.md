@@ -28,6 +28,8 @@
     - [Expand and collapse](#expand-and-collapse)
     - [Keyboard navigation](#keyboard-navigation)
     - [Nested](#nested)
+    - [Content found by the browser](#content-found-by-the-browser)
+    - [Open motion](#open-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -42,6 +44,7 @@
 |       2 | 2026-10-01 | The navigation skips panels that do not render |
 |       3 | 2026-10-21 | API descriptions aligned with the JSDoc.       |
 |       4 | 2026-11-12 | A panel that the browser opens closes the others at once |
+|       5 | 2026-11-20 | A change of `open` on a panel changes its spacing at once; the toggle methods and the user still animate it |
 
 ## Overview
 
@@ -144,6 +147,9 @@ const panels = accordion.panels; // the direct expansion panel children
 ```
 
 Both methods resolve once the animations of the panels have completed.
+
+The accordion animates the spacing around a panel that opens or closes with these methods, the panel methods or a
+user action. A change of the `open` property of a panel shows at once, as the panel content does.
 
 #### Nesting
 
@@ -250,6 +256,11 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 
 12. With single expansion and motion on, a link to an element in a collapsed panel opens it and closes the expanded
     panel above it, and the target stays in view.
+
+### Open motion
+
+13. A change of `open` to `true` or to `false` on a panel starts no transitions.
+14. `show()` on a panel animates its spacing.
 
 ## Assumptions and limitations
 

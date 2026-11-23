@@ -13,10 +13,10 @@ import {
   simulateClick,
   simulateInput,
 } from '#internals/testing/simulate.spec.js';
-import IgcComboComponent from '../components/combo/combo.js';
-import { newResultsHints } from '../components/combo/controllers/results-hint.js';
-import type IgcInputComponent from '../components/input/input.js';
-import type IgcVirtualScrollComponent from '../components/virtualization/virtualization.js';
+import IgcComboComponent from '../../components/combo/combo.js';
+import { newResultsHints } from '../../components/combo/controllers/results-hint.js';
+import type IgcInputComponent from '../../components/input/input.js';
+import type IgcVirtualScrollComponent from '../../components/virtualization/virtualization.js';
 import {
   bindComboDataSource,
   type ComboDataBinding,

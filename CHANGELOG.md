@@ -10,8 +10,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `dot-style`, `square-style` and `corner-dot-style` take `squircle`, a square with soft corners.
   - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.
   - `dot-scale` sets the size of the data modules, from 0.7 to 1 of their cell, to leave a gap between them. The corners keep their full size.
+  - The `alignment` CSS part styles the alignment patterns. They take `--ig-qr-code-dark-color`.
+  - `dot-style` takes `diamond`, `plus`, `liquid`, `horizontal-bars` and `vertical-bars`. `liquid` fills the inside corners where `rounded` modules join. A bar style draws each run of dark modules in a row or a column as one bar with round ends. Without `corner-dot-style`, the corner dots draw `diamond` and `plus` as `square`, and the other new styles as `rounded`.
+  - `square-style` and `corner-dot-style` take `leaf`, a square with two opposite round corners on the diagonal toward the center of the code. In a `circle` corner square, a `leaf` corner dot draws as a circle.
+  - `gradient` paints the data modules, the alignment patterns and the corners with a `linear` or `radial` gradient, from `--ig-qr-code-gradient-start` to `--ig-qr-code-gradient-end`. `gradient-angle` turns a linear gradient. An explicit `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` wins for its part. Keep both colors much darker than the background.
+  - `logo-shape` clips the logo to a `circle`, `rounded` or `squircle` shape that fills the logo box. The cutout removes only the modules under the shape.
+  - `createWifiPayload()`, `createVCardPayload()`, `createEpcPayload()` and `createEventPayload()` from `igniteui-webcomponents/extras/qr-payloads` build the value of a code that a phone turns into a Wi-Fi login, a contact card, a SEPA payment or a calendar event. They escape the text and throw a `RangeError` for input that the format does not allow.
 
 ### Changed
+- #### Accordion, Expansion panel
+  - A change of `open` on a panel shows at once. This includes the spacing that an accordion gives it, and the transitions that the app puts on the panel. Before, the spacing animated while the content showed at once. `show()`, `hide()`, `toggle()` and the user still animate both.
+- #### Button group, Checkbox, Chip, Color picker, Combo, Date picker, Date range picker, Date time input, File input, Input, List, Mask input, Navigation drawer, Radio, Select, Switch, Textarea, Tree
+  - Only a change by the user animates a checkbox, a switch, a radio, a toggle button, and the label of an input or a textarea (also the inputs of the pickers, the select and the combo), as for the chip. A change from code and the first render show at once, so a virtualized list does not animate them while it scrolls. A list item shows a change of `selected` at once, because only code sets it. A change that a component makes for a user action animates too: the radio that a group unchecks, the toggle button that a single selection deselects, the items of a tree cascade and the options of a combo. A change from app code, also in an event handler, such as a "Select all" checkbox, shows at once. Hover, focus and the invalid state still fade. With `prefers-reduced-motion: reduce`, these controls, the list item and the navigation drawer item have no transitions of their own, and a transition that the app adds to a part still applies.
+  - While a change from code shows at once, these controls and the chip turn off all their transitions, also the ones that the app sets on parts and slotted elements. Before, the chip turned off only the transitions of its base and its indicator.
+  - The Material switch moves its thumb with a transition only. Before, it also played a keyframe animation, also on the first render.
 - #### Chip
   - A selection change by the user animates the chip, as in Ignite UI for Angular. The colors fade, and the selection indicator opens and fades in, or fades out and closes. A change from code and the first render show at once, so a virtualized list does not animate its chips while it scrolls. With `prefers-reduced-motion: reduce`, the chip does not animate. [#2621](https://github.com/IgniteUI/igniteui-webcomponents/issues/2621)
 - #### Combo
@@ -30,18 +42,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The two inputs and the `value` attribute keep the time of the dates. Before, they set the time to midnight.
   - A change of `useTwoInputs` drops an edit in an input that the change removes, also when the input loses the focus before the next render. Before, that input could still commit its edit.
   - Without `activeDate`, a range with one end set from code brings that end into view, as a full range brings its start.
+- #### Dialog
+  - `open = true` and a first render with `open` show the backdrop at once, as they do the dialog. So do an append of an open dialog and a reopen after a close that the dialog cannot cancel. Before, the backdrop faded in. `show()` still fades both in.
 - #### Dropdown
   - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
+- #### Navigation drawer
+  - A drawer that is `open` on its first render shows at once, with no slide and no backdrop fade. This also applies when a framework renders the drawer open after a user action. To slide it in, call `show()`, or set `open` after the first render.
 - #### QR code
+  - The code splits its value into numeric, alphanumeric and byte segments with the fewest bits. A value that mixes long runs of digits or uppercase letters with other text, such as an order number in a URL, can get a smaller version. A scanner reads the same text.
   - The cutout under the logo holds whole modules, so it cuts no module in part.
-  - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code.
+  - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code. The old size covered more than the safe area of level `M`: 5.9% of a version 3 code at the default `margin`, against 4%.
+  - Each module covers a whole number of pixels, so the edges are sharp. The pixels that are left over widen the quiet zone, so the code can be smaller than `size`, and `margin` is a minimum. An export gets whole pixels at its own size.
+  - The alignment patterns take the shapes of the corners: a ring of `square-style` around a dot of the corner dot style. A `rounded` module no longer joins them.
+  - With a logo, a `rounded` module ends round at the edge of the cutout, and so do the `liquid` modules and the bars. Before, a `rounded` module next to the cutout was cut straight.
 - #### Radio
   - Each radio keeps its own default, as a native radio does. The `checked` attribute of one radio no longer clears `defaultChecked` of the other radios of its group. As before, the last radio with the `checked` attribute is checked at the start and after a form reset.
   - `checkValidity()` and `reportValidity()` emit `invalid` on the radios of the group in DOM order. Before, the other radios emitted it first, and the called radio last.
 - #### Select
   - <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when other code already called `preventDefault()` on the key, as in the dropdown. Content in the `header` and `footer` slots still keeps a key that it handled.
+- #### Tabs
+  - The first render shows at once. The selected indicator does not slide in from the start of the strip, and the selected header does not fade in. This also applies when the tabs show later than they render. A selection change after that still animates.
 
 ### Fixed
 - #### Calendar, Date picker, Date range picker, Date time input
@@ -52,6 +74,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A color change of the user marks the picker touched, so a change that fails validation shows the invalid styles at once.
   - A value set from code while the focus is in the picker no longer emits `igcChange` when the focus leaves.
   - In input mode, the text input no longer shows the invalid styles when the focus moves from it to the color button. The text input shows the invalid state of the picker, together with its validation message.
+- #### Color picker, Combo, Date picker, Date range picker, Select
+  - Disabling an open component closes it, also when a disabled fieldset disables it. A disabled component does not open: `show()` and `toggle()` resolve to `false`, and the `open` attribute does not apply. In dialog mode, disabling the date range picker discards a range that you did not confirm with Done, as Cancel does. Before, the popup stayed open next to the disabled control, and a click in the color picker or the select changed the value. [#2601](https://github.com/IgniteUI/igniteui-webcomponents/issues/2601)
 - #### Combo
   - A closed list has no active option. Before, when code closed the list and opened it again, the old option was still active. When an app canceled `igcOpening` while the user typed, Arrow Down opened the list on the second match.
   - In single selection, the input no longer shows the invalid styles when the focus moves from it to slotted content of the combo. The input shows the invalid state of the combo, together with its validation message.
@@ -91,6 +115,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A formatted value that you empty submits nothing. Before, the form submitted the empty mask, such as `__-__`.
 - #### QR code
   - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
+  - A code with `square-style="circle"` no longer fails to scan at some sizes, about 1 time in 10. For this fix, a `square` corner dot in a `circle` corner square draws as a circle.
 - #### Radio
   - The validity of a group changes at once when a radio joins or leaves the group, and on a form reset. A radio joins or leaves by `name`, by form owner or by a DOM change. A removed radio has the validity of a group of its own, as a native radio does. Before, the other radios kept the old validity. A group stayed invalid after its required radio left. After a form reset, the validity was correct only after the next render.
   - A checked radio that joins a group, by connect, `name` or form owner, unchecks the other radios of the group, as a native radio does. Before, two radios of the group could stay checked.

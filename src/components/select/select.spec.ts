@@ -22,6 +22,7 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
@@ -30,6 +31,7 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import {
   axeReflectedRelationsOptions,
+  clickWithMouse,
   isFocused,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
@@ -45,6 +47,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import IgcInputComponent from '../input/input.js';
@@ -67,6 +70,13 @@ type SelectSlots =
   | 'helper-text'
   | 'toggle-icon'
   | 'toggle-icon-expanded';
+
+/** The native input that the select projects its ARIA onto. */
+function getNativeInput(host: IgcSelectComponent): HTMLInputElement {
+  return host.renderRoot
+    .querySelector(IgcInputComponent.tagName)!
+    .renderRoot.querySelector('input')!;
+}
 
 describe('Select', () => {
   before(() => defineComponents(IgcSelectComponent));
@@ -587,6 +597,25 @@ describe('Select', () => {
       select = await fixture<IgcSelectComponent>(createBasicSelect());
       select.value = 'implementation';
       await elementUpdated(select);
+    });
+
+    it('ignores an item click while disabled', async () => {
+      const eventSpy = spy(select, 'emitEvent');
+      await openSelect();
+
+      select.disabled = true;
+      await elementUpdated(select);
+      simulateClick(select.items[0]);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal('implementation');
+      expect(eventSpy).not.calledWith('igcChange');
+
+      select.disabled = false;
+      await elementUpdated(select);
+      await openSelect();
+      await clickWithMouse(select.items[0]);
+      expect(select.value).to.equal(select.items[0].value);
     });
 
     it('closes the list when the current selection is clicked again', async () => {
@@ -2228,18 +2257,12 @@ describe('Select', () => {
 
   runExternalLabelAssociationTests({
     tagName: IgcSelectComponent.tagName,
-    getNativeInput: (host) =>
-      (host as IgcSelectComponent).renderRoot
-        .querySelector<IgcInputComponent>(IgcInputComponent.tagName)!
-        .renderRoot.querySelector('input')!,
+    getNativeInput: (host) => getNativeInput(host as IgcSelectComponent),
   });
 
   runAriaProjectionTests({
     tagName: IgcSelectComponent.tagName,
-    getNativeInput: (host) =>
-      (host as IgcSelectComponent).renderRoot
-        .querySelector<IgcInputComponent>(IgcInputComponent.tagName)!
-        .renderRoot.querySelector('input')!,
+    getNativeInput: (host) => getNativeInput(host as IgcSelectComponent),
     expected: { role: 'combobox', hasPopup: 'listbox' },
     getControls: (host) => [
       (host as IgcSelectComponent).renderRoot.querySelector('#dropdown')!,
@@ -2257,5 +2280,36 @@ describe('Select', () => {
     closedKeys: true,
     hasValue: true,
     disabled: true,
+  });
+
+  runDisabledPopupTests(IgcSelectComponent, { getAriaTarget: getNativeInput });
+
+  describe('Value state motion', () => {
+    beforeEach(async () => {
+      select = await fixture<IgcSelectComponent>(html`
+        <igc-select label="Phase" value="spec">
+          <igc-select-item value="spec">Specification</igc-select-item>
+          <igc-select-item value="impl">Implementation</igc-select-item>
+        </igc-select>
+      `);
+    });
+
+    it('marks the input as a user change for a selection by the user', () => {
+      simulateClick(select.items[1]);
+
+      expect(select.value).to.equal('impl');
+      expect(isUserChange(getInput())).to.be.true;
+    });
+
+    it('shows a value that an igcChange handler sets at once', () => {
+      select.addEventListener('igcChange', () => {
+        select.value = 'spec';
+      });
+
+      simulateClick(select.items[1]);
+
+      expect(select.value).to.equal('spec');
+      expect(isUserChange(getInput())).to.be.false;
+    });
   });
 });
