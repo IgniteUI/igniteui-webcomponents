@@ -1,0 +1,29 @@
+{
+  "schematics": {
+    "badge-outline": {
+      "version": "7.5.0-poc.0",
+      "description": "PoC only, synthetic: renames the outline attribute of igc-badge to outlined",
+      "factory": "./7.5.0-poc.0/badge-outline.js"
+    },
+    "badge-import-alias": {
+      "version": "7.5.0-poc.1",
+      "description": "PoC only, synthetic: replaces an alias of IgcBadgeComponent by its name",
+      "factory": "./7.5.0-poc.1/badge-import-alias.js"
+    },
+    "badge-namespace-import": {
+      "version": "7.5.0-poc.2",
+      "description": "PoC only, synthetic: imports IgcBadgeComponent by name instead of through a namespace import",
+      "factory": "./7.5.0-poc.2/badge-namespace-import.js"
+    },
+    "combo-event-rename": {
+      "version": "7.5.0-poc.3",
+      "description": "PoC only, synthetic: renames the igcOpening event of igc-combo to igcOpened",
+      "factory": "./7.5.0-poc.3/combo-event-rename.js"
+    },
+    "combo-method-rename": {
+      "version": "7.5.0-poc.4",
+      "description": "PoC only, synthetic: renames show() calls on igc-combo to toggle()",
+      "factory": "./7.5.0-poc.4/combo-method-rename.js"
+    }
+  }
+}
