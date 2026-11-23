@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `dot-style`, `square-style` and `corner-dot-style` take `squircle`, a square with soft corners.
   - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.
   - `dot-scale` sets the size of the data modules, from 0.7 to 1 of their cell, to leave a gap between them. The corners keep their full size.
+  - The `alignment` CSS part styles the alignment patterns. They take `--ig-qr-code-dark-color`.
+  - `dot-style` takes `diamond`, `plus`, `liquid`, `horizontal-bars` and `vertical-bars`. `liquid` fills the inside corners where `rounded` modules join. A bar style draws each run of dark modules in a row or a column as one bar with round ends. Without `corner-dot-style`, the corner dots draw `diamond` and `plus` as `square`, and the other new styles as `rounded`.
+  - `square-style` and `corner-dot-style` take `leaf`, a square with two opposite round corners on the diagonal toward the center of the code. In a `circle` corner square, a `leaf` corner dot draws as a circle.
+  - `gradient` paints the data modules, the alignment patterns and the corners with a `linear` or `radial` gradient, from `--ig-qr-code-gradient-start` to `--ig-qr-code-gradient-end`. `gradient-angle` turns a linear gradient. An explicit `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` wins for its part. Keep both colors much darker than the background.
+  - `logo-shape` clips the logo to a `circle`, `rounded` or `squircle` shape that fills the logo box. The cutout removes only the modules under the shape.
+  - `createWifiPayload()`, `createVCardPayload()`, `createEpcPayload()` and `createEventPayload()` from `igniteui-webcomponents/extras/qr-payloads` build the value of a code that a phone turns into a Wi-Fi login, a contact card, a SEPA payment or a calendar event. They escape the text and throw a `RangeError` for input that the format does not allow.
 
 ### Changed
 - #### Button group, Checkbox, Chip, Color picker, Combo, Date picker, Date range picker, Date time input, File input, Input, List, Mask input, Navigation drawer, Radio, Select, Switch, Textarea, Tree
@@ -39,8 +45,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
 - #### QR code
+  - The code splits its value into numeric, alphanumeric and byte segments with the fewest bits. A value that mixes long runs of digits or uppercase letters with other text, such as an order number in a URL, can get a smaller version. A scanner reads the same text.
   - The cutout under the logo holds whole modules, so it cuts no module in part.
-  - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code.
+  - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code. The old size covered more than the safe area of level `M`: 5.9% of a version 3 code at the default `margin`, against 4%.
+  - Each module covers a whole number of pixels, so the edges are sharp. The pixels that are left over widen the quiet zone, so the code can be smaller than `size`, and `margin` is a minimum. An export gets whole pixels at its own size.
+  - The alignment patterns take the shapes of the corners: a ring of `square-style` around a dot of the corner dot style. A `rounded` module no longer joins them.
+  - With a logo, a `rounded` module ends round at the edge of the cutout, and so do the `liquid` modules and the bars. Before, a `rounded` module next to the cutout was cut straight.
 - #### Radio
   - Each radio keeps its own default, as a native radio does. The `checked` attribute of one radio no longer clears `defaultChecked` of the other radios of its group. As before, the last radio with the `checked` attribute is checked at the start and after a form reset.
   - `checkValidity()` and `reportValidity()` emit `invalid` on the radios of the group in DOM order. Before, the other radios emitted it first, and the called radio last.
@@ -95,6 +105,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A formatted value that you empty submits nothing. Before, the form submitted the empty mask, such as `__-__`.
 - #### QR code
   - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
+  - A code with `square-style="circle"` no longer fails to scan at some sizes, about 1 time in 10. For this fix, a `square` corner dot in a `circle` corner square draws as a circle.
 - #### Radio
   - The validity of a group changes at once when a radio joins or leaves the group, and on a form reset. A radio joins or leaves by `name`, by form owner or by a DOM change. A removed radio has the validity of a group of its own, as a native radio does. Before, the other radios kept the old validity. A group stayed invalid after its required radio left. After a form reset, the validity was correct only after the next render.
   - A checked radio that joins a group, by connect, `name` or form owner, unchecks the other radios of the group, as a native radio does. Before, two radios of the group could stay checked.
