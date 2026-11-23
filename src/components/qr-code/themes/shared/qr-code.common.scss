@@ -7,15 +7,24 @@ $theme: $base;
     fill: var-get($theme, 'background');
 }
 
+// The template sets `--_paint` to the gradient of the instance.
 [part='dots'],
 [part~='alignment'] {
-    fill: var-get($theme, 'dark-color');
+    fill: var(--_paint, #{var-get($theme, 'dark-color')});
 }
 
 [part='corner-square'] {
-    fill: var-get($theme, 'corner-square-color');
+    fill: var(--ig-qr-code-corner-square-color, var(--_paint, #{var-get($theme, 'corner-square-color')}));
 }
 
 [part='corner-dot'] {
-    fill: var-get($theme, 'corner-dot-color');
+    fill: var(--ig-qr-code-corner-dot-color, var(--_paint, #{var-get($theme, 'corner-dot-color')}));
+}
+
+stop:first-child {
+    stop-color: var(--ig-qr-code-gradient-start, #{var-get($theme, 'dark-color')});
+}
+
+stop:last-child {
+    stop-color: var(--ig-qr-code-gradient-end, #{var-get($theme, 'dark-color')});
 }

@@ -1,6 +1,7 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { createAbortHandle } from '#internals/abort-handler.js';
 import {
   ariaBindings,
@@ -42,6 +43,7 @@ import {
   renderQrAlignment,
   renderQrDots,
   renderQrFinders,
+  renderQrGradient,
   renderQrMaskAndImage,
   SAFE_AREAS,
 } from './renderer/templates.js';
@@ -55,9 +57,11 @@ import type {
   QrCornerSquareStyle,
   QrDotStyle,
   QrErrorCorrectionLevel,
+  QrGradient,
+  QrLogoShape,
 } from './types.js';
 
-const nextMaskId = createIdGenerator('igc-qr-code-mask');
+const nextId = createIdGenerator('igc-qr-code');
 
 /** The logo layout, and the version to request for it: unset keeps the automatic version. */
 type LogoFit = { version?: number; layout: LogoLayout };
@@ -78,6 +82,8 @@ const BLOCKED_LOGO_SOURCE = /^\s*(?:javascript:|vbscript:|data:(?!image\/))/i;
  * @cssproperty --ig-qr-code-dark-color - The color of the data modules (dots) and the alignment patterns, and the corner square/dot colors unless overridden below. Default is `black`.
  * @cssproperty --ig-qr-code-corner-square-color - The color of the outer finder-pattern corner squares. Defaults to `--ig-qr-code-dark-color`.
  * @cssproperty --ig-qr-code-corner-dot-color - The color of the inner finder-pattern corner dots. Defaults to `--ig-qr-code-dark-color`.
+ * @cssproperty --ig-qr-code-gradient-start - The start color of the `gradient`. Defaults to `--ig-qr-code-dark-color`.
+ * @cssproperty --ig-qr-code-gradient-end - The end color of the `gradient`. Defaults to `--ig-qr-code-dark-color`.
  *
  * @csspart background - The background rect of the QR code.
  * @csspart dots - The data modules (dots) of the QR code.
@@ -96,8 +102,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   }
 
   private readonly _abortHandle = createAbortHandle();
-  private readonly _maskId = nextMaskId();
-  private readonly _maskUrl = `url(#${this._maskId})`;
+  private readonly _id = nextId();
   private _logoReady: Promise<void> = Promise.resolve();
   private _matrixCache?: {
     value: string;
@@ -234,6 +239,17 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   public logoMargin?: number;
 
   /**
+   * The shape of the logo: 'square', 'circle', 'rounded' or 'squircle'. The shape fills the logo
+   * box, so a 'circle' logo with a wide image is an ellipse. The image is clipped to the shape,
+   * and the cutout holds only the modules that the shape covers, in part or in full.
+   *
+   * @attr logo-shape
+   * @default 'square'
+   */
+  @property({ attribute: 'logo-shape' })
+  public logoShape: QrLogoShape = 'square';
+
+  /**
    * The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
    * 'rounded', 'squircle', 'diamond', 'plus', 'liquid', 'horizontal-bars' or 'vertical-bars'.
    * 'liquid' is 'rounded' with a smooth fill in the inside corners where modules join. The bar
@@ -287,6 +303,30 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    */
   @property({ attribute: 'corner-dot-style' })
   public cornerDotStyle?: QrCornerDotStyle;
+
+  /**
+   * The gradient of the dark modules: 'linear' or 'radial'. When it is not set, or has another
+   * value, the modules have one color. The gradient goes from `--ig-qr-code-gradient-start` to
+   * `--ig-qr-code-gradient-end` over the code without its quiet zone. It also paints the corners,
+   * unless `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` is set.
+   *
+   * Keep both colors much darker than the background.
+   *
+   * @attr gradient
+   */
+  @property()
+  public gradient?: QrGradient;
+
+  /**
+   * The angle of a 'linear' gradient in degrees, clockwise. At 0 the gradient goes from left to
+   * right, and at 90 from top to bottom.
+   *
+   * @attr gradient-angle
+   * @default 0
+   */
+  @property({ type: Number, attribute: 'gradient-angle' })
+  @coercedProperty<number>({ transform: ({ value }) => asNumber(value, 0) })
+  public gradientAngle = 0;
 
   /** @internal */
   protected override update(props: PropertyValues<this>): void {
@@ -390,12 +430,14 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   ): LogoFit | null {
     const version = this.version;
     const aspectRatio = this._logoAspectRatio;
+    const shape = this.logoShape;
     const settings = JSON.stringify([
       value,
       errorLevel,
       version,
       area,
       aspectRatio,
+      shape,
     ]);
 
     if (this._logoFitCache?.settings === settings) {
@@ -410,6 +452,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
         errorLevel,
         area,
         aspectRatio,
+        shape,
       });
       fit = {
         version: fitted.version === smallest ? version : fitted.version,
@@ -652,6 +695,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
       ),
     };
 
+    const maskId = `${this._id}-mask`;
     const { mask, image, shouldApplyMask } = renderQrMaskAndImage({
       src: this.logoSrc!,
       layout: fit?.layout,
@@ -660,9 +704,23 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
       svgSize,
       moduleSize,
       marginPx,
-      maskId: this._maskId,
+      maskId,
+      clipId: `${this._id}-clip`,
       transform: snap?.transform,
     });
+
+    const gradientId = `${this._id}-gradient`;
+    const hasGradient =
+      this.gradient === 'linear' || this.gradient === 'radial';
+    const gradient = hasGradient
+      ? renderQrGradient({
+          id: gradientId,
+          gradient: this.gradient!,
+          angle: this.gradientAngle,
+          svgSize,
+          marginPx,
+        })
+      : nothing;
 
     return html`
       <svg
@@ -676,10 +734,13 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
         <title>${this.ariaLabel ?? `QR code: ${this.value}`}</title>
 
         <rect part="background" width=${svgSize} height=${svgSize} />
-        ${mask}
+        ${mask} ${gradient}
         <g
-          mask=${bindIf(shouldApplyMask, this._maskUrl)}
+          mask=${bindIf(shouldApplyMask, `url(#${maskId})`)}
           transform=${ifDefined(snap?.transform)}
+          style=${styleMap({
+            '--_paint': hasGradient ? `url(#${gradientId})` : undefined,
+          })}
         >
           ${renderQrDots({
             matrix,
@@ -687,6 +748,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
             marginPx,
             dotStyle: this.dotStyle,
             dotScale: this._getDotScale(),
+            cutout: shouldApplyMask ? fit?.layout.cutout : undefined,
           })}
           ${renderQrAlignment(patterns)} ${renderQrFinders(patterns)}
         </g>

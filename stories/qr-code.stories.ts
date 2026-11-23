@@ -94,6 +94,17 @@ const metadata: Meta<IgcQrCodeComponent> = {
         "The margin around the logo in pixels. This is the whitespace area surrounding the logo within the QR code,\nwhich helps ensure that the logo does not interfere with the QR code's scannability.",
       control: 'number',
     },
+    logoShape: {
+      type: {
+        name: 'enum',
+        value: ['square', 'circle', 'rounded', 'squircle'],
+      },
+      description:
+        "The shape of the logo: 'square', 'circle', 'rounded' or 'squircle'. The shape fills the logo\nbox, so a 'circle' logo with a wide image is an ellipse. The image is clipped to the shape,\nand the cutout holds only the modules that the shape covers, in part or in full.",
+      options: ['square', 'circle', 'rounded', 'squircle'],
+      control: { type: 'select' },
+      table: { defaultValue: { summary: 'square' } },
+    },
     dotStyle: {
       type: {
         name: 'enum',
@@ -153,15 +164,31 @@ const metadata: Meta<IgcQrCodeComponent> = {
       options: ['square', 'circle', 'rounded', 'squircle', 'leaf'],
       control: { type: 'select' },
     },
+    gradient: {
+      type: { name: 'enum', value: ['linear', 'radial'] },
+      description:
+        "The gradient of the dark modules: 'linear' or 'radial'. When it is not set, or has another\nvalue, the modules have one color. The gradient goes from `--ig-qr-code-gradient-start` to\n`--ig-qr-code-gradient-end` over the code without its quiet zone. It also paints the corners,\nunless `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` is set.\n\nKeep both colors much darker than the background.",
+      options: ['linear', 'radial'],
+      control: { type: 'inline-radio' },
+    },
+    gradientAngle: {
+      type: 'number',
+      description:
+        "The angle of a 'linear' gradient in degrees, clockwise. At 0 the gradient goes from left to\nright, and at 90 from top to bottom.",
+      control: 'number',
+      table: { defaultValue: { summary: '0' } },
+    },
   },
   args: {
     errorLevel: 'M',
     size: 128,
     margin: 4,
     logoSize: 0.4,
+    logoShape: 'square',
     dotStyle: 'square',
     dotScale: 1,
     squareStyle: 'square',
+    gradientAngle: 0,
   },
 };
 
@@ -235,6 +262,12 @@ interface IgcQrCodeArgs {
    */
   logoMargin: number;
   /**
+   * The shape of the logo: 'square', 'circle', 'rounded' or 'squircle'. The shape fills the logo
+   * box, so a 'circle' logo with a wide image is an ellipse. The image is clipped to the shape,
+   * and the cutout holds only the modules that the shape covers, in part or in full.
+   */
+  logoShape: 'square' | 'circle' | 'rounded' | 'squircle';
+  /**
    * The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
    * 'rounded', 'squircle', 'diamond', 'plus', 'liquid', 'horizontal-bars' or 'vertical-bars'.
    * 'liquid' is 'rounded' with a smooth fill in the inside corners where modules join. The bar
@@ -279,6 +312,20 @@ interface IgcQrCodeArgs {
    * do not find the pattern reliably with corners in a round ring.
    */
   cornerDotStyle: 'square' | 'circle' | 'rounded' | 'squircle' | 'leaf';
+  /**
+   * The gradient of the dark modules: 'linear' or 'radial'. When it is not set, or has another
+   * value, the modules have one color. The gradient goes from `--ig-qr-code-gradient-start` to
+   * `--ig-qr-code-gradient-end` over the code without its quiet zone. It also paints the corners,
+   * unless `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` is set.
+   *
+   * Keep both colors much darker than the background.
+   */
+  gradient: 'linear' | 'radial';
+  /**
+   * The angle of a 'linear' gradient in degrees, clockwise. At 0 the gradient goes from left to
+   * right, and at 90 from top to bottom.
+   */
+  gradientAngle: number;
 }
 type Story = StoryObj<IgcQrCodeArgs>;
 
@@ -475,12 +522,17 @@ export const Colors: Story = {
     docs: {
       description: {
         story:
-          'CSS custom properties set the colors. `--ig-qr-code-dark-color` colors the data modules and, by default, the corners. `--ig-qr-code-corner-square-color` and `--ig-qr-code-corner-dot-color` override the two parts of the corners. The colors do not follow the light and dark theme variants, because a code that inverts itself can stop to scan. Keep a strong contrast between the modules and the background: some older readers cannot scan an inverted code, and most readers cannot scan a code with low contrast.',
+          'CSS custom properties set the colors. `--ig-qr-code-dark-color` colors the data modules and, by default, the corners. `--ig-qr-code-corner-square-color` and `--ig-qr-code-corner-dot-color` override the two parts of the corners. `gradient` paints the modules with a `linear` or `radial` gradient from `--ig-qr-code-gradient-start` to `--ig-qr-code-gradient-end`. `gradient-angle` turns a linear gradient. The colors do not follow the light and dark theme variants, because some readers cannot scan an inverted code. Keep the dark colors and both gradient colors much darker than the background. Most readers cannot scan a code with low contrast. Test the colors with the phones and the apps of your users.',
       },
     },
   },
   render: () => {
-    const variants = [
+    const variants: {
+      caption: string;
+      style: string;
+      gradient?: 'linear' | 'radial';
+      angle?: number;
+    }[] = [
       {
         caption: 'Brand colors',
         style:
@@ -490,6 +542,19 @@ export const Colors: Story = {
         caption: 'Accent corners',
         style:
           '--ig-qr-code-dark-color: #1f2937; --ig-qr-code-corner-square-color: #e63946; --ig-qr-code-corner-dot-color: #457b9d;',
+      },
+      {
+        caption: 'Linear gradient at 45 degrees',
+        style:
+          '--ig-qr-code-gradient-start: #1a237e; --ig-qr-code-gradient-end: #880e4f;',
+        gradient: 'linear',
+        angle: 45,
+      },
+      {
+        caption: 'Radial gradient with accent corner dots',
+        style:
+          '--ig-qr-code-gradient-start: #0b3d91; --ig-qr-code-gradient-end: #1d6f65; --ig-qr-code-corner-dot-color: #e63946;',
+        gradient: 'radial',
       },
       {
         caption: 'Inverted, for a dark print',
@@ -507,12 +572,14 @@ export const Colors: Story = {
       ${samples}
       <div class="qr-samples">
         ${variants.map(
-          ({ caption, style }) => html`
+          ({ caption, style, gradient, angle }) => html`
             <figure>
               <igc-qr-code
                 value=${productUrl}
                 size="160"
                 dot-style="rounded"
+                gradient=${ifDefined(gradient)}
+                gradient-angle=${ifDefined(angle)}
                 style=${style}
               ></igc-qr-code>
               <figcaption>${caption}</figcaption>
@@ -602,7 +669,7 @@ export const WithLogo: Story = {
     docs: {
       description: {
         story:
-          '`logo-src` puts an image at the center of the code and removes the modules under it. `logo-size` is a ratio of the area that the error correction level can restore, not of the full code: `1` covers 9% of the code at level `H`. `logo-margin` adds whitespace around the logo, in pixels. Without `error-level`, the code uses level `M`, and a logo larger than the safe area of `M` raises the level to the smallest one that holds it, as in the first two codes. An explicit level caps the logo to the area of that level, so the logo in the last code shrinks. A logo source must be an image: a `javascript:` URL or a data URI of another type is ignored.',
+          '`logo-src` puts an image at the center of the code and removes the modules under it. `logo-size` is a ratio of the area that the error correction level can restore, not of the full code: `1` covers 9% of the code at level `H`. `logo-margin` adds whitespace around the logo, in pixels. Without `error-level`, the code uses level `M`, and a logo larger than the safe area of `M` raises the level to the smallest one that holds it, as in the first two codes. An explicit level caps the logo to the area of that level, so the logo in the fourth code shrinks. `logo-shape` clips the logo to a `circle`, `rounded` or `squircle` shape that fills the logo box, and the code removes only the modules under the shape. A `rounded` or `liquid` module and a bar end round at the edge of the removed area. A logo source must be an image: a `javascript:` URL or a data URI of another type is ignored.',
       },
     },
   },
@@ -613,6 +680,8 @@ export const WithLogo: Story = {
       size: number;
       level?: 'L' | 'H';
       margin?: number;
+      shape?: 'circle' | 'rounded' | 'squircle';
+      dot?: 'liquid';
       style: string;
     }[] = [
       {
@@ -645,6 +714,23 @@ export const WithLogo: Story = {
         margin: 6,
         style: '--ig-qr-code-dark-color: #1d6f65;',
       },
+      {
+        caption:
+          'A circle logo, with only the modules under the circle removed',
+        logo: logo('#e63946', '#ffffff', 'GO'),
+        size: 0.75,
+        shape: 'circle',
+        style: '--ig-qr-code-dark-color: #1f2937;',
+      },
+      {
+        caption: 'A squircle logo on liquid modules',
+        logo: logo('#0b3d91', '#ffffff', 'UI'),
+        size: 0.75,
+        margin: 4,
+        shape: 'squircle',
+        dot: 'liquid',
+        style: '--ig-qr-code-dark-color: #0b3d91;',
+      },
     ];
 
     return html`
@@ -656,11 +742,12 @@ export const WithLogo: Story = {
               <igc-qr-code
                 value=${productUrl}
                 size="200"
-                dot-style="circle"
+                dot-style=${variant.dot ?? 'circle'}
                 square-style="rounded"
                 error-level=${ifDefined(variant.level)}
                 logo-src=${variant.logo}
                 logo-size=${variant.size}
+                logo-shape=${ifDefined(variant.shape)}
                 .logoMargin=${variant.margin}
                 style=${variant.style}
               ></igc-qr-code>

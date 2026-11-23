@@ -13,6 +13,19 @@ export type ModuleRange = {
   right: number;
 };
 
+/** Returns `range` clipped to a matrix of `size` modules. */
+export function clampRange(
+  { top, left, bottom, right }: ModuleRange,
+  size: number
+): ModuleRange {
+  return {
+    top: Math.max(top, 0),
+    left: Math.max(left, 0),
+    bottom: Math.min(bottom, size - 1),
+    right: Math.min(right, size - 1),
+  };
+}
+
 /** The module map value of a locator module, which a scanner needs to read the code. */
 export const LOCATOR_MODULE = -2;
 
@@ -70,24 +83,28 @@ function getCodewordBlocks(version: number, level: number): Uint8Array {
 
 /**
  * Whether a scanner reads a code of `version` and `level` (0 for L to 3 for H) with the modules
- * of `range` hidden: no hidden module is a locator module, and no block loses more codewords
- * than it corrects. A codeword with one hidden module counts as lost.
+ * of the `cutout` ranges hidden: no hidden module is a locator module, and no block loses more
+ * codewords than it corrects. A codeword with one hidden module counts as lost.
  */
 export function canHideModules(
   version: number,
   level: number,
-  { top, left, bottom, right }: ModuleRange
+  ...cutout: ModuleRange[]
 ): boolean {
   const size = version * 4 + 17;
   const map = getModuleMap(version);
   const hidden = new Set<number>();
 
-  for (let row = Math.max(top, 0); row <= Math.min(bottom, size - 1); row++) {
-    for (let col = Math.max(left, 0); col <= Math.min(right, size - 1); col++) {
-      const codeword = map[row * size + col];
+  for (const range of cutout) {
+    const { top, left, bottom, right } = clampRange(range, size);
 
-      if (codeword === LOCATOR_MODULE) return false;
-      if (codeword >= 0) hidden.add(codeword);
+    for (let row = top; row <= bottom; row++) {
+      for (let col = left; col <= right; col++) {
+        const codeword = map[row * size + col];
+
+        if (codeword === LOCATOR_MODULE) return false;
+        if (codeword >= 0) hidden.add(codeword);
+      }
     }
   }
 

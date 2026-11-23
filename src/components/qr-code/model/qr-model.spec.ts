@@ -673,6 +673,26 @@ describe('QR model - logo cutout', () => {
         .to.be.true;
     });
 
+    it('counts the codewords of all the ranges together', () => {
+      // The ranges of rows 13 to 16 and 17 to 20 hide what rows 13 to 20 hide.
+      expect(
+        canHideModules(
+          1,
+          0,
+          { top: 13, left: 19, bottom: 16, right: 20 },
+          { top: 17, left: 19, bottom: 20, right: 20 }
+        )
+      ).to.be.true;
+      expect(
+        canHideModules(
+          1,
+          0,
+          { top: 9, left: 19, bottom: 12, right: 20 },
+          { top: 13, left: 19, bottom: 20, right: 20 }
+        )
+      ).to.be.false;
+    });
+
     it('counts a codeword with one hidden module as lost', () => {
       // Rows 12, 16 and 20 hold one module of codewords 2, 1 and 0.
       expect(canHideModules(1, 0, { top: 16, left: 20, bottom: 20, right: 20 }))

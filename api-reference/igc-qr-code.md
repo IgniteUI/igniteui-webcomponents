@@ -61,6 +61,10 @@ defineComponents(IgcQrCodeComponent);
 - `logoMargin`: `number | undefined`. Attribute: `logo-margin`.
   The margin around the logo in pixels. This is the whitespace area surrounding the logo within the QR code,
   which helps ensure that the logo does not interfere with the QR code's scannability.
+- `logoShape`: `'square' | 'circle' | 'rounded' | 'squircle'`. Default: `'square'`. Attribute: `logo-shape`.
+  The shape of the logo: 'square', 'circle', 'rounded' or 'squircle'. The shape fills the logo
+  box, so a 'circle' logo with a wide image is an ellipse. The image is clipped to the shape,
+  and the cutout holds only the modules that the shape covers, in part or in full.
 - `dotStyle`: `'square' | 'circle' | 'rounded' | 'squircle' | 'diamond' | 'plus' | 'liquid' | 'horizontal-bars' | 'vertical-bars'`. Default: `'square'`. Attribute: `dot-style`.
   The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
   'rounded', 'squircle', 'diamond', 'plus', 'liquid', 'horizontal-bars' or 'vertical-bars'.
@@ -89,6 +93,16 @@ defineComponents(IgcQrCodeComponent);
 
   In a 'circle' corner square, a 'square' or 'leaf' dot draws as 'circle', because scanners
   do not find the pattern reliably with corners in a round ring.
+- `gradient`: `'linear' | 'radial' | undefined`. Attribute: `gradient`.
+  The gradient of the dark modules: 'linear' or 'radial'. When it is not set, or has another
+  value, the modules have one color. The gradient goes from `--ig-qr-code-gradient-start` to
+  `--ig-qr-code-gradient-end` over the code without its quiet zone. It also paints the corners,
+  unless `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` is set.
+
+  Keep both colors much darker than the background.
+- `gradientAngle`: `number`. Default: `0`. Attribute: `gradient-angle`.
+  The angle of a 'linear' gradient in degrees, clockwise. At 0 the gradient goes from left to
+  right, and at 90 from top to bottom.
 
 ## Methods
 
@@ -135,3 +149,5 @@ defineComponents(IgcQrCodeComponent);
 - `--ig-qr-code-dark-color`: The color of the data modules (dots) and the alignment patterns, and the corner square/dot colors unless overridden below. Default is `black`.
 - `--ig-qr-code-corner-square-color`: The color of the outer finder-pattern corner squares. Defaults to `--ig-qr-code-dark-color`.
 - `--ig-qr-code-corner-dot-color`: The color of the inner finder-pattern corner dots. Defaults to `--ig-qr-code-dark-color`.
+- `--ig-qr-code-gradient-start`: The start color of the `gradient`. Defaults to `--ig-qr-code-dark-color`.
+- `--ig-qr-code-gradient-end`: The end color of the `gradient`. Defaults to `--ig-qr-code-dark-color`.

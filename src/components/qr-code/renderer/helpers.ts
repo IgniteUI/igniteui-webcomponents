@@ -1,4 +1,5 @@
-import { createMatrix, getAlignmentPatternCenters } from '../model/matrix.js';
+import { clampRange, type ModuleRange } from '../model/cutout.js';
+import { getAlignmentPatternCenters } from '../model/matrix.js';
 import type {
   QrCornerDotStyle,
   QrCornerSquareStyle,
@@ -9,12 +10,22 @@ function squarePath(x: number, y: number, s: number): string {
   return `M${x},${y}h${s}v${s}h${-s}Z`;
 }
 
-function circlePath(cx: number, cy: number, r: number, sweep = 0): string {
+export function ellipsePath(
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  sweep = 0
+): string {
   return (
-    `M${cx - r},${cy}` +
-    `a${r},${r} 0 1,${sweep} ${r * 2},0` +
-    `a${r},${r} 0 1,${sweep} ${-r * 2},0z`
+    `M${cx - rx},${cy}` +
+    `a${rx},${ry} 0 1,${sweep} ${rx * 2},0` +
+    `a${rx},${ry} 0 1,${sweep} ${-rx * 2},0z`
   );
+}
+
+function circlePath(cx: number, cy: number, r: number, sweep = 0): string {
+  return ellipsePath(cx, cy, r, r, sweep);
 }
 
 /**
@@ -44,23 +55,39 @@ function cachedBySide(
   };
 }
 
-const squircleCurves = cachedBySide((s) => {
+/**
+ * Returns the relative path of a squircle of `width` by `height`: one cubic for each quadrant,
+ * clockwise from the middle of the right side.
+ */
+function squircleCurves(width: number, height: number): string {
   const round = (value: number) => Number(value.toFixed(4));
-  const h = round(s / 2);
-  const d = round((s / 2) * (1 - SQUIRCLE_KAPPA));
-  const k = round(h - d);
-  // One cubic for each quadrant, clockwise from the middle of the right side.
+  const w = round(width / 2);
+  const h = round(height / 2);
+  const dx = round(w * (1 - SQUIRCLE_KAPPA));
+  const dy = round(h * (1 - SQUIRCLE_KAPPA));
   return (
-    `c0,${k} ${-d},${h} ${-h},${h}` +
-    `s${-h},${-d} ${-h},${-h}` +
-    `s${d},${-h} ${h},${-h}` +
-    `s${h},${d} ${h},${h}z`
+    `c0,${round(h - dy)} ${-dx},${h} ${-w},${h}` +
+    `s${-w},${-dy} ${-w},${-h}` +
+    `s${dx},${-h} ${w},${-h}` +
+    `s${w},${dy} ${w},${h}z`
   );
-});
+}
+
+const squircleTail = cachedBySide((s) => squircleCurves(s, s));
 
 /** Returns the path of a squircle that fills the square of side `s` at `x`, `y`. */
 function squirclePath(x: number, y: number, s: number): string {
-  return `M${x + s},${y + s / 2}${squircleCurves(s)}`;
+  return `M${x + s},${y + s / 2}${squircleTail(s)}`;
+}
+
+/** Returns the path of a squircle that fills the box at `x`, `y`. */
+export function squircleRect(
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): string {
+  return `M${x + width},${y + height / 2}${squircleCurves(width, height)}`;
 }
 
 function roundedRect(
@@ -155,26 +182,66 @@ function leafPath(
     : arcRectPerCorner(x, y, s, s, r, 0, r, 0);
 }
 
+/** Returns the path of a rectangle with circular corners of radius `r`. */
+export function arcRect(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  r: number
+): string {
+  return arcRectPerCorner(x, y, width, height, r, r, r, r);
+}
+
 /** Returns the path of a pill with round ends on its short sides. */
 function pillPath(x: number, y: number, width: number, height: number): string {
-  const r = Math.min(width, height) / 2;
-  return arcRectPerCorner(x, y, width, height, r, r, r, r);
+  return arcRect(x, y, width, height, Math.min(width, height) / 2);
+}
+
+/**
+ * The zone of each cell of a matrix: `OPEN_ZONE`, or `CUTOUT_ZONE` under the logo, positive for
+ * a dark data module and negative for a light cell. A cell of a finder pattern, its separator or
+ * an alignment pattern is 0, because the data modules do not draw it.
+ */
+type ZoneGrid = number[][];
+
+const OPEN_ZONE = 1;
+const CUTOUT_ZONE = 2;
+
+/** Whether the cells at `r`, `c` and `r2`, `c2` are dark data modules of one zone. */
+function joins(
+  zones: ZoneGrid,
+  r: number,
+  c: number,
+  r2: number,
+  c2: number
+): boolean {
+  return zones[r][c] > 0 && zones[r2]?.[c2] === zones[r][c];
+}
+
+/** Whether the modules of `dotStyle` join their neighbors, so that the logo cutout changes them. */
+export function joinsModules(dotStyle: QrDotStyle, dotScale: number): boolean {
+  return (
+    dotStyle.endsWith('-bars') ||
+    (dotScale === 1 && (dotStyle === 'rounded' || dotStyle === 'liquid'))
+  );
 }
 
 /**
  * Returns the SVG path of the data module at row `r` and column `c`, in a cell of side `s`
  * at `x`, `y`. The module is `scale` times the cell, centered in it. A `'rounded'` module
- * keeps a square corner toward each dark neighbor that it touches.
+ * keeps a square corner toward each neighbor that it joins, when `canJoin` is set.
  */
 function dotPath(
-  data: boolean[][],
+  zones: ZoneGrid,
   r: number,
   c: number,
   x: number,
   y: number,
   s: number,
   style: QrDotStyle,
-  scale: number
+  scale: number,
+  canJoin: boolean
 ): string {
   const size = s * scale;
   const inset = (s - size) / 2;
@@ -191,12 +258,12 @@ function dotPath(
     case 'rounded':
     case 'liquid': {
       const R = size * ROUNDED_RADIUS;
-      // A scaled module touches no neighbor. Out of the matrix, a read gives `undefined`.
-      const joins = scale === 1;
-      const top = joins && data[r - 1]?.[c];
-      const right = joins && data[r][c + 1];
-      const bottom = joins && data[r + 1]?.[c];
-      const left = joins && data[r][c - 1];
+      const join = (r2: number, c2: number) =>
+        canJoin && joins(zones, r, c, r2, c2);
+      const top = join(r - 1, c);
+      const right = join(r, c + 1);
+      const bottom = join(r + 1, c);
+      const left = join(r, c - 1);
       return roundedRectPerCorner(
         x + inset,
         y + inset,
@@ -317,38 +384,50 @@ export function patternPaths(
   ];
 }
 
-/**
- * Returns the cells of the finder patterns, their separators and the alignment patterns of a
- * matrix of `size` modules.
- */
-function patternCells(size: number): boolean[][] {
-  const cells = createMatrix(size);
-  const mark = (row: number, col: number, side: number) => {
-    for (let r = Math.max(row, 0); r < Math.min(row + side, size); r++) {
-      cells[r].fill(true, Math.max(col, 0), col + side);
+/** Returns the zone grid of a matrix with the logo `cutout`. */
+function zoneGrid(data: boolean[][], cutout: ModuleRange[]): ZoneGrid {
+  const size = data.length;
+  const zones = data.map((row) =>
+    row.map((dark) => (dark ? OPEN_ZONE : -OPEN_ZONE))
+  );
+  const mark = (range: ModuleRange, zone: number) => {
+    const { top, left, bottom, right } = clampRange(range, size);
+    for (let r = top; r <= bottom; r++) {
+      for (let c = left; c <= right; c++) {
+        zones[r][c] = zones[r][c] > 0 ? zone : -zone;
+      }
     }
   };
+  const square = (top: number, left: number, side: number) => ({
+    top,
+    left,
+    bottom: top + side - 1,
+    right: left + side - 1,
+  });
 
-  for (const [row, col] of finderCorners(size)) mark(row - 1, col - 1, 9);
-  for (const [row, col] of alignmentCenters(size)) mark(row - 2, col - 2, 5);
+  for (const range of cutout) mark(range, CUTOUT_ZONE);
+  for (const [row, col] of finderCorners(size)) {
+    mark(square(row - 1, col - 1, 9), 0);
+  }
+  for (const [row, col] of alignmentCenters(size)) {
+    mark(square(row - 2, col - 2, 5), 0);
+  }
 
-  return cells;
+  return zones;
 }
 
 /**
  * Returns the concave fillets of `liquid`: one in each corner of a light cell where the two
- * neighbors and the diagonal neighbor at that corner are dark, so an L-join has no sharp
- * inside corner.
+ * neighbors and the diagonal neighbor at that corner are dark and in the zone of the cell, so
+ * an L-join has no sharp inside corner.
  */
 function filletPaths(
-  modules: boolean[][],
-  patterns: boolean[][],
+  zones: ZoneGrid,
   moduleSize: number,
   marginPx: number
 ): string[] {
-  const size = modules.length;
+  const size = zones.length;
   const R = moduleSize * ROUNDED_RADIUS;
-  const dark = (r: number, c: number) => modules[r]?.[c] === true;
   // The directions of the neighbors at each corner, and the fillet from the corner point.
   const corners = [
     [-1, -1],
@@ -364,10 +443,15 @@ function filletPaths(
 
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
-      if (modules[r][c] || patterns[r][c]) continue;
+      const zone = -zones[r][c];
+      if (zone <= 0) continue;
 
       for (const { dr, dc, fillet } of corners) {
-        if (dark(r + dr, c) && dark(r, c + dc) && dark(r + dr, c + dc)) {
+        if (
+          zones[r + dr]?.[c] === zone &&
+          joins(zones, r + dr, c, r, c + dc) &&
+          joins(zones, r + dr, c, r + dr, c + dc)
+        ) {
           const x = moduleToPx(c + (dc > 0 ? 1 : 0), moduleSize, marginPx);
           const y = moduleToPx(r + (dr > 0 ? 1 : 0), moduleSize, marginPx);
           paths.push(`M${x},${y}${fillet}`);
@@ -380,29 +464,35 @@ function filletPaths(
 }
 
 /**
- * Returns one pill for each run of dark modules in a row, or in a column when `vertical` is
- * set. `scale` sets the thickness and insets the ends.
+ * Returns one pill for each run of dark modules of one zone in a row, or in a column when
+ * `vertical` is set. `scale` sets the thickness and insets the ends.
  */
 function barPaths(
-  modules: boolean[][],
+  zones: ZoneGrid,
   moduleSize: number,
   marginPx: number,
   scale: number,
   vertical: boolean
 ): string[] {
-  const size = modules.length;
+  const size = zones.length;
   const thickness = moduleSize * scale;
   const inset = (moduleSize - thickness) / 2;
-  const dark = (line: number, i: number) =>
-    vertical ? modules[i][line] : modules[line][i];
+  const cell = (line: number, i: number): [number, number] =>
+    vertical ? [i, line] : [line, i];
   const paths: string[] = [];
 
   for (let line = 0; line < size; line++) {
     for (let start = 0; start < size; start++) {
-      if (!dark(line, start)) continue;
+      const [r, c] = cell(line, start);
+      if (zones[r][c] <= 0) continue;
 
       let end = start;
-      while (end + 1 < size && dark(line, end + 1)) end++;
+      while (
+        end + 1 < size &&
+        joins(zones, ...cell(line, end), ...cell(line, end + 1))
+      ) {
+        end++;
+      }
 
       const across = moduleToPx(line, moduleSize, marginPx) + inset;
       const along = moduleToPx(start, moduleSize, marginPx) + inset;
@@ -422,24 +512,24 @@ function barPaths(
 
 /**
  * Returns the SVG paths of the dark data modules outside the finder and alignment patterns, at
- * `dotScale` times the module size. A joining style does not join a module to the patterns.
+ * `dotScale` times the module size. The modules under the logo `cutout` stay in the paths, for
+ * an export that drops the logo.
  */
 export function renderDataModules(
   data: boolean[][],
   moduleSize: number,
   marginPx: number,
   dotStyle: QrDotStyle,
-  dotScale: number
+  dotScale: number,
+  cutout: ModuleRange[] = []
 ): string[] {
   const size = data.length;
-  const patterns = patternCells(size);
-  const modules = data.map((row, r) =>
-    row.map((dark, c) => dark && !patterns[r][c])
-  );
+  const zones = zoneGrid(data, cutout);
+  const canJoin = joinsModules(dotStyle, dotScale);
 
   if (dotStyle === 'horizontal-bars' || dotStyle === 'vertical-bars') {
     return barPaths(
-      modules,
+      zones,
       moduleSize,
       marginPx,
       dotScale,
@@ -451,18 +541,19 @@ export function renderDataModules(
 
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
-      if (!modules[r][c]) continue;
+      if (zones[r][c] <= 0) continue;
 
       const x = moduleToPx(c, moduleSize, marginPx);
       const y = moduleToPx(r, moduleSize, marginPx);
 
-      paths.push(dotPath(modules, r, c, x, y, moduleSize, dotStyle, dotScale));
+      paths.push(
+        dotPath(zones, r, c, x, y, moduleSize, dotStyle, dotScale, canJoin)
+      );
     }
   }
 
-  // The fillets need touching modules.
-  if (dotStyle === 'liquid' && dotScale === 1) {
-    paths.push(...filletPaths(modules, patterns, moduleSize, marginPx));
+  if (dotStyle === 'liquid' && canJoin) {
+    paths.push(...filletPaths(zones, moduleSize, marginPx));
   }
 
   return paths;

@@ -26,6 +26,12 @@ export type QrCornerSquareStyle =
   | 'squircle'
   | 'leaf';
 
+/** Paint of the dark modules: a gradient between two colors. Unset means a solid color. */
+export type QrGradient = 'linear' | 'radial';
+
+/** Shape of the logo, which fills the logo box. */
+export type QrLogoShape = 'square' | 'circle' | 'rounded' | 'squircle';
+
 /**
  * QR error correction level. Higher levels recover more data but reduce capacity.
  * - `L` ~7%, `M` ~15%, `Q` ~25%, `H` ~30%.

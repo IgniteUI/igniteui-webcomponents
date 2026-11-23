@@ -217,6 +217,8 @@
     "QrCornerSquareStyle",
     "QrDotStyle",
     "QrErrorCorrectionLevel",
+    "QrGradient",
+    "QrLogoShape",
     "RangeTextSelectMode",
     "RegisterIconOptions",
     "SelectionRangeDirection",
@@ -2879,7 +2881,10 @@
         "dot-scale": "number",
         "dot-style": "QrDotStyle ('circle' | 'diamond' | 'horizontal-bars' | 'liquid' | 'plus' | 'rounded' | 'square' | 'squircle' | 'vertical-bars')",
         "error-level": "QrErrorCorrectionLevel ('H' | 'L' | 'M' | 'Q')",
+        "gradient": "QrGradient | undefined ('linear' | 'radial' | undefined)",
+        "gradient-angle": "number",
         "logo-margin": "number | undefined",
+        "logo-shape": "QrLogoShape ('circle' | 'rounded' | 'square' | 'squircle')",
         "logo-size": "number",
         "logo-src": "string | undefined",
         "margin": "number",
@@ -2893,7 +2898,10 @@
         "dotScale": "number",
         "dotStyle": "QrDotStyle ('circle' | 'diamond' | 'horizontal-bars' | 'liquid' | 'plus' | 'rounded' | 'square' | 'squircle' | 'vertical-bars')",
         "errorLevel": "QrErrorCorrectionLevel ('H' | 'L' | 'M' | 'Q')",
+        "gradient": "QrGradient | undefined ('linear' | 'radial' | undefined)",
+        "gradientAngle": "number",
         "logoMargin": "number | undefined",
+        "logoShape": "QrLogoShape ('circle' | 'rounded' | 'square' | 'squircle')",
         "logoSize": "number",
         "logoSrc": "string | undefined",
         "margin": "number",
@@ -2922,7 +2930,9 @@
         "--ig-qr-code-background",
         "--ig-qr-code-corner-dot-color",
         "--ig-qr-code-corner-square-color",
-        "--ig-qr-code-dark-color"
+        "--ig-qr-code-dark-color",
+        "--ig-qr-code-gradient-end",
+        "--ig-qr-code-gradient-start"
       ]
     },
     "igc-radio": {

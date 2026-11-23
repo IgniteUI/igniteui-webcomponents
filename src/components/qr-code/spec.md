@@ -63,7 +63,7 @@
 |       5 | 2026-10-20 | `copyToClipboard()`; exports read `size` after the pending render      |
 |       6 | 2026-10-21 | An invalid `version` falls back to the automatic version             |
 |       7 | 2026-11-17 | Shapes, `cornerDotStyle`, `dotScale`, logo cutout and version fit  |
-|       8 | 2026-11-23 | Mixed-mode segments; no ECI header; payload helpers; export holds only the code; whole-pixel modules; alignment patterns; new dot styles and `leaf` |
+|       8 | 2026-11-23 | Mixed-mode segments; no ECI header; payload helpers; export holds only the code; whole-pixel modules; alignment patterns; new dot styles and `leaf`; gradient; `logo-shape` |
 
 ## Overview
 
@@ -82,13 +82,14 @@ authentication setup URLs, contact sharing and linking printed material to digit
   smallest version that fits it, unless a `version` is pinned.
 - **Configurable error correction** across `L`, `M`, `Q` and `H`, trading capacity for resilience.
 - **Center logo** with the modules beneath it masked out, and, when `error-level` is not set, an automatic
-  escalation from `M` to the smallest level that keeps the code scannable at the requested logo size.
+  escalation from `M` to the smallest level that keeps the code scannable at the requested logo size. The logo can be
+  a square, a circle, a rounded square or a squircle.
 - **Visual customization** of the data modules, the outer corner squares and the inner corner dots. The data modules
   have nine styles, among them joined `liquid` modules and bars. A scale for the data modules leaves a gap between
   them. The alignment patterns take the shapes of the corners.
 - **Sharp edges**: each module covers a whole number of pixels, on the screen and in an export.
 - **Themeable colors** through CSS custom properties, with parts for the background, the dots and each corner
-  element.
+  element, and an optional linear or radial gradient.
 - **Configurable size and margin**, the second one expressed in modules.
 - **Export** to an SVG blob, or to a PNG, JPEG, WebP or SVG file, optionally scaled and downloaded.
 - **Copy to the clipboard** as a PNG or SVG image.
@@ -209,6 +210,24 @@ collapses to zero renders no image and throws nothing.
 The cutout under the logo holds whole modules: each module that the logo box covers, in part or in full. No module
 is cut in part, and the logo keeps the size of its box.
 
+```html
+<igc-qr-code
+  value="https://www.infragistics.com"
+  logo-src="/assets/logo.png"
+  logo-shape="circle"
+></igc-qr-code>
+```
+
+`logo-shape` takes `square` (the default), `circle`, `rounded` or `squircle`. The shape fills the logo box, so a
+`circle` logo with a wide image is an ellipse, and a `rounded` logo has corners with a radius of a quarter of its
+shorter side. `logo-size` stays the area of the box. The image is clipped to the shape drawn in the logo box less
+`logo-margin` on each side, and the cutout holds only the modules that the shape covers, in part or in full. A shape
+other than `square` hides fewer modules, so a pinned version can keep a larger logo.
+
+The `rounded`, `liquid` and bar styles do not join a module under the logo to a module outside it, so the visible
+modules end round at the edge of the cutout. The hidden modules stay in the code under the mask: an export whose logo
+cannot be fetched drops the mask and shows them.
+
 The code must stay readable under the logo. The cutout must not hide a finder pattern, its separator, or the format
 or version information, and no error correction block can lose more codewords than it corrects. A codeword with one
 hidden module counts as lost, whatever the logo shows. When `version` is not set, the component selects the smallest
@@ -278,6 +297,26 @@ finder and alignment patterns keep their full size, so a scanner still finds the
 
 The alignment patterns take `--ig-qr-code-dark-color`. The colors do not follow the light and dark variants of the
 global theme; a code that inverted itself would stop scanning reliably.
+
+```html
+<igc-qr-code
+  value="https://www.infragistics.com"
+  gradient="linear"
+  gradient-angle="45"
+  style="--ig-qr-code-gradient-start: #1a237e; --ig-qr-code-gradient-end: #880e4f;"
+></igc-qr-code>
+```
+
+`gradient` paints the data modules, the alignment patterns and the corners with a `linear` or a `radial` gradient,
+from `--ig-qr-code-gradient-start` to `--ig-qr-code-gradient-end`. Another value gives one color. Both colors fall back to
+`--ig-qr-code-dark-color`. The gradient spans the matrix, not the quiet zone. A linear gradient goes from left to
+right at a `gradient-angle` of `0`, turns clockwise in degrees, and reaches the corners of the matrix. A radial
+gradient goes from the center to the corners. An explicit `--ig-qr-code-corner-square-color` or
+`--ig-qr-code-corner-dot-color` wins over the gradient for its part. Each instance has its own gradient, so the
+codes on a page do not share one. An export writes the colors of the stops.
+
+The component gives no warning for low contrast. Keep the dark color, and both colors of a gradient, much darker than
+the background, and do not invert the code. Test the colors with the phones and the apps of your users.
 
 #### Exporting
 
@@ -370,10 +409,13 @@ Not applicable. The component is presentational, is not part of the tab order an
 | `dotScale`    | `dot-scale`    | no        | `number`                            | `1`     | The size of the data modules, from 0.7 to 1 of their cell.                |
 | `squareStyle` | `square-style` | no        | `QrCornerSquareStyle`               | `square`| The shape of the outer corner squares and of the alignment rings.         |
 | `cornerDotStyle` | `corner-dot-style` | no | `QrCornerDotStyle \| undefined`      | Not set | The shape of the inner corner dots and of the alignment centers; follows `dotStyle` when unset. |
+| `logoShape`   | `logo-shape`   | no        | `QrLogoShape`                       | `square`| The shape of the logo: 'square', 'circle', 'rounded' or 'squircle'.        |
+| `gradient`    | `gradient`     | no        | `QrGradient \| undefined`           | Not set | The gradient of the dark modules: 'linear' or 'radial'.                    |
+| `gradientAngle` | `gradient-angle` | no      | `number`                            | `0`     | The angle of a 'linear' gradient in degrees, clockwise.                   |
 
 `QrDotStyle` is `"square" | "circle" | "rounded" | "squircle" | "diamond" | "plus" | "liquid" | "horizontal-bars" |
 "vertical-bars"`. `QrCornerSquareStyle` and `QrCornerDotStyle` are `"square" | "circle" | "rounded" | "squircle" |
-"leaf"`.
+"leaf"`. `QrLogoShape` is `"square" | "circle" | "rounded" | "squircle"`, and `QrGradient` is `"linear" | "radial"`.
 
 ### Methods
 
@@ -425,6 +467,8 @@ None. The SVG is rendered entirely from the properties of the component.
 | `--ig-qr-code-dark-color`          | `black` | The color of the data modules and the alignment patterns, and of the corners unless they are overridden. |
 | `--ig-qr-code-corner-square-color` | Not set | The color of the outer corner squares; falls back to `--ig-qr-code-dark-color`.     |
 | `--ig-qr-code-corner-dot-color`    | Not set | The color of the inner corner dots; falls back to `--ig-qr-code-dark-color`.        |
+| `--ig-qr-code-gradient-start`      | Not set | The start color of the `gradient`. Defaults to `--ig-qr-code-dark-color`.          |
+| `--ig-qr-code-gradient-end`        | Not set | The end color of the `gradient`. Defaults to `--ig-qr-code-dark-color`.            |
 
 ## Test scenarios
 
@@ -435,14 +479,16 @@ None. The SVG is rendered entirely from the properties of the component.
 
 ### Accessibility tests
 
-1. The component passes the accessibility audit when a value is set.
+1. The component passes the accessibility audit when a value is set, and with a gradient and a shaped logo also in
+   the light DOM.
 2. The SVG carries a `<title>` for screen readers, which uses the `aria-label` when one is provided, follows a
    change of `ariaLabel` alone, and returns to the default when the attribute is removed.
 
 ### Default property values
 
-3. `size`, `margin`, `errorLevel`, `dotStyle`, `squareStyle`, `cornerDotStyle`, `dotScale` and `value` have their
-   documented defaults, and so do `logoSrc`, `logoSize` and `logoMargin`.
+3. `size`, `margin`, `errorLevel`, `dotStyle`, `squareStyle`, `cornerDotStyle`, `dotScale`, `gradient`,
+   `gradientAngle` and `value` have their documented defaults, and so do `logoSrc`, `logoSize`, `logoMargin` and
+   `logoShape`.
 
 ### Rendering
 
@@ -457,124 +503,146 @@ None. The SVG is rendered entirely from the properties of the component.
 9. `--ig-qr-code-dark-color` cascades to the corner square and the corner dot, and an explicit corner override
    wins over the cascade. The alignment patterns take `--ig-qr-code-dark-color`.
 10. The colors do not invert when the global theme switches to its dark variant.
+11. `gradient` paints the dots, the alignment patterns and the corners with the gradient of the instance, and each
+    instance has its own. An explicit corner color wins for its part. The stops take the gradient colors, or else
+    the dark color, and a cleared `gradient` or a value other than `linear` and `radial` gives one color.
+12. A linear gradient spans the matrix without the quiet zone, along `gradient-angle`, and a radial gradient reaches
+    the corners of the matrix from its center. A `gradient-angle` that is not a number is 0.
 
 ### Attribute reflection
 
-11. The `dot-style`, `square-style`, `corner-dot-style`, `dot-scale`, `error-level`, `version`, `logo-src`,
-    `logo-size` and `logo-margin` attributes initialize their properties.
+13. The `dot-style`, `square-style`, `corner-dot-style`, `dot-scale`, `gradient`, `gradient-angle`, `error-level`,
+    `version`, `logo-src`, `logo-size`, `logo-margin` and `logo-shape` attributes initialize their properties.
 
 ### Style variants
 
-12. Each `dot-style` renders its data path, and each `square-style` renders its corner groups.
+14. Each `dot-style` renders its data path, and each `square-style` renders its corner groups.
 
 ### Pixel snapping
 
-13. At the sizes 128 and 256, each module covers the same whole number of pixels, and the code starts on a whole
+15. At the sizes 128 and 256, each module covers the same whole number of pixels, and the code starts on a whole
     pixel. The quiet zone keeps at least `margin` modules on each side, also for a fractional `margin`.
-14. An SVG export at the scales 2 and 1.3 puts the modules on whole pixels of the image size, and a module smaller
+16. An SVG export at the scales 2 and 1.3 puts the modules on whole pixels of the image size, and a module smaller
     than 1 pixel is not snapped.
 
 ### Shape geometry
 
-15. A `squircle` data module rounds its corners less than a circle, a `squircle` corner square is a ring, and a
+17. A `squircle` data module rounds its corners less than a circle, a `squircle` corner square is a ring, and a
     `squircle` corner dot rounds its corners.
-16. The inner corner dots follow `dotStyle` until `cornerDotStyle` is set and again after it is unset, and the data
+18. The inner corner dots follow `dotStyle` until `cornerDotStyle` is set and again after it is unset, and the data
     modules do not change with `cornerDotStyle`.
-17. An alignment pattern is a ring of `squareStyle` around a center dot of the corner dot style. It is not part of the
+19. An alignment pattern is a ring of `squareStyle` around a center dot of the corner dot style. It is not part of the
     data path, keeps its size at any `dotScale`, and a `rounded` module does not join it.
-18. A `circle` corner square draws a `square` or `leaf` corner dot as a circle, in the finder and the alignment
+20. A `circle` corner square draws a `square` or `leaf` corner dot as a circle, in the finder and the alignment
     patterns, and `cornerDotStyle` keeps its value.
-19. A `diamond` module has its points at the cell edges, and a `plus` module has its arms to the cell edges.
-20. A `liquid` L-join has a fill in its inside corner, and below a `dotScale` of 1, `liquid` draws as `rounded`.
-21. A bar style draws one bar with round ends for each run of dark modules in a row or a column, and `dotScale` sets
+21. A `diamond` module has its points at the cell edges, and a `plus` module has its arms to the cell edges.
+22. A `liquid` L-join has a fill in its inside corner, and below a `dotScale` of 1, `liquid` draws as `rounded`.
+23. A bar style draws one bar with round ends for each run of dark modules in a row or a column, and `dotScale` sets
     its thickness.
-22. A `leaf` corner square and corner dot round the corners on the diagonal toward the center of the code, and a
+24. A `leaf` corner square and corner dot round the corners on the diagonal toward the center of the code, and a
     `leaf` alignment ring has the shape of the top-left one.
-23. Without `cornerDotStyle`, the corner dots draw `diamond` and `plus` as `square`, and `liquid` and the bar styles
+25. Without `cornerDotStyle`, the corner dots draw `diamond` and `plus` as `square`, and `liquid` and the bar styles
     as `rounded`.
-24. `dotScale` shrinks the data modules around their centers, is clamped from 0.7 to 1 with 1 for a value that is not
+26. A joining style does not join a module under the logo cutout to a module outside it: a `rounded` module ends
+    round at the cutout and the hidden module stays, a bar splits at the cutout edge, and a `liquid` fillet needs
+    three modules of one zone.
+27. `dotScale` shrinks the data modules around their centers, is clamped from 0.7 to 1 with 1 for a value that is not
     a number, and leaves the finder patterns at full size. A scaled `rounded` module rounds the corners toward its dark
     neighbors.
 
 ### Logo
 
-25. No `<image>` or `<mask>` is rendered without a logo; a valid one renders both, with the image outside the
+28. No `<image>` or `<mask>` is rendered without a logo; a valid one renders both, with the image outside the
     masked group and the mask applied to the group holding the dots and the finders.
-26. The mask id is stable across re-renders, and clearing the logo or replacing it with an unsafe URL removes the
+29. The mask id is stable across re-renders, and clearing the logo or replacing it with an unsafe URL removes the
     image and the mask.
-27. Unsafe schemes and non-image `data:` URIs are blocked, while `data:image/` and `https://` URLs are accepted.
-28. A logo that fails to load leaves the code without one, and the component recovers once a valid source is set.
-29. A higher error correction level produces a larger code, and the logo area is capped to the safe area of the
+30. Unsafe schemes and non-image `data:` URIs are blocked, while `data:image/` and `https://` URLs are accepted.
+31. A logo that fails to load leaves the code without one, and the component recovers once a valid source is set.
+32. A higher error correction level produces a larger code, and the logo area is capped to the safe area of the
     resolved level. Without `error-level`, a large logo escalates the level while `errorLevel` reads `M`, a small
     logo keeps `M`, an explicit `M` caps the logo, and removing the attribute restores the escalation.
-30. `logoMargin` reduces the visible logo, stays in pixels when the modules snap to whole pixels, and a margin that
+33. `logoMargin` reduces the visible logo, stays in pixels when the modules snap to whole pixels, and a margin that
     consumes the whole logo box renders no image.
-31. The cutout starts and ends on module boundaries and is centered, and the logo lies inside it, with and without
+34. The cutout starts and ends on module boundaries and is centered, and the logo lies inside it, with and without
     `logoMargin`.
-32. A logo that would hide more codewords than the level corrects raises the version, and removing the logo restores
+35. A logo that would hide more codewords than the level corrects raises the version, and removing the logo restores
     it. A pinned version keeps its size, and the logo gets smaller.
+36. A `square` logo has one cut rectangle and no clip. The cutout of a `circle`, `rounded` or `squircle` logo, and of
+    a wide `circle` or `squircle` logo, holds each point of the shape and only the modules that the shape covers. The
+    image is clipped to the shape drawn in the logo box less `logoMargin`.
+37. On a pinned version, a `circle`, `rounded` or `squircle` logo stays larger than a `square` logo.
+38. A change of the cutout redraws the data modules.
 
 ### Export
 
-33. `toBlob()` returns an SVG blob, resolves the theme colors to `fill` attributes and strips the parts.
-34. A data URI logo is kept as it is, a fetched one is inlined as a data URI, a logo assigned right before the
+39. `toBlob()` returns an SVG blob, resolves the theme colors to `fill` attributes and strips the parts.
+40. A data URI logo is kept as it is, a fetched one is inlined as a data URI, a logo assigned right before the
     export is awaited, and one that cannot be fetched is dropped together with its mask. The logo is written as both
     `href` and `xlink:href`, and a code without a logo has no `xlink:href`.
-35. `toImage()` exports a PNG at the component size by default, scales the raster output, and exports an opaque
+41. A shaped logo keeps its clip. The export writes the colors of the gradient stops and the gradient as the `fill`
+    of the parts, and keeps the gradient when the logo cannot be fetched.
+42. `toImage()` exports a PNG at the component size by default, scales the raster output, and exports an opaque
     JPEG, a WebP and an SVG with scaled dimensions. A `size` set right after the call applies to the image.
-36. An existing matching extension in the file name is kept, and the download dialog opens only when requested.
-37. Both methods reject without a value, and `toImage()` rejects invalid options, also a `size` set right after the
+43. An existing matching extension in the file name is kept, and the download dialog opens only when requested.
+44. Both methods reject without a value, and `toImage()` rejects invalid options, also a `size` set right after the
     call that makes the image larger than the maximum canvas size. A value that does not fit the pinned version
     renders nothing, warns once and makes the export reject with the encoder error. A version that is not an integer
     from 1 to 40 falls back to the automatic version.
 
 ### Clipboard
 
-38. `copyToClipboard()` copies a PNG image at the component size by default, and a `size` set right after the call
+45. `copyToClipboard()` copies a PNG image at the component size by default, and a `size` set right after the call
     applies to the copy.
-39. An `svg` copy holds an SVG image, with the theme colors resolved and the parts stripped, and a PNG image, both
+46. An `svg` copy holds an SVG image, with the theme colors resolved and the parts stripped, and a PNG image, both
     multiplied by `scale`. A clipboard that does not take SVG gets only the PNG.
-40. The clipboard write starts before the first `await` of the method, for a PNG copy and an SVG copy.
-41. The method rejects when the clipboard refuses the write and without the Clipboard API. It also rejects on invalid
+47. The clipboard write starts before the first `await` of the method, for a PNG copy and an SVG copy.
+48. The method rejects when the clipboard refuses the write and without the Clipboard API. It also rejects on invalid
     options and without a value, and then it writes nothing. A refused write that skips a failed export leaves no
     unhandled rejection.
 
 ### QR model properties
 
-42. Each version and error correction level holds as many codewords as the symbol has room for, checked against the
+49. Each version and error correction level holds as many codewords as the symbol has room for, checked against the
     module count of ISO/IEC 18004.
-43. Generated numeric, alphanumeric, byte and mixed data encodes into the smallest version that holds it, with the
+50. Generated numeric, alphanumeric, byte and mixed data encodes into the smallest version that holds it, with the
     codeword count of that version, and never takes more bits than one segment of the best single mode. A decoder
     reads the bytes of the data back from the matrix.
-44. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
+51. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
     capacity error. A requested version that is not an integer from 1 to 40 throws.
 
 ### Host ARIA
 
-45. The host `aria-labelledby` and `aria-describedby` reach the SVG, and the exported SVG has neither attribute.
+52. The host `aria-labelledby` and `aria-describedby` reach the SVG, and the exported SVG has neither attribute.
 
 ### Scanning
 
 A decoder (zxing-cpp, from the `zxing-wasm` package) reads the PNG that `toImage()` exports, with at least 6 pixels for
 each module.
 
-46. Each basic `dot-style` (`square`, `circle`, `rounded` and `squircle`) decodes with each basic `square-style` and
+53. Each basic `dot-style` (`square`, `circle`, `rounded` and `squircle`) decodes with each basic `square-style` and
     `corner-dot-style`, in a Latin square of the three shapes.
-47. Each `dot-style` decodes at the smallest `dotScale`, also in a version 12 code.
-48. A code with a white or a black logo, at the default and the largest `logoSize`, decodes at each error correction
+54. Each `dot-style` decodes at the smallest `dotScale`, also in a version 12 code.
+55. A code with a white or a black logo, at the default and the largest `logoSize`, decodes at each error correction
     level.
-49. A white, black or gray logo on codes of version 1 to 3 decodes at each error correction level, at the default and
+56. A white, black or gray logo on codes of version 1 to 3 decodes at each error correction level, at the default and
     the largest `logoSize`, and so does a logo on a pinned version 1, 2 or 3.
-50. Values that mix numeric, alphanumeric and byte segments decode, with and without a logo.
-51. A `circle` corner square with circle modules decodes with each `corner-dot-style`, at versions 3 and 10 and at 7,
+57. Values that mix numeric, alphanumeric and byte segments decode, with and without a logo.
+58. A `circle` corner square with circle modules decodes with each `corner-dot-style`, at versions 3 and 10 and at 7,
     8 and 9 pixels for each module. Before the alignment rings and the rule for the corner dot, some of these failed.
-52. The alignment patterns of each `square-style` decode with each `dot-style` in a version 12 code, at 7 and 8
+59. The alignment patterns of each `square-style` decode with each `dot-style` in a version 12 code, at 7 and 8
     pixels for each module.
-53. Each new `dot-style` decodes at a `dotScale` of 1, and at the smallest `dotScale` also in a version 12 code.
-54. A `leaf` corner square decodes with each `corner-dot-style`, at versions 3 and 12 and at 7 and 9 pixels for each
+60. Each new `dot-style` decodes at a `dotScale` of 1, and at the smallest `dotScale` also in a version 12 code.
+61. A `leaf` corner square decodes with each `corner-dot-style`, at versions 3 and 12 and at 7 and 9 pixels for each
     module.
-55. A `leaf` corner dot decodes in a `square`, `rounded` and `squircle` corner square, at versions 3 and 12 and at 7
+62. A `leaf` corner dot decodes in a `square`, `rounded` and `squircle` corner square, at versions 3 and 12 and at 7
     and 9 pixels for each module.
+63. A white or black `circle`, `rounded` and `squircle` logo of the largest `logoSize` decodes on codes of versions 1
+    to 3 at each error correction level. A wide shaped logo decodes at levels `M` and `H`, and a shaped logo on a
+    pinned version 1, 2 or 3 at level `H`.
+64. The `rounded`, `liquid` and bar styles decode with a `square` and a `circle` logo of the largest `logoSize`, also
+    in a version 12 code.
+65. A linear gradient at 0, 45 and 135 degrees and a radial gradient between two dark colors decode, also in a
+    version 12 code.
 
 ### Not covered by the suite
 
@@ -603,6 +671,11 @@ each module.
   then renders nothing and warns, `toBlob()` and `toImage()` reject with the encoder error, and `copyToClipboard()`
   rejects.
 - The colors deliberately do not follow the light and dark theme variants.
+- The gradient colors are CSS custom properties of the component only. The igniteui-theming schema has no gradient
+  colors, and with `gradient` set, the corner colors of a Sass `qr-code-theme()` do not apply. To keep a corner
+  color, set `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color`.
+- The component does not check the contrast of the colors. The application owns a gradient or a color that a camera
+  cannot tell from the background.
 - `toImage()` and `copyToClipboard()` are bounded by the maximum canvas size of the browser, so a very large size and
   scale combination is rejected.
 - `copyToClipboard()` needs a secure context, a focused document and a user action. The application must call it

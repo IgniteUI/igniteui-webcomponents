@@ -1,18 +1,21 @@
 import { nothing, svg, type TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import type { ModuleRange } from '../model/cutout.js';
 import type {
   QrCornerDotStyle,
   QrCornerSquareStyle,
   QrDotStyle,
+  QrGradient,
 } from '../types.js';
 import {
   alignmentPath,
   getFinderPatterns,
+  joinsModules,
   moduleToPx,
   patternPaths,
   renderDataModules,
 } from './helpers.js';
-import type { LogoLayout } from './logo.js';
+import { type LogoLayout, logoClipPath } from './logo.js';
 
 //#region Logo areas
 
@@ -38,6 +41,7 @@ type RenderQrDotsProperties = {
   marginPx: number;
   dotStyle: QrDotStyle;
   dotScale: number;
+  cutout?: ModuleRange[];
 };
 
 /** The last path of each matrix, keyed by geometry; an unchanged render reuses it. */
@@ -50,8 +54,11 @@ export function renderQrDots({
   marginPx,
   dotStyle,
   dotScale,
+  cutout,
 }: RenderQrDotsProperties): TemplateResult {
-  const key = `${moduleSize}:${marginPx}:${dotStyle}:${dotScale}`;
+  // Only a joining style reads the cutout, so the others keep their cached path.
+  const joinedCutout = joinsModules(dotStyle, dotScale) ? cutout : undefined;
+  const key = `${moduleSize}:${marginPx}:${dotStyle}:${dotScale}:${JSON.stringify(joinedCutout)}`;
   let cached = paths.get(matrix);
 
   if (cached?.key !== key) {
@@ -60,7 +67,8 @@ export function renderQrDots({
       moduleSize,
       marginPx,
       dotStyle,
-      dotScale
+      dotScale,
+      joinedCutout
     );
     cached = { key, path: modules.join(' ') };
     paths.set(matrix, cached);
@@ -132,13 +140,14 @@ type RenderQrMaskAndImageProperties = {
   moduleSize: number;
   marginPx: number;
   maskId: string;
+  clipId: string;
   transform?: string;
 };
 
 /**
- * Renders the logo image and its mask: a white rectangle with a black cutout of the modules of
- * `layout`. The image fills the logo box, less `margin` pixels on each side, and takes the
- * `transform` of the masked group.
+ * Renders the logo image and its mask: a white rectangle with a black rectangle for each range
+ * of the cutout of `layout`. The image fills the logo box, less `margin` pixels on each side,
+ * takes the `transform` of the masked group, and is clipped to the logo shape.
  */
 export function renderQrMaskAndImage({
   src,
@@ -149,6 +158,7 @@ export function renderQrMaskAndImage({
   moduleSize,
   marginPx,
   maskId,
+  clipId,
   transform,
 }: RenderQrMaskAndImageProperties) {
   if (!layout) {
@@ -158,11 +168,6 @@ export function renderQrMaskAndImage({
   const toSvg = (modules: number) => moduleToPx(modules, moduleSize, marginPx);
   const boxMargin = (margin ?? 0) / unitSize;
 
-  const cutX = toSvg(layout.left);
-  const cutY = toSvg(layout.top);
-  const cutRight = toSvg(layout.right + 1);
-  const cutBottom = toSvg(layout.bottom + 1);
-
   const x = toSvg(layout.x) + boxMargin;
   const y = toSvg(layout.y) + boxMargin;
   const width = Math.max(0, layout.width * moduleSize - boxMargin * 2);
@@ -170,28 +175,75 @@ export function renderQrMaskAndImage({
 
   const shouldApplyMask = width > 0 && height > 0;
 
-  const mask = shouldApplyMask
-    ? svg`
+  if (!shouldApplyMask) {
+    return { mask: nothing, image: nothing, shouldApplyMask };
+  }
+
+  const cuts = layout.cutout.map(({ top, left, bottom, right }) => {
+    const cutX = toSvg(left);
+    const cutY = toSvg(top);
+    return svg`<rect x=${cutX} y=${cutY} width=${toSvg(right + 1) - cutX} height=${toSvg(bottom + 1) - cutY} fill="black" />`;
+  });
+
+  const clip = logoClipPath(
+    layout.shape,
+    {
+      x: toSvg(layout.x),
+      y: toSvg(layout.y),
+      width: layout.width * moduleSize,
+      height: layout.height * moduleSize,
+    },
+    boxMargin
+  );
+
+  const mask = svg`
       <defs>
         <mask id=${maskId}>
           <rect width=${svgSize} height=${svgSize} fill="white" />
-          <rect
-            x=${cutX}
-            y=${cutY}
-            width=${cutRight - cutX}
-            height=${cutBottom - cutY}
-            fill="black"
-          />
+          ${cuts}
         </mask>
+        ${clip ? svg`<clipPath id=${clipId}><path d=${clip} /></clipPath>` : nothing}
       </defs>
-  `
-    : nothing;
+  `;
 
-  const image = shouldApplyMask
-    ? svg`<image href=${src} x=${x} y=${y} width=${width} height=${height} transform=${ifDefined(transform)} />`
-    : nothing;
+  const image = svg`<image href=${src} x=${x} y=${y} width=${width} height=${height} clip-path=${ifDefined(clip && `url(#${clipId})`)} transform=${ifDefined(transform)} />`;
 
   return { mask, image, shouldApplyMask };
+}
+
+type RenderQrGradientProperties = {
+  id: string;
+  gradient: QrGradient;
+  angle: number;
+  svgSize: number;
+  marginPx: number;
+};
+
+/**
+ * Renders the gradient of the dark modules over the matrix, without the quiet zone. A linear one
+ * at `angle` and a radial one reach the corners of the matrix. The CSS sets the stop colors.
+ */
+export function renderQrGradient({
+  id,
+  gradient,
+  angle,
+  svgSize,
+  marginPx,
+}: RenderQrGradientProperties): TemplateResult {
+  const center = svgSize / 2;
+  const half = center - marginPx;
+  const stops = svg`<stop offset="0" /><stop offset="1" />`;
+
+  if (gradient === 'radial') {
+    return svg`<defs><radialGradient id=${id} gradientUnits="userSpaceOnUse" cx=${center} cy=${center} r=${half * Math.SQRT2}>${stops}</radialGradient></defs>`;
+  }
+
+  const radians = (angle * Math.PI) / 180;
+  const dx = Math.cos(radians);
+  const dy = Math.sin(radians);
+  const reach = half * (Math.abs(dx) + Math.abs(dy));
+
+  return svg`<defs><linearGradient id=${id} gradientUnits="userSpaceOnUse" x1=${center - dx * reach} y1=${center - dy * reach} x2=${center + dx * reach} y2=${center + dy * reach}>${stops}</linearGradient></defs>`;
 }
 
 //#endregion

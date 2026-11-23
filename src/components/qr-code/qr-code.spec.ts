@@ -4,6 +4,7 @@ import {
   expect,
   fixture,
   html,
+  waitUntil,
 } from '@open-wc/testing';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { restore, type SinonStub, stub } from 'sinon';
@@ -12,8 +13,9 @@ import {
   prepareQrDecoder,
   readQr,
 } from '#internals/testing/qr-decoder.spec.js';
-import { asNumber } from '#internals/utils/math.js';
+import { asNumber, clamp } from '#internals/utils/math.js';
 import { configureTheme } from '#theming/config.js';
+import type { ModuleRange } from './model/cutout.js';
 import IgcQrCodeComponent from './qr-code.js';
 import { rasterizeSvg } from './renderer/export.js';
 import { renderDataModules } from './renderer/helpers.js';
@@ -38,6 +40,22 @@ describe('IgcQrCodeComponent', () => {
       const el = await fixture(
         html`<igc-qr-code value="https://example.com"></igc-qr-code>`
       );
+      await expect(el).shadowDom.to.be.accessible();
+    });
+
+    it('passes the a11y audit with a gradient and a shaped logo', async () => {
+      const logo =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      const el = await fixture(
+        html`<igc-qr-code
+          value="https://example.com"
+          gradient="linear"
+          logo-shape="circle"
+          logo-src=${logo}
+        ></igc-qr-code>`
+      );
+
+      await expect(el).to.be.accessible();
       await expect(el).shadowDom.to.be.accessible();
     });
 
@@ -148,6 +166,11 @@ describe('IgcQrCodeComponent', () => {
 
     it('dotScale defaults to 1', () => {
       expect(el.dotScale).to.equal(1);
+    });
+
+    it('gradient defaults to undefined and gradientAngle to 0', () => {
+      expect(el.gradient).to.be.undefined;
+      expect(el.gradientAngle).to.equal(0);
     });
 
     it('value defaults to undefined', () => {
@@ -318,6 +341,154 @@ describe('IgcQrCodeComponent', () => {
       expect(fillOf(getPart(el, 'alignment'))).to.equal('rgb(204, 51, 0)');
     });
 
+    describe('Gradient', () => {
+      // Version 2, with an alignment pattern.
+      const VALUE = 'https://example.com';
+
+      function gradientOf(el: IgcQrCodeComponent): SVGGradientElement | null {
+        return el.renderRoot.querySelector('linearGradient, radialGradient');
+      }
+
+      function readNumbers(element: Element, names: string[]): number[] {
+        return names.map((name) => asNumber(element.getAttribute(name)!));
+      }
+
+      it('renders no gradient by default', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value=${VALUE}></igc-qr-code>`
+        );
+        expect(gradientOf(el)).to.be.null;
+      });
+
+      it('paints the dots, the alignment patterns and the corners with the gradient', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value=${VALUE} gradient="linear"></igc-qr-code>`
+        );
+        const paint = `url("#${gradientOf(el)!.id}")`;
+
+        for (const part of [
+          'dots',
+          'alignment',
+          'corner-square',
+          'corner-dot',
+        ]) {
+          expect(fillOf(getPart(el, part)), part).to.equal(paint);
+        }
+
+        el.gradient = undefined;
+        await elementUpdated(el);
+        expect(gradientOf(el)).to.be.null;
+        expect(fillOf(getPart(el, 'dots'))).to.equal('rgb(0, 0, 0)');
+      });
+
+      it('paints one color for a gradient value that is not linear or radial', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value=${VALUE} gradient="conic"></igc-qr-code>`
+        );
+
+        expect(gradientOf(el)).to.be.null;
+        expect(fillOf(getPart(el, 'dots'))).to.equal('rgb(0, 0, 0)');
+      });
+
+      it('treats a gradient-angle that is not a number as 0', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code gradient-angle="up"></igc-qr-code>`
+        );
+        expect(el.gradientAngle).to.equal(0);
+      });
+
+      it('lets an explicit corner color win over the gradient', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value=${VALUE}
+            gradient="linear"
+            style="--ig-qr-code-corner-square-color: rgb(0, 0, 255);"
+          ></igc-qr-code>`
+        );
+
+        expect(fillOf(getPart(el, 'corner-square'))).to.equal('rgb(0, 0, 255)');
+        expect(fillOf(getPart(el, 'corner-dot'))).to.equal(
+          `url("#${gradientOf(el)!.id}")`
+        );
+      });
+
+      it('colors the stops with the gradient colors, or else with the dark color', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value=${VALUE}
+            gradient="radial"
+            style="--ig-qr-code-dark-color: rgb(204, 51, 0);"
+          ></igc-qr-code>`
+        );
+        const stops = () =>
+          Array.from(
+            el.renderRoot.querySelectorAll('stop'),
+            (stop) => getComputedStyle(stop).stopColor
+          );
+
+        expect(stops()).to.deep.equal(['rgb(204, 51, 0)', 'rgb(204, 51, 0)']);
+
+        el.style.setProperty('--ig-qr-code-gradient-start', 'rgb(255, 0, 0)');
+        el.style.setProperty('--ig-qr-code-gradient-end', 'rgb(0, 0, 255)');
+        expect(stops()).to.deep.equal(['rgb(255, 0, 0)', 'rgb(0, 0, 255)']);
+      });
+
+      it('runs a linear gradient across the matrix, without the quiet zone, at gradient-angle', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="test" gradient="linear"></igc-qr-code>`
+        );
+        // Version 1 with the default margin: the matrix fills the view box from `start` to `end`.
+        const start = (4 * 21) / 29;
+        const end = 21 - start;
+        const expectLine = (expected: number[]) => {
+          const line = readNumbers(gradientOf(el)!, ['x1', 'y1', 'x2', 'y2']);
+          for (const [index, value] of line.entries()) {
+            expect(value).to.be.closeTo(expected[index], 1e-9);
+          }
+        };
+
+        expectLine([start, 10.5, end, 10.5]);
+
+        el.gradientAngle = 90;
+        await elementUpdated(el);
+        expectLine([10.5, start, 10.5, end]);
+
+        // At 45 degrees, the line goes from corner to corner.
+        el.gradientAngle = 45;
+        await elementUpdated(el);
+        expectLine([start, start, end, end]);
+      });
+
+      it('reaches the corners of the matrix with a radial gradient', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value="test" gradient="radial"></igc-qr-code>`
+        );
+        const [cx, cy, r] = readNumbers(gradientOf(el)!, ['cx', 'cy', 'r']);
+
+        expect(gradientOf(el)!.getAttribute('gradientUnits')).to.equal(
+          'userSpaceOnUse'
+        );
+        expect(cx).to.equal(10.5);
+        expect(cy).to.equal(10.5);
+        expect(r).to.be.closeTo((10.5 - (4 * 21) / 29) * Math.SQRT2, 1e-9);
+      });
+
+      it('gives each instance its own gradient', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div>
+            <igc-qr-code value=${VALUE} gradient="linear"></igc-qr-code>
+            <igc-qr-code value=${VALUE} gradient="linear"></igc-qr-code>
+          </div>
+        `);
+        const [first, second] = Array.from(
+          container.querySelectorAll('igc-qr-code'),
+          (el) => gradientOf(el)!.id
+        );
+
+        expect(first).not.to.equal(second);
+      });
+    });
+
     it('does not invert colors when the global theme switches to dark variant', async () => {
       configureTheme('material', 'dark');
 
@@ -380,6 +551,14 @@ describe('IgcQrCodeComponent', () => {
         html`<igc-qr-code dot-scale="0.8"></igc-qr-code>`
       );
       expect(el.dotScale).to.equal(0.8);
+    });
+
+    it('reflects gradient and gradient-angle to gradient and gradientAngle', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code gradient="radial" gradient-angle="45"></igc-qr-code>`
+      );
+      expect(el.gradient).to.equal('radial');
+      expect(el.gradientAngle).to.equal(45);
     });
   });
 
@@ -754,9 +933,12 @@ describe('IgcQrCodeComponent', () => {
         style: QrDotStyle,
         x: number,
         y: number,
-        scale = 1
+        scale = 1,
+        cutout?: ModuleRange[]
       ): boolean {
-        const d = renderDataModules(matrix, 1, 0, style, scale).join(' ');
+        const d = renderDataModules(matrix, 1, 0, style, scale, cutout).join(
+          ' '
+        );
         return isInPath(d, x, y);
       }
 
@@ -796,6 +978,25 @@ describe('IgcQrCodeComponent', () => {
 
         expect(isFilled('horizontal-bars', 11, 10.5, 0.7)).to.be.true;
         expect(isFilled('horizontal-bars', 11, 10.1, 0.7)).to.be.false;
+      });
+
+      it('does not join a module under the logo to a module outside it', () => {
+        // The logo cutout holds the module at (10, 12).
+        const cutout = [{ top: 10, left: 12, bottom: 10, right: 12 }];
+
+        // The module at (10, 11) ends round toward the cutout, and the hidden module stays.
+        expect(isFilled('rounded', 11.98, 10.02)).to.be.true;
+        expect(isFilled('rounded', 11.98, 10.02, 1, cutout)).to.be.false;
+        expect(isFilled('rounded', 12.5, 10.5, 1, cutout)).to.be.true;
+
+        // The bar of row 10 splits at the cutout edge.
+        expect(
+          renderDataModules(matrix, 1, 0, 'horizontal-bars', 1, cutout)
+        ).to.have.length(3);
+
+        // A fillet needs three modules of one zone.
+        const corner = [{ top: 10, left: 10, bottom: 10, right: 10 }];
+        expect(isFilled('liquid', 11.03, 11.03, 1, corner)).to.be.false;
       });
 
       it('rounds the leaf corners on the diagonal toward the center of the code', async () => {
@@ -958,6 +1159,10 @@ describe('IgcQrCodeComponent', () => {
       it('logoMargin defaults to undefined', () => {
         expect(el.logoMargin).to.be.undefined;
       });
+
+      it('logoShape defaults to square', () => {
+        expect(el.logoShape).to.equal('square');
+      });
     });
 
     describe('Attribute reflection', () => {
@@ -982,6 +1187,13 @@ describe('IgcQrCodeComponent', () => {
           html`<igc-qr-code logo-margin="4"></igc-qr-code>`
         );
         expect(el.logoMargin).to.equal(4);
+      });
+
+      it('reflects logo-shape to logoShape', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code logo-shape="circle"></igc-qr-code>`
+        );
+        expect(el.logoShape).to.equal('circle');
       });
     });
 
@@ -1307,7 +1519,8 @@ describe('IgcQrCodeComponent', () => {
 
         el.logoMargin = 2;
         await elementUpdated(el);
-        expect(left() - start).to.be.closeTo(2, 1e-3);
+        // Firefox measures the layout in sixtieths of a pixel.
+        expect(left() - start).to.be.closeTo(2, 1 / 60);
       });
 
       it('does not render an image when logoMargin consumes the entire logo box', async () => {
@@ -1414,6 +1627,171 @@ describe('IgcQrCodeComponent', () => {
         ).to.be.above(0);
         // The cutout stays clear of the format information in row and column 8.
         expect(cut.x).to.be.at.least((el.margin + 9) * moduleSize - EPSILON);
+      });
+
+      it('keeps one cut rectangle and no clip for a square logo', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-size="1"
+            logo-src=${VALID_LOGO}
+          ></igc-qr-code>`
+        );
+
+        expect(el.renderRoot.querySelectorAll('mask rect')).to.have.length(2);
+        expect(el.renderRoot.querySelector('clipPath')).to.be.null;
+        expect(el.renderRoot.querySelector('image')!.hasAttribute('clip-path'))
+          .to.be.false;
+      });
+
+      // A logo twice as wide as it is high.
+      const WIDE_LOGO = `data:image/svg+xml,${encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100"/></svg>'
+      )}`;
+
+      for (const [logoShape, logo, name] of [
+        ['circle', VALID_LOGO, 'circle'],
+        ['rounded', VALID_LOGO, 'rounded'],
+        ['squircle', VALID_LOGO, 'squircle'],
+        ['circle', WIDE_LOGO, 'wide ellipse'],
+        ['squircle', WIDE_LOGO, 'wide squircle'],
+      ] as const) {
+        it(`cuts the modules that a ${name} logo covers, and clips the image to it`, async () => {
+          // With no margin, one module is one SVG unit.
+          const el = await fixture<IgcQrCodeComponent>(
+            html`<igc-qr-code
+              value="https://example.com"
+              margin="0"
+              logo-size="1"
+              logo-shape=${logoShape}
+              logo-src=${logo}
+            ></igc-qr-code>`
+          );
+          const image = el.renderRoot.querySelector('image')!;
+          if (logo === WIDE_LOGO) {
+            await waitUntil(
+              () => readBox(image).width > 1.9 * readBox(image).height,
+              'The wide logo did not load.'
+            );
+          }
+          const clip = el.renderRoot.querySelector('clipPath')!;
+          const shape = clip.querySelector('path')!;
+          const box = readBox(image);
+          const cuts = Array.from(
+            el.renderRoot.querySelectorAll('mask rect ~ rect'),
+            readBox
+          );
+          const inShape = (x: number, y: number) =>
+            shape.isPointInFill(new DOMPoint(x, y));
+          const inCut = (x: number, y: number) =>
+            cuts.some(
+              (cut) =>
+                x >= cut.x &&
+                x <= cut.x + cut.width &&
+                y >= cut.y &&
+                y <= cut.y + cut.height
+            );
+
+          expect(image.getAttribute('clip-path')).to.equal(`url(#${clip.id})`);
+
+          // The cutout holds each point of the shape.
+          for (let i = 0; i <= 40; i++) {
+            for (let j = 0; j <= 40; j++) {
+              const x = box.x + (box.width * i) / 40;
+              const y = box.y + (box.height * j) / 40;
+              if (inShape(x, y)) {
+                expect(inCut(x, y), `${x}, ${y}`).to.be.true;
+              }
+            }
+          }
+
+          // Each cut module overlaps the shape: the point of its cell nearest to the center of
+          // the logo, moved a little toward the center, is in the shape.
+          const cx = box.x + box.width / 2;
+          const cy = box.y + box.height / 2;
+          const nearest = (center: number, cell: number) => {
+            const point = clamp(center, cell, cell + 1);
+            return point + Math.sign(center - point) * 0.02;
+          };
+          for (const cut of cuts) {
+            for (let row = cut.y; row < cut.y + cut.height; row++) {
+              for (let col = cut.x; col < cut.x + cut.width; col++) {
+                expect(
+                  inShape(nearest(cx, col), nearest(cy, row)),
+                  `${row}, ${col}`
+                ).to.be.true;
+              }
+            }
+          }
+        });
+      }
+
+      it('clips a shaped logo to the logo box less logo-margin', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-size="1"
+            logo-margin="6"
+            logo-shape="circle"
+            logo-src=${VALID_LOGO}
+          ></igc-qr-code>`
+        );
+        const box = readBox(el.renderRoot.querySelector('image')!);
+        const shape =
+          el.renderRoot.querySelector<SVGPathElement>('clipPath path')!;
+        const inShape = (x: number, y: number) =>
+          shape.isPointInFill(new DOMPoint(x, y));
+        const middle = box.y + box.height / 2;
+
+        expect(inShape(box.x + 0.01, middle)).to.be.true;
+        expect(inShape(box.x - 0.01, middle)).to.be.false;
+        expect(inShape(box.x + box.width + 0.01, middle)).to.be.false;
+      });
+
+      it('keeps a larger logo of each other shape than of a square on a pinned version', async () => {
+        const widths: Record<string, number> = {};
+
+        for (const logoShape of ['square', 'circle', 'rounded', 'squircle']) {
+          const el = await fixture<IgcQrCodeComponent>(
+            html`<igc-qr-code
+              value="test"
+              version="1"
+              error-level="H"
+              logo-size="1"
+              logo-shape=${logoShape}
+              logo-src=${VALID_LOGO}
+            ></igc-qr-code>`
+          );
+          widths[logoShape] = readBox(
+            el.renderRoot.querySelector('image')!
+          ).width;
+        }
+
+        for (const logoShape of ['circle', 'rounded', 'squircle']) {
+          expect(widths[logoShape], logoShape).to.be.greaterThan(widths.square);
+        }
+      });
+
+      it('redraws the dots when the cutout changes', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            dot-style="rounded"
+            logo-size="1"
+            logo-src=${VALID_LOGO}
+          ></igc-qr-code>`
+        );
+        const dots = () =>
+          el.renderRoot.querySelector('[part~="dots"]')!.getAttribute('d');
+        const square = dots();
+
+        el.logoShape = 'circle';
+        await elementUpdated(el);
+        expect(dots()).not.to.equal(square);
+
+        el.logoShape = 'square';
+        await elementUpdated(el);
+        expect(dots()).to.equal(square);
       });
     });
   });
@@ -1574,6 +1952,44 @@ describe('IgcQrCodeComponent', () => {
         expect(svg.querySelector('mask')).to.exist;
       });
 
+      it('keeps the clip of a shaped logo', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-shape="squircle"
+            logo-src=${LOGO}
+          ></igc-qr-code>`
+        );
+
+        const svg = await parseSvg(await el.toBlob());
+        const clip = svg.querySelector('clipPath')!;
+        expect(svg.querySelector('image')!.getAttribute('clip-path')).to.equal(
+          `url(#${clip.id})`
+        );
+      });
+
+      it('writes the gradient colors and paint into the export', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            gradient="linear"
+            style="--ig-qr-code-gradient-start: rgb(255, 0, 0); --ig-qr-code-gradient-end: rgb(0, 0, 255);"
+          ></igc-qr-code>`
+        );
+
+        const svg = await parseSvg(await el.toBlob());
+        const gradient = svg.querySelector('linearGradient')!;
+        expect(
+          Array.from(gradient.querySelectorAll('stop'), (stop) =>
+            stop.getAttribute('stop-color')
+          )
+        ).to.deep.equal(['rgb(255, 0, 0)', 'rgb(0, 0, 255)']);
+
+        for (const part of svg.querySelectorAll('g path')) {
+          expect(part.getAttribute('fill')).to.equal(`url(#${gradient.id})`);
+        }
+      });
+
       it('leaves no empty host relation in the exported SVG', async () => {
         const container = await fixture<HTMLElement>(html`
           <div>
@@ -1663,6 +2079,23 @@ describe('IgcQrCodeComponent', () => {
         expect(svg.querySelector('image')).to.be.null;
         expect(svg.querySelector('mask')).to.be.null;
         expect(svg.querySelector('[mask]')).to.be.null;
+      });
+
+      it('keeps the gradient when the logo cannot be fetched', async () => {
+        stub(window, 'fetch').rejects(new TypeError('CORS'));
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            gradient="radial"
+            logo-shape="circle"
+            logo-src=${createLogoUrl()}
+          ></igc-qr-code>`
+        );
+
+        const svg = await parseSvg(await el.toBlob());
+        expect(svg.querySelector('mask')).to.be.null;
+        expect(svg.querySelector('clipPath')).to.be.null;
+        expect(svg.querySelector('radialGradient')).to.exist;
       });
 
       it('drops the logo when the logo request fails', async () => {
@@ -2210,6 +2643,98 @@ describe('IgcQrCodeComponent', () => {
                 `${errorLevel}, ${color}, ${logoSize}`
               ).to.equal(value);
             }
+          }
+        }
+      });
+    }
+
+    for (const logoShape of ['circle', 'rounded', 'squircle'] as const) {
+      it(`reads a ${logoShape} logo on small codes`, async () => {
+        el.logoShape = logoShape;
+
+        for (const value of ['test', 'https://example.com/']) {
+          for (const errorLevel of ['L', 'M', 'Q', 'H'] as const) {
+            for (const color of ['#fff', '#000']) {
+              Object.assign(el, {
+                value,
+                errorLevel,
+                logoSrc: solidLogo(color),
+                logoSize: 1,
+              });
+              expect(
+                await scan(),
+                `${value}, ${errorLevel}, ${color}`
+              ).to.equal(value);
+            }
+          }
+        }
+      });
+    }
+
+    it('reads a wide and a pinned shaped logo', async () => {
+      const wide = `data:image/svg+xml,${encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100"/></svg>'
+      )}`;
+
+      for (const logoShape of ['circle', 'rounded', 'squircle'] as const) {
+        for (const errorLevel of ['M', 'H'] as const) {
+          Object.assign(el, {
+            value: PRODUCT_URL,
+            version: undefined,
+            logoShape,
+            errorLevel,
+            logoSrc: wide,
+            logoSize: 1,
+            logoMargin: 3,
+          });
+          expect(await scan(), `${logoShape}, wide, ${errorLevel}`).to.equal(
+            PRODUCT_URL
+          );
+        }
+
+        for (const version of [1, 2, 3]) {
+          Object.assign(el, {
+            value: 'test',
+            version,
+            errorLevel: 'H',
+            logoSrc: solidLogo('#000'),
+            logoMargin: undefined,
+          });
+          expect(await scan(), `${logoShape}, V${version}`).to.equal('test');
+        }
+      }
+    });
+
+    it('reads the joining styles that end at the logo cutout', async () => {
+      Object.assign(el, { logoSrc: solidLogo('#000'), logoSize: 1 });
+
+      for (const dotStyle of [
+        'rounded',
+        'liquid',
+        'horizontal-bars',
+        'vertical-bars',
+      ] as const) {
+        for (const logoShape of ['square', 'circle'] as const) {
+          for (const value of [PRODUCT_URL, LONG_VALUE]) {
+            Object.assign(el, { dotStyle, logoShape, value });
+            expect(await scan(), `${dotStyle}, ${logoShape}`).to.equal(value);
+          }
+        }
+      }
+    });
+
+    for (const gradient of ['linear', 'radial'] as const) {
+      it(`reads a ${gradient} gradient between two dark colors`, async () => {
+        el.style.setProperty('--ig-qr-code-gradient-start', '#1a237e');
+        el.style.setProperty('--ig-qr-code-gradient-end', '#880e4f');
+        Object.assign(el, { gradient, dotStyle: 'circle' });
+
+        for (const gradientAngle of gradient === 'linear'
+          ? [0, 45, 135]
+          : [0]) {
+          for (const value of [PRODUCT_URL, LONG_VALUE]) {
+            Object.assign(el, { gradientAngle, value });
+            expect(await scan(), `${gradientAngle}`).to.equal(value);
           }
         }
       });
