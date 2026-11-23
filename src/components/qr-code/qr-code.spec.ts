@@ -17,7 +17,7 @@ import { configureTheme } from '#theming/config.js';
 import IgcQrCodeComponent from './qr-code.js';
 import { rasterizeSvg } from './renderer/export.js';
 import { renderDataModules } from './renderer/helpers.js';
-import type { QrErrorCorrectionLevel } from './types.js';
+import type { QrDotStyle, QrErrorCorrectionLevel } from './types.js';
 
 describe('IgcQrCodeComponent', () => {
   before(() => {
@@ -553,6 +553,22 @@ describe('IgcQrCodeComponent', () => {
         .getAttribute('d')!;
     }
 
+    /** Whether the point at `x`, `y` lies in the fill of the path data `d`. */
+    function isInPath(d: string, x: number, y: number): boolean {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const path = svg.appendChild(
+        document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      );
+      path.setAttribute('d', d);
+      document.body.append(svg);
+
+      try {
+        return path.isPointInFill(new DOMPoint(x, y));
+      } finally {
+        svg.remove();
+      }
+    }
+
     async function renderCode(): Promise<IgcQrCodeComponent> {
       return fixture<IgcQrCodeComponent>(
         html`<igc-qr-code value="test" margin="0"></igc-qr-code>`
@@ -697,33 +713,145 @@ describe('IgcQrCodeComponent', () => {
             return (r === 18 && c === 21) || (distance <= 2 && distance !== 1);
           })
         );
-        const svg = await fixture<SVGSVGElement>(
-          html`<svg viewBox="0 0 25 25"><path></path></svg>`
-        );
-        const path = svg.querySelector('path')!;
         const modules = renderDataModules(matrix, 1, 0, 'rounded', 1);
 
         expect(modules).to.have.length(1);
-        path.setAttribute('d', modules[0]);
-        expect(path.isPointInFill(new DOMPoint(21.02, 18.02))).to.be.false;
+        expect(isInPath(modules[0], 21.02, 18.02)).to.be.false;
       });
 
-      it('draws a square corner dot as a circle in a circle corner square', async () => {
+      it('draws a square or leaf corner dot as a circle in a circle corner square', async () => {
         const el = await renderVersion2();
         Object.assign(el, { squareStyle: 'circle', cornerDotStyle: 'circle' });
         await elementUpdated(el);
         const dot = getPath(el, 'corner-dot');
         const alignment = getPath(el, 'alignment');
 
-        el.cornerDotStyle = 'square';
-        await elementUpdated(el);
-        expect(getPath(el, 'corner-dot')).to.equal(dot);
-        expect(getPath(el, 'alignment')).to.equal(alignment);
-        expect(el.cornerDotStyle).to.equal('square');
+        for (const cornerDotStyle of ['square', 'leaf'] as const) {
+          el.cornerDotStyle = cornerDotStyle;
+          await elementUpdated(el);
+          expect(getPath(el, 'corner-dot'), cornerDotStyle).to.equal(dot);
+          expect(getPath(el, 'alignment'), cornerDotStyle).to.equal(alignment);
+          expect(el.cornerDotStyle).to.equal(cornerDotStyle);
+        }
 
-        el.squareStyle = 'square';
+        Object.assign(el, { squareStyle: 'square', cornerDotStyle: 'square' });
         await elementUpdated(el);
         expect(isInFill(el, 'corner-dot', 2.05, 2.05)).to.be.true;
+      });
+    });
+
+    describe('New shapes', () => {
+      // Dark modules at (10, 10), (10, 11), (10, 12) and (11, 10), away from the patterns.
+      const matrix = Array.from({ length: 21 }, (_, r) =>
+        Array.from(
+          { length: 21 },
+          (_, c) => (r === 10 && c >= 10 && c <= 12) || (r === 11 && c === 10)
+        )
+      );
+
+      /** Whether the point at `x`, `y` lies in the modules of `style` at `scale`. */
+      function isFilled(
+        style: QrDotStyle,
+        x: number,
+        y: number,
+        scale = 1
+      ): boolean {
+        const d = renderDataModules(matrix, 1, 0, style, scale).join(' ');
+        return isInPath(d, x, y);
+      }
+
+      it('draws a diamond and a plus that reach the cell edges', () => {
+        // The module at (10, 12) has no dark neighbor on its right.
+        for (const style of ['diamond', 'plus'] as const) {
+          expect(isFilled(style, 12.5, 10.5), style).to.be.true;
+          expect(isFilled(style, 12.98, 10.5), style).to.be.true;
+          expect(isFilled(style, 12.9, 10.1), style).to.be.false;
+        }
+
+        expect(isFilled('plus', 12.5, 10.15)).to.be.true;
+        expect(isFilled('diamond', 12.3, 10.15)).to.be.false;
+      });
+
+      it('fills the inside corner of a liquid L-join', () => {
+        // The inside corner of the L is at (11, 11).
+        expect(isFilled('liquid', 11.03, 11.03)).to.be.true;
+        expect(isFilled('liquid', 11.4, 11.4)).to.be.false;
+        expect(isFilled('rounded', 11.03, 11.03)).to.be.false;
+        expect(renderDataModules(matrix, 1, 0, 'liquid', 0.9)).to.deep.equal(
+          renderDataModules(matrix, 1, 0, 'rounded', 0.9)
+        );
+      });
+
+      it('draws one bar with round ends for each run of a bar style', () => {
+        expect(
+          renderDataModules(matrix, 1, 0, 'horizontal-bars', 1)
+        ).to.have.length(2);
+        expect(
+          renderDataModules(matrix, 1, 0, 'vertical-bars', 1)
+        ).to.have.length(3);
+
+        expect(isFilled('horizontal-bars', 11, 10.5)).to.be.true;
+        expect(isFilled('horizontal-bars', 10.05, 10.05)).to.be.false;
+        expect(isFilled('vertical-bars', 10.5, 11)).to.be.true;
+
+        expect(isFilled('horizontal-bars', 11, 10.5, 0.7)).to.be.true;
+        expect(isFilled('horizontal-bars', 11, 10.1, 0.7)).to.be.false;
+      });
+
+      it('rounds the leaf corners on the diagonal toward the center of the code', async () => {
+        const el = await renderCode();
+        Object.assign(el, { squareStyle: 'leaf', cornerDotStyle: 'leaf' });
+        await elementUpdated(el);
+
+        // The top-left finder pattern fills the square from (0, 0) to (7, 7), and the
+        // top-right one the square from (14, 0) to (21, 7).
+        expect(isInFill(el, 'corner-square', 0.1, 0.1)).to.be.false;
+        expect(isInFill(el, 'corner-square', 6.9, 0.1)).to.be.true;
+        expect(isInFill(el, 'corner-square', 6.9, 6.9)).to.be.false;
+        expect(isInFill(el, 'corner-square', 14.1, 0.1)).to.be.true;
+        expect(isInFill(el, 'corner-square', 20.9, 0.1)).to.be.false;
+        expect(isInFill(el, 'corner-dot', 2.05, 2.05)).to.be.false;
+        expect(isInFill(el, 'corner-dot', 4.95, 2.05)).to.be.true;
+      });
+
+      it('gives a leaf alignment ring the shape of the top-left corner square', async () => {
+        // The alignment pattern of version 2 fills the square from (16, 16) to (21, 21).
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            margin="0"
+            square-style="leaf"
+          ></igc-qr-code>`
+        );
+
+        expect(isInFill(el, 'alignment', 16.05, 16.05)).to.be.false;
+        expect(isInFill(el, 'alignment', 20.95, 16.05)).to.be.true;
+      });
+
+      it('draws the corner dots of the new dot styles as square or rounded', async () => {
+        const el = await renderCode();
+        const dot = () => getPath(el, 'corner-dot');
+
+        el.cornerDotStyle = 'square';
+        await elementUpdated(el);
+        const square = dot();
+
+        el.cornerDotStyle = 'rounded';
+        await elementUpdated(el);
+        const rounded = dot();
+
+        el.cornerDotStyle = undefined;
+        for (const [dotStyle, expected] of [
+          ['diamond', square],
+          ['plus', square],
+          ['liquid', rounded],
+          ['horizontal-bars', rounded],
+          ['vertical-bars', rounded],
+        ] as const) {
+          el.dotStyle = dotStyle;
+          await elementUpdated(el);
+          expect(dot(), dotStyle).to.equal(expected);
+        }
       });
     });
 
@@ -1902,6 +2030,13 @@ describe('IgcQrCodeComponent', () => {
     // Version 12 at level M, with many alignment patterns.
     const LONG_VALUE = `${PRODUCT_URL}?a=${PRODUCT_URL}&b=${PRODUCT_URL}&c=${PRODUCT_URL}`;
     const SHAPES = ['square', 'circle', 'rounded', 'squircle'] as const;
+    const NEW_DOT_STYLES = [
+      'diamond',
+      'plus',
+      'liquid',
+      'horizontal-bars',
+      'vertical-bars',
+    ] as const;
 
     function solidLogo(color: string): string {
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect width="1" height="1" fill="${color}"/></svg>`;
@@ -1960,17 +2095,69 @@ describe('IgcQrCodeComponent', () => {
       }
     });
 
-    for (const squareStyle of SHAPES) {
+    for (const squareStyle of [...SHAPES, 'leaf'] as const) {
       it(`reads the alignment patterns of square-style="${squareStyle}"`, async () => {
         Object.assign(el, { value: LONG_VALUE, squareStyle });
 
-        for (const dotStyle of SHAPES) {
+        for (const dotStyle of [...SHAPES, ...NEW_DOT_STYLES]) {
           el.dotStyle = dotStyle;
 
           for (const pixels of [7, 8]) {
             expect(await scanAt(pixels), `${dotStyle}, ${pixels}`).to.equal(
               LONG_VALUE
             );
+          }
+        }
+      });
+    }
+
+    for (const dotStyle of NEW_DOT_STYLES) {
+      it(`reads dot-style="${dotStyle}" at full size and at the smallest dot-scale`, async () => {
+        el.dotStyle = dotStyle;
+        expect(await scan()).to.equal(PRODUCT_URL);
+
+        el.dotScale = 0;
+        expect(await scan()).to.equal(PRODUCT_URL);
+
+        el.value = LONG_VALUE;
+        expect(await scan()).to.equal(LONG_VALUE);
+      });
+    }
+
+    // A leaf with fully round corners failed at these sizes.
+    for (const [name, pairs] of [
+      [
+        'a leaf corner square with each corner dot',
+        [...SHAPES, 'leaf'].map((cornerDotStyle) => ({
+          squareStyle: 'leaf',
+          cornerDotStyle,
+        })),
+      ],
+      // A circle ring draws a leaf dot as a circle, which the circle scans cover.
+      [
+        'a leaf corner dot in each corner square',
+        ['square', 'rounded', 'squircle'].map((squareStyle) => ({
+          squareStyle,
+          cornerDotStyle: 'leaf',
+        })),
+      ],
+    ] as const) {
+      it(`reads ${name}`, async () => {
+        el.dotStyle = 'circle';
+
+        for (const styles of pairs) {
+          for (const [value, version] of [
+            ['https://example.com/', 3],
+            [LONG_VALUE, 12],
+          ] as const) {
+            Object.assign(el, { ...styles, value, version });
+
+            for (const pixels of [7, 9]) {
+              expect(
+                await scanAt(pixels),
+                `${styles.squareStyle}, ${styles.cornerDotStyle}, ${version}, ${pixels}`
+              ).to.equal(value);
+            }
           }
         }
       });

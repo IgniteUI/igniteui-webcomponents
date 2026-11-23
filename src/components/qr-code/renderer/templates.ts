@@ -85,23 +85,26 @@ export function renderQrFinders({
   dotStyle,
   squareStyle,
 }: RenderPatternsProperties): TemplateResult[] {
-  return getFinderPatterns(size, moduleSize, marginPx).map(({ x, y }) => {
-    const [squarePath, dotPath] = patternPaths(
-      x,
-      y,
-      7,
-      moduleSize,
-      squareStyle,
-      dotStyle
-    );
+  return getFinderPatterns(size, moduleSize, marginPx).map(
+    ({ x, y, antiDiagonal }) => {
+      const [squarePath, dotPath] = patternPaths(
+        x,
+        y,
+        7,
+        moduleSize,
+        squareStyle,
+        dotStyle,
+        antiDiagonal
+      );
 
-    return svg`
+      return svg`
       <g>
         <path part="corner-square" d=${squarePath} fill-rule="evenodd"></path>
         <path part="corner-dot" d=${dotPath}></path>
       </g>
     `;
-  });
+    }
+  );
 }
 
 /** Renders the alignment patterns as a single SVG path, or nothing for version 1. */

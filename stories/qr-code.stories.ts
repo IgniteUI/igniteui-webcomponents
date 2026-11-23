@@ -97,40 +97,60 @@ const metadata: Meta<IgcQrCodeComponent> = {
     dotStyle: {
       type: {
         name: 'enum',
-        value: ['square', 'circle', 'rounded', 'squircle'],
+        value: [
+          'square',
+          'circle',
+          'rounded',
+          'squircle',
+          'diamond',
+          'plus',
+          'liquid',
+          'horizontal-bars',
+          'vertical-bars',
+        ],
       },
       description:
-        "The style of the data modules (dots) in the QR code. This can be 'square', 'circle',\n'rounded', or 'squircle'. The inner dot of each finder-pattern corner uses the same style\nunless `cornerDotStyle` is set.",
-      options: ['square', 'circle', 'rounded', 'squircle'],
+        "The style of the data modules (dots) in the QR code. This can be 'square', 'circle',\n'rounded', 'squircle', 'diamond', 'plus', 'liquid', 'horizontal-bars' or 'vertical-bars'.\n'liquid' is 'rounded' with a smooth fill in the inside corners where modules join. The bar\nstyles draw each run of dark modules in a row or a column as one bar with round ends.\n\nThe inner dot of each finder-pattern corner uses the same style unless `cornerDotStyle` is\nset. It draws 'diamond' and 'plus' as 'square', and 'liquid' and the bar styles as\n'rounded'.",
+      options: [
+        'square',
+        'circle',
+        'rounded',
+        'squircle',
+        'diamond',
+        'plus',
+        'liquid',
+        'horizontal-bars',
+        'vertical-bars',
+      ],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'square' } },
     },
     dotScale: {
       type: 'number',
       description:
-        "The size of each data module, as a ratio of its cell in the module grid. The value is a\nnumber from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the\nmodules, so 'rounded' modules do not join their neighbors. The finder-pattern corners keep\ntheir full size. A smaller value can make the code harder to scan with a camera.",
+        "The size of each data module, as a ratio of its cell in the module grid. The value is a\nnumber from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the\nmodules, so 'rounded' modules do not join their neighbors, and 'liquid' draws as 'rounded'.\nFor the bar styles, it sets the thickness of the bars and shortens their ends. The\nfinder-pattern corners keep their full size. A smaller value can make the code harder to\nscan with a camera.",
       control: 'number',
       table: { defaultValue: { summary: '1' } },
     },
     squareStyle: {
       type: {
         name: 'enum',
-        value: ['square', 'circle', 'rounded', 'squircle'],
+        value: ['square', 'circle', 'rounded', 'squircle', 'leaf'],
       },
       description:
-        "The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',\nor 'squircle'. The rings of the alignment patterns use the same style.",
-      options: ['square', 'circle', 'rounded', 'squircle'],
+        "The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',\n'squircle' or 'leaf'. A 'leaf' has two opposite round corners on the diagonal toward the\ncenter of the code. The rings of the alignment patterns use the same style, and a 'leaf'\nring there has the shape of the top-left corner square.",
+      options: ['square', 'circle', 'rounded', 'squircle', 'leaf'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'square' } },
     },
     cornerDotStyle: {
       type: {
         name: 'enum',
-        value: ['square', 'circle', 'rounded', 'squircle'],
+        value: ['square', 'circle', 'rounded', 'squircle', 'leaf'],
       },
       description:
-        "The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',\n'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`. The centers of\nthe alignment patterns use the same style.\n\nIn a 'circle' corner square, a 'square' dot draws as 'circle', because scanners do not\nfind the pattern reliably with a square dot in a round ring.",
-      options: ['square', 'circle', 'rounded', 'squircle'],
+        "The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',\n'rounded', 'squircle' or 'leaf'. When it is not set, the inner dot uses `dotStyle`. The\ncenters of the alignment patterns use the same style.\n\nIn a 'circle' corner square, a 'square' or 'leaf' dot draws as 'circle', because scanners\ndo not find the pattern reliably with corners in a round ring.",
+      options: ['square', 'circle', 'rounded', 'squircle', 'leaf'],
       control: { type: 'select' },
     },
   },
@@ -216,31 +236,49 @@ interface IgcQrCodeArgs {
   logoMargin: number;
   /**
    * The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
-   * 'rounded', or 'squircle'. The inner dot of each finder-pattern corner uses the same style
-   * unless `cornerDotStyle` is set.
+   * 'rounded', 'squircle', 'diamond', 'plus', 'liquid', 'horizontal-bars' or 'vertical-bars'.
+   * 'liquid' is 'rounded' with a smooth fill in the inside corners where modules join. The bar
+   * styles draw each run of dark modules in a row or a column as one bar with round ends.
+   *
+   * The inner dot of each finder-pattern corner uses the same style unless `cornerDotStyle` is
+   * set. It draws 'diamond' and 'plus' as 'square', and 'liquid' and the bar styles as
+   * 'rounded'.
    */
-  dotStyle: 'square' | 'circle' | 'rounded' | 'squircle';
+  dotStyle:
+    | 'square'
+    | 'circle'
+    | 'rounded'
+    | 'squircle'
+    | 'diamond'
+    | 'plus'
+    | 'liquid'
+    | 'horizontal-bars'
+    | 'vertical-bars';
   /**
    * The size of each data module, as a ratio of its cell in the module grid. The value is a
    * number from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the
-   * modules, so 'rounded' modules do not join their neighbors. The finder-pattern corners keep
-   * their full size. A smaller value can make the code harder to scan with a camera.
+   * modules, so 'rounded' modules do not join their neighbors, and 'liquid' draws as 'rounded'.
+   * For the bar styles, it sets the thickness of the bars and shortens their ends. The
+   * finder-pattern corners keep their full size. A smaller value can make the code harder to
+   * scan with a camera.
    */
   dotScale: number;
   /**
    * The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',
-   * or 'squircle'. The rings of the alignment patterns use the same style.
+   * 'squircle' or 'leaf'. A 'leaf' has two opposite round corners on the diagonal toward the
+   * center of the code. The rings of the alignment patterns use the same style, and a 'leaf'
+   * ring there has the shape of the top-left corner square.
    */
-  squareStyle: 'square' | 'circle' | 'rounded' | 'squircle';
+  squareStyle: 'square' | 'circle' | 'rounded' | 'squircle' | 'leaf';
   /**
    * The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',
-   * 'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`. The centers of
-   * the alignment patterns use the same style.
+   * 'rounded', 'squircle' or 'leaf'. When it is not set, the inner dot uses `dotStyle`. The
+   * centers of the alignment patterns use the same style.
    *
-   * In a 'circle' corner square, a 'square' dot draws as 'circle', because scanners do not
-   * find the pattern reliably with a square dot in a round ring.
+   * In a 'circle' corner square, a 'square' or 'leaf' dot draws as 'circle', because scanners
+   * do not find the pattern reliably with corners in a round ring.
    */
-  cornerDotStyle: 'square' | 'circle' | 'rounded' | 'squircle';
+  cornerDotStyle: 'square' | 'circle' | 'rounded' | 'squircle' | 'leaf';
 }
 type Story = StoryObj<IgcQrCodeArgs>;
 
@@ -303,7 +341,7 @@ export const Shapes: Story = {
     docs: {
       description: {
         story:
-          '`dot-style` sets the shape of the data modules and of the inner dot of each corner. `square-style` sets the shape of the outer corner squares and of the alignment rings. The table shows all 16 combinations for the same value: in a `circle` corner square, a `square` corner dot draws as a circle, so that scanners find the corner. Below it, `corner-dot-style` gives the inner corner dots a shape of their own, and `dot-scale` shrinks the data modules to leave a gap between them.',
+          '`dot-style` sets the shape of the data modules and of the inner dot of each corner. `square-style` sets the shape of the outer corner squares and of the alignment rings. The table shows all 16 combinations of the four basic shapes for the same value: in a `circle` corner square, a `square` corner dot draws as a circle, so that scanners find the corner. Below it are the other dot styles (`diamond`, `plus`, `liquid` and the bars) and the `leaf` corners. `corner-dot-style` gives the inner corner dots a shape of their own, and `dot-scale` shrinks the data modules to leave a gap between them.',
       },
     },
   },
@@ -337,6 +375,41 @@ export const Shapes: Story = {
         square: 'rounded',
         cornerDot: undefined,
         scale: 0.85,
+      },
+      {
+        caption: 'Diamond modules',
+        dot: 'diamond',
+        square: 'square',
+        cornerDot: undefined,
+        scale: 1,
+      },
+      {
+        caption: 'Plus modules with circle corners',
+        dot: 'plus',
+        square: 'circle',
+        cornerDot: undefined,
+        scale: 1,
+      },
+      {
+        caption: 'Liquid modules',
+        dot: 'liquid',
+        square: 'rounded',
+        cornerDot: undefined,
+        scale: 1,
+      },
+      {
+        caption: 'Horizontal bars with leaf corners',
+        dot: 'horizontal-bars',
+        square: 'leaf',
+        cornerDot: 'leaf',
+        scale: 1,
+      },
+      {
+        caption: 'Vertical bars at dot-scale 0.8',
+        dot: 'vertical-bars',
+        square: 'squircle',
+        cornerDot: undefined,
+        scale: 0.8,
       },
     ] as const;
 

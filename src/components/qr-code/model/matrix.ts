@@ -77,7 +77,7 @@ export function getVersionInfo(version: number): number {
   return (version << 12) | remainder;
 }
 
-function createMatrix(size: number): boolean[][] {
+export function createMatrix(size: number): boolean[][] {
   return Array.from({ length: size }, () => new Array(size).fill(false));
 }
 

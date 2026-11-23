@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.
   - `dot-scale` sets the size of the data modules, from 0.7 to 1 of their cell, to leave a gap between them. The corners keep their full size.
   - The `alignment` CSS part styles the alignment patterns. They take `--ig-qr-code-dark-color`.
+  - `dot-style` takes `diamond`, `plus`, `liquid`, `horizontal-bars` and `vertical-bars`. `liquid` fills the inside corners where `rounded` modules join. A bar style draws each run of dark modules in a row or a column as one bar with round ends. Without `corner-dot-style`, the corner dots draw `diamond` and `plus` as `square`, and the other new styles as `rounded`.
+  - `square-style` and `corner-dot-style` take `leaf`, a square with two opposite round corners on the diagonal toward the center of the code. In a `circle` corner square, a `leaf` corner dot draws as a circle.
   - `createWifiPayload()`, `createVCardPayload()`, `createEpcPayload()` and `createEventPayload()` from `igniteui-webcomponents/extras/qr-payloads` build the value of a code that a phone turns into a Wi-Fi login, a contact card, a SEPA payment or a calendar event. They escape the text and throw a `RangeError` for input that the format does not allow.
 
 ### Changed

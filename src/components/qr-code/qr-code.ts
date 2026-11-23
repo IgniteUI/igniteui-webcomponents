@@ -235,8 +235,13 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
 
   /**
    * The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
-   * 'rounded', or 'squircle'. The inner dot of each finder-pattern corner uses the same style
-   * unless `cornerDotStyle` is set.
+   * 'rounded', 'squircle', 'diamond', 'plus', 'liquid', 'horizontal-bars' or 'vertical-bars'.
+   * 'liquid' is 'rounded' with a smooth fill in the inside corners where modules join. The bar
+   * styles draw each run of dark modules in a row or a column as one bar with round ends.
+   *
+   * The inner dot of each finder-pattern corner uses the same style unless `cornerDotStyle` is
+   * set. It draws 'diamond' and 'plus' as 'square', and 'liquid' and the bar styles as
+   * 'rounded'.
    *
    * @attr dot-style
    * @default 'square'
@@ -247,8 +252,10 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   /**
    * The size of each data module, as a ratio of its cell in the module grid. The value is a
    * number from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the
-   * modules, so 'rounded' modules do not join their neighbors. The finder-pattern corners keep
-   * their full size. A smaller value can make the code harder to scan with a camera.
+   * modules, so 'rounded' modules do not join their neighbors, and 'liquid' draws as 'rounded'.
+   * For the bar styles, it sets the thickness of the bars and shortens their ends. The
+   * finder-pattern corners keep their full size. A smaller value can make the code harder to
+   * scan with a camera.
    *
    * @attr dot-scale
    * @default 1
@@ -258,7 +265,9 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
 
   /**
    * The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',
-   * or 'squircle'. The rings of the alignment patterns use the same style.
+   * 'squircle' or 'leaf'. A 'leaf' has two opposite round corners on the diagonal toward the
+   * center of the code. The rings of the alignment patterns use the same style, and a 'leaf'
+   * ring there has the shape of the top-left corner square.
    *
    * @attr square-style
    * @default 'square'
@@ -268,11 +277,11 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
 
   /**
    * The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',
-   * 'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`. The centers of
-   * the alignment patterns use the same style.
+   * 'rounded', 'squircle' or 'leaf'. When it is not set, the inner dot uses `dotStyle`. The
+   * centers of the alignment patterns use the same style.
    *
-   * In a 'circle' corner square, a 'square' dot draws as 'circle', because scanners do not
-   * find the pattern reliably with a square dot in a round ring.
+   * In a 'circle' corner square, a 'square' or 'leaf' dot draws as 'circle', because scanners
+   * do not find the pattern reliably with corners in a round ring.
    *
    * @attr corner-dot-style
    */
@@ -638,7 +647,8 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
       squareStyle: this.squareStyle,
       dotStyle: resolveCornerDotStyle(
         this.squareStyle,
-        this.cornerDotStyle || this.dotStyle
+        this.cornerDotStyle,
+        this.dotStyle
       ),
     };
 

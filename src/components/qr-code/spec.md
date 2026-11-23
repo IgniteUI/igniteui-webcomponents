@@ -42,6 +42,7 @@
     - [Logo](#logo)
     - [Export](#export)
     - [Clipboard](#clipboard)
+    - [QR model properties](#qr-model-properties)
     - [Host ARIA](#host-aria)
     - [Scanning](#scanning)
     - [Not covered by the suite](#not-covered-by-the-suite)
@@ -62,7 +63,7 @@
 |       5 | 2026-10-20 | `copyToClipboard()`; exports read `size` after the pending render      |
 |       6 | 2026-10-21 | An invalid `version` falls back to the automatic version             |
 |       7 | 2026-11-17 | Shapes, `cornerDotStyle`, `dotScale`, logo cutout and version fit  |
-|       8 | 2026-11-23 | Mixed-mode segments; no ECI header; payload helpers; export holds only the code; whole-pixel modules; alignment patterns |
+|       8 | 2026-11-23 | Mixed-mode segments; no ECI header; payload helpers; export holds only the code; whole-pixel modules; alignment patterns; new dot styles and `leaf` |
 
 ## Overview
 
@@ -82,9 +83,9 @@ authentication setup URLs, contact sharing and linking printed material to digit
 - **Configurable error correction** across `L`, `M`, `Q` and `H`, trading capacity for resilience.
 - **Center logo** with the modules beneath it masked out, and, when `error-level` is not set, an automatic
   escalation from `M` to the smallest level that keeps the code scannable at the requested logo size.
-- **Visual customization** of the data modules, the outer corner squares and the inner corner dots as `square`,
-  `circle`, `rounded` or `squircle`, and a scale for the data modules that leaves a gap between them. The alignment
-  patterns take the shapes of the corners.
+- **Visual customization** of the data modules, the outer corner squares and the inner corner dots. The data modules
+  have nine styles, among them joined `liquid` modules and bars. A scale for the data modules leaves a gap between
+  them. The alignment patterns take the shapes of the corners.
 - **Sharp edges**: each module covers a whole number of pixels, on the screen and in an export.
 - **Themeable colors** through CSS custom properties, with parts for the background, the dots and each corner
   element.
@@ -224,15 +225,28 @@ image that fails to load leaves the code without a logo until a valid source is 
 ```
 
 `dot-style`, `square-style` and `corner-dot-style` take `square`, `circle`, `rounded` or `squircle`. A `squircle` is
-a superellipse: a square with soft corners, rounder than `rounded` and squarer than `circle`. The inner corner dots
-use `dot-style` until `corner-dot-style` is set.
+a superellipse: a square with soft corners, rounder than `rounded` and squarer than `circle`.
+
+`dot-style` also takes these styles:
+
+- `diamond`: a square turned 45°, with its points at the cell edges.
+- `plus`: a cross with arms to the cell edges, so neighbors join along the arms.
+- `liquid`: `rounded`, with a smooth fill in the inside corner of each L-join.
+- `horizontal-bars` and `vertical-bars`: each run of dark modules in a row or a column is one bar with round ends.
+
+`square-style` and `corner-dot-style` also take `leaf`: a square with two opposite round corners, on the diagonal
+toward the center of the code. The radius is a quarter of the side. A leaf with fully round corners fails to decode.
+
+The inner corner dots use `dot-style` until `corner-dot-style` is set. A corner dot is one shape, so it draws
+`diamond` and `plus` as `square`, and `liquid` and the bar styles as `rounded`.
 
 From version 2, the code has alignment patterns. Each one is a ring of `square-style` around a center dot of the
-corner dot style, so it matches the finder patterns. A `rounded` data module does not join an alignment pattern.
+corner dot style, so it matches the finder patterns. A `leaf` alignment ring has the shape of the top-left corner
+square. A joining style does not join a data module to an alignment pattern.
 
-A `circle` corner square draws a `square` corner dot as a `circle`, in the finder and the alignment patterns. A
-scanner such as zxing-cpp also checks the finder pattern on its diagonals, and a square dot in a round ring leaves a
-gap there. `cornerDotStyle` keeps the value that the application set.
+A `circle` corner square draws a `square` or `leaf` corner dot as a `circle`, in the finder and the alignment
+patterns. A scanner such as zxing-cpp also checks the finder pattern on its diagonals, and a dot with corners in a
+round ring leaves a gap there. `cornerDotStyle` keeps the value that the application set.
 
 ```html
 <igc-qr-code
@@ -245,8 +259,9 @@ gap there. `cornerDotStyle` keeps the value that the application set.
 ```
 
 `dot-scale` sets the size of each data module as a ratio of its cell, from `0.7` to `1`, and clamps other values. A
-value below `1` leaves a gap between the modules, so `rounded` modules no longer join their neighbors. The finder
-and alignment patterns keep their full size, so a scanner still finds the code.
+value below `1` leaves a gap between the modules, so `rounded` modules no longer join their neighbors and `liquid`
+draws as `rounded`. For the bar styles, it sets the thickness of the bars and shortens their ends by the same gap. The
+finder and alignment patterns keep their full size, so a scanner still finds the code. Each style decodes at `0.7`.
 
 #### Theming colors
 
@@ -356,7 +371,9 @@ Not applicable. The component is presentational, is not part of the tab order an
 | `squareStyle` | `square-style` | no        | `QrCornerSquareStyle`               | `square`| The shape of the outer corner squares and of the alignment rings.         |
 | `cornerDotStyle` | `corner-dot-style` | no | `QrCornerDotStyle \| undefined`      | Not set | The shape of the inner corner dots and of the alignment centers; follows `dotStyle` when unset. |
 
-`QrDotStyle`, `QrCornerSquareStyle` and `QrCornerDotStyle` are `"square" | "circle" | "rounded" | "squircle"`.
+`QrDotStyle` is `"square" | "circle" | "rounded" | "squircle" | "diamond" | "plus" | "liquid" | "horizontal-bars" |
+"vertical-bars"`. `QrCornerSquareStyle` and `QrCornerDotStyle` are `"square" | "circle" | "rounded" | "squircle" |
+"leaf"`.
 
 ### Methods
 
@@ -465,86 +482,99 @@ None. The SVG is rendered entirely from the properties of the component.
     modules do not change with `cornerDotStyle`.
 17. An alignment pattern is a ring of `squareStyle` around a center dot of the corner dot style. It is not part of the
     data path, keeps its size at any `dotScale`, and a `rounded` module does not join it.
-18. A `circle` corner square draws a `square` corner dot as a circle, in the finder and the alignment patterns, and
-    `cornerDotStyle` keeps its value.
-19. `dotScale` shrinks the data modules around their centers, is clamped from 0.7 to 1 with 1 for a value that is not
+18. A `circle` corner square draws a `square` or `leaf` corner dot as a circle, in the finder and the alignment
+    patterns, and `cornerDotStyle` keeps its value.
+19. A `diamond` module has its points at the cell edges, and a `plus` module has its arms to the cell edges.
+20. A `liquid` L-join has a fill in its inside corner, and below a `dotScale` of 1, `liquid` draws as `rounded`.
+21. A bar style draws one bar with round ends for each run of dark modules in a row or a column, and `dotScale` sets
+    its thickness.
+22. A `leaf` corner square and corner dot round the corners on the diagonal toward the center of the code, and a
+    `leaf` alignment ring has the shape of the top-left one.
+23. Without `cornerDotStyle`, the corner dots draw `diamond` and `plus` as `square`, and `liquid` and the bar styles
+    as `rounded`.
+24. `dotScale` shrinks the data modules around their centers, is clamped from 0.7 to 1 with 1 for a value that is not
     a number, and leaves the finder patterns at full size. A scaled `rounded` module rounds the corners toward its dark
     neighbors.
 
 ### Logo
 
-20. No `<image>` or `<mask>` is rendered without a logo; a valid one renders both, with the image outside the
+25. No `<image>` or `<mask>` is rendered without a logo; a valid one renders both, with the image outside the
     masked group and the mask applied to the group holding the dots and the finders.
-21. The mask id is stable across re-renders, and clearing the logo or replacing it with an unsafe URL removes the
+26. The mask id is stable across re-renders, and clearing the logo or replacing it with an unsafe URL removes the
     image and the mask.
-22. Unsafe schemes and non-image `data:` URIs are blocked, while `data:image/` and `https://` URLs are accepted.
-23. A logo that fails to load leaves the code without one, and the component recovers once a valid source is set.
-24. A higher error correction level produces a larger code, and the logo area is capped to the safe area of the
+27. Unsafe schemes and non-image `data:` URIs are blocked, while `data:image/` and `https://` URLs are accepted.
+28. A logo that fails to load leaves the code without one, and the component recovers once a valid source is set.
+29. A higher error correction level produces a larger code, and the logo area is capped to the safe area of the
     resolved level. Without `error-level`, a large logo escalates the level while `errorLevel` reads `M`, a small
     logo keeps `M`, an explicit `M` caps the logo, and removing the attribute restores the escalation.
-25. `logoMargin` reduces the visible logo, stays in pixels when the modules snap to whole pixels, and a margin that
+30. `logoMargin` reduces the visible logo, stays in pixels when the modules snap to whole pixels, and a margin that
     consumes the whole logo box renders no image.
-26. The cutout starts and ends on module boundaries and is centered, and the logo lies inside it, with and without
+31. The cutout starts and ends on module boundaries and is centered, and the logo lies inside it, with and without
     `logoMargin`.
-27. A logo that would hide more codewords than the level corrects raises the version, and removing the logo restores
+32. A logo that would hide more codewords than the level corrects raises the version, and removing the logo restores
     it. A pinned version keeps its size, and the logo gets smaller.
 
 ### Export
 
-28. `toBlob()` returns an SVG blob, resolves the theme colors to `fill` attributes and strips the parts.
-29. A data URI logo is kept as it is, a fetched one is inlined as a data URI, a logo assigned right before the
+33. `toBlob()` returns an SVG blob, resolves the theme colors to `fill` attributes and strips the parts.
+34. A data URI logo is kept as it is, a fetched one is inlined as a data URI, a logo assigned right before the
     export is awaited, and one that cannot be fetched is dropped together with its mask. The logo is written as both
     `href` and `xlink:href`, and a code without a logo has no `xlink:href`.
-30. `toImage()` exports a PNG at the component size by default, scales the raster output, and exports an opaque
+35. `toImage()` exports a PNG at the component size by default, scales the raster output, and exports an opaque
     JPEG, a WebP and an SVG with scaled dimensions. A `size` set right after the call applies to the image.
-31. An existing matching extension in the file name is kept, and the download dialog opens only when requested.
-32. Both methods reject without a value, and `toImage()` rejects invalid options, also a `size` set right after the
+36. An existing matching extension in the file name is kept, and the download dialog opens only when requested.
+37. Both methods reject without a value, and `toImage()` rejects invalid options, also a `size` set right after the
     call that makes the image larger than the maximum canvas size. A value that does not fit the pinned version
     renders nothing, warns once and makes the export reject with the encoder error. A version that is not an integer
     from 1 to 40 falls back to the automatic version.
 
 ### Clipboard
 
-33. `copyToClipboard()` copies a PNG image at the component size by default, and a `size` set right after the call
+38. `copyToClipboard()` copies a PNG image at the component size by default, and a `size` set right after the call
     applies to the copy.
-34. An `svg` copy holds an SVG image, with the theme colors resolved and the parts stripped, and a PNG image, both
+39. An `svg` copy holds an SVG image, with the theme colors resolved and the parts stripped, and a PNG image, both
     multiplied by `scale`. A clipboard that does not take SVG gets only the PNG.
-35. The clipboard write starts before the first `await` of the method, for a PNG copy and an SVG copy.
-36. The method rejects when the clipboard refuses the write and without the Clipboard API. It also rejects on invalid
+40. The clipboard write starts before the first `await` of the method, for a PNG copy and an SVG copy.
+41. The method rejects when the clipboard refuses the write and without the Clipboard API. It also rejects on invalid
     options and without a value, and then it writes nothing. A refused write that skips a failed export leaves no
     unhandled rejection.
 
 ### QR model properties
 
-37. Each version and error correction level holds as many codewords as the symbol has room for, checked against the
+42. Each version and error correction level holds as many codewords as the symbol has room for, checked against the
     module count of ISO/IEC 18004.
-38. Generated numeric, alphanumeric, byte and mixed data encodes into the smallest version that holds it, with the
+43. Generated numeric, alphanumeric, byte and mixed data encodes into the smallest version that holds it, with the
     codeword count of that version, and never takes more bits than one segment of the best single mode. A decoder
     reads the bytes of the data back from the matrix.
-39. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
+44. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
     capacity error. A requested version that is not an integer from 1 to 40 throws.
 
 ### Host ARIA
 
-40. The host `aria-labelledby` and `aria-describedby` reach the SVG, and the exported SVG has neither attribute.
+45. The host `aria-labelledby` and `aria-describedby` reach the SVG, and the exported SVG has neither attribute.
 
 ### Scanning
 
 A decoder (zxing-cpp, from the `zxing-wasm` package) reads the PNG that `toImage()` exports, with at least 6 pixels for
 each module.
 
-41. Each `dot-style` decodes with each `square-style` and each `corner-dot-style`, in a Latin square of the three
-    shapes.
-42. Each `dot-style` decodes at the smallest `dotScale`, also in a version 12 code.
-43. A code with a white or a black logo, at the default and the largest `logoSize`, decodes at each error correction
+46. Each basic `dot-style` (`square`, `circle`, `rounded` and `squircle`) decodes with each basic `square-style` and
+    `corner-dot-style`, in a Latin square of the three shapes.
+47. Each `dot-style` decodes at the smallest `dotScale`, also in a version 12 code.
+48. A code with a white or a black logo, at the default and the largest `logoSize`, decodes at each error correction
     level.
-44. A white, black or gray logo on codes of version 1 to 3 decodes at each error correction level, at the default and
+49. A white, black or gray logo on codes of version 1 to 3 decodes at each error correction level, at the default and
     the largest `logoSize`, and so does a logo on a pinned version 1, 2 or 3.
-45. Values that mix numeric, alphanumeric and byte segments decode, with and without a logo.
-46. A `circle` corner square with circle modules decodes with each `corner-dot-style`, at versions 3 and 10 and at 7,
+50. Values that mix numeric, alphanumeric and byte segments decode, with and without a logo.
+51. A `circle` corner square with circle modules decodes with each `corner-dot-style`, at versions 3 and 10 and at 7,
     8 and 9 pixels for each module. Before the alignment rings and the rule for the corner dot, some of these failed.
-47. The alignment patterns of each `square-style` decode with each `dot-style` in a version 12 code, at 7 and 8
+52. The alignment patterns of each `square-style` decode with each `dot-style` in a version 12 code, at 7 and 8
     pixels for each module.
+53. Each new `dot-style` decodes at a `dotScale` of 1, and at the smallest `dotScale` also in a version 12 code.
+54. A `leaf` corner square decodes with each `corner-dot-style`, at versions 3 and 12 and at 7 and 9 pixels for each
+    module.
+55. A `leaf` corner dot decodes in a `square`, `rounded` and `squircle` corner square, at versions 3 and 12 and at 7
+    and 9 pixels for each module.
 
 ### Not covered by the suite
 
@@ -561,6 +591,8 @@ each module.
   ISO-8859-1.
 - The readability rule for a logo counts every codeword with a hidden module as lost. A real logo spoils fewer
   codewords, so the rule can select a larger version than a scanner needs.
+- A `diamond` or `plus` finder center and a `leaf` with fully round corners fail to decode in zxing-cpp at some sizes,
+  so the corner dots do not take `diamond` or `plus`, and a `leaf` rounds a quarter of its side.
 - The modules cover whole CSS pixels. At a device pixel ratio of 1, 2 or 3 the edges are sharp, and at 1.25 or 1.5
   they can blur, because a CSS pixel is not a whole number of device pixels. An export is always exact.
 - The component is presentational: it has no events, no slots and no keyboard interaction.
