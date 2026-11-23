@@ -18,20 +18,14 @@ import type {
 } from './date-range-picker.js';
 import { dateRangeI18nConfig } from './i18n.js';
 import { styles } from './predefined-ranges-area.base.css.js';
+import { rangeOverlaps } from './range-shape.js';
 import { styles as shared } from './themes/shared/predefined-ranges-area.common.css.js';
-import { rangeAvoids } from './validators.js';
 
-type PredefinedRange = {
+/** A built-in range reads today when it gets no day, so it follows the day on a page open past midnight. */
+type RangeChip = {
   key: string;
   label: string;
-  getDateRange: (today: CalendarDay) => DateRangeValue;
-};
-
-/** A range chip: its key, its label, and its range at the time of the call. */
-export type RangeChip = {
-  key: string;
-  label: string;
-  getRange: () => DateRangeValue;
+  getDateRange: (today?: CalendarDay) => DateRangeValue;
 };
 
 /** The settings that decide the chips. The area and the picker both have them. */
@@ -72,7 +66,7 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
     registerComponent(IgcPredefinedRangesAreaComponent, IgcChipComponent);
   }
 
-  private get _predefinedRanges(): PredefinedRange[] {
+  private get _predefinedRanges(): RangeChip[] {
     return getPredefinedRanges(this, this.predefinedRanges);
   }
 
@@ -114,8 +108,8 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
   @property({ attribute: false })
   public dateConstraints: DateRangeDescriptor[] = [];
 
-  /** Whether all the chips are disabled, as in a read-only or disabled picker. */
-  @property({ type: Boolean, attribute: false })
+  /** Whether all the chips are disabled, as in a read-only picker. */
+  @property({ attribute: false })
   public disabled = false;
 
   constructor() {
@@ -123,7 +117,7 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
     addThemingController(this, all);
   }
 
-  /** A selectable chip toggles itself on a click. `selectedRange` owns the selection, so take the toggle back. */
+  /** `selectedRange` owns the selection, so take back the toggle of the chip. */
   private _handleChipSelect(event: CustomEvent<boolean>): void {
     event.stopPropagation();
     (event.target as IgcChipComponent).selected = !event.detail;
@@ -134,11 +128,11 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
     this.dispatchEvent(Object.assign(event, { key }));
   }
 
-  protected _renderChip({ key, label, getRange }: RangeChip) {
+  private _renderChip({ key, label, getDateRange }: RangeChip) {
     const disabled =
       this.disabled ||
       (!isEmpty(this.dateConstraints) &&
-        !rangeAvoids(getRange(), this.dateConstraints));
+        rangeOverlaps(getDateRange(), this.dateConstraints));
 
     // A click outside the button of a disabled chip still reaches the host.
     return html`
@@ -147,7 +141,7 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
         ?disabled=${disabled}
         .selected=${key === this.selectedRange}
         @igcSelect=${this._handleChipSelect}
-        @click=${bindIf(!disabled, () => this._handleRangeSelect(getRange(), key))}
+        @click=${bindIf(!disabled, () => this._handleRangeSelect(getDateRange(), key))}
       >
         ${label}
       </igc-chip>
@@ -155,9 +149,7 @@ export default class IgcPredefinedRangesAreaComponent extends I18nMixin(
   }
 
   protected override render() {
-    const predefined = this.usePredefinedRanges
-      ? this._predefinedRanges.map(fromPredefined)
-      : [];
+    const predefined = this.usePredefinedRanges ? this._predefinedRanges : [];
     const chips = [...predefined, ...this.customRanges.map(fromCustom)];
 
     return html`<div part="ranges">
@@ -172,7 +164,7 @@ declare global {
   }
 }
 
-function days(start: CalendarDay, end: CalendarDay): DateRangeValue {
+function dayRange(start: CalendarDay, end: CalendarDay): DateRangeValue {
   return { start: start.native, end: end.native };
 }
 
@@ -180,86 +172,80 @@ function quarterStart(day: CalendarDay): CalendarDay {
   return day.set({ month: Math.floor(day.month / 3) * 3, date: 1 });
 }
 
+function wholeYear(day: CalendarDay): DateRangeValue {
+  return dayRange(
+    day.set({ month: 0, date: 1 }),
+    day.set({ month: 11, date: 31 })
+  );
+}
+
 /** The range of each built-in key. `weekStart` is a day number, Sunday = 0. */
 const PREDEFINED_RANGES: Record<
   PredefinedRangeKey,
   (today: CalendarDay, weekStart: number) => DateRangeValue
 > = {
-  today: (today) => days(today, today),
+  today: (today) => dayRange(today, today),
   yesterday: (today) => {
     const day = today.add('day', -1);
-    return days(day, day);
+    return dayRange(day, day);
   },
-  last7Days: (today) => days(today.add('day', -6), today),
-  last30Days: (today) => days(today.add('day', -29), today),
+  last7Days: (today) => dayRange(today.add('day', -6), today),
+  last30Days: (today) => dayRange(today.add('day', -29), today),
   lastWeek: (today, weekStart) => {
     const start = weekStartOf(today, weekStart).add('day', -7);
-    return days(start, start.add('day', 6));
+    return dayRange(start, start.add('day', 6));
   },
   currentMonth: (today) => {
     const start = today.set({ date: 1 });
-    return days(start, start.add('month', 1).add('day', -1));
+    return dayRange(start, start.add('month', 1).add('day', -1));
   },
   lastMonth: (today) => {
     const end = today.set({ date: 1 }).add('day', -1);
-    return days(end.set({ date: 1 }), end);
+    return dayRange(end.set({ date: 1 }), end);
   },
   currentQuarter: (today) => {
     const start = quarterStart(today);
-    return days(start, start.add('quarter', 1).add('day', -1));
+    return dayRange(start, start.add('quarter', 1).add('day', -1));
   },
   lastQuarter: (today) => {
     const end = quarterStart(today).add('day', -1);
-    return days(quarterStart(end), end);
+    return dayRange(quarterStart(end), end);
   },
-  quarterToDate: (today) => days(quarterStart(today), today),
-  currentYear: (today) =>
-    days(today.set({ month: 0, date: 1 }), today.set({ month: 11, date: 31 })),
-  lastYear: (today) => {
-    const day = today.set({ year: today.year - 1 });
-    return days(
-      day.set({ month: 0, date: 1 }),
-      day.set({ month: 11, date: 31 })
-    );
-  },
-  yearToDate: (today) => days(today.set({ month: 0, date: 1 }), today),
+  quarterToDate: (today) => dayRange(quarterStart(today), today),
+  currentYear: wholeYear,
+  lastYear: (today) => wholeYear(today.set({ year: today.year - 1 })),
+  yearToDate: (today) => dayRange(today.set({ month: 0, date: 1 }), today),
 };
+
+export function isPredefinedRangeKey(key: string): key is PredefinedRangeKey {
+  return Object.hasOwn(PREDEFINED_RANGES, key);
+}
 
 /** The built-in ranges of `keys`, in order, without unknown keys and repeats. */
 function getPredefinedRanges(
   source: RangeSource,
   keys: Iterable<string>
-): PredefinedRange[] {
+): RangeChip[] {
   const weekStart = getWeekDayNumber(source.weekStart);
 
   return Array.from(new Set(keys))
-    .filter((key): key is PredefinedRangeKey =>
-      Object.hasOwn(PREDEFINED_RANGES, key)
-    )
+    .filter(isPredefinedRangeKey)
     .map((key) => ({
       key,
       label: source.resourceStrings[`date_range_picker_${key}`]!,
-      getDateRange: (today) => PREDEFINED_RANGES[key](today, weekStart),
+      getDateRange: (today = CalendarDay.today) =>
+        PREDEFINED_RANGES[key](today, weekStart),
     }));
-}
-
-/** A built-in range reads today on each call, so it follows the day on a page open past midnight. */
-function fromPredefined({
-  key,
-  label,
-  getDateRange,
-}: PredefinedRange): RangeChip {
-  return { key, label, getRange: () => getDateRange(CalendarDay.today) };
 }
 
 function fromCustom(range: CustomDateRange): RangeChip {
   const { label } = range;
 
   return {
-    // `??`, not a default value, so a `null` key from JSON also falls back to the label.
+    // `??` also covers a `null` key from JSON.
     key: range.key ?? label,
     label,
-    getRange: () =>
+    getDateRange: () =>
       range.getDateRange?.() ?? range.dateRange ?? { start: null, end: null },
   };
 }
@@ -272,12 +258,10 @@ export function findRangeChip(
   source: RangeSource,
   key: string
 ): RangeChip | undefined {
-  const [predefined] = getPredefinedRanges(source, [key]);
-  const builtIn = predefined && fromPredefined(predefined);
-  const range = source.customRanges.find(
-    (range) => (range.key ?? range.label) === key
-  );
-  const custom = range && fromCustom(range);
+  const [builtIn] = getPredefinedRanges(source, [key]);
+  const custom = source.customRanges
+    .map(fromCustom)
+    .find((chip) => chip.key === key);
   const shows =
     source.usePredefinedRanges &&
     source.predefinedRanges.includes(key as PredefinedRangeKey);

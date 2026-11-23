@@ -796,7 +796,7 @@ export const SalesReport: Story = {
       `;
     });
 
-    // Emitted before `igcChange`, when the user picks another named period.
+    // Emitted before `igcChange` when the named period changes, also to none.
     const rangeChange = ({
       detail,
     }: CustomEvent<IgcSelectedRangeChangeEventArgs>) => {

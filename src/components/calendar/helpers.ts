@@ -183,32 +183,7 @@ function isDateInRange(
     return value.weekend;
   }
 
-  if (!range.dateRange?.length) {
-    return false;
-  }
-
-  const first = firstOf(range.dateRange);
-
-  switch (range.type) {
-    case DateRangeType.After:
-      return value.greaterThan(first);
-
-    case DateRangeType.Before:
-      return value.lessThan(first);
-
-    case DateRangeType.Between: {
-      const last = lastOf(range.dateRange);
-      return CalendarDay.compare(first, last) > 0
-        ? value.lessThanOrEqual(first) && value.greaterThanOrEqual(last)
-        : value.greaterThanOrEqual(first) && value.lessThanOrEqual(last);
-    }
-
-    case DateRangeType.Specific:
-      return range.dateRange.some((day) => value.equalTo(day));
-
-    default:
-      return false;
-  }
+  return isSpanInRange(value, value, range);
 }
 
 export function isDateInRanges(
@@ -217,6 +192,10 @@ export function isDateInRanges(
 ): boolean {
   const value = toCalendarDay(date);
   return ranges.some((range) => isDateInRange(value, range));
+}
+
+function inOrder<T extends DayParameter>(a: T, b: T): [T, T] {
+  return CalendarDay.compare(a, b) > 0 ? [b, a] : [a, b];
 }
 
 /** Whether a day from `start` to `end` matches `range`, without a check of each day. */
@@ -230,12 +209,9 @@ function isSpanInRange(
     range.type === DateRangeType.Weekends
   ) {
     // Any seven days hold both weekdays and weekend days.
-    let count = 0;
-    for (const day of calendarRange({ start, end, inclusive: true })) {
-      if (isDateInRange(day, range)) return true;
-      if (++count === DAYS_IN_WEEK) break;
-    }
-    return false;
+    return calendarRange({ start, end, inclusive: true })
+      .take(DAYS_IN_WEEK)
+      .some((day) => isDateInRange(day, range));
   }
 
   if (!range.dateRange?.length) {
@@ -252,9 +228,7 @@ function isSpanInRange(
       return start.lessThan(first);
 
     case DateRangeType.Between: {
-      const last = lastOf(range.dateRange);
-      const [low, high] =
-        CalendarDay.compare(first, last) > 0 ? [last, first] : [first, last];
+      const [low, high] = inOrder(first, lastOf(range.dateRange));
       return start.lessThanOrEqual(high) && end.greaterThanOrEqual(low);
     }
 
@@ -274,12 +248,8 @@ export function isSpanInRanges(
   end: DayParameter,
   ranges: DateRangeDescriptor[]
 ): boolean {
-  const [low, high] =
-    CalendarDay.compare(start, end) > 0 ? [end, start] : [start, end];
-  const first = toCalendarDay(low);
-  const last = toCalendarDay(high);
-
-  return ranges.some((range) => isSpanInRange(first, last, range));
+  const [low, high] = inOrder(start, end).map(toCalendarDay);
+  return ranges.some((range) => isSpanInRange(low, high, range));
 }
 
 /** The labels of the descriptors in `ranges` that match `date`, in order and without duplicates. */

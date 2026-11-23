@@ -47,6 +47,7 @@ import IgcDateRangePickerComponent, {
   type CustomDateRange,
   type DateRangePickerResourceStringsType,
   type DateRangeValue,
+  type PredefinedRangeKey,
 } from './date-range-picker.js';
 import {
   checkSelectedRange,
@@ -1428,7 +1429,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       let clock: SinonFakeTimers;
       let eventSpy: Sinon.SinonSpy;
 
-      // Tuesday, 17 November 2026
       const last7Days = {
         start: new Date(2026, 10, 11),
         end: new Date(2026, 10, 17),
@@ -1457,6 +1457,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
 
       beforeEach(async () => {
         clock = useFakeTimers({
+          // Tuesday, 17 November 2026
           now: new Date(2026, 10, 17, 12),
           toFake: ['Date'],
         });
@@ -1487,7 +1488,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         return getChips().find((chip) => labelOf(chip) === label)!;
       }
 
-      /** The value events, in order. */
       function valueEvents(): string[] {
         return eventSpy
           .getCalls()
@@ -1497,24 +1497,22 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           );
       }
 
-      /** Clicks the button of the chip, as a user does. A selectable chip toggles itself then. */
+      /** Opens the picker and clicks the chip button, which toggles a selectable chip. */
       async function clickChip(label: string) {
         await picker.show();
         simulateClick(getChip(label).renderRoot.querySelector('button')!);
         await elementUpdated(picker);
       }
 
-      async function clickFooterButton(position: 'first' | 'last') {
-        simulateClick(
-          picker.renderRoot.querySelector<HTMLElement>(
-            `igc-button[slot="footer"]:${position}-of-type`
-          )!
-        );
+      async function clickCancel() {
+        clickFooterButton('')();
         await elementUpdated(picker);
       }
 
-      const clickCancel = () => clickFooterButton('first');
-      const clickDone = () => clickFooterButton('last');
+      async function clickDone() {
+        clickFooterButton(':last-of-type')();
+        await elementUpdated(picker);
+      }
 
       it('reports the key of a chip before `igcChange` and shows the chip as selected', async () => {
         await clickChip('Last 7 Days');
@@ -1569,14 +1567,27 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         });
       });
 
+      it('clears the key when the user types other dates', async () => {
+        await clickChip('Last 7 Days');
+        eventSpy.resetHistory();
+
+        const input = getInput(picker);
+        getEditors(picker)[0].focus();
+        input.setSelectionRange(0, 0);
+        simulateKeyboard(input, arrowUp);
+        // The editor commits on blur.
+        input.blur();
+        await elementUpdated(picker);
+
+        expect(picker.selectedRange).to.be.null;
+        expect(valueEvents()).to.eql(['igcSelectedRangeChange', 'igcChange']);
+      });
+
       it('keeps the key for a value from code with the same dates and clears it for other dates, without events', async () => {
         await clickChip('Last 7 Days');
         eventSpy.resetHistory();
 
-        picker.value = {
-          start: new Date(2026, 10, 11),
-          end: new Date(2026, 10, 17),
-        };
+        picker.value = { ...last7Days };
         expect(picker.selectedRange).to.equal('last7Days');
 
         picker.value = sprint;
@@ -1674,15 +1685,51 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         expect(picker.value).to.eql(last7Days);
       });
 
+      it('changes nothing when code sets the draft key again (dialog)', async () => {
+        picker.mode = 'dialog';
+        await clickChip('Sprint');
+
+        // A framework writes back the key that it reads.
+        picker.selectedRange = 'Sprint';
+        await clickCancel();
+
+        expect(picker.selectedRange).to.be.null;
+        expect(picker.value).to.be.null;
+
+        await waitUntil(() => !picker.open);
+        await clickChip('Sprint');
+        picker.selectedRange = 'Sprint';
+        await clickDone();
+
+        expect(valueEvents()).to.eql(['igcSelectedRangeChange', 'igcChange']);
+      });
+
+      it('keeps the value when the key is set again and a custom range ends at the current time', () => {
+        picker.customRanges = [
+          {
+            key: 'untilNow',
+            label: 'Until now',
+            getDateRange: () => ({
+              start: CalendarDay.today.native,
+              end: new Date(),
+            }),
+          },
+        ];
+        picker.selectedRange = 'untilNow';
+        const value = picker.value;
+
+        clock.tick(60_000);
+        picker.selectedRange = 'untilNow';
+
+        expect(picker.value).to.equal(value);
+      });
+
       it('brings back the committed key with a value of the committed dates over a draft (dialog)', async () => {
         picker.mode = 'dialog';
         picker.selectedRange = 'last7Days';
         await clickChip('Sprint');
 
-        picker.value = {
-          start: new Date(2026, 10, 11),
-          end: new Date(2026, 10, 17),
-        };
+        picker.value = { ...last7Days };
         expect(picker.selectedRange).to.equal('last7Days');
 
         await clickDone();
@@ -1829,7 +1876,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         picker.readOnly = true;
         await picker.show();
 
-        // A native click, as a user makes it: a disabled button gets no click.
+        // A native click: a disabled button gets none.
         getChip('Last 7 Days').renderRoot.querySelector('button')!.click();
         await elementUpdated(picker);
 
@@ -1895,23 +1942,20 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         });
 
         it('renders no ranges without built-in and custom ranges', async () => {
+          const area = () =>
+            picker.renderRoot.querySelector(
+              IgcPredefinedRangesAreaComponent.tagName
+            );
+
           picker.predefinedRanges = [];
           picker.customRanges = [];
           await elementUpdated(picker);
+          expect(area()).to.be.null;
 
-          expect(
-            picker.renderRoot.querySelector(
-              IgcPredefinedRangesAreaComponent.tagName
-            )
-          ).to.be.null;
+          picker.predefinedRanges = ['thisQuarter' as PredefinedRangeKey];
+          await elementUpdated(picker);
+          expect(area()).to.be.null;
         });
-      });
-
-      it('disables the chips of a disabled picker', async () => {
-        picker.disabled = true;
-        await elementUpdated(picker);
-
-        expect(getChips().every((chip) => chip.disabled)).to.be.true;
       });
 
       describe('Chip checks', () => {

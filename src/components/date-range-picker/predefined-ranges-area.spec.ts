@@ -456,6 +456,7 @@ describe('Predefined Area', () => {
           );
         }
 
+        await expect(component).to.be.accessible();
         await expect(component).shadowDom.to.be.accessible();
       });
 
@@ -473,12 +474,16 @@ describe('Predefined Area', () => {
           false,
           true,
         ]);
+        await expect(component).to.be.accessible();
+        await expect(component).shadowDom.to.be.accessible();
 
         component.dateConstraints = [];
         component.disabled = true;
         await elementUpdated(component);
 
         expect(getChips().every((chip) => chip.disabled)).to.be.true;
+        await expect(component).to.be.accessible();
+        await expect(component).shadowDom.to.be.accessible();
       });
 
       it('checks the end of a range with one end', async () => {

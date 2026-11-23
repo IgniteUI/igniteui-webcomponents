@@ -86,11 +86,7 @@
 |      27 | 2026-11-20 | A form reset discards the text typed in the editors that is not committed, so the next blur does not commit it; a reset that empties the value shows the empty mask in the focused editor |
 |      28 | 2026-11-20 | The ends of a range accept an ISO string with a signed six digit year; the value shape properties use any valid date |
 |      29 | 2026-11-23 | A disabled picker stays closed and disabling discards a draft; the shared disabled popup suite |
-|      30 | 2026-11-17 | Relative custom ranges (`getDateRange`), range keys, `selectedRange`, `igcSelectedRangeChange` and the selected chip; a read-only picker ignores a chip |
-|      31 | 2026-11-17 | A chip whose range fails `min`, `max` or `disabledDates` is disabled, checked on each open; the chips of a read-only picker are disabled |
-|      32 | 2026-11-17 | `predefinedRanges` chooses the built-in ranges and their order; nine new built-in ranges and their resource strings |
-|      33 | 2026-11-17 | The committed key keeps a dialog draft; a value back to the committed dates brings back the key; a key from code follows the settings set before the first render; a disabled picker disables the chips |
-|      34 | 2026-11-23 | The range key follows the commit session: a key that `hide()` left stays a draft, and a value with the committed dates, such as the range that Cancel restores, brings back the committed key |
+|      30 | 2026-11-23 | Range keys: `selectedRange`, `igcSelectedRangeChange`, `getDateRange` and `predefinedRanges` with nine new built-in ranges; a chip whose range breaks the constraints is disabled |
 
 ## Overview
 
@@ -497,11 +493,13 @@ Done reports it and Cancel restores the committed key. In dialog mode, a key cha
 two ranges that end today, emits only `igcSelectedRangeChange` on Done; in dropdown mode a chip emits `igcChange` on
 each click, as a calendar selection does. A value from code is committed at once, so it is not reported on Done.
 
-Setting the committed key again sets the value again only when its dates moved, for example after midnight; otherwise
-it does nothing, also during a draft in the dialog. A value from code with the committed dates brings back the
-committed key. So a framework that sets every property on each render does not reset an edit in progress. Before the
-first render, a key from code follows the settings set after it, such as `weekStart` and `customRanges`. The chip of
-a key whose dates moved stays selected until the application sets the key again.
+Setting the current or the committed key again sets the value again only when its days moved, for example after
+midnight; otherwise it does nothing, also during a draft in the dialog. The days count, not the times, so a custom
+range that ends at the current time keeps its value. A value from code with the committed dates brings back the
+committed key. So a framework that sets `selectedRange` on each render does not reset an edit in progress, but a
+`value` from code ends the draft. Before the first render, a key from code follows the settings set after it, such as
+`weekStart` and `customRanges`. The chip of a key whose days moved stays selected until the application sets the key
+again.
 
 **Opening and closing the dialog.** The dialog fades in on an open, and `igcOpened` follows the entrance. Cancel,
 Done, <kbd>Escape</kbd> and an outside click play the exit animation of the dialog, and `open` stays `true` until it
@@ -756,76 +754,81 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
    close with Cancel, Done or an outside click.
 5. Readonly state, in dropdown and in dialog mode.
 6. Predefined ranges - the built-in chips and the custom ranges, a chip during the exit of the dialog, and a chip that
-   keeps the dropdown open with `keepOpenOnSelect`. Selected range - the key of a built-in chip and of a custom chip
-   with and without `key`, `igcSelectedRangeChange` before `igcChange` and not again for the same chip, a draw in the
-   calendar and a value from code with other dates clear the key, the same dates keep it; in dialog mode Done commits
-   the key, Cancel restores it, Cancel after `clear()` keeps the clear and its `null` key, a key that `hide()` left
-   stays a draft that Done reports and Cancel restores, a key that a value from code cleared is not reported, and a
-   key change with the same dates emits only `igcSelectedRangeChange`; `selectedRange` from code selects a range, also
-   a hidden built-in one, the chips that show come first, and a key waits for `customRanges`; the same key, value and
-   ranges on each render change nothing; the same key after midnight moves the dates; a read-only picker disables the
-   chips; a form reset to other dates clears the key. Chip checks - `min`, `max` and `disabledDates` disable the chips
-   whose range fails them, a disabled chip ignores a click, and the picker checks the chips again on each open.
-   Built-in ranges - the default and the order of `predefinedRanges` before the custom ranges, `lastWeek` with the
+   keeps the dropdown open with `keepOpenOnSelect`.
+7. Selected range - the key of a built-in chip and of a custom chip with and without `key`, `igcSelectedRangeChange`
+   before `igcChange` and not again for the same chip; a draw in the calendar, a typed date and a value from code with
+   other dates clear the key, the same dates keep it; in dialog mode Done commits the key, Cancel restores it, Cancel
+   after `clear()` keeps the clear and its `null` key, a key that `hide()` left stays a draft that Done reports and
+   Cancel restores, a key that a value from code cleared is not reported, and a key change with the same dates emits
+   only `igcSelectedRangeChange`; `selectedRange` from code selects a range, also a hidden built-in one, the chips
+   that show come first, and a key waits for `customRanges`; the same key, value and ranges on each render change
+   nothing, and setting the draft key again keeps the draft; the same key after midnight moves the dates, and a custom
+   range that ends at the current time keeps its value; a read-only picker disables the chips; a form reset to other
+   dates clears the key.
+8. Built-in ranges - the default and the order of `predefinedRanges` before the custom ranges, `lastWeek` with the
    `weekStart` of the picker, a built-in range that does not show, a custom range with a built-in key that does not
-   show, and no ranges area without ranges.
-7. Locale week start - the calendar derives its week start from the locale when `week-start` is not set.
-8. Value rules - the value and the default are `null` without a value, and an empty range is stored as `null`.
-   Reversed ends set from code, as an attribute and as the default are swapped, and the time of the ends set as an
-   attribute stays. A custom chip with reversed ends commits and reports the range in order. A value in the first
-   month set while the second month is active keeps the months in view, a value set from code brings its first
-   defined date into view, and an open without a value shows the current active date in the first month. With `activeDate` set, a pick in the second month keeps the months in view, and a new
-   `activeDate` still moves the calendar.
-9. Each layout - the same scenarios run for the single input and for two inputs: the accessibility audit and the
-   title slot; the value as an attribute, through a mode change and with `nonEditable`; `clear()` and `select()`;
-   selection through the calendar in dropdown and in dialog mode, with Done, an outside click, Cancel and
-   <kbd>Escape</kbd>; a click on the input, and the clear icon with and without a render before the blur; the
-   keyboard toggle; the input and change events of slotted content, which the picker leaves alone; an edit that a
-   layout change drops; a click on the input and on the clear icon of a read-only picker.
+   show, and no ranges area without ranges or with unknown keys only.
+9. Chip checks - `min`, `max` and `disabledDates` disable the chips whose range fails them, the picker computes the
+   ranges for the checks only while it is open, a disabled chip ignores a click, and the picker checks the chips again
+   on each open.
+10. Locale week start - the calendar derives its week start from the locale when `week-start` is not set.
+11. Value rules - the value and the default are `null` without a value, and an empty range is stored as `null`.
+    Reversed ends set from code, as an attribute and as the default are swapped, and the time of the ends set as an
+    attribute stays. A custom chip with reversed ends commits and reports the range in order. A value in the first
+    month set while the second month is active keeps the months in view, a value set from code brings its first
+    defined date into view, and an open without a value shows the current active date in the first month. With
+    `activeDate` set, a pick in the second month keeps the months in view, and a new `activeDate` still moves the
+    calendar.
+12. Each layout - the same scenarios run for the single input and for two inputs: the accessibility audit and the
+    title slot; the value as an attribute, through a mode change and with `nonEditable`; `clear()` and `select()`;
+    selection through the calendar in dropdown and in dialog mode, with Done, an outside click, Cancel and
+    <kbd>Escape</kbd>; a click on the input, and the clear icon with and without a render before the blur; the
+    keyboard toggle; the input and change events of slotted content, which the picker leaves alone; an edit that a
+    layout change drops; a click on the input and on the clear icon of a read-only picker.
 
 ### Single input suite
 
-10. Properties and localization.
-11. Scroll strategy - the `scroll`, `hide` and `close` behaviors of the anchored calendar.
-12. Methods. `stepUp` and `stepDown` of the range input update its value at once, also while it is focused and empty.
+13. Properties and localization.
+14. Scroll strategy - the `scroll`, `hide` and `close` behaviors of the anchored calendar.
+15. Methods. `stepUp` and `stepDown` of the range input update its value at once, also while it is focused and empty.
     The default part is the day of the start date, a part that the format does not show still spins, and an empty
     end takes today without a step. A value set from code while the input is focused is not reported on blur.
-13. Interactions - interactions with the input and the open and clear buttons. A closed picker does not cancel
+16. Interactions - interactions with the input and the open and clear buttons. A closed picker does not cancel
     <kbd>Escape</kbd>. <kbd>Ctrl</kbd> + arrow stops at each part edge, also without separators. Arrow keys and `stepUp`
     in a range with one typed end spin that end and keep the text of the other end. Typing or a spin in the end brings
     the end into view; an edit with the caret in the separator brings the start into view.
-14. Undo and redo of the masked range text.
-15. Slots.
+17. Undo and redo of the masked range text.
+18. Slots.
 
 ### Two inputs suite
 
-16. Rendering and initialization with a value.
-17. Properties and localization.
-18. Validity of the editors - the editors report the validity of the picker, also while it is pristine, and show
+19. Rendering and initialization with a value.
+20. Properties and localization.
+21. Validity of the editors - the editors report the validity of the picker, also while it is pristine, and show
     only the invalid state of the picker.
-19. Interactions - selection through the calendar, interactions with the inputs and the open and clear buttons, and
+22. Interactions - selection through the calendar, interactions with the inputs and the open and clear buttons, and
     the readonly state. An editor commit keeps the time of both ends. A typed end before the start is swapped in
     the `igcInput` detail and in the calendar, while the editors keep the typed order. A clear through the icon is
     reported one time, when the focus leaves the picker, and not when the focus moves to the other input.
-20. Slots.
+23. Slots.
 
 ### Form integration suite
 
 The form suite runs these groups in each layout:
 
-21. Form associated - submission, also under a changed `name`, reset and the disabled ancestor state. A reset during an
+24. Form associated - submission, also under a changed `name`, reset and the disabled ancestor state. A reset during an
     edit discards the typed text, with and without a default, and the next blur keeps the restored value. A reset
     that empties the value shows the empty mask in the focused editor. <kbd>Enter</kbd> submits when the range is
     valid, and a real <kbd>Enter</kbd> submits once. Each editor shows the invalid state of the picker.
-22. Initial validation - a click on the calendar icon does not make a required picker invalid.
-23. `defaultValue` - initial state, submission, reset and validation.
-24. Validation message slots, generated by `runValidationContainerTests`.
+25. Initial validation - a click on the calendar icon does not make a required picker invalid.
+26. `defaultValue` - initial state, submission, reset and validation.
+27. Validation message slots, generated by `runValidationContainerTests`.
 
 It also has a group for each layout:
 
-25. Single input - a partial range below `min` reports the required message, and the editor shows the invalid state
+28. Single input - a partial range below `min` reports the required message, and the editor shows the invalid state
     of the picker at once.
-26. Two inputs - the validity follows a switch between the layouts; a value that the start editor commits marks the
+29. Two inputs - the validity follows a switch between the layouts; a value that the start editor commits marks the
     picker as touched, so an out-of-range start shows the invalid state without a blur; a reset clears the invalid
     styles of an editor that was touched, and keeps the default range in the editors.
 
@@ -834,24 +837,27 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Predefined ranges area
 
-27. The internal `igc-predefined-ranges-area` renders the built-in and the custom chips and emits its selection.
-    Built-in range dates: the day count and a click after midnight. Range keys: the key of each chip, or its label;
-    `getDateRange` at the click, also after midnight; the chip of `selectedRange` is selected with `aria-pressed`, and
-    stays selected after a click on it. Chip checks: `dateConstraints` and `disabled` disable chips, a range with one
-    end checks that end, a click on the host of a disabled chip does nothing, and the custom ranges are computed at
-    render only while there are constraints. All built-in ranges: the order of `predefinedRanges` without unknown
-    keys and repeats, the English labels, the dates of each range on a fixed day, across a year boundary and at the
-    end of a month (also February of a leap year), `lastWeek` for four week starts, and the English fallback in a
-    locale without the new keys, unless the strings set them.
+30. Predefined Area Component Tests - the internal `igc-predefined-ranges-area` passes the a11y audit, renders the
+    built-in and the custom chips, and emits its selection.
+31. Built-in range dates - the day count and a click after midnight.
+32. All built-in ranges - the order of `predefinedRanges` without unknown keys and repeats, the English labels, the
+    dates of each range on a fixed day, across a year boundary and at the end of a month (also February of a leap
+    year), `lastWeek` for four week starts, and the English fallback in a locale without the new keys, unless the
+    strings set them.
+33. Range keys - the key of each chip, or its label, also for a `null` key; `getDateRange` at the click, also after
+    midnight; the chip of `selectedRange` is selected with `aria-pressed`, passes the a11y audit, and stays selected
+    after a click on it; `dateConstraints` and `disabled` disable chips, with the a11y audit, each kind of constraint
+    is checked against the whole range, a range with one end checks that end, a click on the host of a disabled chip
+    does nothing, and the custom ranges are computed at render only while there are constraints.
 
 ### Range mask parser
 
-28. Initialization (a literal separator and a widened year format), range parsing, range formatting, part queries,
+34. Initialization (a literal separator and a widened year format), range parsing, range formatting, part queries,
     spinning, prompt updates and mask updates.
 
 ### Range mask parser properties
 
-29. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
+35. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
     around the separator after a mask change, and no throw or invalid date for any string. A strict value parse
     gives a range only when both ends are complete; a lenient one parses each end as typed, and gives `null` when
     neither end is a valid date or the mask is blank. For the part editing:
@@ -860,14 +866,14 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Range value shape
 
-30. Without a DOM: an empty range is `null`; a range in order stays the same object; reversed ends swap, by time also
+36. Without a DOM: an empty range is `null`; a range in order stays the same object; reversed ends swap, by time also
     on the same day; a missing end becomes `null`. The form value transformers normalize a value, a default value and
     an attribute string, and compare ranges by their dates. The calendar dates of a range, a range in one day, a
     partial range and no range; the range of a calendar selection; a complete range.
 
 ### Range value shape properties
 
-31. For generated ranges: the normalize step is idempotent, gives `null` only for an empty range and the ends in order
+37. For generated ranges: the normalize step is idempotent, gives `null` only for an empty range and the ends in order
     of time otherwise, and keeps each date with its time. A complete range goes to the calendar and back unchanged,
     and a calendar selection comes back as its first and last date, which closes the picker when there is more than one.
     An attribute string is normalized like the range of its dates, for any valid dates, also ones with a signed six
@@ -875,7 +881,7 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Range editors
 
-32. For each layout: the editors, the start editor first, and none in a root without them; the range of the editors;
+38. For each layout: the editors, the start editor first, and none in a root without them; the range of the editors;
     the typed range and the typed date during an edit of the start, while the committed range stays; the focus on the
     start editor after a pick, which selects its text only with two inputs. In the single input, the end at the
     caret, also at the edge of a part and nothing in the separator, gives the typed date; with two inputs, each
@@ -883,9 +889,9 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Host ARIA
 
-33. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+39. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required` on each editor.
-34. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+40. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -894,7 +900,7 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Disabled popup
 
-35. The shared runner `runDisabledPopupTests`.
+41. The shared runner `runDisabledPopupTests`.
 
 ## Assumptions and limitations
 

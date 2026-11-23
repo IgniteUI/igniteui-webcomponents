@@ -5,11 +5,8 @@ import {
   requiredValidator,
   type Validator,
 } from '#internals/validators.js';
-import { isSpanInRanges } from '../calendar/helpers.js';
-import type { DateRangeDescriptor } from '../calendar/types.js';
-import type { DateRangeValue } from '../types.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
-import { isCompleteDateRange } from './range-shape.js';
+import { isCompleteDateRange, rangeOverlaps } from './range-shape.js';
 
 /** The ends of the current range, each validated against the bound on its own. */
 function rangeEnds({ value }: IgcDateRangePickerComponent) {
@@ -45,7 +42,7 @@ const badInputDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
       return true;
     }
 
-    return rangeAvoids(value, disabledDates);
+    return !rangeOverlaps(value, disabledDates);
   },
 };
 
@@ -55,12 +52,3 @@ export const dateRangeValidators: Validator<IgcDateRangePickerComponent>[] = [
   maxDateRangeValidator,
   badInputDateRangeValidator,
 ];
-
-/** Whether no day of `range` is in `ranges`. A range with one end checks only that end. */
-export function rangeAvoids(
-  { start, end }: DateRangeValue,
-  ranges: DateRangeDescriptor[]
-): boolean {
-  const first = start ?? end;
-  return !first || !isSpanInRanges(first, end ?? first, ranges);
-}

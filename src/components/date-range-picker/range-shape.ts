@@ -5,6 +5,8 @@ import {
   type FormValueTransformers,
 } from '#internals/mixins/forms/form-transformers.js';
 import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
+import { isSpanInRanges } from '../calendar/helpers.js';
+import type { DateRangeDescriptor } from '../calendar/types.js';
 import type { PickerValueShape } from '../date-picker/value-shape.js';
 import type { DateRangeValue } from '../types.js';
 
@@ -12,6 +14,32 @@ export function isCompleteDateRange(
   value: DateRangeValue | null
 ): value is { start: Date; end: Date } {
   return value != null && value.start != null && value.end != null;
+}
+
+/** Whether a day of `range` is in `ranges`. A range with one end checks only that end. */
+export function rangeOverlaps(
+  { start, end }: DateRangeValue,
+  ranges: DateRangeDescriptor[]
+): boolean {
+  const first = start ?? end;
+  return !!first && isSpanInRanges(first, end ?? first, ranges);
+}
+
+function isSameDay(a: Date | null | undefined, b: Date | null | undefined) {
+  return a && b ? CalendarDay.compare(a, b) === 0 : !(a || b);
+}
+
+/** Whether two ranges hold the same days. The time of the ends does not count. */
+export function isSameDays(
+  a: DateRangeValue | null,
+  b: DateRangeValue | null
+): boolean {
+  const first = normalizeRange(a);
+  const second = normalizeRange(b);
+
+  return (
+    isSameDay(first?.start, second?.start) && isSameDay(first?.end, second?.end)
+  );
 }
 
 /**

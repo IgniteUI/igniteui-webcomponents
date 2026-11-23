@@ -16,7 +16,7 @@ export type DateRangePickerResourceStringsType =
  * The English labels of the built-in ranges that `igniteui-i18n-core` lacks.
  * TODO: remove when `IDateRangePickerResourceStrings` has these keys.
  */
-export const PredefinedRangeResourceStringsEN = {
+const PredefinedRangeResourceStringsEN = {
   date_range_picker_today: 'Today',
   date_range_picker_yesterday: 'Yesterday',
   date_range_picker_lastWeek: 'Last Week',

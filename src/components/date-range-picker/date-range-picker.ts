@@ -19,7 +19,6 @@ import { I18nMixin } from '#internals/mixins/i18n.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
-import { equal } from '#internals/utils/objects.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { all } from '#themes/date-range-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -46,10 +45,12 @@ import { styles } from './date-range-picker.base.css.js';
 import { dateRangeI18nConfig } from './i18n.js';
 import IgcPredefinedRangesAreaComponent, {
   findRangeChip,
+  isPredefinedRangeKey,
   type RangeSelectEvent,
 } from './predefined-ranges-area.js';
 import { type RangeEditors, rangeEditors } from './range-editors.js';
 import {
+  isSameDays,
   normalizeRange,
   rangeShape,
   rangeTransformers,
@@ -321,6 +322,10 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return this.renderRoot ? this._editors.editors() : [];
   }
 
+  private get _committedRange(): DateRangeValue | null {
+    return this._reportedValue as DateRangeValue | null;
+  }
+
   // #endregion
 
   // #region Base class hooks
@@ -329,23 +334,20 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return super._value;
   }
 
-  /**
-   * A chip sets its key with its range. The committed dates bring back the committed key, as Cancel and a value
-   * from code over a draft do. Other dates clear the key, and the same dates keep it.
-   */
+  /** A chip sets its key. The committed dates restore the committed key, as Cancel does; other dates clear it. */
   protected override set _value(value: DateRangeValue | null) {
     const chipKey = this._chipKey;
     const previous = this.value;
-    const committed = this._reportedValue;
+    const committed = this._committedRange;
 
     this._chipKey = undefined;
     super._value = value;
 
     const key =
       chipKey ??
-      (equal(this.value, committed)
+      (this._formValue.isSameValue(this.value, committed)
         ? this._committedRangeKey
-        : equal(this.value, previous)
+        : this._formValue.isSameValue(this.value, previous)
           ? this._rangeKey
           : null);
 
@@ -392,9 +394,22 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return this._isDropDown ? 'at-once' : 'on-confirm';
   }
 
-  /** Commits the key before the value. A key change with the same dates emits only `igcSelectedRangeChange`. */
+  /** Emits `igcSelectedRangeChange` before `igcChange`, also when only the key changed. */
   protected override _reportChange(detail: unknown, force = false): void {
-    this._commitRangeKey();
+    const key = this._rangeKey;
+
+    if (key !== this._committedRangeKey) {
+      this._committedRangeKey = key;
+      this.emitEvent('igcSelectedRangeChange', {
+        detail: {
+          key,
+          label:
+            key === null ? null : (findRangeChip(this, key)?.label ?? null),
+          value: this.value,
+        },
+      });
+    }
+
     super._reportChange(detail, force);
   }
 
@@ -411,7 +426,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   public set value(value: DateRangeValue | string | null | undefined) {
     this._value = convertToDateRange(value);
     this._session.endDraft();
-    // A set from code is committed at once, so no later commit reports its key.
+    // A set from code commits its key without an event.
     this._committedRangeKey = this._rangeKey;
   }
 
@@ -635,36 +650,25 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   /** Selects the range of `key` from code, and commits the key and the value. */
   private _selectRangeKey(key: string | null): void {
     const range = key === null ? undefined : findRangeChip(this, key);
-    const value = range?.getRange();
+    const value = range?.getDateRange() ?? null;
     this._rangeKeyPending = key !== null && !range;
 
-    // The committed key with its dates changes nothing, so a framework that sets the key on each render keeps a draft.
+    // A framework sets the key on each render. The current or the committed key with its days changes nothing, so a
+    // draft stays. Days, not times: a custom range can end at the current time.
+    const keeps = (current: DateRangeValue | null) =>
+      !value || isSameDays(value, current);
+
     if (
-      key === this._committedRangeKey &&
-      (!value || equal(normalizeRange(value), this._reportedValue))
+      (key === this._rangeKey && keeps(this.value)) ||
+      (key === this._committedRangeKey && keeps(this._committedRange))
     ) {
       return;
     }
 
-    if (value && !equal(normalizeRange(value), this.value)) {
+    if (value && !isSameDays(value, this.value)) {
       this.value = value;
     }
     this._rangeKey = this._committedRangeKey = key;
-  }
-
-  /** Commits the key with the value. A changed key emits `igcSelectedRangeChange`. */
-  private _commitRangeKey(): void {
-    const key = this._rangeKey;
-    if (key === this._committedRangeKey) return;
-
-    this._committedRangeKey = key;
-    this.emitEvent('igcSelectedRangeChange', {
-      detail: {
-        key,
-        label: key === null ? null : (findRangeChip(this, key)?.label ?? null),
-        value: this.value,
-      },
-    });
   }
 
   /**
@@ -685,7 +689,11 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     if (this._isClosing) return;
 
     this._chipKey = key;
-    this._session.pick(detail);
+    try {
+      this._session.pick(detail);
+    } finally {
+      this._chipKey = undefined;
+    }
 
     if (this._commitPolicy() === 'at-once' && !this.keepOpenOnSelect) {
       this._hide(true);
@@ -713,7 +721,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   protected _renderPredefinedRanges() {
     const hasRanges =
-      (this.usePredefinedRanges && !isEmpty(this.predefinedRanges)) ||
+      (this.usePredefinedRanges &&
+        this.predefinedRanges.some(isPredefinedRangeKey)) ||
       !isEmpty(this.customRanges);
 
     return hasRanges
@@ -725,7 +734,7 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
             .weekStart=${this.weekStart}
             .selectedRange=${this._rangeKey}
             .dateConstraints=${this.open ? this._dateConstraints : noConstraints}
-            .disabled=${this.readOnly || this.disabled}
+            .disabled=${this.readOnly}
             .resourceStrings=${this.resourceStrings}
             @igcRangeSelect=${this._handleRangeSelect}
             exportparts="ranges"

@@ -75,6 +75,8 @@ for (const tag of tags.sort()) {
 const fixtures = [
   // The `invalid` setter shows the state on the editors of the picker.
   '<igc-date-range-picker use-two-inputs invalid></igc-date-range-picker>',
+  // A range key computes its range on the server clock, in `willUpdate`.
+  '<igc-date-range-picker use-predefined-ranges selected-range="lastQuarter"></igc-date-range-picker>',
 ];
 
 for (const fixture of fixtures) {
