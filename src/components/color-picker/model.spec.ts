@@ -429,6 +429,36 @@ describe('ColorModel', () => {
         expect(hslString).to.match(/^hsl\(\d+ \d+% \d+%\)$/);
       });
     });
+
+    describe('oklch format', () => {
+      it('writes the lightness in percent, the chroma and the hue', () => {
+        for (const [rgb, oklch] of [
+          [[255, 0, 0], 'oklch(62.8% 0.25768 29.23)'],
+          [[63, 81, 181], 'oklch(47.82% 0.15892 271.4)'],
+          // A gray has no hue.
+          [[0, 0, 0], 'oklch(0% 0 0)'],
+          [[128, 128, 128], 'oklch(59.99% 0 0)'],
+          [[255, 255, 255], 'oklch(100% 0 0)'],
+          // A hue of 359.9992 rounds to 360.
+          [[48, 1, 21], 'oklch(20.21% 0.07918 0)'],
+        ] as const) {
+          expect(new ColorModel([...rgb]).asString('oklch')).to.equal(oklch);
+        }
+      });
+
+      it('writes the alpha when it is below 1 or forced', () => {
+        const color = new ColorModel([255, 0, 0], 0.5);
+
+        expect(color.asString('oklch')).to.equal(
+          'oklch(62.8% 0.25768 29.23 / 0.5)'
+        );
+
+        color.alpha = 1;
+        expect(color.asString('oklch', true)).to.equal(
+          'oklch(62.8% 0.25768 29.23 / 1)'
+        );
+      });
+    });
   });
 
   describe('color space conversions', () => {

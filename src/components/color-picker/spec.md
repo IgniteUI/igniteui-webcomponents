@@ -72,7 +72,8 @@
 |      21 | 2026-11-23 | Input mode: the clear icon, `clear()`, the `field` part and the forwarded parts of the text field ([#2647](https://github.com/IgniteUI/igniteui-webcomponents/issues/2647), [#2637](https://github.com/IgniteUI/igniteui-webcomponents/issues/2637)) |
 |      22 | 2026-11-23 | The popup shows an [`igc-color-panel`](../color-panel/spec.md); the parts and the behavior do not change |
 |      23 | 2026-11-23 | Swatch children and groups, the swatch listbox and its keys, the no-color swatch, `var()` swatches, `views` and `active-view` |
-|      24 | 2026-11-24 | Review fixes: one selected swatch, the format names from the resource strings, the same color keeps the model |
+|      24 | 2026-11-23 | Review fixes: one selected swatch, the format names from the resource strings, the same color keeps the model |
+|      25 | 2026-11-23 | The `oklch` format |
 
 ## Overview
 
@@ -84,8 +85,8 @@ with a color swatch prefix.
 Activating the anchor opens a picker surface, an [`igc-color-panel`](../color-panel/spec.md), containing an HSV
 saturation and value gradient canvas, a hue slider,
 an optional alpha slider, a format-aware color string input, an optional eye dropper, a copy-to-clipboard action and
-an optional grid of predefined swatches. The selected color is exposed as a string in one of three formats - `hex`,
-`rgb` or `hsl` - can be cleared to an empty value, and participates in standard HTML form submission, `required`
+an optional grid of predefined swatches. The selected color is exposed as a string in one of four formats (`hex`,
+`rgb`, `hsl` or `oklch`), can be cleared to an empty value, and participates in standard HTML form submission, `required`
 validation and validation message projection.
 
 ### Key features
@@ -94,7 +95,7 @@ validation and validation message projection.
 - **HSV canvas, hue and alpha sliders**, kept synchronized with the current color at all times.
 - **Any CSS color string**: hex, `rgb()`, `hsl()`, named colors and the other notations, such as `oklch()`, `lab()`,
   `color()` and `color-mix()`, are parsed into sRGB and normalized.
-- **Three serialization formats**, switchable at run time without altering the represented color.
+- **Four serialization formats**, switchable at run time without altering the represented color.
 - **Predefined swatches**, as the `swatches` property or as `igc-color-swatch` children in labelled groups, with a
   no-color swatch and `var()` colors.
 - **Two popup views**, the gradient and the swatches, with a view switcher when both are available.
@@ -116,7 +117,7 @@ The `igc-color-picker` must:
 - serialize its `value` consistently in the currently selected `format`.
 - keep the gradient canvas marker, the hue slider, the alpha slider and the color value input synchronized with the
   current color, deriving the canvas position from the HSV saturation and value.
-- allow switching between `hex`, `rgb` and `hsl` without losing the represented color.
+- allow switching between `hex`, `rgb`, `hsl` and `oklch` without losing the represented color.
 - optionally hide the format switcher through `hide-formats`, and show the alpha slider through `show-alpha`.
 - render an eye dropper action only when the platform `EyeDropper` API is available.
 - copy the current color value to the clipboard on demand.
@@ -250,6 +251,17 @@ colors, such as `Canvas`, also inside `color-mix()` or a relative color.
 A write of the same color, in any notation, keeps the internal color, as in the
 [color panel](../color-panel/spec.md#value-and-format). This keeps the hue of a gray, which a color string does not
 carry.
+
+`oklch` writes `oklch(L% C H)`: the lightness in percent with 2 decimals, the chroma with 5 decimals and the hue in
+degrees with 2 decimals, from the CSS Color 4 conversion. An alpha below 1 adds ` / A`, as in
+`oklch(62.8% 0.25768 29.23 / 0.5)`. A gray writes its hue as 0. Firefox and Safari read every 8-bit color back from
+this string. Chromium converts OKLCH with other matrices, so for 0.45 % of the colors a channel near 0 comes back one
+step off.
+
+```html
+<!-- The value is oklch(62.8% 0.25768 29.23) -->
+<igc-color-picker value="#ff0000" format="oklch"></igc-color-picker>
+```
 
 The active `format` determines how the color is re-serialized into the observable `value`. Changing `format`
 re-serializes the existing color without altering it, so no `igcInput` or `igcChange` is emitted. The initial value
@@ -388,9 +400,10 @@ ones are the placeholders of the alpha input and the format select, the format n
 | `color_picker_format_hex`    | Hex                               | The name of the hex format in the format select.               |
 | `color_picker_format_rgb`    | RGB                               | The name of the RGB format in the format select.               |
 | `color_picker_format_hsl`    | HSL                               | The name of the HSL format in the format select.               |
+| `color_picker_format_oklch`  | OKLCH                             | The name of the OKLCH format in the format select.             |
 | `color_picker_clear`         | Clear color                       | The name of the clear icon in input mode.                      |
 
-The last eight keys are not in `igniteui-i18n-core` yet. Until they are, every locale shows the English text, and
+The last nine keys are not in `igniteui-i18n-core` yet. Until they are, every locale shows the English text, and
 `resourceStrings` can replace them. Color values are locale-independent CSS strings.
 
 ### Keyboard interactions
@@ -602,7 +615,8 @@ The focus after the form checks and the `invalid` event rules come from the form
 ### Color model and parsing
 
 21. `ColorModel` - construction and factory methods, `parse`, the RGB, HSL and HSV setters, the alpha channel,
-    `asString` in each format, the color space conversions, the utility methods and the edge cases.
+    `asString` in each format (`oklch` with its decimals, the hue of a gray and a hue that rounds to 360), the color
+    space conversions, the utility methods and the edge cases.
 22. `parseColor` - hex, rgb/rgba, hsl/hsla and named color parsing, a null context, and the edge cases. The notations
     outside the legacy syntax give the same sRGB channels in Chromium, Firefox and WebKit, and a color outside the
     gamut clips. A `color(srgb)` serialization clips and reads `none` as 0, and an unknown serialization is invalid.
@@ -613,16 +627,18 @@ The focus after the form checks and the `invalid` event rules come from the form
 ### Converters
 
 24. The conversions between RGB, HSL, HSV and hex, in both directions, including round-trips. The saturation stays
-    finite for a tiny saturation at full value.
+    finite for a tiny saturation at full value. RGB to OKLCH gives the values of the CSS Color 4 sample code, and no
+    chroma for a gray.
 
 ### Color properties
 
 25. Converters - the exact hex round-trip, the HSL and HSV round-trips, HSL to RGB directly and through HSV, and
-    every converted channel in range.
+    every converted channel in range, OKLCH included.
 26. Parsing - `parseColor` never throws and returns channels in range. A string that is not a color gives opaque black
     and an empty model. A `color(srgb)` color reads as whole channels in range, and as the same channels inside the
     gamut. Any `oklch()`, `lab()` or `color()` color parses into sRGB. A model string in each format parses back to
-    the same color.
+    the same color. Any 8-bit color comes back from its `oklch` string, exactly in Firefox and WebKit and within one
+    step in Chromium.
 27. Model - every color space stays in range for any sequence of channel writes, and a clone equals its source.
 
 ### Host ARIA

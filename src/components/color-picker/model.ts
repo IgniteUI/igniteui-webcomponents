@@ -1,4 +1,4 @@
-import { clamp } from '#internals/utils/math.js';
+import { clamp, roundPrecise } from '#internals/utils/math.js';
 import type { ColorFormat } from '../types.js';
 import { tryParseColor } from './common.js';
 import { converter, type HSL, type HSV, type RGB } from './converters.js';
@@ -23,10 +23,14 @@ function makeCanvasContext() {
 }
 export const getContext = makeCanvasContext();
 
+function alphaPart(alpha: number | null): string {
+  return alpha === null ? '' : ` / ${alpha}`;
+}
+
 /** Formats RGB channels (0-255) and an optional alpha as a CSS `rgb()` color. */
 export function rgbString(rgb: RGB, alpha: number | null = null): string {
   const [r, g, b] = rgb.map(Math.round);
-  return `rgb(${r} ${g} ${b}${alpha === null ? '' : ` / ${alpha}`})`;
+  return `rgb(${r} ${g} ${b}${alphaPart(alpha)})`;
 }
 
 /** The color string shape of each format. Shown while a color text is empty. */
@@ -34,7 +38,16 @@ export const formatPlaceholders: Record<ColorFormat, string> = {
   hex: '#rrggbb',
   rgb: 'rgb(r g b)',
   hsl: 'hsl(h s% l%)',
+  oklch: 'oklch(l% c h)',
 };
+
+/**
+ * The formats in the key order of `formatPlaceholders`, which is the order of
+ * the format select.
+ */
+export const colorFormats = Object.keys(
+  formatPlaceholders
+) as readonly ColorFormat[];
 
 /**
  * A color with its alpha in one notation, to compare two colors. The empty
@@ -281,7 +294,16 @@ export class ColorModel {
         return rgbString(this._rgb, alpha);
       case 'hsl': {
         const [h, s, l] = this._hsl.map(Math.round);
-        return `hsl(${h} ${s}% ${l}%${alpha === null ? '' : ` / ${alpha}`})`;
+        return `hsl(${h} ${s}% ${l}%${alphaPart(alpha)})`;
+      }
+      case 'oklch': {
+        // The fewest decimals that give every 8-bit color back in Firefox and
+        // Safari. Chromium uses other OKLab matrices and can be one step off.
+        const [l, c, h] = converter.rgb.oklch(this._rgb);
+        const chroma = roundPrecise(c, 5);
+        // A gray has no hue.
+        const hue = chroma ? roundPrecise(h, 2) % 360 : 0;
+        return `oklch(${roundPrecise(l, 2)}% ${chroma} ${hue}${alphaPart(alpha)})`;
       }
     }
   }

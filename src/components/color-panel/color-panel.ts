@@ -48,9 +48,10 @@ import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonGroupComponent from '../button-group/button-group.js';
 import IgcToggleButtonComponent from '../button-group/toggle-button.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-import { colorPickerI18nConfig } from '../color-picker/i18n.js';
+import { colorPickerI18nConfig, formatNameKeys } from '../color-picker/i18n.js';
 import {
   ColorModel,
+  colorFormats,
   colorKey,
   formatPlaceholders,
   parseTypedColor,
@@ -986,15 +987,12 @@ export default class IgcColorPanelComponent extends I18nMixin(
         @igcClosing=${stopPropagation}
         @igcClosed=${stopPropagation}
       >
-        <igc-select-item value="hex"
-          >${strings.color_picker_format_hex}</igc-select-item
-        >
-        <igc-select-item value="rgb"
-          >${strings.color_picker_format_rgb}</igc-select-item
-        >
-        <igc-select-item value="hsl"
-          >${strings.color_picker_format_hsl}</igc-select-item
-        >
+        ${colorFormats.map(
+          (format) =>
+            html`<igc-select-item value=${format}
+              >${strings[formatNameKeys[format]]}</igc-select-item
+            >`
+        )}
       </igc-select>
     `;
   }

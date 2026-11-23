@@ -226,6 +226,19 @@ describe('Color panel', () => {
       expect(getColorInput(panel).value).to.equal('rgb(64 177 183)');
     });
 
+    it('writes a color and hints the notation in the oklch format', async () => {
+      panel.format = 'oklch';
+      await elementUpdated(panel);
+
+      expect(panel.value).to.equal('oklch(62.8% 0.25768 29.23)');
+      expect(getColorInput(panel).value).to.equal(panel.value);
+
+      panel.value = '';
+      await elementUpdated(panel);
+
+      expect(getColorInput(panel).placeholder).to.equal('oklch(l% c h)');
+    });
+
     it('clears for an invalid color and a color that depends on its context', () => {
       for (const value of ['not-a-color', 'currentcolor', 'var(--brand)']) {
         panel.value = '#ff0000';
@@ -248,6 +261,28 @@ describe('Color panel', () => {
       await elementUpdated(panel);
 
       expect(getHue(panel).value).to.equal('200');
+    });
+
+    it('lists the formats with their names from the resource strings', async () => {
+      const select = getFormatSelect(panel);
+
+      expect(select.items.map(({ value }) => value)).to.eql([
+        'hex',
+        'rgb',
+        'hsl',
+        'oklch',
+      ]);
+      expect(select.items.map(({ textContent }) => textContent)).to.eql([
+        'Hex',
+        'RGB',
+        'HSL',
+        'OKLCH',
+      ]);
+
+      panel.resourceStrings = { color_picker_format_oklch: 'Perceptual' };
+      await elementUpdated(panel);
+
+      expect(select.items[3].textContent).to.equal('Perceptual');
     });
 
     it('emits no events for a value from code or a format switch', async () => {

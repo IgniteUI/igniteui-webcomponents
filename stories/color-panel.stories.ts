@@ -37,11 +37,11 @@ const metadata: Meta<IgcColorPanelComponent> = {
       control: 'text',
     },
     format: {
-      type: { name: 'enum', value: ['hex', 'rgb', 'hsl'] },
+      type: { name: 'enum', value: ['hex', 'rgb', 'hsl', 'oklch'] },
       description:
         'The color format of the string value.\n\nA format change renders `value` in the new notation. The color does not\nchange, so the component emits no `igcInput` or `igcChange`.',
-      options: ['hex', 'rgb', 'hsl'],
-      control: { type: 'inline-radio' },
+      options: ['hex', 'rgb', 'hsl', 'oklch'],
+      control: { type: 'select' },
       table: { defaultValue: { summary: 'hex' } },
     },
     hideFormats: {
@@ -106,7 +106,7 @@ interface IgcColorPanelArgs {
    * A format change renders `value` in the new notation. The color does not
    * change, so the component emits no `igcInput` or `igcChange`.
    */
-  format: 'hex' | 'rgb' | 'hsl';
+  format: 'hex' | 'rgb' | 'hsl' | 'oklch';
   /** Whether the format select is hidden. */
   hideFormats: boolean;
   /** Whether to show the alpha slider and input. */

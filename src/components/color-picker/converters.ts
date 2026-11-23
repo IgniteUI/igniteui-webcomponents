@@ -1,4 +1,4 @@
-import { clamp } from '#internals/utils/math.js';
+import { clamp, modulo } from '#internals/utils/math.js';
 
 const ONE_THIRD = 1 / 3;
 const TWO_THIRDS = 2 / 3;
@@ -6,6 +6,33 @@ const TWO_THIRDS = 2 / 3;
 export type RGB = [number, number, number];
 export type HSL = [number, number, number];
 export type HSV = [number, number, number];
+export type OKLCH = [number, number, number];
+
+/**
+ * Linear sRGB to LMS: the product of the sRGB to XYZ and the XYZ to LMS
+ * matrices of CSS Color 4, as Firefox and Safari convert.
+ */
+const LINEAR_SRGB_TO_LMS = [
+  [0.41222146947076305, 0.5363325372617348, 0.05144599326750221],
+  [0.21190349581782522, 0.6806995506452344, 0.10739695353694056],
+  [0.08830245919005643, 0.2817188391361215, 0.6299787016738222],
+];
+
+const LMS_TO_OKLAB = [
+  [0.210454268309314, 0.7936177747023054, -0.0040720430116193],
+  [1.9779985324311684, -2.4285922420485799, 0.450593709617411],
+  [0.0259040424655478, 0.7827717124575296, -0.8086757549230774],
+];
+
+function multiply3x3(matrix: number[][], [x, y, z]: number[]): number[] {
+  return matrix.map((row) => row[0] * x + row[1] * y + row[2] * z);
+}
+
+/** An sRGB channel (0-255) in linear light (0-1). */
+function linearize(channel: number): number {
+  const c = channel / 255;
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
 
 export const converter = Object.freeze({
   rgb: {
@@ -81,6 +108,14 @@ export const converter = Object.freeze({
       }
 
       return [h * 360, s * 100, v * 100];
+    },
+    /** Lightness (0-100), chroma (0 to about 0.32 in sRGB) and hue (0-360). */
+    oklch: (rgb: RGB): OKLCH => {
+      const lms = multiply3x3(LINEAR_SRGB_TO_LMS, rgb.map(linearize));
+      const [l, a, b] = multiply3x3(LMS_TO_OKLAB, lms.map(Math.cbrt));
+      const h = (Math.atan2(b, a) * 180) / Math.PI;
+
+      return [l * 100, Math.hypot(a, b), modulo(h, 360)];
     },
   },
   hsl: {

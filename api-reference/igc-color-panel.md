@@ -26,7 +26,7 @@ defineComponents(IgcColorPanelComponent);
   An empty, whitespace-only or invalid string clears the value. So does a
   color that depends on its context: `currentcolor`, `var()`, `light-dark()`
   or a system color.
-- `format`: `'hex' | 'rgb' | 'hsl'`. Default: `'hex'`. Attribute: `format`.
+- `format`: `'hex' | 'rgb' | 'hsl' | 'oklch'`. Default: `'hex'`. Attribute: `format`.
   The color format of the string value.
 
   A format change renders `value` in the new notation. The color does not

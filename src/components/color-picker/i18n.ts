@@ -3,6 +3,7 @@ import {
   type IColorPickerResourceStrings,
 } from 'igniteui-i18n-core';
 import type { I18nMixinConfig } from '#internals/mixins/i18n.js';
+import type { ColorFormat } from '../types.js';
 
 /**
  * The color picker strings that `igniteui-i18n-core` does not ship yet. Until
@@ -25,6 +26,8 @@ export interface IgcColorPickerPendingResourceStrings {
   color_picker_format_rgb?: string;
   /** The name of the HSL format in the format select. */
   color_picker_format_hsl?: string;
+  /** The name of the OKLCH format in the format select. */
+  color_picker_format_oklch?: string;
   /** The name of the clear icon in input mode. */
   color_picker_clear?: string;
 }
@@ -42,8 +45,17 @@ const PendingResourceStringsEN: Required<IgcColorPickerPendingResourceStrings> =
     color_picker_format_hex: 'Hex',
     color_picker_format_rgb: 'RGB',
     color_picker_format_hsl: 'HSL',
+    color_picker_format_oklch: 'OKLCH',
     color_picker_clear: 'Clear color',
   };
+
+/** The resource string of the name of each format in the format select. */
+export const formatNameKeys = {
+  hex: 'color_picker_format_hex',
+  rgb: 'color_picker_format_rgb',
+  hsl: 'color_picker_format_hsl',
+  oklch: 'color_picker_format_oklch',
+} as const satisfies Record<ColorFormat, keyof IgcColorPickerResourceStrings>;
 
 /** The i18n configuration that the color picker and the color panel share. */
 export const colorPickerI18nConfig: I18nMixinConfig<IgcColorPickerResourceStrings> =

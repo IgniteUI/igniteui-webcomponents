@@ -1130,7 +1130,7 @@
       "class": "IgcColorPanelComponent",
       "attributes": {
         "active-view": "ColorPanelView ('gradient' | 'swatches')",
-        "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
+        "format": "ColorFormat ('hex' | 'hsl' | 'oklch' | 'rgb')",
         "hide-formats": "boolean",
         "locale": "string",
         "show-alpha": "boolean",
@@ -1139,7 +1139,7 @@
       },
       "properties": {
         "activeView": "ColorPanelView ('gradient' | 'swatches')",
-        "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
+        "format": "ColorFormat ('hex' | 'hsl' | 'oklch' | 'rgb')",
         "hideFormats": "boolean",
         "locale": "string",
         "resourceStrings": "Required<IgcColorPickerResourceStrings>",
@@ -1188,7 +1188,7 @@
       "attributes": {
         "active-view": "ColorPanelView ('gradient' | 'swatches')",
         "disabled": "boolean",
-        "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
+        "format": "ColorFormat ('hex' | 'hsl' | 'oklch' | 'rgb')",
         "hide-formats": "boolean",
         "invalid": "boolean",
         "label": "string | undefined",
@@ -1207,7 +1207,7 @@
         "defaultValue": "unknown",
         "disabled": "boolean",
         "form": "readonly HTMLFormElement | null",
-        "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
+        "format": "ColorFormat ('hex' | 'hsl' | 'oklch' | 'rgb')",
         "hideFormats": "boolean",
         "invalid": "boolean",
         "label": "string | undefined",

@@ -53,11 +53,11 @@ const metadata: Meta<IgcColorPickerComponent> = {
       control: 'text',
     },
     format: {
-      type: { name: 'enum', value: ['hex', 'rgb', 'hsl'] },
+      type: { name: 'enum', value: ['hex', 'rgb', 'hsl', 'oklch'] },
       description:
         'The color format of the string value.\n\nA format change renders `value` in the new notation. The color does not\nchange, so the component emits no `igcInput` or `igcChange`.',
-      options: ['hex', 'rgb', 'hsl'],
-      control: { type: 'inline-radio' },
+      options: ['hex', 'rgb', 'hsl', 'oklch'],
+      control: { type: 'select' },
       table: { defaultValue: { summary: 'hex' } },
     },
     hideFormats: {
@@ -184,7 +184,7 @@ interface IgcColorPickerArgs {
    * A format change renders `value` in the new notation. The color does not
    * change, so the component emits no `igcInput` or `igcChange`.
    */
-  format: 'hex' | 'rgb' | 'hsl';
+  format: 'hex' | 'rgb' | 'hsl' | 'oklch';
   /** Whether the format select is hidden. */
   hideFormats: boolean;
   /** Whether to show the alpha slider and input. */
@@ -374,7 +374,7 @@ export const Formats: Story = {
     docs: {
       description: {
         story:
-          '`format` sets the notation of `value`. The first three pickers hold the same translucent color, and the text under each one shows the `value` string that the component reports. The format switcher in the picker changes the notation, not the color, so it emits no `igcInput` or `igcChange`. `hide-formats` removes the switcher and locks the notation, as in the last picker. `show-alpha` adds the alpha slider and input in whole percent. The anchor then shows the opaque color over its left half and the real opacity over the full surface.',
+          '`format` sets the notation of `value`. The first four pickers hold the same translucent color, and the text under each one shows the `value` string that the component reports. The format switcher in the picker changes the notation, not the color, so it emits no `igcInput` or `igcChange`. `hide-formats` removes the switcher and locks the notation, as in the last picker. `show-alpha` adds the alpha slider and input in whole percent. The anchor then shows the opaque color over its left half and the real opacity over the full surface.',
       },
     },
     actions: { handles: [] },
@@ -399,6 +399,7 @@ export const Formats: Story = {
             ['Hex', 'hex', false],
             ['RGB', 'rgb', false],
             ['HSL', 'hsl', false],
+            ['OKLCH', 'oklch', false],
             ['HSL only', 'hsl', true],
           ] as const
         ).map(

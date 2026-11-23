@@ -51,7 +51,8 @@
 | ------: | ---------- | --------------------- |
 |       1 | 2026-11-23 | Initial specification |
 |       2 | 2026-11-23 | Swatch elements and groups, the swatch listbox, the no-color swatch, `var()` swatches, the gradient and swatch views |
-|       3 | 2026-11-24 | Review fixes: one selected swatch, `var()` only, a plain swatch fill, the format names from the resource strings, the panel theme files |
+|       3 | 2026-11-23 | Review fixes: one selected swatch, `var()` only, a plain swatch fill, the format names from the resource strings, the panel theme files |
+|       4 | 2026-11-23 | The `oklch` format |
 
 ## Overview
 
@@ -73,7 +74,8 @@ sidebars and other places where the controls stay visible. The color picker show
 - **Two views**: the gradient view and the swatch view, with a view switcher when both are available.
 - **Any CSS color string**: hex, `rgb()`, `hsl()`, named colors and the other notations, such as `oklch()`, `lab()`,
   `color()` and `color-mix()`, are parsed into sRGB and normalized.
-- **Three serialization formats**, switchable at run time without altering the represented color.
+- **Four serialization formats**, `hex`, `rgb`, `hsl` and `oklch`, switchable at run time without altering the
+  represented color.
 - **Change events per gesture**: `igcInput` while the user changes the color, `igcChange` when the change ends, as
   for a native range input.
 - **Themeable**: the themes of the color picker, and shadow parts for every region.
@@ -273,11 +275,11 @@ The panel uses the strings of the color picker, from the `igniteui-i18n-core` pa
 `resourceStrings` properties. The [color picker localization](../color-picker/spec.md#localization) lists the keys. In
 the color picker, the panel takes the strings of the picker.
 
-The panel uses seven strings that `igniteui-i18n-core` does not ship yet: `color_picker_no_color` ("No color"),
+The panel uses eight strings that `igniteui-i18n-core` does not ship yet: `color_picker_no_color` ("No color"),
 `color_picker_swatches` ("Color swatches"), `color_picker_view_gradient` ("Gradient"), `color_picker_view_swatches`
-("Swatches"), and the format names `color_picker_format_hex` ("Hex"), `color_picker_format_rgb` ("RGB") and
-`color_picker_format_hsl` ("HSL"). Until it does, every locale shows the English text, and `resourceStrings` can
-replace them.
+("Swatches"), and the format names `color_picker_format_hex` ("Hex"), `color_picker_format_rgb` ("RGB"),
+`color_picker_format_hsl` ("HSL") and `color_picker_format_oklch` ("OKLCH"). Until it does, every locale shows the
+English text, and `resourceStrings` can replace them.
 
 ### Keyboard interactions
 
@@ -412,8 +414,9 @@ in the page, and no surface in the color picker popup.
 
 ### Value and format
 
-Any CSS color in the current format, the empty value for an invalid color and a context color, the hue of a gray kept
-for a write of the same color, and no events for a value from code or a format switch.
+Any CSS color in the current format, a color and the placeholder in `oklch`, the empty value for an invalid color and a
+context color, the hue of a gray kept for a write of the same color, the format names from the resource strings, and
+no events for a value from code or a format switch.
 
 ### Events
 
