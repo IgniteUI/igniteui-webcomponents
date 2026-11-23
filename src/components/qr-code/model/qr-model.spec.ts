@@ -47,6 +47,46 @@ describe('QR model - encodeQR', () => {
     });
   });
 
+  describe('Segments', () => {
+    it('puts a long digit run in its own segment', () => {
+      const result = encodeQR('https://example.com/order/12345678901234567890');
+      expect(result.mode).to.equal('mixed');
+      // Byte mode alone: 4 + 8 + 46 * 8 bits.
+      expect(result.dataBits).to.be.below(380);
+    });
+
+    it('selects a smaller version than one byte segment would need', () => {
+      // One byte segment: 4 + 8 + 31 * 8 = 260 bits, version 3 at level M.
+      // Byte 'a' and 30 digits: 20 + 114 = 134 bits, version 2.
+      const result = encodeQR(`a${'1'.repeat(30)}`, 'M');
+      expect(result.mode).to.equal('mixed');
+      expect(result.version).to.equal(2);
+    });
+
+    it('keeps one segment when a switch costs more than it saves', () => {
+      expect(encodeQR('item 12').mode).to.equal('byte');
+      expect(encodeQR('ORDER-12345').mode).to.equal('alphanumeric');
+    });
+
+    it('keeps one segment when a switch saves no bits', () => {
+      // Byte alone and 'Test' + numeric '123' both take 68 bits.
+      const result = encodeQR('Test123');
+      expect(result.mode).to.equal('byte');
+      expect(result.dataBits).to.equal(68);
+
+      // One alphanumeric segment and 'A' + numeric '1111111' both take 57 bits.
+      expect(encodeQR('A1111111').mode).to.equal('alphanumeric');
+      expect(encodeQR('1111111A').mode).to.equal('alphanumeric');
+    });
+
+    it('splits the data at code points', () => {
+      const result = encodeQR(`😀${'7'.repeat(20)}😀`);
+      expect(result.mode).to.equal('mixed');
+      // Two byte segments of 4 bytes and one numeric segment of 20 digits.
+      expect(result.dataBits).to.equal(2 * (4 + 8 + 32) + (4 + 10 + 67));
+    });
+  });
+
   describe('Auto version selection', () => {
     it('selects version 1 for short numeric data at level M', () => {
       const result = encodeQR('42', 'M');

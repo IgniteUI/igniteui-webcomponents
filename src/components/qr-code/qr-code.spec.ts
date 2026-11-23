@@ -7,8 +7,9 @@ import {
 } from '@open-wc/testing';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { restore, type SinonStub, stub } from 'sinon';
-import { prepareZXingModule, readBarcodes } from 'zxing-wasm/reader';
+import { readBarcodes } from 'zxing-wasm/reader';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { prepareQrDecoder } from '#internals/testing/qr-decoder.spec.js';
 import { asNumber } from '#internals/utils/math.js';
 import { configureTheme } from '#theming/config.js';
 import IgcQrCodeComponent from './qr-code.js';
@@ -1698,17 +1699,7 @@ describe('IgcQrCodeComponent', () => {
 
     let el: IgcQrCodeComponent;
 
-    before(() => {
-      // Load the decoder from the package, not from its default CDN.
-      prepareZXingModule({
-        overrides: {
-          locateFile: (path: string, prefix: string) =>
-            path.endsWith('.wasm')
-              ? '/node_modules/zxing-wasm/dist/reader/zxing_reader.wasm'
-              : prefix + path,
-        },
-      });
-    });
+    before(prepareQrDecoder);
 
     beforeEach(async () => {
       el = await fixture<IgcQrCodeComponent>(
@@ -1817,5 +1808,21 @@ describe('IgcQrCodeComponent', () => {
         }
       });
     }
+
+    it('reads values that mix numeric, alphanumeric and byte segments', async () => {
+      for (const value of [
+        'https://example.com/order/12345678901234567890',
+        'TICKET 2026-11-23 SEAT 0042 GATE B7 - have a nice trip',
+        `a${'1'.repeat(30)}`,
+        `😀${'7'.repeat(20)}😀`,
+      ]) {
+        el.value = value;
+        expect(await scan(), value).to.equal(value);
+
+        el.logoSrc = solidLogo('#000');
+        expect(await scan(), `${value}, logo`).to.equal(value);
+        el.logoSrc = undefined;
+      }
+    });
   });
 });

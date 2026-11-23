@@ -633,6 +633,7 @@ Each component has tests in `[component].spec.ts`. They cover:
   | `helpers.spec.js`          | Animation, focus, scroll and style helpers, and `axeReflectedRelationsOptions` |
   | `fast-check-setup.spec.js` | `fc` with the seed, `SLOW_PROPERTY_RUNS`, `orderedPair` and `withFixture`      |
   | `date-arbitraries.spec.js` | Date arbitraries, wall clocks and `assumeWallClock` for date properties        |
+  | `qr-decoder.spec.js`       | `prepareQrDecoder`, which loads the zxing decoder for QR scan specs            |
 
   Use the simulated events, not `element.click()` or a hand-built `KeyboardEvent`. They send
   the full event sequence of a real user interaction.

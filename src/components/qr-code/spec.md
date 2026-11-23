@@ -60,6 +60,7 @@
 |       5 | 2026-10-20 | `copyToClipboard()`; exports read `size` after the pending render      |
 |       6 | 2026-10-21 | An invalid `version` falls back to the automatic version             |
 |       7 | 2026-11-17 | Shapes, `cornerDotStyle`, `dotScale`, logo cutout and version fit  |
+|       8 | 2026-11-23 | Mixed-mode segments; UTF-8 without an ECI header                     |
 
 ## Overview
 
@@ -74,8 +75,8 @@ authentication setup URLs, contact sharing and linking printed material to digit
 
 ### Key features
 
-- **Automatic encoding**: the most compact mode — numeric, alphanumeric or byte — and the smallest version that
-  fits the value, unless a `version` is pinned.
+- **Automatic encoding**: the value split into numeric, alphanumeric and byte segments with the fewest bits, and the
+  smallest version that fits it, unless a `version` is pinned.
 - **Configurable error correction** across `L`, `M`, `Q` and `H`, trading capacity for resilience.
 - **Center logo** with the modules beneath it masked out, and, when `error-level` is not set, an automatic
   escalation from `M` to the smallest level that keeps the code scannable at the requested logo size.
@@ -91,7 +92,8 @@ authentication setup URLs, contact sharing and linking printed material to digit
 ### Acceptance criteria
 
 - The component must render an SVG whenever a non-empty `value` is set, and nothing when it is not.
-- It must pick an encoding mode and a version that fit the value, unless a `version` is pinned.
+- It must split the value into the segments with the fewest bits and pick a version that fits them, unless a
+  `version` is pinned.
 - `error-level` must drive the error correction of the generated matrix.
 - `size` and `margin` must control the rendered pixels and the quiet zone without touching the encoded data.
 - A valid `logo-src` must be centered over the code with the whole modules beneath it masked out.
@@ -472,8 +474,9 @@ None. The SVG is rendered entirely from the properties of the component.
 
 33. Each version and error correction level holds as many codewords as the symbol has room for, checked against the
     module count of ISO/IEC 18004.
-34. Generated numeric, alphanumeric and byte data encodes into the smallest version that holds it, with the
-    codeword count of that version, and the encoding mode matches the characters of the data.
+34. Generated numeric, alphanumeric, byte and mixed data encodes into the smallest version that holds it, with the
+    codeword count of that version, and never takes more bits than one segment of the best single mode. A decoder
+    reads the bytes of the data back from the matrix.
 35. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
     capacity error. A requested version that is not an integer from 1 to 40 throws.
 
@@ -493,6 +496,7 @@ each module.
     level.
 40. A white, black or gray logo on codes of version 1 to 3 decodes at each error correction level, at the default and
     the largest `logoSize`, and so does a logo on a pinned version 1, 2 or 3.
+41. Values that mix numeric, alphanumeric and byte segments decode, with and without a logo.
 
 ### Not covered by the suite
 
@@ -504,6 +508,9 @@ each module.
 
 ## Assumptions and limitations
 
+- The code writes text as UTF-8 in byte mode, with no ECI header. Phone readers assume UTF-8, and many readers ignore
+  an ECI header, so the component does not write one. A reader that follows the ISO default reads non-ASCII text as
+  ISO-8859-1.
 - The readability rule for a logo counts every codeword with a hidden module as lost. A real logo spoils fewer
   codewords, so the rule can select a larger version than a scanner needs.
 - On 2026-11-17, zxing-cpp did not read some codes of version 8 and above with `square-style="circle"` at some image

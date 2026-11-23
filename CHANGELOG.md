@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
 - #### QR code
+  - The code splits its value into numeric, alphanumeric and byte segments with the fewest bits. A value that mixes long runs of digits or uppercase letters with other text, such as an order number in a URL, can get a smaller version. A scanner reads the same text.
   - The cutout under the logo holds whole modules, so it cuts no module in part.
   - `logoSize` is a share of the code without its quiet zone, so `margin` no longer changes the logo. At the default `margin`, logos are smaller than before: 28% smaller in side on a version 1 code, and 4% on a version 40 code.
 - #### Radio

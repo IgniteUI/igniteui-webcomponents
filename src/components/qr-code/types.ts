@@ -14,7 +14,7 @@ export type QrCornerSquareStyle = 'square' | 'circle' | 'rounded' | 'squircle';
 export type QrErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 
 /**
- * QR data encoding mode, selected automatically based on the input string.
+ * QR data encoding mode of a segment. The encoder splits the value into the segments with the fewest bits.
  * - `numeric` - digits only; `alphanumeric` - digits + uppercase letters + a few symbols; `byte` - arbitrary UTF-8.
  */
 export type QrEncodingMode = 'numeric' | 'alphanumeric' | 'byte';

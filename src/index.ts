@@ -240,6 +240,7 @@ export type {
   QrCodeCopyOptions,
   QrCodeExportFormat,
   QrCodeExportOptions,
+  QrCornerDotStyle,
   QrCornerSquareStyle,
   QrDotStyle,
   QrErrorCorrectionLevel,
