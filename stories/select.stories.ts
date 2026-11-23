@@ -162,7 +162,8 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     open: {
       type: 'boolean',
-      description: 'Whether the component is open.',
+      description:
+        'Whether the component is open. A disabled form control stays closed.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -240,7 +241,7 @@ interface IgcSelectArgs {
   keepOpenOnSelect: boolean;
   /** Whether the component stays open when the user clicks outside of it. */
   keepOpenOnOutsideClick: boolean;
-  /** Whether the component is open. */
+  /** Whether the component is open. A disabled form control stays closed. */
   open: boolean;
   /**
    * The behavior of the component when a parent container scrolls.

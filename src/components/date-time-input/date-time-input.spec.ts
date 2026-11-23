@@ -23,11 +23,12 @@ import {
   runExternalLabelAssociationTests,
   runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { isFocused } from '#internals/testing/helpers.spec.js';
+import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
   simulateComposingKeys,
   simulateInput,
   simulateKeyboard,
+  simulateTypingOver,
   simulateWheel,
 } from '#internals/testing/simulate.spec.js';
 import {
@@ -428,6 +429,19 @@ describe('Date Time Input component', () => {
         await elementUpdated(element);
 
         expect(input.value).to.equal('01/02/1999');
+      });
+
+      it('an empty value assigned while focused replaces the text of the old value', async () => {
+        element.value = new Date(2020, 2, 3);
+        element.focus();
+        await elementUpdated(element);
+
+        expect(input.value).to.equal('03/03/2020');
+
+        element.value = null;
+        await elementUpdated(element);
+
+        expect(input.value).to.equal('__/__/____');
       });
 
       it('does not report a value set from code while focused', async () => {
@@ -1543,6 +1557,63 @@ describe('Date Time Input component', () => {
 
       expect(toCalendarDay(spec.element.value!).equalTo(today)).to.be.true;
       spec.assertSubmitHasValue(today.native.toISOString());
+    });
+
+    describe('Form reset while focused', () => {
+      let input: HTMLInputElement;
+
+      beforeEach(async () => {
+        spec.setProperties({ inputFormat: 'MM/dd/yyyy' });
+        await elementUpdated(spec.element);
+        input = spec.element.renderRoot.querySelector('input')!;
+      });
+
+      it('discards the typed text, as a native date input does', async () => {
+        await simulateTypingOver(spec.element, '12');
+        expect(input.value).to.equal('12/__/____');
+
+        spec.reset();
+        await elementUpdated(spec.element);
+
+        expect(input.value).to.equal('__/__/____');
+
+        spec.element.blur();
+        await elementUpdated(spec.element);
+
+        expect(spec.element.value).to.be.null;
+        spec.assertSubmitHasValue(null);
+      });
+
+      it('shows the default and keeps it on the next blur', async () => {
+        const defaultDate = new Date(2024, 0, 15);
+        spec.setAttributes({ value: defaultDate.toISOString() });
+        await simulateTypingOver(spec.element, '12');
+        expect(input.value).to.equal('12/__/____');
+
+        spec.reset();
+        await elementUpdated(spec.element);
+
+        expect(input.value).to.equal('01/15/2024');
+
+        spec.element.blur();
+        await elementUpdated(spec.element);
+
+        checkDatesEqual(spec.element.value!, defaultDate);
+        spec.assertSubmitHasValue(defaultDate.toISOString());
+      });
+
+      it('shows the empty mask when the reset empties the value', async () => {
+        spec.setProperties({ value: new Date(2024, 2, 3) });
+        spec.element.focus();
+        await elementUpdated(spec.element);
+
+        expect(input.value).to.equal('03/03/2024');
+
+        spec.reset();
+        await elementUpdated(spec.element);
+
+        expect(input.value).to.equal('__/__/____');
+      });
     });
 
     it('reflects disabled ancestor state', () => {

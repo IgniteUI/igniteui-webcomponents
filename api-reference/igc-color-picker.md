@@ -80,7 +80,7 @@ defineComponents(IgcColorPickerComponent);
 - `willValidate`: `boolean`. Read-only. No attribute.
   Whether the control is a candidate for constraint validation.
 - `open`: `boolean`. Default: `false`. Attribute: `open`, reflected.
-  Whether the component is open.
+  Whether the component is open. A disabled form control stays closed.
 - `scrollStrategy`: `'scroll' | 'hide' | 'close'`. Default: `'hide'`. Attribute: `scroll-strategy`.
   The behavior of the component when a parent container scrolls.
 
@@ -109,8 +109,8 @@ defineComponents(IgcColorPickerComponent);
   message is not empty. An empty string removes the custom error.
 - `show(): Promise<boolean>`
   Opens the component. It does not emit events. The promise resolves to
-  `false` when the component is already open, or when a later call replaces
-  this one.
+  `false` when the component is already open or is a disabled form control,
+  or when a later call replaces this one.
 - `hide(): Promise<boolean>`
   Closes the component. It does not emit events. The promise resolves to
   `false` when the component is already closed, or when a later call

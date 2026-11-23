@@ -60,6 +60,7 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
 |       6 | 2026-11-04 | Setting `selected` on an item again keeps the active item; only the selected item starts active. |
 |       7 | 2026-11-06 | `header` and `footer` slots; content that is not an item keeps its keys; Tab moves through it. Space is not bound. |
 |       8 | 2026-11-18 | <kbd>Enter</kbd> without an active item closes the list; the shared popup rules suite |
+|       9 | 2026-11-23 | The `open` description of the shared base names the disabled state of form controls; the dropdown has none |
 
 ## Overview
 
@@ -230,7 +231,7 @@ The dropdown itself is not focusable and has no tab index, so the target keeps t
 
 | Property               | Attribute                  | Reflected | Type                                    | Default        | Description                                                     |
 | ---------------------- | -------------------------- | --------- | --------------------------------------- | -------------- | ---------------------------------------------------------------- |
-| open                   | open                       | Yes       | `boolean`                               | false          | Whether the component is open.                                |
+| open                   | open                       | Yes       | `boolean`                               | false          | Whether the component is open. A disabled form control stays closed. |
 | placement              | placement                  | No        | `PopoverPlacement`                      | `bottom-start` | The preferred placement around the target element.              |
 | distance               | distance                   | No        | `number`                                | 0              | The distance from the target element.                           |
 | flip                   | flip                       | No        | `boolean`                               | false          | Whether the dropdown flips to the opposite side of the target when it does not fit in the visible area. It flips back when its preferred side has enough space again. |

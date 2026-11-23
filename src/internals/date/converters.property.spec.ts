@@ -1,9 +1,9 @@
 import { expect } from '@open-wc/testing';
-import { isoDate } from '../testing/date-arbitraries.spec.js';
+import { anyValidDate } from '../testing/date-arbitraries.spec.js';
 import { fc } from '../testing/fast-check-setup.spec.js';
 import { convertToDateRange, isValidDate } from './converters.js';
 
-const end = fc.option(isoDate, { nil: null });
+const end = fc.option(anyValidDate, { nil: null });
 
 describe('Date converter properties', () => {
   it('a range of ISO strings converts back to its dates, with their time', () => {

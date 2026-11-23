@@ -31,7 +31,7 @@ defineComponents(IgcDropdownComponent);
 - `keepOpenOnOutsideClick`: `boolean`. Default: `false`. Attribute: `keep-open-on-outside-click`, reflected.
   Whether the component stays open when the user clicks outside of it.
 - `open`: `boolean`. Default: `false`. Attribute: `open`, reflected.
-  Whether the component is open.
+  Whether the component is open. A disabled form control stays closed.
 - `scrollStrategy`: `'scroll' | 'hide' | 'close'`. Default: `'hide'`. Attribute: `scroll-strategy`.
   The behavior of the component when a parent container scrolls.
 

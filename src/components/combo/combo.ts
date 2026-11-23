@@ -1053,7 +1053,7 @@ export default class IgcComboComponent<
   private async _itemClickHandler(event: PointerEvent): Promise<void> {
     const target = getElementFromPath(IgcComboItemComponent.tagName, event);
 
-    if (!target) {
+    if (!target || this.disabled) {
       return;
     }
 
