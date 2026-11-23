@@ -333,6 +333,9 @@ type Story = StoryObj<IgcQrCodeArgs>;
 const productUrl =
   'https://www.infragistics.com/products/ignite-ui-web-components';
 
+/** A short value: a code of 25 modules, so the modules are large enough to compare shapes. */
+const shortUrl = 'https://infragistics.com';
+
 const samples = html`
   <style>
     .qr-samples {
@@ -351,20 +354,47 @@ const samples = html`
     }
 
     .qr-samples figcaption {
-      max-width: 12rem;
+      max-width: 15rem;
       text-align: center;
     }
 
     .qr-samples code {
       overflow-wrap: anywhere;
     }
+
+    .qr-section {
+      margin-block: 2rem 1rem;
+    }
+
+    .qr-section:first-of-type {
+      margin-block-start: 0;
+    }
   </style>
 `;
 
 /** Makes a square logo with a short text as an SVG data URI. */
-function logo(background: string, color: string, text: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${background}"/><text x="32" y="43" fill="${color}" font-family="sans-serif" font-size="28" font-weight="700" text-anchor="middle">${text}</text></svg>`;
+function logo(
+  background: string,
+  color: string,
+  text: string,
+  radius = 14
+): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="${radius}" fill="${background}"/><text x="32" y="43" fill="${color}" font-family="sans-serif" font-size="28" font-weight="700" text-anchor="middle">${text}</text></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+/** Makes a logo twice as wide as it is high, with a short text, as an SVG data URI. */
+function wideLogo(background: string, color: string, text: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="64" viewBox="0 0 128 64"><rect width="128" height="64" fill="${background}"/><text x="64" y="43" fill="${color}" font-family="sans-serif" font-size="28" font-weight="700" text-anchor="middle">${text}</text></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+/** A code with a caption. */
+function sample(caption: unknown, code: unknown) {
+  return html`<figure>
+    ${code}
+    <figcaption>${caption}</figcaption>
+  </figure>`;
 }
 
 export const Default: Story = {
@@ -378,6 +408,7 @@ export const Default: Story = {
   },
   args: {
     value: productUrl,
+    size: 256,
   },
 };
 
@@ -387,128 +418,144 @@ export const Shapes: Story = {
     docs: {
       description: {
         story:
-          '`dot-style` sets the shape of the data modules and of the inner dot of each corner. `square-style` sets the shape of the outer corner squares and of the alignment rings. The table shows all 16 combinations of the four basic shapes for the same value: in a `circle` corner square, a `square` corner dot draws as a circle, so that scanners find the corner. Below it are the other dot styles (`diamond`, `plus`, `liquid` and the bars) and the `leaf` corners. `corner-dot-style` gives the inner corner dots a shape of their own, and `dot-scale` shrinks the data modules to leave a gap between them.',
+          '`dot-style` sets the shape of the data modules. Without `corner-dot-style`, the inner corner dots follow it: `diamond` and `plus` give square dots, and `liquid` and the bars give rounded dots. `square-style` sets the shape of the outer corner squares and of the alignment rings. `corner-dot-style` sets the shape of the inner corner dots and of the alignment centers. In a `circle` corner square, a `square` or `leaf` corner dot draws as a circle, so that scanners find the corner. `dot-scale` makes the data modules smaller, with a gap between them. The samples encode a short value, so the modules are large.',
       },
     },
   },
   render: () => {
-    const shapes = ['square', 'circle', 'rounded', 'squircle'] as const;
-    const variants = [
+    const dotStyles = [
+      'square',
+      'circle',
+      'rounded',
+      'squircle',
+      'diamond',
+      'plus',
+      'liquid',
+      'horizontal-bars',
+      'vertical-bars',
+    ] as const;
+    const cornerStyles = [
+      'square',
+      'circle',
+      'rounded',
+      'squircle',
+      'leaf',
+    ] as const;
+    const scales = [
+      { dot: 'circle', scale: 1 },
+      { dot: 'circle', scale: 0.85 },
+      { dot: 'circle', scale: 0.7 },
+      { dot: 'rounded', scale: 0.85 },
+      { dot: 'horizontal-bars', scale: 0.7 },
+    ] as const;
+    const combinations = [
       {
-        caption: 'Squircle modules with circle corner dots',
+        caption: 'Squircle modules and corners with circle corner dots',
         dot: 'squircle',
         square: 'squircle',
         cornerDot: 'circle',
-        scale: 1,
       },
       {
-        caption: 'Square modules at dot-scale 0.8',
-        dot: 'square',
-        square: 'square',
-        cornerDot: undefined,
-        scale: 0.8,
-      },
-      {
-        caption: 'Circle modules at dot-scale 0.7',
-        dot: 'circle',
-        square: 'circle',
-        cornerDot: undefined,
-        scale: 0.7,
-      },
-      {
-        caption: 'Rounded modules at dot-scale 0.85, which do not join',
-        dot: 'rounded',
-        square: 'rounded',
-        cornerDot: undefined,
-        scale: 0.85,
-      },
-      {
-        caption: 'Diamond modules',
-        dot: 'diamond',
-        square: 'square',
-        cornerDot: undefined,
-        scale: 1,
-      },
-      {
-        caption: 'Plus modules with circle corners',
-        dot: 'plus',
-        square: 'circle',
-        cornerDot: undefined,
-        scale: 1,
-      },
-      {
-        caption: 'Liquid modules',
+        caption: 'Liquid modules with rounded corners',
         dot: 'liquid',
         square: 'rounded',
-        cornerDot: undefined,
-        scale: 1,
       },
       {
         caption: 'Horizontal bars with leaf corners',
         dot: 'horizontal-bars',
         square: 'leaf',
         cornerDot: 'leaf',
-        scale: 1,
       },
       {
-        caption: 'Vertical bars at dot-scale 0.8',
-        dot: 'vertical-bars',
+        caption: 'Plus modules with circle corners',
+        dot: 'plus',
+        square: 'circle',
+      },
+      {
+        caption: 'Diamond modules with squircle corners and square dots',
+        dot: 'diamond',
         square: 'squircle',
-        cornerDot: undefined,
-        scale: 0.8,
+        cornerDot: 'square',
       },
     ] as const;
 
     return html`
       ${samples}
-      <div style="overflow-x: auto">
-        <table style="border-spacing: 1.5rem 1rem; text-align: center">
-          <thead>
-            <tr>
-              <td></td>
-              ${shapes.map(
-                (shape) => html`<th scope="col">dot-style="${shape}"</th>`
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            ${shapes.map(
-              (square) => html`
-                <tr>
-                  <th scope="row">square-style="${square}"</th>
-                  ${shapes.map(
-                    (dot) => html`
-                      <td>
-                        <igc-qr-code
-                          value=${productUrl}
-                          size="112"
-                          dot-style=${dot}
-                          square-style=${square}
-                        ></igc-qr-code>
-                      </td>
-                    `
-                  )}
-                </tr>
-              `
-            )}
-          </tbody>
-        </table>
-      </div>
+      <h3 class="qr-section">dot-style</h3>
       <div class="qr-samples">
-        ${variants.map(
-          (variant) => html`
-            <figure>
-              <igc-qr-code
-                value=${productUrl}
-                size="160"
-                dot-style=${variant.dot}
-                square-style=${variant.square}
-                corner-dot-style=${ifDefined(variant.cornerDot)}
-                dot-scale=${variant.scale}
-              ></igc-qr-code>
-              <figcaption>${variant.caption}</figcaption>
-            </figure>
-          `
+        ${dotStyles.map((dot) =>
+          sample(
+            html`<code>dot-style="${dot}"</code>`,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              dot-style=${dot}
+            ></igc-qr-code>`
+          )
+        )}
+      </div>
+
+      <h3 class="qr-section">square-style</h3>
+      <div class="qr-samples">
+        ${cornerStyles.map((square) =>
+          sample(
+            html`<code>square-style="${square}"</code>`,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              square-style=${square}
+            ></igc-qr-code>`
+          )
+        )}
+      </div>
+
+      <h3 class="qr-section">corner-dot-style</h3>
+      <div class="qr-samples">
+        ${cornerStyles.map((cornerDot) =>
+          sample(
+            html`<code>corner-dot-style="${cornerDot}"</code>`,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              square-style="rounded"
+              corner-dot-style=${cornerDot}
+            ></igc-qr-code>`
+          )
+        )}
+      </div>
+
+      <h3 class="qr-section">dot-scale</h3>
+      <div class="qr-samples">
+        ${scales.map(({ dot, scale }) =>
+          sample(
+            html`<code>dot-style="${dot}"</code><br /><code
+                >dot-scale="${scale}"</code
+              >`,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              dot-style=${dot}
+              dot-scale=${scale}
+            ></igc-qr-code>`
+          )
+        )}
+      </div>
+
+      <h3 class="qr-section">Combinations</h3>
+      <div class="qr-samples">
+        ${combinations.map((variant) =>
+          sample(
+            variant.caption,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              dot-style=${variant.dot}
+              square-style=${variant.square}
+              corner-dot-style=${ifDefined(
+                'cornerDot' in variant ? variant.cornerDot : undefined
+              )}
+            ></igc-qr-code>`
+          )
         )}
       </div>
     `;
@@ -543,11 +590,30 @@ export const Colors: Story = {
           '--ig-qr-code-dark-color: #1f2937; --ig-qr-code-corner-square-color: #e63946; --ig-qr-code-corner-dot-color: #457b9d;',
       },
       {
-        caption: 'Linear gradient at 45 degrees',
+        caption: 'Linear gradient, left to right (gradient-angle 0)',
         style:
           '--ig-qr-code-gradient-start: #1a237e; --ig-qr-code-gradient-end: #880e4f;',
         gradient: 'linear',
+      },
+      {
+        caption: 'Linear gradient, corner to corner (gradient-angle 45)',
+        style:
+          '--ig-qr-code-gradient-start: #0b3d91; --ig-qr-code-gradient-end: #2a7f62;',
+        gradient: 'linear',
         angle: 45,
+      },
+      {
+        caption: 'Linear gradient, top to bottom (gradient-angle 90)',
+        style:
+          '--ig-qr-code-gradient-start: #4a148c; --ig-qr-code-gradient-end: #b71c1c;',
+        gradient: 'linear',
+        angle: 90,
+      },
+      {
+        caption: 'Radial gradient, center to corners',
+        style:
+          '--ig-qr-code-gradient-start: #6a1b9a; --ig-qr-code-gradient-end: #0d47a1;',
+        gradient: 'radial',
       },
       {
         caption: 'Radial gradient with accent corner dots',
@@ -570,24 +636,83 @@ export const Colors: Story = {
     return html`
       ${samples}
       <div class="qr-samples">
-        ${variants.map(
-          ({ caption, style, gradient, angle }) => html`
-            <figure>
-              <igc-qr-code
-                value=${productUrl}
-                size="160"
-                dot-style="rounded"
-                gradient=${ifDefined(gradient)}
-                gradient-angle=${ifDefined(angle)}
-                style=${style}
-              ></igc-qr-code>
-              <figcaption>${caption}</figcaption>
-            </figure>
-          `
+        ${variants.map(({ caption, style, gradient, angle }) =>
+          sample(
+            caption,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              dot-style="rounded"
+              square-style="rounded"
+              gradient=${ifDefined(gradient)}
+              gradient-angle=${ifDefined(angle)}
+              style=${style}
+            ></igc-qr-code>`
+          )
         )}
       </div>
     `;
   },
+};
+
+/** The gradient colors are CSS custom properties, not attributes, so they are not in the generated args. */
+type GradientStory = StoryObj<
+  IgcQrCodeArgs & { gradientStart: string; gradientEnd: string }
+>;
+
+export const Gradient: GradientStory = {
+  argTypes: {
+    ...disableStoryControls(metadata),
+    gradient: metadata.argTypes!.gradient,
+    gradientAngle: {
+      ...metadata.argTypes!.gradientAngle,
+      control: { type: 'range', min: 0, max: 360, step: 15 },
+    },
+    gradientStart: {
+      control: 'color',
+      description: 'The value of `--ig-qr-code-gradient-start`.',
+    },
+    gradientEnd: {
+      control: 'color',
+      description: 'The value of `--ig-qr-code-gradient-end`.',
+    },
+    dotStyle: metadata.argTypes!.dotStyle,
+    squareStyle: metadata.argTypes!.squareStyle,
+  },
+  args: {
+    gradient: 'linear',
+    gradientAngle: 45,
+    gradientStart: '#1a237e',
+    gradientEnd: '#880e4f',
+    dotStyle: 'liquid',
+    squareStyle: 'rounded',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the controls to change the gradient. `gradient` sets the type, `gradient-angle` turns a linear gradient clockwise, and the color pickers set `--ig-qr-code-gradient-start` and `--ig-qr-code-gradient-end`. The gradient spans the modules, not the quiet zone. Keep both colors much darker than the background.',
+      },
+    },
+  },
+  render: ({
+    gradient,
+    gradientAngle,
+    gradientStart,
+    gradientEnd,
+    dotStyle,
+    squareStyle,
+  }) => html`
+    <igc-qr-code
+      value=${productUrl}
+      size="320"
+      gradient=${ifDefined(gradient)}
+      gradient-angle=${gradientAngle}
+      dot-style=${dotStyle}
+      square-style=${squareStyle}
+      style="--ig-qr-code-gradient-start: ${gradientStart}; --ig-qr-code-gradient-end: ${gradientEnd};"
+    ></igc-qr-code>
+  `,
 };
 
 export const ErrorCorrection: Story = {
@@ -668,19 +793,17 @@ export const WithLogo: Story = {
     docs: {
       description: {
         story:
-          '`logo-src` puts an image at the center of the code and removes the modules under it. `logo-size` is a ratio of the area that the error correction level can restore, not of the full code: `1` covers 9% of the code at level `H`. `logo-margin` adds whitespace around the logo, in pixels. Without `error-level`, the code uses level `M`, and a logo larger than the safe area of `M` raises the level to the smallest one that holds it, as in the first two codes. An explicit level caps the logo to the area of that level, so the logo in the fourth code shrinks. `logo-shape` clips the logo to a `circle`, `rounded` or `squircle` shape that fills the logo box, and the code removes only the modules under the shape. A `rounded` or `liquid` module and a bar end round at the edge of the removed area. A logo source must be an image: a `javascript:` URL or a data URI of another type is ignored.',
+          '`logo-src` puts an image at the center of the code and removes the modules under it. `logo-size` is a ratio of the area that the error correction level can restore, not of the full code: `1` covers 9% of the code at level `H`. `logo-margin` adds whitespace around the logo, in pixels. Without `error-level`, the code uses level `M`, and a logo larger than the safe area of `M` raises the level to the smallest one that holds it, as in the first two codes. An explicit level caps the logo to the area of that level, so the logo in the fourth code shrinks. `logo-shape` clips the logo to a `circle`, `rounded` or `squircle` shape that fills the logo box, and the code removes only the modules under the shape. A wide image in a `circle` gives an ellipse. A `rounded` or `liquid` module and a bar end round at the edge of the removed area. A logo source must be an image: a `javascript:` URL or a data URI of another type is ignored.',
       },
     },
   },
   render: () => {
-    const variants: {
+    const sizes: {
       caption: string;
       logo: string;
       size: number;
       level?: 'L' | 'H';
       margin?: number;
-      shape?: 'circle' | 'rounded' | 'squircle';
-      dot?: 'liquid';
       style: string;
     }[] = [
       {
@@ -713,46 +836,94 @@ export const WithLogo: Story = {
         margin: 6,
         style: '--ig-qr-code-dark-color: #1d6f65;',
       },
+    ];
+    const shapes: {
+      caption: unknown;
+      logo: string;
+      shape: 'square' | 'circle' | 'rounded' | 'squircle';
+      dot: 'square' | 'rounded' | 'liquid' | 'horizontal-bars';
+    }[] = [
       {
-        caption:
-          'A circle logo, with only the modules under the circle removed',
-        logo: logo('#e63946', '#ffffff', 'GO'),
-        size: 0.75,
-        shape: 'circle',
-        style: '--ig-qr-code-dark-color: #1f2937;',
+        caption: html`<code>logo-shape="square"</code>`,
+        logo: logo('#e63946', '#ffffff', 'GO', 0),
+        shape: 'square',
+        dot: 'square',
       },
       {
-        caption: 'A squircle logo on liquid modules',
-        logo: logo('#0b3d91', '#ffffff', 'UI'),
-        size: 0.75,
-        margin: 4,
+        caption: html`<code>logo-shape="circle"</code>`,
+        logo: logo('#e63946', '#ffffff', 'GO', 0),
+        shape: 'circle',
+        dot: 'square',
+      },
+      {
+        caption: html`<code>logo-shape="rounded"</code>`,
+        logo: logo('#e63946', '#ffffff', 'GO', 0),
+        shape: 'rounded',
+        dot: 'square',
+      },
+      {
+        caption: html`<code>logo-shape="squircle"</code>`,
+        logo: logo('#e63946', '#ffffff', 'GO', 0),
         shape: 'squircle',
+        dot: 'square',
+      },
+      {
+        caption: 'A wide image in a circle: an ellipse',
+        logo: wideLogo('#0b3d91', '#ffffff', 'IGNITE'),
+        shape: 'circle',
+        dot: 'square',
+      },
+      {
+        caption: 'Liquid modules end round at a circle logo',
+        logo: logo('#0b3d91', '#ffffff', 'UI', 0),
+        shape: 'circle',
         dot: 'liquid',
-        style: '--ig-qr-code-dark-color: #0b3d91;',
+      },
+      {
+        caption: 'Bars end round at a squircle logo',
+        logo: logo('#2a9d8f', '#ffffff', 'ECO', 0),
+        shape: 'squircle',
+        dot: 'horizontal-bars',
       },
     ];
 
     return html`
       ${samples}
+      <h3 class="qr-section">logo-size and error-level</h3>
       <div class="qr-samples">
-        ${variants.map(
-          (variant) => html`
-            <figure>
-              <igc-qr-code
-                value=${productUrl}
-                size="200"
-                dot-style=${variant.dot ?? 'circle'}
-                square-style="rounded"
-                error-level=${ifDefined(variant.level)}
-                logo-src=${variant.logo}
-                logo-size=${variant.size}
-                logo-shape=${ifDefined(variant.shape)}
-                .logoMargin=${variant.margin}
-                style=${variant.style}
-              ></igc-qr-code>
-              <figcaption>${variant.caption}</figcaption>
-            </figure>
-          `
+        ${sizes.map((variant) =>
+          sample(
+            variant.caption,
+            html`<igc-qr-code
+              value=${productUrl}
+              size="240"
+              dot-style="circle"
+              square-style="rounded"
+              error-level=${ifDefined(variant.level)}
+              logo-src=${variant.logo}
+              logo-size=${variant.size}
+              .logoMargin=${variant.margin}
+              style=${variant.style}
+            ></igc-qr-code>`
+          )
+        )}
+      </div>
+
+      <h3 class="qr-section">logo-shape</h3>
+      <div class="qr-samples">
+        ${shapes.map((variant) =>
+          sample(
+            variant.caption,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="240"
+              dot-style=${variant.dot}
+              square-style="rounded"
+              logo-src=${variant.logo}
+              logo-size="1"
+              logo-shape=${variant.shape}
+            ></igc-qr-code>`
+          )
         )}
       </div>
     `;
