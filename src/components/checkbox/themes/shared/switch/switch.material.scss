@@ -71,7 +71,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
 [part~='thumb'] {
     border-radius: var-get($theme, 'border-radius-thumb');
-    animation-name: thumb-off;
     width: var(--thumb-size);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
@@ -98,10 +97,9 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
 [part~='thumb'][part~='checked'] {
     background: var-get($theme, 'thumb-on-color');
-    margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
-    animation-name: thumb-on;
-    animation-duration: .2s;
-    animation-fill-mode: forwards;
+
+    // As in Ignite UI for Angular, only the unchecked thumb has the offset.
+    margin-inline-start: calc(var(--size) - var(--thumb-size));
 }
 
 :host([disabled]),

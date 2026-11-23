@@ -22,6 +22,7 @@ import {
 } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { markUserChange } from '#internals/user-change.js';
 import { asArray, firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
 import { getElementFromPath } from '#internals/utils/events.js';
 import { isDefined } from '#internals/utils/types.js';
@@ -356,6 +357,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<IgcButton
     button: IgcToggleButtonComponent,
     selected: boolean
   ): void {
+    markUserChange(button);
     button.selected = selected;
     this.emitEvent(selected ? 'igcSelect' : 'igcDeselect', {
       detail: button.value,

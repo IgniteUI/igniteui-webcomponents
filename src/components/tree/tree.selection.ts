@@ -1,3 +1,4 @@
+import { markUserChange } from '#internals/user-change.js';
 import { isEmpty, lastOf } from '#internals/utils/arrays.js';
 import type IgcTreeItemComponent from './tree-item.js';
 import type { TreeSelectionEventInit } from './tree.common.js';
@@ -159,14 +160,17 @@ export class IgcTreeSelectionService {
     const excluded = onDelete ? items : undefined;
 
     if (this._isCascade) {
-      this._applyCascade((state) => {
-        if (items) {
-          this._cascadeInto(state, items, false);
-        } else {
-          state.selected.clear();
-          state.indeterminate.clear();
-        }
-      }, excluded);
+      this._applyCascade(
+        (state) => {
+          if (items) {
+            this._cascadeInto(state, items, false);
+          } else {
+            state.selected.clear();
+            state.indeterminate.clear();
+          }
+        },
+        { excluded }
+      );
       return;
     }
 
@@ -222,6 +226,7 @@ export class IgcTreeSelectionService {
     this._emitSelectionEvent(newSelection, [], [item]);
   }
 
+  /** Only a user toggle emits the event, so its changes animate. */
   private _emitSelectionEvent(
     newSelection: IgcTreeItemComponent[],
     added: IgcTreeItemComponent[],
@@ -236,16 +241,19 @@ export class IgcTreeSelectionService {
     if (!this._isCascade) {
       if (this._confirmSelection(newSelection)) {
         this._itemSelection = new Set(newSelection);
-        this._updateItemsState(currSelection);
+        this._updateItemsState(currSelection, { byUser: true });
       }
       return;
     }
 
-    this._applyCascade((state) => {
-      this._cascadeInto(state, removed, false);
-      this._cascadeInto(state, added, true);
-      return this._confirmSelection(Array.from(state.selected));
-    });
+    this._applyCascade(
+      (state) => {
+        this._cascadeInto(state, removed, false);
+        this._cascadeInto(state, added, true);
+        return this._confirmSelection(Array.from(state.selected));
+      },
+      { byUser: true }
+    );
   }
 
   /** Emits `igcSelection` and returns whether to apply `newSelection`. */
@@ -333,7 +341,10 @@ export class IgcTreeSelectionService {
    */
   private _applyCascade(
     change: (state: CascadeState) => boolean | void,
-    excluded?: IgcTreeItemComponent[]
+    {
+      excluded,
+      byUser = false,
+    }: { excluded?: IgcTreeItemComponent[]; byUser?: boolean } = {}
   ): void {
     const oldSelection = this._excluding(this._itemSelection, excluded);
     const oldIndeterminate = this._excluding(
@@ -347,7 +358,7 @@ export class IgcTreeSelectionService {
 
     if (change(state) !== false) {
       this._commit(state);
-      this._updateItemsState(oldSelection, oldIndeterminate);
+      this._updateItemsState(oldSelection, { oldIndeterminate, byUser });
     }
   }
 
@@ -412,12 +423,21 @@ export class IgcTreeSelectionService {
 
   //#region Internal helpers
 
-  /** Reflects the computed selection onto the affected items. */
+  /**
+   * Reflects the computed selection onto the affected items, which animate
+   * with `byUser`.
+   */
   private _updateItemsState(
     oldSelection: IgcTreeItemComponent[],
-    oldIndeterminate: IgcTreeItemComponent[] = []
+    {
+      oldIndeterminate = [],
+      byUser = false,
+    }: { oldIndeterminate?: IgcTreeItemComponent[]; byUser?: boolean } = {}
   ): void {
+    const mark = byUser ? markUserChange : () => {};
+
     this._reflect(this._itemSelection, oldSelection, (item, value) => {
+      mark(item);
       item.selected = value;
     });
 
@@ -426,6 +446,7 @@ export class IgcTreeSelectionService {
         this._indeterminateItems,
         oldIndeterminate,
         (item, value) => {
+          mark(item);
           item.indeterminate = value;
         }
       );

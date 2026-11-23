@@ -12,7 +12,10 @@
     text-decoration: none;
     border: none;
     justify-content: flex-start;
-    transition: background .15s ease-out;
+
+    @include with-motion() {
+        transition: background .15s ease-out;
+    }
 
     ::slotted(igc-icon) {
         --ig-size: 3;

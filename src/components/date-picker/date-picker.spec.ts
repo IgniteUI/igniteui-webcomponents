@@ -44,6 +44,7 @@ import {
   simulateKeyboard,
   simulateScroll,
 } from '#internals/testing/simulate.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { formatString } from '#internals/utils/strings.js';
 import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
@@ -1986,6 +1987,30 @@ describe('Date picker', () => {
       expect(picker.validationMessage).to.equal(
         formatString(BG.disabled_date_validation_error!, date.format(value))
       );
+    });
+  });
+
+  describe('Value state motion', () => {
+    it('marks the input as a user change for a date from the calendar', async () => {
+      await picker.show();
+
+      selectCurrentDate(calendar);
+
+      expect(picker.value).to.not.be.null;
+      expect(isUserChange(dateTimeInput)).to.be.true;
+    });
+
+    it('shows a value that an igcChange handler sets at once', async () => {
+      const other = CalendarDay.today.add('day', 1).native;
+      picker.addEventListener('igcChange', () => {
+        picker.value = other;
+      });
+      await picker.show();
+
+      selectCurrentDate(calendar);
+
+      checkDatesEqual(picker.value as Date, other);
+      expect(isUserChange(dateTimeInput)).to.be.false;
     });
   });
 

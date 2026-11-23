@@ -34,6 +34,7 @@
     - [ARIA](#aria)
     - [Clearing group state](#clearing-group-state)
     - [Form integration](#form-integration-1)
+    - [Value state motion](#value-state-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -47,6 +48,7 @@
 |       1 | 2026-09-21 | Initial specification                                                                       |
 |       2 | 2026-10-06 | Name the group with `aria-labelledby`; one row for each message in the horizontal alignment |
 |       3 | 2026-10-21 | API descriptions aligned with the JSDoc.                                                    |
+|       4 | 2026-11-20 | A user check animates the radio that the group unchecks; a `value` from code, and a value that an `igcChange` handler sets also for an arrow key, show at once |
 
 ## Overview
 
@@ -106,6 +108,9 @@ As a developer, I expect to be able to:
 The radio group is mostly representational: it provides the layout for its radios and the grouping semantics, but no
 visual chrome of its own. The keyboard and selection behavior belongs to the radios; see the
 [radio specification](../radio/spec.md).
+
+**Motion.** A radio that the user checks with a click or an arrow key animates, and so does the radio that the group
+unchecks for it. A `value` from code shows at once in both radios, and so does a value that an `igcChange` handler sets.
 
 ### Developer experience
 
@@ -305,6 +310,16 @@ The groups below mirror the `describe` blocks of the suite.
 27. Form reset when bound through the group `value` attribute, with `defaultValue` set, and with multiple checked
     radios.
 28. The required validator applies its visual state across the group.
+### Value state motion
+
+In the Material theme.
+
+29. A click on a radio moves the dots of it and of the radio that the group unchecks (`transform`).
+30. An arrow key, after the focus settles, moves the dots of the radio that it checks and of the radio that it unchecks.
+31. A `value` from code starts no transitions in either radio.
+32. A value that an `igcChange` handler sets for a click ends the user change.
+33. A value that an `igcChange` handler sets for an arrow key ends the user change.
+
 ## Assumptions and limitations
 
 - It is recommended to avoid mutating state on both the group and its radio children. Either control the children
