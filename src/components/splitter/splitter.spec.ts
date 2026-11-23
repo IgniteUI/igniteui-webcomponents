@@ -4176,6 +4176,53 @@ describe('Splitter', () => {
       }
     });
 
+    function hitboxes(target: IgcSplitterComponent) {
+      const { startCollapseBtn, endCollapseBtn } = getButtonParts(target);
+      const px = (value: string) => Number.parseFloat(value);
+
+      return [startCollapseBtn, endCollapseBtn].map((expander) => {
+        const border = getComputedStyle(expander);
+        const box = getComputedStyle(expander, '::before');
+        const width = px(box.width);
+        const height = px(box.height);
+
+        return {
+          width,
+          height,
+          // The offset of the center of the hitbox from the center of the triangle.
+          offsetX:
+            px(box.left) +
+            width / 2 -
+            (px(border.borderRightWidth) - px(border.borderLeftWidth)) / 2,
+          offsetY:
+            px(box.top) +
+            height / 2 -
+            (px(border.borderBottomWidth) - px(border.borderTopWidth)) / 2,
+        };
+      });
+    }
+
+    it('sizes the hitbox of each expander to the icon box and centers it on the triangle, in both orientations', async () => {
+      // The triangle is a border, which needs its color: the tests load no theme tokens.
+      splitter.style.setProperty('--expander-color', 'currentColor');
+
+      for (const orientation of orientations) {
+        splitter.orientation = orientation;
+
+        for (const step of steps) {
+          splitter.style.setProperty('--ig-size', step.value);
+          await elementUpdated(splitter);
+
+          const box = 2 * step.expander + 2 * step.space;
+          const centered = { width: box, height: box, offsetX: 0, offsetY: 0 };
+          expect(hitboxes(splitter), `${step.size} ${orientation}`).to.eql([
+            centered,
+            centered,
+          ]);
+        }
+      }
+    });
+
     it('uses the smaller icon box of indigo for the gaps', async () => {
       await withDocumentSheets([indigo.styleSheet!], async () => {
         try {

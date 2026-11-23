@@ -49,9 +49,18 @@
 
         [part*='collapse-btn'],
         [part*='expand-btn'] {
+            position: relative;
             cursor: pointer;
             width: 0;
             height: 0;
+
+            &::before {
+                content: '';
+                position: absolute;
+
+                // Keeps the hitbox above the panes.
+                z-index: 1;
+            }
         }
     }
 }

@@ -256,7 +256,8 @@ the drag handle 10px, 12px and 14px.
 
 The drag handle is 25% of the bar length at every size, with 48px between it and the icon box of each expander. The
 box is the 18px, 20px and 24px icon of the design (14px, 16px and 24px in the Indigo theme), so the triangle is 5px,
-5px and 6px further away (3px, 3px and 6px in Indigo). On a bar too short for that, the gaps get narrower and the
+5px and 6px further away (3px, 3px and 6px in Indigo). The box, centered on the triangle, is also the area of the
+expander that takes the pointer. On a bar too short for that, the gaps get narrower and the
 handle keeps its 25%. Without a drag handle the two boxes are 48px apart, or closer on a bar too short for that. In the Indigo theme the idle bar is 1px, 4px or 8px thick by size and takes
 the thickness of the size on hover and focus.
 
@@ -546,6 +547,7 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
     with an overridden `--ig-splitter-size`.
 50. In the Indigo theme, the panes give up the full thickness of the bar while the bar is idle.
 51. In the Indigo theme, the hovered bar has the thickness of the size.
+52. In both orientations and at every size, the hitbox of each expander is its icon box, centered on the triangle.
 
 ## Accessibility
 

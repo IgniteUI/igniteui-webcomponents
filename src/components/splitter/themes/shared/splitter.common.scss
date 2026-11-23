@@ -132,16 +132,32 @@ $expander-border-active: $expander-size solid var-get($theme, 'expander-color-ac
             border-#{$cross}-start: $expander-size solid transparent;
             border-#{$cross}-end: $expander-size solid transparent;
             margin-#{$cross}: $expander-space;
+
+            // The hitbox is the icon box of the design, centered on the triangle.
+            // Mirrored by the expander ::before of igx-splitter in igniteui-angular.
+            &::before {
+                width: $expander-box;
+                height: $expander-box;
+                inset-#{$cross}-start: calc(#{$expander-box} / -2);
+            }
         }
 
         [part~='start-expand-btn'],
         [part~='end-collapse-btn'] {
             border-#{$main}-start: $expander-border;
+
+            &::before {
+                inset-#{$main}-start: calc((#{$expander-size} + #{$expander-box}) / -2);
+            }
         }
 
         [part~='start-collapse-btn'],
         [part~='end-expand-btn'] {
             border-#{$main}-end: $expander-border;
+
+            &::before {
+                inset-#{$main}-start: calc((#{$expander-size} - #{$expander-box}) / 2);
+            }
         }
     }
 }
