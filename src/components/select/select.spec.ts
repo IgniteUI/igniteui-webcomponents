@@ -22,6 +22,7 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
@@ -68,6 +69,13 @@ type SelectSlots =
   | 'helper-text'
   | 'toggle-icon'
   | 'toggle-icon-expanded';
+
+/** The native input that the select projects its ARIA onto. */
+function getNativeInput(host: IgcSelectComponent): HTMLInputElement {
+  return host.renderRoot
+    .querySelector(IgcInputComponent.tagName)!
+    .renderRoot.querySelector('input')!;
+}
 
 describe('Select', () => {
   before(() => defineComponents(IgcSelectComponent));
@@ -590,20 +598,18 @@ describe('Select', () => {
       await elementUpdated(select);
     });
 
-    it('closes an open select when disabled without changing its value', async () => {
+    it('ignores an item click while disabled', async () => {
       const eventSpy = spy(select, 'emitEvent');
       await openSelect();
 
       select.disabled = true;
       await elementUpdated(select);
-      expect(select.open).to.be.false;
-      const nativeInput = getInput().shadowRoot!.querySelector('input')!;
-      expect(nativeInput.getAttribute('aria-expanded')).to.equal('false');
       simulateClick(select.items[0]);
       await elementUpdated(select);
 
       expect(select.value).to.equal('implementation');
       expect(eventSpy).not.calledWith('igcChange');
+
       select.disabled = false;
       await elementUpdated(select);
       await openSelect();
@@ -2250,18 +2256,12 @@ describe('Select', () => {
 
   runExternalLabelAssociationTests({
     tagName: IgcSelectComponent.tagName,
-    getNativeInput: (host) =>
-      (host as IgcSelectComponent).renderRoot
-        .querySelector<IgcInputComponent>(IgcInputComponent.tagName)!
-        .renderRoot.querySelector('input')!,
+    getNativeInput: (host) => getNativeInput(host as IgcSelectComponent),
   });
 
   runAriaProjectionTests({
     tagName: IgcSelectComponent.tagName,
-    getNativeInput: (host) =>
-      (host as IgcSelectComponent).renderRoot
-        .querySelector<IgcInputComponent>(IgcInputComponent.tagName)!
-        .renderRoot.querySelector('input')!,
+    getNativeInput: (host) => getNativeInput(host as IgcSelectComponent),
     expected: { role: 'combobox', hasPopup: 'listbox' },
     getControls: (host) => [
       (host as IgcSelectComponent).renderRoot.querySelector('#dropdown')!,
@@ -2280,4 +2280,6 @@ describe('Select', () => {
     hasValue: true,
     disabled: true,
   });
+
+  runDisabledPopupTests(IgcSelectComponent, { getAriaTarget: getNativeInput });
 });

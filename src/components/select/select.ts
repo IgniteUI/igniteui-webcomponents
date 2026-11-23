@@ -1,4 +1,4 @@
-import { html, type PropertyValues, type TemplateResult } from 'lit';
+import { html, type TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
@@ -299,13 +299,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
   }
 
-  protected override willUpdate(props: PropertyValues): void {
-    if (this.disabled) {
-      this.open = false;
-    }
-    super.willUpdate(props);
-  }
-
   protected override async firstUpdated(): Promise<void> {
     await this.updateComplete;
 
@@ -371,12 +364,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _handleFocusOut(event: FocusEvent): void {
     if (focusLeftHost(this, event)) {
       super._handleBlur();
-    }
-  }
-
-  private _handleClick(event: PointerEvent): void {
-    if (!this.disabled) {
-      this._listbox.handleClick(event);
     }
   }
 
@@ -537,14 +524,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   protected _renderDropdown() {
     return html`
-      <div part="base" .inert=${!this.open || this.disabled}>
+      <div part="base" .inert=${!this.open}>
         <slot name="header"></slot>
         <div
           id="dropdown"
           role="listbox"
           part="list"
           aria-labelledby="input"
-          @click=${this._handleClick}
+          @click=${this._listbox.handleClick}
         >
           <slot></slot>
         </div>

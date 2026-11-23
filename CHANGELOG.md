@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A color change of the user marks the picker touched, so a change that fails validation shows the invalid styles at once.
   - A value set from code while the focus is in the picker no longer emits `igcChange` when the focus leaves.
   - In input mode, the text input no longer shows the invalid styles when the focus moves from it to the color button. The text input shows the invalid state of the picker, together with its validation message.
+- #### Color picker, Combo, Date picker, Date range picker, Select
+  - Disabling an open component closes it, also when a disabled fieldset disables it. A disabled component does not open: `show()` and `toggle()` resolve to `false`, and the `open` attribute does not apply. In dialog mode, disabling the date range picker discards a range that you did not confirm with Done, as Cancel does. Before, the popup stayed open next to the disabled control, and a click in the color picker or the select changed the value. [#2601](https://github.com/IgniteUI/igniteui-webcomponents/issues/2601)
 - #### Combo
   - A closed list has no active option. Before, when code closed the list and opened it again, the old option was still active. When an app canceled `igcOpening` while the user typed, Arrow Down opened the list on the second match.
   - In single selection, the input no longer shows the invalid styles when the focus moves from it to slotted content of the combo. The input shows the invalid state of the combo, together with its validation message.
@@ -434,7 +436,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - The thumb label is in the top layer, so a container that clips its overflow does not cut it. It also shows on keyboard focus, and Escape hides it.
   - The box of the slider holds the ticks and their labels, so a slider with tick labels is taller. You can remove the space that you added for the labels. A tick label stays on one line. [#2445](https://github.com/IgniteUI/igniteui-webcomponents/pull/2445)
 - #### Select
-  - An open list no longer accepts a selection when the Select becomes disabled. [#2601](https://github.com/IgniteUI/igniteui-webcomponents/issues/2601)
   - In forced colors mode, the list has a border. [#2488](https://github.com/IgniteUI/igniteui-webcomponents/pull/2488)
 - #### Snackbar, Toast
   - `container` positioning no longer moves the component to the start of the container in the tab order. [#2447](https://github.com/IgniteUI/igniteui-webcomponents/pull/2447)

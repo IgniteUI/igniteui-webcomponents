@@ -22,6 +22,7 @@ import {
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
@@ -1196,6 +1197,23 @@ describe('Color picker', () => {
 
       expect(picker.value).to.equal('#00ff00');
     });
+
+    it('ignores a swatch click while disabled', async () => {
+      picker.swatches = ['#00ff00'];
+      await elementUpdated(picker);
+      const { value } = picker;
+      const eventSpy = spy(picker, 'emitEvent');
+
+      picker.disabled = true;
+      await elementUpdated(picker);
+      picker.renderRoot
+        .querySelector<HTMLButtonElement>('button[part="swatch"]')!
+        .click();
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal(value);
+      expect(eventSpy).not.calledWith('igcInput');
+    });
   });
 
   describe('Copy and EyeDropper', () => {
@@ -1265,6 +1283,22 @@ describe('Color picker', () => {
         await elementUpdated(picker);
 
         expect(picker.value).to.equal('#112233');
+      });
+
+      it('ignores a pick that ends after the picker is disabled', async () => {
+        picker = await createDefaultColorPicker();
+        const { value } = picker;
+        const eventSpy = spy(picker, 'emitEvent');
+
+        picker.renderRoot
+          .querySelector<HTMLElement>('[part="eye-dropper"]')!
+          .click();
+        picker.disabled = true;
+        await new Promise((resolve) => setTimeout(resolve));
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal(value);
+        expect(eventSpy).not.calledWith('igcInput');
       });
     });
   });
@@ -1862,4 +1896,8 @@ describe('Color picker', () => {
   });
 
   runFocusBeforeRenderTests(html`<igc-color-picker></igc-color-picker>`);
+
+  runDisabledPopupTests(IgcColorPickerComponent, {
+    getAriaTarget: getAnchor,
+  });
 });
