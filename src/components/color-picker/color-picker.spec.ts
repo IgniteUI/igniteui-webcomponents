@@ -5,6 +5,7 @@ import {
   html,
   nextFrame,
 } from '@open-wc/testing';
+import { sendMouse } from '@web/test-runner-commands';
 import {
   ColorPickerResourceStringsEN,
   type IColorPickerResourceStrings,
@@ -13,6 +14,7 @@ import {
 } from 'igniteui-i18n-core';
 import { ColorPickerResourceStringsBG } from 'igniteui-i18n-resources';
 import { spy, stub } from 'sinon';
+import { internalsOf } from '#internals/controllers/internals.js';
 import {
   altKey,
   arrowDown,
@@ -51,6 +53,8 @@ import { isUserChange } from '#internals/user-change.js';
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
+import type IgcColorPanelComponent from '../color-panel/color-panel.js';
+import type IgcColorSwatchComponent from '../color-panel/color-swatch.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcSelectComponent from '../select/select.js';
 import IgcColorPickerComponent from './color-picker.js';
@@ -67,6 +71,18 @@ function getAnchor(picker: IgcColorPickerComponent): HTMLElement {
   return picker.renderRoot.querySelector('[part~="anchor"]')!;
 }
 
+/** The color panel that the picker shows in its popup. */
+function getPanel(picker: IgcColorPickerComponent): IgcColorPanelComponent {
+  return picker.renderRoot.querySelector('igc-color-panel')!;
+}
+
+/** The shadow root of the color panel, which holds the picker controls. */
+function getPanelRoot(
+  picker: IgcColorPickerComponent
+): HTMLElement | DocumentFragment {
+  return getPanel(picker).renderRoot;
+}
+
 /** Picks `color` from a swatch, as the user does. */
 async function pickSwatch(
   picker: IgcColorPickerComponent,
@@ -75,7 +91,7 @@ async function pickSwatch(
   picker.swatches = [color];
   await elementUpdated(picker);
   simulateClick(
-    picker.renderRoot.querySelector<HTMLButtonElement>('button[part="swatch"]')!
+    getPanelRoot(picker).querySelector<HTMLElement>('[part~="swatch"]')!
   );
   await elementUpdated(picker);
 }
@@ -92,7 +108,7 @@ function isAnchorEmpty(picker: IgcColorPickerComponent): boolean {
 }
 
 function getColorInput(picker: IgcColorPickerComponent): IgcInputComponent {
-  return picker.renderRoot.querySelector<IgcInputComponent>('#color-input')!;
+  return getPanelRoot(picker).querySelector<IgcInputComponent>('#color-input')!;
 }
 
 function commitColorInput(input: IgcInputComponent, value: string): void {
@@ -107,15 +123,15 @@ function commitColorInput(input: IgcInputComponent, value: string): void {
 }
 
 function getHueSlider(picker: IgcColorPickerComponent): HTMLInputElement {
-  return picker.renderRoot.querySelector('[part="hue"]')!;
+  return getPanelRoot(picker).querySelector('[part="hue"]')!;
 }
 
 function getAlphaSlider(picker: IgcColorPickerComponent): HTMLInputElement {
-  return picker.renderRoot.querySelector('[part="alpha"]')!;
+  return getPanelRoot(picker).querySelector('[part="alpha"]')!;
 }
 
 function getAlphaInput(picker: IgcColorPickerComponent): IgcInputComponent {
-  return picker.renderRoot.querySelector('#alpha')!;
+  return getPanelRoot(picker).querySelector('#alpha')!;
 }
 
 function getAlphaEditor(picker: IgcColorPickerComponent): HTMLInputElement {
@@ -163,11 +179,11 @@ function press(node: Element, key: string): KeyboardEvent {
 }
 
 function getCanvas(picker: IgcColorPickerComponent): IgcPickerCanvasComponent {
-  return picker.renderRoot.querySelector('igc-picker-canvas')!;
+  return getPanelRoot(picker).querySelector('igc-picker-canvas')!;
 }
 
 function getFormatSelect(picker: IgcColorPickerComponent): IgcSelectComponent {
-  return picker.renderRoot.querySelector('#format-select')!;
+  return getPanelRoot(picker).querySelector('#format-select')!;
 }
 
 /** The opaque half and the translucent whole of the anchor swatch preview. */
@@ -213,7 +229,7 @@ async function expectSliderTracks(
 function getLabels(picker: IgcColorPickerComponent) {
   const root = picker.renderRoot;
   const text = (selector: string) =>
-    root.querySelector(selector)!.textContent!.trim();
+    getPanelRoot(picker).querySelector(selector)!.textContent!.trim();
   const marker =
     getCanvas(picker).renderRoot.querySelector('[part~="marker"]')!;
 
@@ -377,9 +393,9 @@ describe('Color picker', () => {
       picker.open = true;
       await elementUpdated(picker);
 
-      expect(picker.style.getPropertyValue('--_current-color')).to.equal(
-        'hsl(0 100% 50%)'
-      );
+      expect(
+        getPanel(picker).style.getPropertyValue('--_current-color')
+      ).to.equal('hsl(0 100% 50%)');
       expect(getCanvas(picker).currentColor).to.equal('hsl(0 100% 50%)');
       expect(getHueSlider(picker).value).to.equal('0');
     });
@@ -389,9 +405,9 @@ describe('Color picker', () => {
       await elementUpdated(picker);
 
       // An empty color is white, not the pure hue of the plane.
-      expect(picker.style.getPropertyValue('--_selected-color')).to.equal(
-        'rgb(255 255 255)'
-      );
+      expect(
+        getPanel(picker).style.getPropertyValue('--_selected-color')
+      ).to.equal('rgb(255 255 255)');
       expect(getCanvas(picker).markerColor).to.equal('rgb(255 255 255)');
     });
 
@@ -422,7 +438,7 @@ describe('Color picker', () => {
       // Not a `spinbutton`: that role breaks how screen readers announce typing.
       // The alpha slider carries the range semantics.
       const editor = getAlphaEditor(picker);
-      const label = picker.renderRoot.querySelector('label[for="alpha"]')!;
+      const label = getPanelRoot(picker).querySelector('label[for="alpha"]')!;
 
       expect(editor.role).to.be.null;
       expect(editor.getAttribute('aria-valuenow')).to.be.null;
@@ -489,7 +505,7 @@ describe('Color picker', () => {
 
     it('labels the color value input', async () => {
       const label = () =>
-        picker.renderRoot
+        getPanelRoot(picker)
           .querySelector('label[for="color-input"]')!
           .textContent!.trim();
 
@@ -593,6 +609,67 @@ describe('Color picker', () => {
         expect(picker.value).to.equal('');
         expect(isAnchorEmpty(picker)).to.be.true;
       }
+    });
+
+    it('clears the value for a color that depends on its context', async () => {
+      for (const value of ['currentcolor', 'var(--brand)', 'Canvas']) {
+        picker.value = '#ff0000';
+        await elementUpdated(picker);
+
+        picker.value = value;
+        await elementUpdated(picker);
+
+        expect(picker.value, value).to.equal('');
+        expect(isAnchorEmpty(picker), value).to.be.true;
+      }
+    });
+  });
+
+  describe('Colors outside the legacy syntax', () => {
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+    });
+
+    it('writes an oklch() value in the active format', async () => {
+      picker.value = 'oklch(70% 0.1 200)';
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#40b1b7');
+
+      picker.format = 'rgb';
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('rgb(64 177 183)');
+    });
+
+    it('clips a color outside the sRGB gamut', async () => {
+      picker.value = 'color(display-p3 1 0 0)';
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#ff0000');
+    });
+
+    it('commits a typed lab() color', async () => {
+      picker.open = true;
+      await elementUpdated(picker);
+
+      commitColorInput(getColorInput(picker), 'lab(50% 40 30)');
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#bb5846');
+    });
+
+    it('reverts a typed color that depends on its context', async () => {
+      picker.value = '#ff0000';
+      picker.open = true;
+      await elementUpdated(picker);
+
+      const input = getColorInput(picker);
+      commitColorInput(input, 'currentcolor');
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#ff0000');
+      expect(input.value).to.equal('#ff0000');
     });
   });
 
@@ -1161,19 +1238,23 @@ describe('Color picker', () => {
     });
 
     it('does not render swatches by default', () => {
-      expect(picker.renderRoot.querySelector('[part="swatches"]')).to.be.null;
+      expect(
+        getPanelRoot(picker).querySelector<HTMLElement>('[part="swatches"]')
+          ?.hidden
+      ).to.be.true;
     });
 
     it('renders and selects a swatch', async () => {
       picker.swatches = ['#ff0000', '#00ff00'];
       await elementUpdated(picker);
 
-      const buttons = picker.renderRoot.querySelectorAll<HTMLButtonElement>(
-        'button[part="swatch"]'
-      );
+      const buttons =
+        getPanelRoot(picker).querySelectorAll<IgcColorSwatchComponent>(
+          '[part~="swatch"]'
+        );
       expect(buttons.length).to.equal(2);
-      expect(buttons[0].ariaLabel).to.equal('#ff0000');
-      expect(buttons[0].dataset.color).to.equal('#ff0000');
+      expect(internalsOf(buttons[0])?.getARIA('ariaLabel')).to.equal('#ff0000');
+      expect(buttons[0].color).to.equal('#ff0000');
 
       const inputSpy = spy(picker, 'emitEvent');
       buttons[1].click();
@@ -1187,12 +1268,13 @@ describe('Color picker', () => {
       picker.swatches = ['#ff0000', '#00ff00'];
       await elementUpdated(picker);
 
-      const buttons = picker.renderRoot.querySelectorAll<HTMLButtonElement>(
-        'button[part="swatch"]'
-      );
+      const buttons =
+        getPanelRoot(picker).querySelectorAll<IgcColorSwatchComponent>(
+          '[part~="swatch"]'
+        );
 
-      // The color comes from `data-color`, so the label does not change it.
-      buttons[1].ariaLabel = 'Vert';
+      // The color comes from `color`, so the label does not change it.
+      buttons[1].label = 'Vert';
       buttons[1].click();
       await elementUpdated(picker);
 
@@ -1207,8 +1289,8 @@ describe('Color picker', () => {
 
       picker.disabled = true;
       await elementUpdated(picker);
-      picker.renderRoot
-        .querySelector<HTMLButtonElement>('button[part="swatch"]')!
+      getPanelRoot(picker)
+        .querySelector<HTMLElement>('[part~="swatch"]')!
         .click();
       await elementUpdated(picker);
 
@@ -1228,7 +1310,9 @@ describe('Color picker', () => {
     it('copies the value to the clipboard', async () => {
       const writeText = stub(navigator.clipboard, 'writeText').resolves();
 
-      picker.renderRoot.querySelector<HTMLElement>('[part="copy"]')!.click();
+      simulateClick(
+        getPanelRoot(picker).querySelector<HTMLElement>('[part="copy"]')!
+      );
 
       expect(writeText).calledWith('#ff0000');
       writeText.restore();
@@ -1249,7 +1333,9 @@ describe('Color picker', () => {
       it('disables the eye dropper button', async () => {
         picker = await createDefaultColorPicker();
 
-        const button = picker.renderRoot.querySelector('[part="eye-dropper"]')!;
+        const button = getPanelRoot(picker).querySelector(
+          '[part="eye-dropper"]'
+        )!;
         expect(button.hasAttribute('disabled')).to.be.true;
       });
     });
@@ -1273,7 +1359,7 @@ describe('Color picker', () => {
       it('picks a color via the EyeDropper API', async () => {
         picker = await createDefaultColorPicker();
 
-        const button = picker.renderRoot.querySelector<HTMLElement>(
+        const button = getPanelRoot(picker).querySelector<HTMLElement>(
           '[part="eye-dropper"]'
         )!;
         expect(button.hasAttribute('disabled')).to.be.false;
@@ -1291,7 +1377,7 @@ describe('Color picker', () => {
         const { value } = picker;
         const eventSpy = spy(picker, 'emitEvent');
 
-        picker.renderRoot
+        getPanelRoot(picker)
           .querySelector<HTMLElement>('[part="eye-dropper"]')!
           .click();
         picker.disabled = true;
@@ -1534,6 +1620,363 @@ describe('Color picker', () => {
 
       expect(getInputAnchor().invalid).to.equal(picker.invalid);
     });
+
+    describe('Clear icon', () => {
+      function getClearIcon(): HTMLElement | null {
+        return picker.renderRoot.querySelector('[part="clear-icon"]');
+      }
+
+      it('shows the clear icon in the suffix only while a color is set', async () => {
+        expect(getClearIcon()).to.be.null;
+
+        picker.value = '#ff0000';
+        await elementUpdated(picker);
+
+        const icon = getClearIcon()!;
+        expect(icon.slot).to.equal('suffix');
+        expect(icon.parentElement).to.equal(getInputAnchor());
+
+        picker.value = '';
+        await elementUpdated(picker);
+
+        expect(getClearIcon()).to.be.null;
+      });
+
+      it('names the clear icon as a button', async () => {
+        picker.value = '#ff0000';
+        await elementUpdated(picker);
+
+        const icon = getClearIcon()!;
+        expect(icon.role).to.equal('button');
+        expect(icon.ariaLabel).to.equal('Clear color');
+
+        picker.resourceStrings = { color_picker_clear: 'Effacer' };
+        await elementUpdated(picker);
+
+        expect(getClearIcon()!.ariaLabel).to.equal('Effacer');
+      });
+
+      it('has no clear icon in default mode', async () => {
+        picker = await fixture<IgcColorPickerComponent>(
+          html`<igc-color-picker value="#ff0000"></igc-color-picker>`
+        );
+
+        expect(getClearIcon()).to.be.null;
+      });
+
+      it('clears with igcInput, and reports igcChange when the focus leaves', async () => {
+        picker.value = '#ff0000';
+        await elementUpdated(picker);
+
+        picker.dispatchEvent(
+          new FocusEvent('focusin', { relatedTarget: null })
+        );
+        const eventSpy = spy(picker, 'emitEvent');
+
+        simulateClick(getClearIcon()!);
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal('');
+        expect(getInputAnchor().value).to.equal('');
+        expect(isAnchorEmpty(picker)).to.be.true;
+        expect(eventSpy).calledOnceWith('igcInput', { detail: '' });
+
+        picker.dispatchEvent(
+          new FocusEvent('focusout', { relatedTarget: null })
+        );
+
+        expect(eventSpy).calledTwice;
+        expect(eventSpy.secondCall).calledWith('igcChange', { detail: '' });
+      });
+
+      it('keeps the focus in the text field on a click', async () => {
+        picker.value = '#ff0000';
+        await elementUpdated(picker);
+
+        const native = getAnchorNativeInput(picker);
+        native.focus();
+
+        const { x, y, width, height } = getClearIcon()!.getBoundingClientRect();
+        await sendMouse({
+          type: 'click',
+          position: [Math.round(x + width / 2), Math.round(y + height / 2)],
+        });
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal('');
+        expect(native.matches(':focus')).to.be.true;
+      });
+
+      it('renders the content of the clear-icon slot', async () => {
+        picker = await fixture<IgcColorPickerComponent>(
+          html`<igc-color-picker mode="input" value="#ff0000">
+            <span slot="clear-icon">x</span>
+          </igc-color-picker>`
+        );
+
+        const slot = getClearIcon()!.querySelector<HTMLSlotElement>(
+          'slot[name="clear-icon"]'
+        )!;
+
+        expect(slot.assignedElements()).to.have.lengthOf(1);
+      });
+
+      it('changes nothing on a click while disabled', async () => {
+        picker.value = '#ff0000';
+        picker.disabled = true;
+        await elementUpdated(picker);
+
+        const eventSpy = spy(picker, 'emitEvent');
+        simulateClick(getClearIcon()!);
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal('#ff0000');
+        expect(eventSpy).not.called;
+      });
+
+      it('clear() clears the value and the text, with no events', async () => {
+        picker.value = '#ff0000';
+        await elementUpdated(picker);
+
+        picker.dispatchEvent(
+          new FocusEvent('focusin', { relatedTarget: null })
+        );
+        const eventSpy = spy(picker, 'emitEvent');
+
+        picker.clear();
+        await elementUpdated(picker);
+
+        expect(picker.value).to.equal('');
+        expect(getInputAnchor().value).to.equal('');
+        expect(getClearIcon()).to.be.null;
+
+        picker.dispatchEvent(
+          new FocusEvent('focusout', { relatedTarget: null })
+        );
+
+        expect(eventSpy).not.called;
+      });
+    });
+
+    describe('Field parts', () => {
+      /** Parts of the picker and the parts of the field they name. */
+      const forwarded = {
+        input: 'container',
+        'native-input': 'input',
+        label: 'label',
+        prefix: 'prefix',
+        suffix: 'suffix',
+      };
+
+      it('exposes the text field as `field` and forwards its parts', () => {
+        const field = getInputAnchor();
+
+        expect(field.getAttribute('part')).to.equal('field');
+        expect(field.getAttribute('exportparts')).to.equal(
+          'container: input, input: native-input, label, prefix, suffix'
+        );
+      });
+
+      it('styles the text field through the parts, not the inputs of the picker', async () => {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(
+          ['field', ...Object.keys(forwarded)]
+            .map(
+              (name) =>
+                `igc-color-picker::part(${name}) { --probe-${name}: on; }`
+            )
+            .join('\n')
+        );
+
+        await withDocumentSheets([sheet], async () => {
+          picker.value = '#ff0000';
+          picker.open = true;
+          await elementUpdated(picker);
+
+          const field = getInputAnchor();
+          const probe = (element: Element, name: string) =>
+            getComputedStyle(element)
+              .getPropertyValue(`--probe-${name}`)
+              .trim();
+
+          expect(probe(field, 'field')).to.equal('on');
+          expect(probe(getColorInput(picker), 'field')).to.equal('');
+
+          for (const [name, inner] of Object.entries(forwarded)) {
+            const element = field.renderRoot.querySelector(
+              `[part~="${inner}"]`
+            )!;
+
+            expect(element, name).to.exist;
+            expect(probe(element, name), name).to.equal('on');
+          }
+        });
+      });
+    });
+  });
+
+  describe('Color panel', () => {
+    const panelParts = [
+      'picker-canvas',
+      'marker',
+      'dragging',
+      'main-row',
+      'alpha-row',
+      'inputs-row',
+      'buttons',
+      'hue',
+      'alpha',
+      'alpha-input',
+      'copy',
+      'eye-dropper',
+      'format-select',
+      'swatches',
+      'swatch',
+      'selected',
+      'view-switcher',
+      'view-button',
+      'active',
+    ];
+
+    beforeEach(async () => {
+      picker = await createDefaultColorPicker();
+    });
+
+    it('shows the color panel in the popup', () => {
+      const popup = picker.renderRoot.querySelector('[part="picker"]')!;
+
+      expect(popup.querySelector('igc-color-panel')).to.equal(getPanel(picker));
+    });
+
+    it('forwards the parts of the panel as its own', () => {
+      expect(
+        getPanel(picker)
+          .getAttribute('exportparts')!
+          .split(',')
+          .map((part) => part.trim())
+      ).to.eql(panelParts);
+    });
+
+    it('styles the controls of the panel through its parts', async () => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync('igc-color-picker::part(hue) { --probe: on; }');
+
+      await withDocumentSheets([sheet], async () => {
+        picker.open = true;
+        await elementUpdated(picker);
+
+        expect(
+          getComputedStyle(getHueSlider(picker))
+            .getPropertyValue('--probe')
+            .trim()
+        ).to.equal('on');
+      });
+    });
+
+    it('passes its options and strings to the panel', async () => {
+      picker.format = 'rgb';
+      picker.showAlpha = true;
+      picker.hideFormats = true;
+      picker.swatches = ['#ff0000'];
+      picker.resourceStrings = { color_picker_hue: 'Tone' };
+      await elementUpdated(picker);
+
+      const panel = getPanel(picker);
+
+      expect(panel.format).to.equal('rgb');
+      expect(panel.showAlpha).to.be.true;
+      expect(panel.hideFormats).to.be.true;
+      expect(panel.swatches).to.eql(['#ff0000']);
+      expect(panel.resourceStrings.color_picker_hue).to.equal('Tone');
+    });
+
+    it('keeps the value of the panel equal to its own', async () => {
+      picker.value = 'oklch(70% 0.1 200)';
+      await elementUpdated(picker);
+
+      expect(getPanel(picker).value).to.equal(picker.value);
+
+      picker.format = 'hsl';
+      await elementUpdated(picker);
+
+      expect(getPanel(picker).value).to.equal(picker.value);
+    });
+
+    it('keeps the events of the panel inside', async () => {
+      const leaked: Event[] = [];
+
+      for (const type of ['igcInput', 'igcChange']) {
+        picker.addEventListener(type, (event) => {
+          if (event.composedPath()[0] !== picker) {
+            leaked.push(event);
+          }
+        });
+      }
+
+      picker.open = true;
+      await elementUpdated(picker);
+      await pickSwatch(picker, '#00ff00');
+
+      expect(leaked).to.be.empty;
+    });
+
+    it('shows its swatch children in the swatch list of the panel', async () => {
+      picker = await fixture<IgcColorPickerComponent>(html`
+        <igc-color-picker label="Choose a color">
+          <igc-color-swatch color="#00ff00"></igc-color-swatch>
+          <igc-color-swatch-group>
+            <span slot="label">Brand</span>
+            <igc-color-swatch color="#0000ff"></igc-color-swatch>
+          </igc-color-swatch-group>
+        </igc-color-picker>
+      `);
+      picker.open = true;
+      await elementUpdated(picker);
+      await nextFrame();
+      await elementUpdated(picker);
+
+      const [green, blue] =
+        picker.querySelectorAll<IgcColorSwatchComponent>('igc-color-swatch');
+      const list =
+        getPanelRoot(picker).querySelector<HTMLElement>('[part="swatches"]')!;
+
+      expect(list.hidden).to.be.false;
+      expect(
+        list.querySelector('slot')!.assignedElements({ flatten: true })
+      ).to.eql([green, blue.parentElement]);
+
+      // The swatch list is a stop of the focus trap of the popup.
+      const trap = picker.renderRoot.querySelector('igc-focus-trap')!;
+      expect(trap.focusableElements).to.include(green);
+
+      const eventSpy = spy(picker, 'emitEvent');
+      simulateClick(blue);
+      await elementUpdated(picker);
+
+      expect(picker.value).to.equal('#0000ff');
+      expect(eventSpy).calledWith('igcInput', { detail: '#0000ff' });
+    });
+
+    it('passes its views and takes the view of the switcher', async () => {
+      picker.views = 'gradient swatches';
+      picker.activeView = 'swatches';
+      picker.open = true;
+      await elementUpdated(picker);
+
+      const panel = getPanel(picker);
+      expect(panel.views).to.equal('gradient swatches');
+      expect(panel.activeView).to.equal('swatches');
+
+      simulateClick(
+        getPanelRoot(picker).querySelector<HTMLElement>(
+          '[part~="view-button"][value="gradient"]'
+        )!
+      );
+      await elementUpdated(picker);
+
+      expect(picker.activeView).to.equal('gradient');
+      expect(panel.activeView).to.equal('gradient');
+    });
   });
 
   describe('Rendering', () => {
@@ -1571,23 +2014,24 @@ describe('Color picker', () => {
       picker.open = true;
       await elementUpdated(picker);
 
-      expect(picker.renderRoot.querySelector('[part="alpha-row"]')).to.be.null;
+      expect(getPanelRoot(picker).querySelector('[part="alpha-row"]')).to.be
+        .null;
 
       picker.showAlpha = true;
       await elementUpdated(picker);
 
-      expect(picker.renderRoot.querySelector('[part="alpha-row"]')).to.exist;
+      expect(getPanelRoot(picker).querySelector('[part="alpha-row"]')).to.exist;
     });
 
     it('hides the format select when hideFormats is set', async () => {
       picker = await createDefaultColorPicker();
       picker.open = true;
       await elementUpdated(picker);
-      expect(picker.renderRoot.querySelector('#format-select')).to.exist;
+      expect(getPanelRoot(picker).querySelector('#format-select')).to.exist;
 
       picker.hideFormats = true;
       await elementUpdated(picker);
-      expect(picker.renderRoot.querySelector('#format-select')).to.be.null;
+      expect(getPanelRoot(picker).querySelector('#format-select')).to.be.null;
     });
 
     it('runs the slider tracks in the direction of the ranges', async () => {

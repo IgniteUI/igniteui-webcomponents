@@ -1,4 +1,4 @@
-import { html, type TemplateResult } from 'lit';
+import { html, type nothing, type TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 // Satisfies the lit-analyzer element resolution for `igc-icon`. No side
 // effects; the consuming components register the icon.
@@ -38,5 +38,28 @@ export function renderSlottedIcon(options: SlottedIconOptions): TemplateResult {
         aria-hidden=${bindIf(options.ariaHidden ?? true, 'true')}
       ></igc-icon>
     </slot>
+  `;
+}
+
+/**
+ * Renders the clear icon of a text field: the `input_clear` icon in the
+ * suffix. `part` names the wrapper part and the slot that replaces the icon.
+ * A `label` makes the wrapper a named button for assistive technology.
+ */
+export function renderClearIcon(
+  part: string,
+  onClick: ((event: Event) => void) | typeof nothing,
+  label?: string
+): TemplateResult {
+  return html`
+    <span
+      slot="suffix"
+      part=${part}
+      role=${bindIf(label, 'button')}
+      aria-label=${ifDefined(label)}
+      @click=${onClick}
+    >
+      ${renderSlottedIcon({ slot: part, icon: 'input_clear' })}
+    </span>
   `;
 }

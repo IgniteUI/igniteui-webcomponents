@@ -29,6 +29,37 @@ export function rgbString(rgb: RGB, alpha: number | null = null): string {
   return `rgb(${r} ${g} ${b}${alpha === null ? '' : ` / ${alpha}`})`;
 }
 
+/** The color string shape of each format. Shown while a color text is empty. */
+export const formatPlaceholders: Record<ColorFormat, string> = {
+  hex: '#rrggbb',
+  rgb: 'rgb(r g b)',
+  hsl: 'hsl(h s% l%)',
+};
+
+/**
+ * A color with its alpha in one notation, to compare two colors. The empty
+ * key is no color.
+ */
+export type ColorKey = string;
+
+export function colorKey(color: ColorModel): ColorKey {
+  return color.asString('rgb', true);
+}
+
+/** The color with an opaque alpha. An empty color gives white. */
+export function opaqueColor(color: ColorModel): string {
+  return rgbString(color.toRGB());
+}
+
+/**
+ * The color of a committed color text. An empty text gives an empty color. An
+ * invalid text gives `null`: the input shows the current color again.
+ */
+export function parseTypedColor(text: string | undefined): ColorModel | null {
+  const color = ColorModel.parse(text ?? '');
+  return color.isEmpty && text?.trim() ? null : color;
+}
+
 /**
  * A color that keeps its RGB, HSL and HSV values in sync.
  */
@@ -56,8 +87,9 @@ export class ColorModel {
   }
 
   /**
-   * Parses a hex, rgb(a), hsl(a) or named color.
-   * An empty or invalid string gives an empty color.
+   * Parses a CSS color into sRGB. A color outside the sRGB gamut clips. An
+   * empty or invalid string, or a color that depends on its context, such as
+   * `currentcolor`, gives an empty color.
    */
   public static parse(color: string): ColorModel {
     const parsed = tryParseColor(color, getContext());

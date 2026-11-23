@@ -27,6 +27,7 @@ export type ButtonGroupSelection = 'single' | 'single-required' | 'multiple';
 export type ButtonVariant = 'contained' | 'flat' | 'outlined' | 'fab';
 export type CarouselIndicatorsOrientation = 'end' | 'start';
 export type ColorFormat = 'hex' | 'rgb' | 'hsl';
+export type ColorPanelView = 'gradient' | 'swatches';
 export type ColorPickerMode = 'default' | 'input';
 /* jsonAPIPlainObject */
 export type DateRangeValue = { start: Date | null; end: Date | null };

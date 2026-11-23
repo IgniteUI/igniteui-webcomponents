@@ -23,96 +23,28 @@
         @include line-clamp(2, true, true);
     }
 
-    input[type='range'] {
-        appearance: none;
-        width: 100%;
-    }
-
-    // The row track sizing and inline spacing are declared in the common styles,
-    // where the `--_picker-rows-*` custom properties the themes override live.
-    [part='main-row'],
-    [part='alpha-row'],
-    [part='inputs-row'] {
-        display: grid;
-
-        &:empty {
-            display: none;
-        }
-    }
-
-    [part='main-row'] {
-        margin-block-end: sizable(rem(8px), rem(12px), rem(16px));
-
-        input {
-            grid-column: 1 / span 2;
-        }
-    }
-
-    [part='alpha-row'] {
-        margin-block: var(--_alpha-row-spacing);
-
-        input {
-            grid-column: 1 / span 2;
-        }
-    }
-
-    [part='alpha-input'] {
-        min-width: fit-content;
-    }
-
-    [part='inputs-row'] {
-        padding-block-end: var(--_input-row-spacing);
-        
-        igc-input {
-            grid-column: 1 / -1;
-        }
-
-        &:has(igc-select) {
-            igc-input {
-                grid-column: 2 / -1;
-            }
-        }
-    }
-
-    [part='buttons'] {
-        display: flex;
-    }
-
-    // The track and thumb presentation is declared in the common styles - each
-    // vendor pseudo-element needs its own rule there, since a selector list
-    // containing one the engine doesn't know is discarded whole.
-    [part='hue'],
-    [part='alpha'] {
-        grid-column: 1 / span 3;
+    [part~='clear-icon'] {
+        display: inline-flex;
+        cursor: pointer;
     }
 
     [part='picker'] {
         display: grid;
         width: var(--_picker-popover-size);
         min-height: rem(192px);
-
-        &:has([part~='alpha-row']:not(:empty)) {
-            [part='main-row'] {
-                margin-block-end: 0;
-            }
-        }
     }
 
-    [part='picker-canvas'] {
-        border-width: rem(1px);
-        border-style: solid;
-        margin-inline: rem(16px);
-        margin-block: rem(16px) sizable(rem(16px), rem(20px), rem(24px));
+    // In the popup of the color picker, the panel fills the popup, which
+    // paints the surface.
+    igc-color-panel {
+        display: block;
     }
 
-    [part='swatches'] {
-        display: grid;
-        grid-column: 1 / -1;
-        width: 100%;
-        padding: var(--_swatches-spacing);
-        row-gap: var(--_swatches-row-gap);
-        justify-content: space-between;
-        overflow: hidden;
+    igc-color-panel::part(base) {
+        width: auto;
+        background: none;
+        border: none;
+        border-radius: 0;
     }
 
     // Box Trigger
@@ -154,14 +86,8 @@
 @media (forced-colors: active) {
     :host {
         [part~='anchor']::before,
-        [part='picker-canvas'],
-        [part='hue']::-webkit-slider-runnable-track,
         [part~='anchor'][part~='input-mode'] {
             forced-color-adjust: none;
-        }
-
-        [part='hue']::-webkit-slider-runnable-track {
-            outline: rem(1px) solid CanvasText;
         }
     }
 }

@@ -129,6 +129,32 @@ describe('ColorModel', () => {
 
       expect(color.isEmpty).to.be.true;
     });
+
+    it('parses a color outside the legacy syntax into sRGB', () => {
+      const color = ColorModel.parse('oklch(70% 0.1 200 / 0.5)');
+
+      expect(color.toRGB()).to.deep.equal([64, 177, 183]);
+      expect(color.alpha).to.equal(0.5);
+      expect(color.asString('hex')).to.equal('#40b1b780');
+    });
+
+    it('clips a color outside the sRGB gamut', () => {
+      expect(ColorModel.parse('color(display-p3 1 0 0)').toRGB()).to.deep.equal(
+        [255, 0, 0]
+      );
+    });
+
+    it('returns an empty color for a color that depends on its context', () => {
+      for (const value of [
+        'currentcolor',
+        'var(--brand)',
+        'light-dark(red, blue)',
+        'Canvas',
+        'color-mix(in srgb, currentcolor, red)',
+      ]) {
+        expect(ColorModel.parse(value).isEmpty, value).to.be.true;
+      }
+    });
   });
 
   describe('RGB property setters', () => {

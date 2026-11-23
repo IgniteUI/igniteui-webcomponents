@@ -21,6 +21,7 @@
     "ChatTemplateRenderer",
     "ChipResourceStringsEN",
     "ColorFormat",
+    "ColorPanelView",
     "ColorPickerMode",
     "ColorPickerResourceStringsEN",
     "ComboCloseTrigger",
@@ -105,8 +106,13 @@
     "IgcChipComponentEventMap",
     "IgcCircularGradientComponent",
     "IgcCircularProgressComponent",
+    "IgcColorPanelComponent",
+    "IgcColorPanelComponentEventMap",
     "IgcColorPickerComponent",
     "IgcColorPickerComponentEventMap",
+    "IgcColorPickerResourceStrings",
+    "IgcColorSwatchComponent",
+    "IgcColorSwatchGroupComponent",
     "IgcComboChangeEventArgs",
     "IgcComboClosingEventArgs",
     "IgcComboComponent",
@@ -1120,9 +1126,67 @@
       ],
       "cssProperties": []
     },
+    "igc-color-panel": {
+      "class": "IgcColorPanelComponent",
+      "attributes": {
+        "active-view": "ColorPanelView ('gradient' | 'swatches')",
+        "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
+        "hide-formats": "boolean",
+        "locale": "string",
+        "show-alpha": "boolean",
+        "value": "string",
+        "views": "string"
+      },
+      "properties": {
+        "activeView": "ColorPanelView ('gradient' | 'swatches')",
+        "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
+        "hideFormats": "boolean",
+        "locale": "string",
+        "resourceStrings": "Required<IgcColorPickerResourceStrings>",
+        "showAlpha": "boolean",
+        "static tagName": "readonly string",
+        "swatches": "string[]",
+        "value": "string",
+        "views": "string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {
+        "igcChange": "unknown",
+        "igcInput": "unknown"
+      },
+      "slots": [
+        ""
+      ],
+      "cssParts": [
+        "active",
+        "alpha",
+        "alpha-input",
+        "alpha-row",
+        "base",
+        "buttons",
+        "copy",
+        "dragging",
+        "eye-dropper",
+        "format-select",
+        "hue",
+        "inputs-row",
+        "main-row",
+        "marker",
+        "picker-canvas",
+        "selected",
+        "swatch",
+        "swatches",
+        "view-button",
+        "view-switcher"
+      ],
+      "cssProperties": []
+    },
     "igc-color-picker": {
       "class": "IgcColorPickerComponent",
       "attributes": {
+        "active-view": "ColorPanelView ('gradient' | 'swatches')",
         "disabled": "boolean",
         "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
         "hide-formats": "boolean",
@@ -1135,9 +1199,11 @@
         "required": "boolean",
         "scroll-strategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
         "show-alpha": "boolean",
-        "value": "string"
+        "value": "string",
+        "views": "string"
       },
       "properties": {
+        "activeView": "ColorPanelView ('gradient' | 'swatches')",
         "defaultValue": "unknown",
         "disabled": "boolean",
         "form": "readonly HTMLFormElement | null",
@@ -1150,7 +1216,7 @@
         "name": "string",
         "open": "boolean",
         "required": "boolean",
-        "resourceStrings": "Required<IColorPickerResourceStrings>",
+        "resourceStrings": "Required<IgcColorPickerResourceStrings>",
         "scrollStrategy": "PopoverScrollStrategy ('close' | 'hide' | 'scroll')",
         "showAlpha": "boolean",
         "static formAssociated": "readonly boolean",
@@ -1159,11 +1225,13 @@
         "validationMessage": "readonly string",
         "validity": "readonly ValidityState",
         "value": "string",
+        "views": "string",
         "willValidate": "readonly boolean"
       },
       "methods": {
         "blur": "() => void",
         "checkValidity": "() => boolean",
+        "clear": "() => void",
         "focus": "(options?: FocusOptions) => void",
         "hide": "() => Promise<boolean>",
         "reportValidity": "() => boolean",
@@ -1181,37 +1249,89 @@
         "igcOpening": "unknown"
       },
       "slots": [
+        "",
+        "clear-icon",
         "custom-error",
         "helper-text",
         "invalid",
         "value-missing"
       ],
       "cssParts": [
+        "active",
         "alpha",
         "alpha-input",
         "alpha-row",
         "anchor",
         "buttons",
+        "clear-icon",
         "color-picker",
         "copy",
         "dragging",
         "empty",
         "eye-dropper",
+        "field",
         "format-select",
         "hue",
+        "input",
         "input-mode",
         "inputs-row",
         "label",
         "main-row",
         "marker",
+        "native-input",
         "picker",
         "picker-canvas",
+        "prefix",
+        "selected",
+        "suffix",
         "swatch",
-        "swatches"
+        "swatches",
+        "view-button",
+        "view-switcher"
       ],
       "cssProperties": [
         "--ig-helper-min-lines"
       ]
+    },
+    "igc-color-swatch": {
+      "class": "IgcColorSwatchComponent",
+      "attributes": {
+        "color": "string | undefined",
+        "label": "string | undefined"
+      },
+      "properties": {
+        "color": "string | undefined",
+        "label": "string | undefined",
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [],
+      "cssParts": [
+        "base"
+      ],
+      "cssProperties": []
+    },
+    "igc-color-swatch-group": {
+      "class": "IgcColorSwatchGroupComponent",
+      "attributes": {},
+      "properties": {
+        "static tagName": "readonly string"
+      },
+      "methods": {
+        "static register": "() => void"
+      },
+      "events": {},
+      "slots": [
+        "",
+        "label"
+      ],
+      "cssParts": [
+        "label"
+      ],
+      "cssProperties": []
     },
     "igc-combo": {
       "class": "IgcComboComponent",
@@ -2802,6 +2922,7 @@
         "static register": "() => void"
       },
       "events": {
+        "change": "Event",
         "igcColorPicked": "unknown"
       },
       "slots": [],

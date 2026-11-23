@@ -245,3 +245,12 @@ export function catchListenerErrors(fn: () => void): unknown[] {
 export const axeReflectedRelationsOptions = {
   ignoredRules: ['aria-required-attr'],
 };
+
+/**
+ * Axe options for components with a visually hidden `<label>`, such as the
+ * format select of the color panel. The `label-title-only` rule expects a
+ * visible label.
+ */
+export const axeHiddenLabelOptions = {
+  ignoredRules: ['label-title-only'],
+};

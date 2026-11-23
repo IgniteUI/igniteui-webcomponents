@@ -8,6 +8,11 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
+  endKey,
+  homeKey,
+  pageDownKey,
+  pageUpKey,
+  shiftKey,
 } from '#internals/controllers/key-bindings.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
@@ -36,18 +41,60 @@ type CanvasGeometry = {
   marker: { width: number; height: number };
 };
 
+/**
+ * The keys that move the marker, and their steps in percent of each axis.
+ * An arrow moves the marker in its own direction, also in RTL, because the
+ * plane does not mirror.
+ */
+const KEY_STEPS: ReadonlyArray<
+  readonly [keys: string | string[], dx: number, dy: number]
+> = [
+  [arrowLeft, -1, 0],
+  [arrowRight, 1, 0],
+  [arrowUp, 0, -1],
+  [arrowDown, 0, 1],
+  [[shiftKey, arrowLeft], -10, 0],
+  [[shiftKey, arrowRight], 10, 0],
+  [[shiftKey, arrowUp], 0, -10],
+  [[shiftKey, arrowDown], 0, 10],
+  [pageUpKey, 0, -10],
+  [pageDownKey, 0, 10],
+  [homeKey, -10, 0],
+  [endKey, 10, 0],
+];
+
+/**
+ * Moves a marker offset by `delta` percent of `size`, to a whole percent
+ * within the canvas. `half` is the half-marker offset of the axis.
+ */
+function stepOffset(
+  offset: number,
+  half: number,
+  size: number,
+  delta: number
+): number {
+  const percent = clamp(
+    Math.round(asPercent(offset + half, size) + delta),
+    0,
+    100
+  );
+
+  return (percent / 100) * size - half;
+}
+
 /* blazorSuppress */
 /**
- * The saturation/value plane of {@link IgcColorPickerComponent} and the marker
- * that moves across it.
+ * The saturation/value plane of the color panel and the marker that moves
+ * across it.
  *
- * An internal building block of `igc-color-picker` - it is registered so the
- * picker can render it, but it is not part of the public component surface and
+ * An internal building block of the color panel - it is registered so the
+ * panel can render it, but it is not part of the public component surface and
  * is not exported from the package entry point.
  *
  * @element igc-picker-canvas
  *
  * @fires igcColorPicked - Emitted when a color is picked on the canvas. Does not bubble.
+ * @fires change - Emitted when a change ends, as for a range input: at the end of a drag and after each key.
  *
  * @csspart marker - The draggable marker indicating the picked saturation/value.
  * @csspart dragging - Present on the marker while it is being dragged.
@@ -131,11 +178,13 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
       this._handleLostPointerCapture
     );
 
-    addKeybindings(this, { bindingDefaults: { repeat: true } })
-      .set(arrowDown, this._onArrowKey.bind(this, { dx: 0, dy: 1 }))
-      .set(arrowUp, this._onArrowKey.bind(this, { dx: 0, dy: -1 }))
-      .set(arrowLeft, this._onArrowKey.bind(this, { dx: -1, dy: 0 }))
-      .set(arrowRight, this._onArrowKey.bind(this, { dx: 1, dy: 0 }));
+    const bindings = addKeybindings(this, {
+      bindingDefaults: { repeat: true },
+    });
+
+    for (const [keys, dx, dy] of KEY_STEPS) {
+      bindings.set(keys, () => this._step(dx, dy));
+    }
   }
 
   protected override updated(properties: PropertyValues<this>): void {
@@ -186,8 +235,29 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
     this.y = nextY;
   }
 
-  private _onArrowKey({ dx, dy }: { dx: number; dy: number }): void {
-    this._commitPosition(this.x + dx, this.y + dy, this._measure());
+  /**
+   * Moves the marker by percentages of the canvas, so a step is the same at
+   * every canvas size. Only the axis that moves snaps to a whole percent.
+   */
+  private _step(dx: number, dy: number): void {
+    const geometry = this._measure();
+    const { rect, marker } = geometry;
+
+    // A hidden canvas has no size to step against.
+    if (!(rect.width && rect.height)) {
+      return;
+    }
+
+    this._commitPosition(
+      dx ? stepOffset(this.x, marker.width, rect.width, dx) : this.x,
+      dy ? stepOffset(this.y, marker.height, rect.height, dy) : this.y,
+      geometry
+    );
+    this._emitChange();
+  }
+
+  private _emitChange(): void {
+    this.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
   private _move(event: PointerEvent): void {
@@ -218,6 +288,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
     this._dragGeometry = undefined;
     this._dragging = false;
     this._marker?.focus();
+    this._emitChange();
   }
 
   public getMarkerDimensions(): { width: number; height: number } {

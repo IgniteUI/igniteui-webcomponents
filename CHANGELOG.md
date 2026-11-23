@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Color panel
+  - New `igc-color-panel` component: the surface of the color picker, alone in the page, for theme editors and sidebars. It has `value`, `format`, `show-alpha`, `hide-formats` and `swatches`. It emits `igcInput` while the user changes the color and `igcChange` when the change ends, as a native range input does. It is not a form control. The color picker shows a panel in its popup, and its parts and behavior do not change.
+  - New `igc-color-swatch` and `igc-color-swatch-group` components: swatches as light DOM children of a color panel or a color picker, in groups with a label. A swatch has `color` and `label`. A swatch without a color is the no-color swatch, and a pick of it clears the value. A swatch resolves `var()`, and a pick writes the resolved color.
+  - All swatches are the options of one listbox: the arrow keys move the focus, also to the row above or below, <kbd>Home</kbd> and <kbd>End</kbd> go to the first and last swatch, and <kbd>Enter</kbd> or <kbd>Space</kbd> picks. The first swatch that has the color of the value is selected, with `aria-selected`, the `ig-selected` custom state, and the `selected` part for a swatch of `swatches`.
+  - `views` (`gradient`, `swatches` or both) and `active-view` set the views of the panel. With both views, a view switcher shows at the top.
+- #### Color picker
+  - The picker shows its `igc-color-swatch` and `igc-color-swatch-group` children in its popup, and passes `views` and `active-view` to the color panel. A view that the user picks becomes the `activeView` of the picker.
+  - In input mode, a clear icon shows in the text field while a color is set. A click clears the value, and `igcChange` reports it when the focus leaves the picker. The `clear-icon` slot and part customize it, and `clear()` clears the value from code with no events. Assistive technology reads it as a "Clear color" button. [#2647](https://github.com/IgniteUI/igniteui-webcomponents/issues/2647)
+  - In input mode, the `field` part is the text field, so `--ig-input-group-*` variables set on `::part(field)` style it and not the inputs inside the picker. The field also forwards `input`, `native-input`, `label`, `prefix` and `suffix`, as in the select and the combo. [#2637](https://github.com/IgniteUI/igniteui-webcomponents/issues/2637)
 - #### QR code
   - `dot-style`, `square-style` and `corner-dot-style` take `squircle`, a square with soft corners.
   - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.
@@ -26,6 +35,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The Material switch moves its thumb with a transition only. Before, it also played a keyframe animation, also on the first render.
 - #### Chip
   - A selection change by the user animates the chip, as in Ignite UI for Angular. The colors fade, and the selection indicator opens and fades in, or fades out and closes. A change from code and the first render show at once, so a virtualized list does not animate its chips while it scrolls. With `prefers-reduced-motion: reduce`, the chip does not animate. [#2621](https://github.com/IgniteUI/igniteui-webcomponents/issues/2621)
+- #### Color picker
+  - A swatch of `swatches` is an `igc-color-swatch` element, not a `button`, and an empty string in `swatches` gives the no-color swatch. The swatch list is always in the DOM, hidden without swatches. The swatch list is one tab stop, and the arrow keys move between the swatches. Before, each swatch was a tab stop.
+  - The names of the formats in the format select come from the resource strings. Before, they were fixed English text.
+  - A value from code with the same color keeps the hue of a gray, as the user set it.
+  - An arrow key moves the saturation and value marker 1 % of the area, at any area size, and <kbd>Shift</kbd> + Arrow, <kbd>Page Up</kbd>, <kbd>Page Down</kbd>, <kbd>Home</kbd> and <kbd>End</kbd> move it 10 %. Before, an arrow key moved it 1 pixel, and there was no large step.
 - #### Combo
   - A change of `showSelectAll` or `groupSelection` keeps the active item. Before, no option was active after the change. When the change removes the active select-all option, or an active group header is no longer an option, no option is active.
 - #### Date picker
@@ -71,6 +85,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Checkbox, Radio, Switch
   - A change of `value` no longer makes a checked control dirty, so a later `defaultChecked` still sets the checked state, as for a native checkbox or radio.
 - #### Color picker
+  - A value in a notation other than hex, `rgb()` and `hsl()`, such as `oklch()`, `lab()`, `lch()`, `color()`, a relative color or `color-mix()`, gave `NaN` channels in Chromium and Safari. The picker now converts it to sRGB, and clips a color outside the sRGB gamut to it, as Firefox already did.
+  - A color that depends on its context, such as `currentcolor`, `var()`, `light-dark()` or a system color like `Canvas`, is invalid and clears the value, also when the user types it. Before, Chromium and Safari turned `currentcolor` into black and a system color into its light value.
   - A color change of the user marks the picker touched, so a change that fails validation shows the invalid styles at once.
   - A value set from code while the focus is in the picker no longer emits `igcChange` when the focus leaves.
   - In input mode, the text input no longer shows the invalid styles when the focus moves from it to the color button. The text input shows the invalid state of the picker, together with its validation message.

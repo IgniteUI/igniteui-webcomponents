@@ -3,8 +3,8 @@
 Color input component.
 
 The user picks a color with the HSV saturation/value canvas, the hue slider
-and the optional alpha slider. The user can also type a color string: hex,
-rgb(a), hsl(a) or a named CSS color.
+and the optional alpha slider. The user can also type any CSS color string,
+such as hex, `rgb()`, `hsl()`, `oklch()` or a named color.
 
 The component supports pre-defined swatches and the native EyeDropper API,
 where the browser provides one. The anchor is a trigger button
@@ -24,10 +24,13 @@ defineComponents(IgcColorPickerComponent);
   In `mode="input"` the component forwards the label to the anchor input.
   In `mode="default"` it renders the label as a separate element.
 - `value`: `string`. Attribute: `value`.
-  The value of the component as a CSS color string. Accepts hex, rgb(a),
-  hsl(a) and named colors.
+  The value of the component as a CSS color string. Accepts any CSS color,
+  such as hex, `rgb()`, `hsl()`, `oklch()`, `color()` or a named color. A
+  color outside the sRGB gamut is clipped to it.
 
-  An empty, whitespace-only or invalid string clears the value.
+  An empty, whitespace-only or invalid string clears the value. So does a
+  color that depends on its context: `currentcolor`, `var()`, `light-dark()`
+  or a system color.
 - `format`: `'hex' | 'rgb' | 'hsl'`. Default: `'hex'`. Attribute: `format`.
   The color format of the string value.
 
@@ -44,14 +47,24 @@ defineComponents(IgcColorPickerComponent);
   anchor is an editable text field with a color swatch prefix. The prefix
   also opens the picker.
 - `swatches`: `string[]`. Default: `[]`. No attribute.
-  Pre-defined color strings. The component renders them as clickable
-  swatches below the picker controls. A click on a swatch sets its color as
-  the value.
+  Pre-defined color strings. The component renders them as swatches in the
+  swatch list of its popup, in front of the swatch children. An empty
+  string gives the no-color swatch.
+- `views`: `string`. Default: `'gradient'`. Attribute: `views`.
+  The views of the popup, as a space-separated list of `gradient` and
+  `swatches`. With both views, a view switcher shows at the top.
+
+  With only the gradient view, the swatch list shows below the gradient
+  controls. With the swatch view, the swatch list shows only in that view.
+- `activeView`: `'gradient' | 'swatches'`. Default: `'gradient'`. Attribute: `active-view`.
+  The view on screen in the popup: `gradient` or `swatches`. The view
+  switcher sets it and emits no event. A view that `views` does not have
+  gives the first view of `views`.
 - `locale`: `string`. Attribute: `locale`.
   The locale of the component. Without it, the component takes its own
   `lang`, else the locale of the nearest ancestor that has a `locale` (a
   component) or a `lang`, and then the global locale.
-- `resourceStrings`: `Required<IColorPickerResourceStrings>`. No attribute.
+- `resourceStrings`: `Required<IgcColorPickerResourceStrings>`. No attribute.
   The texts of the component. The strings that you set replace the
   strings of the current locale. Reading returns all the strings, with
   your strings over the locale strings.
@@ -97,6 +110,9 @@ defineComponents(IgcColorPickerComponent);
   Sets focus on the color picker.
 - `blur(): void`
   Removes focus from the color picker.
+- `clear(): void`
+  Clears the value and the text of the input. As for a value set from code,
+  the component emits no events.
 - `reportValidity(): boolean`
   Checks validity. As for a native control, an invalid control emits
   `invalid` and takes the focus. It shows its own validation messages, not
@@ -141,6 +157,8 @@ defineComponents(IgcColorPickerComponent);
 - `custom-error`: Renders content when setCustomValidity(message) is set.
 - `invalid`: Renders content when the component is in invalid state (validity.valid = false).
 - `helper-text`: Renders content below the picker.
+- `clear-icon`: Renders the clear icon in input mode.
+- default: The color swatches and swatch groups. The picker shows them in the swatch list of its popup.
 
 ## CSS parts
 
@@ -148,7 +166,13 @@ defineComponents(IgcColorPickerComponent);
 - `anchor`: The trigger element that opens the picker (the button in default mode, or the swatch prefix in input mode).
 - `empty`: Applied alongside `anchor` when no color value is set, rendering a checkered background.
 - `input-mode`: Added to the anchor part in input mode.
-- `label`: The label rendered after the anchor in default mode.
+- `label`: The label: the element after the anchor in default mode, or the label of the text field in input mode.
+- `field`: The text field in input mode. Set the `--ig-input-group-*` variables on it to style the field and not the inputs in the picker.
+- `input`: The container of the text field in input mode.
+- `native-input`: The native input of the text field in input mode.
+- `prefix`: The prefix wrapper of the text field in input mode. It holds the anchor.
+- `suffix`: The suffix wrapper of the text field in input mode. It holds the clear icon.
+- `clear-icon`: The clear icon wrapper in input mode. It shows while a color is set.
 - `picker`: The popover container holding the canvas, sliders, inputs and swatches.
 - `picker-canvas`: The saturation and value canvas.
 - `marker`: The marker on the canvas that shows the saturation and value.
@@ -163,8 +187,12 @@ defineComponents(IgcColorPickerComponent);
 - `copy`: The button that copies the current color value to the clipboard.
 - `eye-dropper`: The button that activates the EyeDropper API.
 - `format-select`: The select control used to switch the color string format.
-- `swatches`: The container of the pre-defined color swatches.
-- `swatch`: An individual color swatch button.
+- `swatches`: The swatch list.
+- `swatch`: A swatch of the `swatches` property.
+- `selected`: Added to the swatch part when the swatch has the color of the value.
+- `view-switcher`: The view switcher, rendered when `views` has both views.
+- `view-button`: A button of the view switcher.
+- `active`: Added to the view-button part of the view on screen.
 
 ## CSS custom properties
 

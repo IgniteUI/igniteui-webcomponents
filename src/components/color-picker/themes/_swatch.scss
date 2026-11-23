@@ -1,0 +1,24 @@
+// The color backdrops that the anchor of the color picker and the color
+// swatch share.
+
+// A 2x2 checkerboard tile that shows through a transparent color.
+@function transparency-grid($odd, $even) {
+    @return conic-gradient(
+        $odd 0deg 90deg,
+        $even 90deg 180deg,
+        $odd 180deg 270deg,
+        $even 270deg 360deg
+    );
+}
+
+// The "no color" mark, a diagonal line. The stops sit half the line width on
+// either side of the diagonal, so the line renders 1px thick.
+@function empty-swatch-image($color) {
+    @return linear-gradient(
+        to top right,
+        transparent calc(50% - 0.5px),
+        $color calc(50% - 0.5px),
+        $color calc(50% + 0.5px),
+        transparent calc(50% + 0.5px)
+    );
+}

@@ -38,6 +38,7 @@
     - [Host ARIA](#host-aria)
     - [Disabled popup](#disabled-popup)
     - [Value state motion](#value-state-motion)
+    - [Color panel](#color-panel)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -67,6 +68,11 @@
 |      17 | 2026-11-18 | In input mode, the text input shows only the invalid state of the picker, and reports the validity of the picker |
 |      18 | 2026-11-23 | A disabled picker stays closed; the shared disabled popup suite |
 |      19 | 2026-11-20 | In input mode, a color that the user picks animates the input; a value from code shows at once |
+|      20 | 2026-11-23 | Any CSS color converts to sRGB and clips to its gamut; a color that depends on its context is invalid; the area keys step in percent, with large steps |
+|      21 | 2026-11-23 | Input mode: the clear icon, `clear()`, the `field` part and the forwarded parts of the text field ([#2647](https://github.com/IgniteUI/igniteui-webcomponents/issues/2647), [#2637](https://github.com/IgniteUI/igniteui-webcomponents/issues/2637)) |
+|      22 | 2026-11-23 | The popup shows an [`igc-color-panel`](../color-panel/spec.md); the parts and the behavior do not change |
+|      23 | 2026-11-23 | Swatch children and groups, the swatch listbox and its keys, the no-color swatch, `var()` swatches, `views` and `active-view` |
+|      24 | 2026-11-24 | Review fixes: one selected swatch, the format names from the resource strings, the same color keeps the model |
 
 ## Overview
 
@@ -75,7 +81,8 @@ interactive dropdown. It supports two anchor presentations: `mode="default"` ren
 the current color - a checkered pattern when no value is set - while `mode="input"` renders an editable text field
 with a color swatch prefix.
 
-Activating the anchor opens a picker surface containing an HSV saturation and value gradient canvas, a hue slider,
+Activating the anchor opens a picker surface, an [`igc-color-panel`](../color-panel/spec.md), containing an HSV
+saturation and value gradient canvas, a hue slider,
 an optional alpha slider, a format-aware color string input, an optional eye dropper, a copy-to-clipboard action and
 an optional grid of predefined swatches. The selected color is exposed as a string in one of three formats - `hex`,
 `rgb` or `hsl` - can be cleared to an empty value, and participates in standard HTML form submission, `required`
@@ -85,9 +92,12 @@ validation and validation message projection.
 
 - **Two anchor modes**: a preview trigger button, or an editable text field with a swatch prefix.
 - **HSV canvas, hue and alpha sliders**, kept synchronized with the current color at all times.
-- **Any CSS color string**: hex, `rgb()`/`rgba()`, `hsl()`/`hsla()` and named colors are parsed and normalized.
+- **Any CSS color string**: hex, `rgb()`, `hsl()`, named colors and the other notations, such as `oklch()`, `lab()`,
+  `color()` and `color-mix()`, are parsed into sRGB and normalized.
 - **Three serialization formats**, switchable at run time without altering the represented color.
-- **Predefined swatches**, applied with a single click.
+- **Predefined swatches**, as the `swatches` property or as `igc-color-swatch` children in labelled groups, with a
+  no-color swatch and `var()` colors.
+- **Two popup views**, the gradient and the swatches, with a view switcher when both are available.
 - **Platform integrations**: the native `EyeDropper` API where available, and copy to clipboard.
 - **Form association**: submits under its name, supports reset, `required` and custom validation.
 - **Localization**: the accessible labels come from `igniteui-i18n-core` through `locale` and `resourceStrings`.
@@ -100,8 +110,8 @@ The `igc-color-picker` must:
 - be WAI-ARIA compliant.
 - participate in form association - submit its `value` under its `name`, and support reset, `required` and custom
   validation through the form-associated lifecycle.
-- parse and accept any valid CSS color string assigned to `value`; an empty, whitespace-only or invalid string
-  clears the value.
+- parse and accept any valid CSS color string assigned to `value`, and clip a color outside the sRGB gamut to it;
+  an empty, whitespace-only or invalid string clears the value, and so does a color that depends on its context.
 - render a checkered anchor background while the value is empty.
 - serialize its `value` consistently in the currently selected `format`.
 - keep the gradient canvas marker, the hue slider, the alpha slider and the color value input synchronized with the
@@ -129,7 +139,8 @@ As an end-user, I expect to be able to:
 - drag inside the gradient area to adjust saturation and brightness.
 - drag the hue slider to change the base color, and the alpha slider to change the opacity.
 - type an exact color string into the color value input.
-- clear the value by deleting the text of the color value input, or of the anchor input in `input` mode.
+- clear the value by deleting the text of the color value input, or of the anchor input in `input` mode, or with the
+  clear icon of the anchor input.
 - switch between the hex, RGB and HSL representations from a dropdown.
 - pick a color from anywhere on my screen using the eye dropper, where it is supported.
 - copy the selected color value to my clipboard.
@@ -148,7 +159,8 @@ As a developer, I expect to be able to:
 - hide the format switcher with `hide-formats`, and show the alpha slider with `show-alpha`.
 - mark the control as required, disable it, and surface the validation state through the standard form-associated
   API and the message slots.
-- programmatically open, close or toggle the picker.
+- programmatically open, close or toggle the picker, and clear its value.
+- style the text field of `input` mode without styling the inputs inside the picker.
 - react to interim and committed value changes through `igcInput` and `igcChange`, and to the open and close events.
 - customize the hue and alpha slider tracks and the current color through CSS custom properties.
 
@@ -197,16 +209,47 @@ color and a value from code after it; the [input](../input/spec.md) suite covers
 In `input` mode the label is forwarded to the anchor input; in `default` mode it is rendered as a separate element.
 The swatch prefix of the input also opens the picker.
 
+In `input` mode, a clear icon shows in the suffix of the text field while a color is set, as in the date picker. A
+click on it clears the value and emits `igcInput`, and `igcChange` follows when the focus leaves the component, as for
+any change of the user. The focus stays in the text field. The `clear-icon` slot replaces the icon; to hide it, style
+`::part(clear-icon)` with `display: none`. Keyboard users clear the value by deleting the text. `default` mode has no
+clear icon.
+
+The text field of `input` mode is the `field` part. A `--ig-input-group-*` variable set on `::part(field)` styles the
+field and not the inputs inside the picker. The field also forwards the parts of the select and the combo: `input`
+(its container), `native-input`, `label`, `prefix` and `suffix`.
+
+```css
+igc-color-picker::part(field) {
+  --ig-input-group-border-color: rebeccapurple;
+}
+```
+
 #### Value and formats
 
 ```html
 <igc-color-picker value="#ff8800" format="rgb"></igc-color-picker>
 ```
 
-The `value` property accepts any valid CSS color string - hex, `rgb()`/`rgba()`, `hsl()`/`hsla()` and named colors.
-On assignment the string is parsed and validated into an internal color model that maintains synchronized RGB, HSL
-and HSV representations plus an alpha channel. An empty, whitespace-only or invalid string produces an empty model
-rather than a stale color; while empty, the anchor renders a checkered background and the serialized value is `''`.
+The `value` property accepts any valid CSS color string: hex, `rgb()`, `hsl()`, named colors and the other
+notations, such as `oklch()`, `lab()`, `lch()`, `color()`, relative colors and `color-mix()`. On assignment the string
+is parsed and validated into an internal color model that maintains synchronized RGB, HSL and HSV representations
+plus an alpha channel. An empty, whitespace-only or invalid string produces an empty model rather than a stale color;
+while empty, the anchor renders a checkered background and the serialized value is `''`.
+
+The model is sRGB. A color in another color space converts to sRGB, and a color outside the sRGB gamut clips to it:
+`color(display-p3 1 0 0)` becomes `#ff0000`. A color that depends on its context is invalid, because the value must
+not change with the element, the theme or the color scheme: `currentcolor`, `var()`, `light-dark()` and the system
+colors, such as `Canvas`, also inside `color-mix()` or a relative color.
+
+```html
+<!-- The value is #40b1b7 -->
+<igc-color-picker value="oklch(70% 0.1 200)"></igc-color-picker>
+```
+
+A write of the same color, in any notation, keeps the internal color, as in the
+[color panel](../color-panel/spec.md#value-and-format). This keeps the hue of a gray, which a color string does not
+carry.
 
 The active `format` determines how the color is re-serialized into the observable `value`. Changing `format`
 re-serializes the existing color without altering it, so no `igcInput` or `igcChange` is emitted. The initial value
@@ -227,14 +270,40 @@ optional alpha row, a row with the format switcher and the color value input, an
 After each change, and on open, the canvas marker is re-synchronized with the saturation and value of the current
 color on the next animation frame.
 
+The surface is an [`igc-color-panel`](../color-panel/spec.md). The picker passes `format`, `show-alpha`,
+`hide-formats`, `swatches`, `views`, `active-view` and its resource strings to the panel, and takes each change of the
+panel as a change of the user. The events of the panel stay inside the picker. A format or a view that the user picks
+in the panel becomes the `format` or the `activeView` of the picker. The picker forwards the parts of the panel as its own parts, so `::part(hue)` and the other
+surface parts style the panel. The `picker` part, the popup, paints the surface.
+
 #### Swatches
 
 ```typescript
 picker.swatches = ['#ff0000', 'rgb(0 128 0)', 'hsl(210 100% 50%)', 'rebeccapurple'];
 ```
 
-The swatches are rendered as clickable buttons below a divider. Activating one commits its color as the value and
-emits `igcInput`.
+The picker also shows its `igc-color-swatch` and `igc-color-swatch-group` children in the popup, after the swatches of
+`swatches`. It forwards them to the panel through a nested slot.
+
+```html
+<igc-color-picker value="#264653">
+  <igc-color-swatch></igc-color-swatch>
+  <igc-color-swatch-group>
+    <span slot="label">Palette</span>
+    <igc-color-swatch color="#264653" label="Charcoal"></igc-color-swatch>
+    <igc-color-swatch color="var(--brand-accent)" label="Accent"></igc-color-swatch>
+  </igc-color-swatch-group>
+</igc-color-picker>
+```
+
+All swatches are the options of one listbox below a divider. A click, <kbd>Enter</kbd> or <kbd>Space</kbd> on a swatch
+commits its color as the value and emits `igcInput`; `igcChange` follows when the focus leaves the picker. The first
+swatch that has the color of the value is selected. A swatch without a color clears the value, and a `var()` swatch writes the
+color that it resolves to. The [color panel swatches](../color-panel/spec.md#swatches) describe the details, and the
+[recent colors recipe](../color-panel/spec.md#recent-colors) keeps a "Recent" group from `igcChange`.
+
+`views="gradient swatches"` shows a view switcher at the top of the popup, and `views="swatches"` a swatch-only popup.
+See [Views](../color-panel/spec.md#views).
 
 #### Copy and eye dropper
 
@@ -284,6 +353,9 @@ await picker.show();
 await picker.hide();
 await picker.toggle();
 
+// Clears the value and the text of the input, with no events.
+picker.clear();
+
 picker.value = '#336699';
 picker.setCustomValidity('Pick a lighter shade');
 ```
@@ -293,8 +365,8 @@ picker.setCustomValidity('Pick a lighter shade');
 The component takes its resource strings from the `igniteui-i18n-core` package through the `locale` and
 `resourceStrings` properties. Without an explicit `locale`, it takes its own `lang`, else the locale of the nearest
 ancestor that has a `locale` (a component) or a `lang`, and then the global locale of the library. A key that the
-strings of a locale do not have falls back to its English value. The strings are accessibility-only text: the component
-has no visible copy of its own, except the placeholders of the alpha input and the format select.
+strings of a locale do not have falls back to its English value. Most strings are accessibility-only text. The visible
+ones are the placeholders of the alpha input and the format select, the format names and the view switcher texts.
 
 | Key                          | Default English value             | Used for                                                       |
 | ---------------------------- | --------------------------------- | -------------------------------------------------------------- |
@@ -309,9 +381,17 @@ has no visible copy of its own, except the placeholders of the alpha input and t
 | `color_picker_canvas_label`  | Saturation and value              | The name of the canvas marker.                                 |
 | `color_picker_canvas_value`  | Saturation {0}%, brightness {1}%  | The `aria-valuetext` of the canvas marker. `{0}` is the saturation and `{1}` the brightness. |
 | `color_picker_value`         | Color value                       | The label of the color value input.                            |
+| `color_picker_no_color`      | No color                          | The name of a no-color swatch without a label.                 |
+| `color_picker_swatches`      | Color swatches                    | The name of the swatch list.                                   |
+| `color_picker_view_gradient` | Gradient                          | The text of the gradient button of the view switcher.          |
+| `color_picker_view_swatches` | Swatches                          | The text of the swatch button of the view switcher.            |
+| `color_picker_format_hex`    | Hex                               | The name of the hex format in the format select.               |
+| `color_picker_format_rgb`    | RGB                               | The name of the RGB format in the format select.               |
+| `color_picker_format_hsl`    | HSL                               | The name of the HSL format in the format select.               |
+| `color_picker_clear`         | Clear color                       | The name of the clear icon in input mode.                      |
 
-The item text of the format select (Hex, RGB, HSL) is not localized, because the format names are notation names.
-Color values are locale-independent CSS strings.
+The last eight keys are not in `igniteui-i18n-core` yet. Until they are, every locale shows the English text, and
+`resourceStrings` can replace them. Color values are locale-independent CSS strings.
 
 ### Keyboard interactions
 
@@ -320,8 +400,14 @@ Color values are locale-independent CSS strings.
 | <kbd>Alt</kbd> + <kbd>Arrow Down</kbd>     | Opens the picker dropdown.                                                             |
 | <kbd>Escape</kbd>                          | Closes the dropdown and returns focus to the anchor. While the dropdown is closed, it does not cancel the key. |
 | <kbd>Alt</kbd> + <kbd>Arrow Up</kbd>       | Closes the dropdown and returns focus to the anchor.                                   |
-| <kbd>Arrow</kbd> keys                      | With the canvas marker focused, moves it one step in the pressed direction, updating the saturation and value. |
-| <kbd>Tab</kbd>                             | Moves focus between the interactive elements inside the open picker; focus is trapped while open. |
+| <kbd>Arrow</kbd> keys                      | With the canvas marker focused, moves it 1 % of the canvas in the direction of the arrow, also in RTL, updating the saturation and value. |
+| <kbd>Shift</kbd> + <kbd>Arrow</kbd> keys   | With the canvas marker focused, moves it 10 % of the canvas in the direction of the arrow. |
+| <kbd>Page Up</kbd> / <kbd>Page Down</kbd>  | With the canvas marker focused, moves it 10 % up or down, raising or lowering the value. |
+| <kbd>Home</kbd> / <kbd>End</kbd>           | With the canvas marker focused, moves it 10 % left or right, lowering or raising the saturation. |
+| <kbd>Arrow</kbd> keys                      | In the swatch list, moves the focus to the previous or next swatch, or to the nearest swatch in the row above or below. |
+| <kbd>Home</kbd> / <kbd>End</kbd>           | In the swatch list, moves the focus to the first or last swatch.                       |
+| <kbd>Enter</kbd> / <kbd>Space</kbd>        | In the swatch list, picks the focused swatch.                                          |
+| <kbd>Tab</kbd>                             | Moves focus between the interactive elements inside the open picker; focus is trapped while open. The swatch list is one tab stop. |
 
 All of the above are skipped while the component is `disabled`. A key that an IME handles, such as the <kbd>Enter</kbd> that commits a composition, does nothing here.
 
@@ -331,15 +417,17 @@ All of the above are skipped while the component is `disabled`. A key that an IM
 
 | Property          | Attribute       | Reflected | Type                      | Default   | Description                                                              |
 | ----------------- | --------------- | --------- | ------------------------- | --------- | ------------------------------------------------------------------------ |
-| value             | value           | No        | `string`                  | `''`      | The value as a CSS color string. Accepts hex, rgb(a), hsl(a) and named colors. |
+| value             | value           | No        | `string`                  | `''`      | The value as a CSS color string. Accepts any CSS color and clips it to sRGB. A color that depends on its context, such as `currentcolor`, clears it. |
 | format            | format          | No        | `ColorFormat`             | `hex`     | The color format of the string value. A format change renders `value` in the new notation. |
 | mode              | mode            | Yes       | `ColorPickerMode`         | `default` | Whether the anchor is a trigger button or an editable text field.        |
 | label             | label           | No        | `string \| undefined`     | -         | The label of the component.                                              |
-| swatches          | -               | No        | `string[]`                | `[]`      | Pre-defined color strings. The component renders them as clickable swatches below the picker controls. A click on a swatch sets its color as the value. |
+| swatches          | -               | No        | `string[]`                | `[]`      | Pre-defined color strings, rendered as swatches in front of the swatch children. An empty string gives the no-color swatch. |
+| views             | views           | No        | `string`                  | `gradient` | The views of the popup, a space-separated list of `gradient` and `swatches`. Both show a view switcher. |
+| activeView        | active-view     | No        | `ColorPanelView`          | `gradient` | The view on screen in the popup. The switcher sets it. A view that `views` does not have gives the first view of `views`. |
 | showAlpha         | show-alpha      | Yes       | `boolean`                 | false     | Whether to show the alpha slider and input.                              |
 | hideFormats       | hide-formats    | Yes       | `boolean`                 | false     | Whether the format select is hidden.                                     |
 | locale            | locale          | No        | `string`                  | -         | The locale for the resource strings. Falls back to the inherited locale, then the global one.    |
-| resourceStrings   | -               | No        | `IColorPickerResourceStrings` | EN    | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                   |
+| resourceStrings   | -               | No        | `ColorPickerResourceStrings` | EN     | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                   |
 | open              | open            | Yes       | `boolean`                 | false     | Whether the component is open. A disabled form control stays closed.   |
 | scrollStrategy    | scroll-strategy | No        | `PopoverScrollStrategy`   | `hide`    | The behavior of the component when a parent container scrolls.           |
 | required          | required        | Yes       | `boolean`                 | false     | Whether the control is required. A required control that has no value, or is not checked, fails validation.                     |
@@ -361,6 +449,7 @@ All of the above are skipped while the component is `disabled`. A key that an IM
 | show              | `(): Promise<boolean>`           | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open or is a disabled form control, or when a later call replaces this one. |
 | hide              | `(): Promise<boolean>`           | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one. |
 | toggle            | `(): Promise<boolean>`           | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes. |
+| clear             | `(): void`                       | Clears the value and the text of the input. As for a value set from code, the component emits no events. |
 | checkValidity     | `(): boolean`                    | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid. |
 | reportValidity    | `(): boolean`                    | Checks validity. As for a native control, an invalid control emits `invalid` and takes the focus. It shows its own validation messages, not the message of the browser. Returns `true` when the control is valid. |
 | setCustomValidity | `(message: string): void`        | Sets a custom validation message. The control is invalid while the message is not empty. An empty string removes the custom error. |
@@ -384,9 +473,11 @@ reach the listeners on the picker.
 | Name            | Description                                                                      |
 | --------------- | --------------------------------------------------------------------------------- |
 | `helper-text`   | Renders content below the picker.                                                |
+| `clear-icon`    | Renders the clear icon in input mode.                                            |
 | `value-missing` | Renders content when the required validation fails.                              |
 | `custom-error`  | Renders content when setCustomValidity(message) is set.                          |
 | `invalid`       | Renders content when the component is in invalid state (validity.valid = false). |
+| (default)       | The `igc-color-swatch` and `igc-color-swatch-group` children, shown in the swatch list of the popup. |
 
 ### CSS Shadow parts
 
@@ -396,7 +487,13 @@ reach the listeners on the picker.
 | `anchor`        | The trigger element that opens the picker - the button in default mode, or the swatch prefix in input mode. |
 | `empty`         | Applied alongside `anchor` when no color value is set, rendering a checkered background.  |
 | `input-mode`    | Added to the anchor part in input mode.                                                  |
-| `label`         | The label rendered after the anchor in default mode.                                     |
+| `label`         | The label: the element after the anchor in default mode, or the label of the text field in input mode. |
+| `field`         | The text field in input mode. Set the `--ig-input-group-*` variables on it to style the field and not the inputs in the picker. |
+| `input`         | The container of the text field in input mode.                                           |
+| `native-input`  | The native input of the text field in input mode.                                        |
+| `prefix`        | The prefix wrapper of the text field in input mode. It holds the anchor.                 |
+| `suffix`        | The suffix wrapper of the text field in input mode. It holds the clear icon.             |
+| `clear-icon`    | The clear icon wrapper in input mode. It shows while a color is set.                     |
 | `picker`        | The popover container holding the canvas, sliders, inputs and swatches.                  |
 | `picker-canvas` | The saturation and value canvas.                                                         |
 | `marker`        | The marker on the canvas that shows the saturation and value.                            |
@@ -411,8 +508,12 @@ reach the listeners on the picker.
 | `copy`          | The button that copies the current color value to the clipboard.                         |
 | `eye-dropper`   | The button that activates the EyeDropper API.                                            |
 | `format-select` | The select control used to switch the color string format.                               |
-| `swatches`      | The container of the pre-defined color swatches.                                         |
-| `swatch`        | An individual color swatch button.                                                       |
+| `swatches`      | The swatch list.                                                                         |
+| `swatch`        | A swatch of the `swatches` property.                                                     |
+| `selected`      | Added to the swatch part of the selected swatch.                                         |
+| `view-switcher` | The view switcher, rendered when `views` has both views.                                 |
+| `view-button`   | A button of the view switcher.                                                           |
+| `active`        | Added to the view-button part of the view on screen.                                     |
 
 ### CSS custom states
 
@@ -460,19 +561,25 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
    a single override through `resourceStrings`.
 4. Scroll strategy - the `hide`, `scroll` and `close` behaviors of the anchored picker.
 5. API - the public properties and methods.
-6. Empty value - the checkered anchor, the empty serialized value, and clearing through the inputs.
+6. Empty value - the checkered anchor, the empty serialized value, clearing through the inputs, and a color that
+   depends on its context. Colors outside the legacy syntax - an `oklch()` value in the active format, the gamut
+   clip, a typed `lab()` color, and a typed context color that reverts.
 7. Color value input - typing a color string, reverting an invalid one and clearing on an empty one.
 8. `igcChange` - emitted once when focus leaves the component and the user changed the value. A value set from code
    while focus is inside emits nothing, and neither does a color that returns to the reported one in another format.
 9. Color channels, including the alpha input.
 10. Inner events - the `igcInput` of the alpha input, the color value input and the input anchor, the open and close
     events of the format select, and the `igcColorPicked` of the canvas do not reach a listener on the picker.
-11. Swatches - rendering the grid and applying a swatch. A swatch click while disabled changes nothing.
+11. Swatches - a hidden swatch list by default, rendering the swatches and applying one, a pick by color and not by
+    name. A swatch click while disabled changes nothing.
 12. Copy and eye dropper, in environments with and without platform support. An eye dropper pick that ends after
     the picker is disabled changes nothing.
 13. Open and close - the pointer, keyboard and outside-click paths. A closed picker does not cancel <kbd>Escape</kbd>. An
     <kbd>Escape</kbd> that an IME handles keeps the picker open.
-14. Input mode - the anchor input, its label and its prefix.
+14. Input mode - the anchor input, its label and its prefix. The clear icon shows only while a color is set and only
+    in input mode; a click clears with `igcInput`, `igcChange` follows on focus leave, and the focus stays in the text
+    field (a real mouse click); the `clear-icon` slot; no change while disabled; `clear()` clears with no events. The
+    `field` part and the forwarded parts style the text field and not the inputs of the picker.
 15. Rendering of the picker surface rows, and the direction of the slider tracks in LTR and RTL.
 16. Form association, the touched state, `defaultValue`, the initial format, and validation. In input mode, the text
     input shows the invalid state of the picker at once.
@@ -486,15 +593,22 @@ The focus after the form checks and the `invalid` event rules come from the form
 ### Picker canvas
 
 18. Rendering of the gradient and the marker, with the marker label and the format of its value text.
-19. Keyboard interaction - the arrow keys move the marker and update the saturation and value.
+19. Keyboard interaction - the arrow keys move the marker and update the saturation and value. The marker steps in
+    whole percents of the canvas, at any canvas size: 1 % with an arrow, 10 % with <kbd>Shift</kbd> + Arrow, Page Up,
+    Page Down, Home and End. Only the axis that moves snaps. The steps stop at the edges, keep the arrow direction in
+    RTL, and do nothing while the canvas has no size.
 20. Pointer interaction - dragging sets the saturation and value.
 
 ### Color model and parsing
 
 21. `ColorModel` - construction and factory methods, `parse`, the RGB, HSL and HSV setters, the alpha channel,
     `asString` in each format, the color space conversions, the utility methods and the edge cases.
-22. `parseColor` - hex, rgb/rgba, hsl/hsla and named color parsing, a null context, and the edge cases.
-23. `isValidColor` - accepting valid strings and rejecting invalid ones.
+22. `parseColor` - hex, rgb/rgba, hsl/hsla and named color parsing, a null context, and the edge cases. The notations
+    outside the legacy syntax give the same sRGB channels in Chromium, Firefox and WebKit, and a color outside the
+    gamut clips. A `color(srgb)` serialization clips and reads `none` as 0, and an unknown serialization is invalid.
+    The colors that depend on their context are invalid, and text that is not a color cannot become one through the
+    relative color conversion.
+23. `isValidColor` - accepting valid strings and rejecting invalid ones and context colors.
 
 ### Converters
 
@@ -506,7 +620,9 @@ The focus after the form checks and the `invalid` event rules come from the form
 25. Converters - the exact hex round-trip, the HSL and HSV round-trips, HSL to RGB directly and through HSV, and
     every converted channel in range.
 26. Parsing - `parseColor` never throws and returns channels in range. A string that is not a color gives opaque black
-    and an empty model. A model string in each format parses back to the same color.
+    and an empty model. A `color(srgb)` color reads as whole channels in range, and as the same channels inside the
+    gamut. Any `oklch()`, `lab()` or `color()` color parses into sRGB. A model string in each format parses back to
+    the same color.
 27. Model - every color space stays in range for any sequence of channel writes, and a clone equals its source.
 
 ### Host ARIA
@@ -532,6 +648,15 @@ In input mode.
 32. A typed color marks the anchor input as a user change.
 33. A value from code right after it ends the user change, so the input shows it at once.
 
+### Color panel
+
+34. The popup shows the color panel, and the picker forwards the parts of the panel; a `::part(hue)` rule reaches the
+    hue slider of the panel. The picker passes its options and strings to the panel, and the value of the panel equals
+    the value of the picker, also after a format change. The events of the panel stay inside the picker.
+35. The picker shows its swatch children in the swatch list of the panel, the swatch list is a stop of the focus trap,
+    and a click on a child swatch sets the value. The picker passes `views` and `active-view`, and a click on the view
+    switcher sets the `activeView` of the picker.
+
 ## Assumptions and limitations
 
 - The eye dropper button is always rendered, but it is only enabled when the platform implements the `EyeDropper`
@@ -542,9 +667,14 @@ In input mode.
   so round-tripping an input string is not guaranteed to be byte-for-byte identical. An empty, whitespace-only or
   invalid string clears the value, except when it is committed through the popover or anchor color input, where a
   non-empty invalid string reverts to the last valid color.
-- Named colors and other non-hex/rgb/hsl strings are resolved through an `OffscreenCanvas` 2D context; environments
-  without canvas support resolve to the empty value rather than to a default color.
-- The label of the color value input and the format names are not localized. See [Localization](#localization).
+- Colors are resolved through an `OffscreenCanvas` 2D context; environments without canvas support resolve to the
+  empty value rather than to a default color. Chromium and WebKit keep the notation of a color outside the legacy
+  sRGB syntax, so the component converts it to sRGB with relative color syntax.
+- The model is sRGB, so a wide-gamut color, such as `color(display-p3 1 0 0)`, clips to the sRGB gamut and does not
+  come back as the same color.
+- A color that depends on its context is invalid. The component finds `currentcolor`, `var()`, `light-dark()` and the
+  system colors by name, because the canvas of Chromium and WebKit resolves `currentcolor` to black and a system
+  color to its light value.
 
 ## Accessibility
 
@@ -557,10 +687,14 @@ In input mode.
 - The trigger button of the default mode and the swatch button of the input mode reflect the open state through
   `aria-expanded`. The text input of the input mode does not carry it.
 - The hue and alpha sliders are native range inputs labelled through `aria-label`.
-- The gradient canvas marker is focusable and operable with the arrow keys.
+- The gradient canvas marker is focusable and operable with the arrow keys, <kbd>Shift</kbd> + Arrow, Page Up, Page
+  Down, Home and End.
 - The format switcher is a select with a visually-hidden label, and the color value input carries one as well.
-- The copy and eye dropper buttons expose visually-hidden text, and each swatch button exposes its color through
-  `aria-label`.
+- The copy and eye dropper buttons expose visually-hidden text.
+- The clear icon of input mode is a `button` named by `color_picker_clear`, as in the combo. It is not a tab stop;
+  the keyboard clears the value through the text field.
+- The swatch list is a `listbox` of `option` swatches with `aria-selected`, and a swatch group is a named `group`. See
+  the [color panel accessibility](../color-panel/spec.md#aria-roles-and-properties).
 - While the picker is open, focus is trapped within it; the picker content is excluded from the tab order while
   closed.
 
@@ -584,3 +718,6 @@ layout follow the document direction; color values are direction-independent.
 
 In RTL, the hue and alpha slider tracks go from right to left, as the sliders do. The tracks use the `dir` attribute
 through `:dir()`. A `direction: rtl` style without a `dir` attribute reverses the sliders but not the tracks.
+
+The saturation and value canvas does not mirror in RTL, so an arrow key moves its marker in the direction of the
+arrow.

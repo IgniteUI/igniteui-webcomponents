@@ -25,7 +25,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     docs: {
       description: {
         component:
-          'Color input component.\n\nThe user picks a color with the HSV saturation/value canvas, the hue slider\nand the optional alpha slider. The user can also type a color string: hex,\nrgb(a), hsl(a) or a named CSS color.\n\nThe component supports pre-defined swatches and the native EyeDropper API,\nwhere the browser provides one. The anchor is a trigger button\n(`mode="default"`) or an editable text field (`mode="input"`).',
+          'Color input component.\n\nThe user picks a color with the HSV saturation/value canvas, the hue slider\nand the optional alpha slider. The user can also type any CSS color string,\nsuch as hex, `rgb()`, `hsl()`, `oklch()` or a named color.\n\nThe component supports pre-defined swatches and the native EyeDropper API,\nwhere the browser provides one. The anchor is a trigger button\n(`mode="default"`) or an editable text field (`mode="input"`).',
       },
     },
     actions: {
@@ -49,7 +49,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     value: {
       type: 'string',
       description:
-        'The value of the component as a CSS color string. Accepts hex, rgb(a),\nhsl(a) and named colors.\n\nAn empty, whitespace-only or invalid string clears the value.',
+        'The value of the component as a CSS color string. Accepts any CSS color,\nsuch as hex, `rgb()`, `hsl()`, `oklch()`, `color()` or a named color. A\ncolor outside the sRGB gamut is clipped to it.\n\nAn empty, whitespace-only or invalid string clears the value. So does a\ncolor that depends on its context: `currentcolor`, `var()`, `light-dark()`\nor a system color.',
       control: 'text',
     },
     format: {
@@ -79,6 +79,21 @@ const metadata: Meta<IgcColorPickerComponent> = {
       options: ['default', 'input'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'default' } },
+    },
+    views: {
+      type: 'string',
+      description:
+        'The views of the popup, as a space-separated list of `gradient` and\n`swatches`. With both views, a view switcher shows at the top.\n\nWith only the gradient view, the swatch list shows below the gradient\ncontrols. With the swatch view, the swatch list shows only in that view.',
+      control: 'text',
+      table: { defaultValue: { summary: 'gradient' } },
+    },
+    activeView: {
+      type: { name: 'enum', value: ['gradient', 'swatches'] },
+      description:
+        'The view on screen in the popup: `gradient` or `swatches`. The view\nswitcher sets it and emits no event. A view that `views` does not have\ngives the first view of `views`.',
+      options: ['gradient', 'swatches'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'gradient' } },
     },
     locale: {
       type: 'string',
@@ -133,6 +148,8 @@ const metadata: Meta<IgcColorPickerComponent> = {
     hideFormats: false,
     showAlpha: false,
     mode: 'default',
+    views: 'gradient',
+    activeView: 'gradient',
     required: false,
     disabled: false,
     invalid: false,
@@ -152,10 +169,13 @@ interface IgcColorPickerArgs {
    */
   label: string;
   /**
-   * The value of the component as a CSS color string. Accepts hex, rgb(a),
-   * hsl(a) and named colors.
+   * The value of the component as a CSS color string. Accepts any CSS color,
+   * such as hex, `rgb()`, `hsl()`, `oklch()`, `color()` or a named color. A
+   * color outside the sRGB gamut is clipped to it.
    *
-   * An empty, whitespace-only or invalid string clears the value.
+   * An empty, whitespace-only or invalid string clears the value. So does a
+   * color that depends on its context: `currentcolor`, `var()`, `light-dark()`
+   * or a system color.
    */
   value: string;
   /**
@@ -177,6 +197,20 @@ interface IgcColorPickerArgs {
    * also opens the picker.
    */
   mode: 'default' | 'input';
+  /**
+   * The views of the popup, as a space-separated list of `gradient` and
+   * `swatches`. With both views, a view switcher shows at the top.
+   *
+   * With only the gradient view, the swatch list shows below the gradient
+   * controls. With the swatch view, the swatch list shows only in that view.
+   */
+  views: string;
+  /**
+   * The view on screen in the popup: `gradient` or `swatches`. The view
+   * switcher sets it and emits no event. A view that `views` does not have
+   * gives the first view of `views`.
+   */
+  activeView: 'gradient' | 'swatches';
   /**
    * The locale of the component. Without it, the component takes its own
    * `lang`, else the locale of the nearest ancestor that has a `locale` (a
@@ -312,6 +346,8 @@ export const Default: Story = {
         .format=${args.format}
         .mode=${args.mode}
         .scrollStrategy=${args.scrollStrategy}
+        .views=${args.views}
+        .activeView=${args.activeView}
         locale=${ifDefined(args.locale)}
         ?hide-formats=${args.hideFormats}
         ?show-alpha=${args.showAlpha}
@@ -321,6 +357,12 @@ export const Default: Story = {
         ?open=${args.open}
       >
         <p slot="helper-text">Opens on click or with Alt + Arrow Down.</p>
+        <igc-color-swatch></igc-color-swatch>
+        <igc-color-swatch color="rebeccapurple"></igc-color-swatch>
+        <igc-color-swatch color="#e63946"></igc-color-swatch>
+        <igc-color-swatch color="#f4a261"></igc-color-swatch>
+        <igc-color-swatch color="#2a9d8f"></igc-color-swatch>
+        <igc-color-swatch color="#264653"></igc-color-swatch>
       </igc-color-picker>
     </div>
   `,
@@ -504,6 +546,82 @@ export const Swatches: Story = {
           <mark style="background: #f9c74f; color: inherit">highlighted</mark>
           word in this sentence.
         </p>
+      </div>
+    `;
+  },
+};
+
+export const RecentColors: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Recent colors that the app keeps. The `igcChange` handler adds each committed color to the start of the "Recent" swatch group, and keeps at most 8. The component has no API for recent colors: the swatch groups are light DOM children, so the app owns the list, its order and its storage. The "Palette" group stays the same, and its first swatch has no color.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: () => {
+    const limit = 8;
+
+    const addRecent = (event: CustomEvent<string>) => {
+      const picker = event.currentTarget as IgcColorPickerComponent;
+      const group = picker.querySelector('#recent-colors');
+      const color = event.detail;
+
+      if (!(color && group)) {
+        return;
+      }
+
+      // The same color moves to the start.
+      for (const swatch of group.querySelectorAll('igc-color-swatch')) {
+        if (swatch.color === color) {
+          swatch.remove();
+        }
+      }
+
+      const swatch = document.createElement('igc-color-swatch');
+      swatch.color = color;
+      group.querySelector('[slot="label"]')?.after(swatch);
+
+      for (const extra of Array.from(
+        group.querySelectorAll('igc-color-swatch')
+      ).slice(limit)) {
+        extra.remove();
+      }
+    };
+
+    return html`
+      ${samples}
+      <div class="samples">
+        <igc-color-picker
+          label="Text color"
+          value="#264653"
+          @igcChange=${addRecent}
+        >
+          <p slot="helper-text">Commit a color to add it to "Recent".</p>
+          <igc-color-swatch-group id="recent-colors">
+            <span slot="label">Recent</span>
+          </igc-color-swatch-group>
+          <igc-color-swatch-group>
+            <span slot="label">Palette</span>
+            <igc-color-swatch></igc-color-swatch>
+            <igc-color-swatch
+              color="#264653"
+              label="Charcoal"
+            ></igc-color-swatch>
+            <igc-color-swatch color="#2a9d8f" label="Teal"></igc-color-swatch>
+            <igc-color-swatch
+              color="#e9c46a"
+              label="Saffron"
+            ></igc-color-swatch>
+            <igc-color-swatch color="#f4a261" label="Sandy"></igc-color-swatch>
+            <igc-color-swatch color="#e76f51" label="Coral"></igc-color-swatch>
+            <igc-color-swatch color="#ffffff" label="White"></igc-color-swatch>
+            <igc-color-swatch color="#000000" label="Black"></igc-color-swatch>
+          </igc-color-swatch-group>
+        </igc-color-picker>
       </div>
     `;
   },

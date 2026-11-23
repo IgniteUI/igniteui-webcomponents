@@ -1,0 +1,183 @@
+@use 'styles/utilities' as *;
+@use 'components/color-picker/themes/light/themes' as *;
+@use 'components/color-picker/themes/swatch' as *;
+
+// The panel takes the color picker theme.
+$theme: $material;
+
+@mixin slider-track {
+    height: var(--_slider-track-size);
+    border-radius: var-get($theme, 'slider-track-border-radius');
+
+    // Dont use border otherwise the thumb will be misaligned.
+    box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
+}
+
+// `$fill` differs per slider: the hue thumb shows the pure hue it selects, the
+// alpha thumb shows the color actually picked on the canvas.
+@mixin slider-thumb($fill) {
+    // Resetting `appearance` on the input alone is not enough in Chromium - the
+    // thumb keeps its native rendering and ignores everything below until the
+    // pseudo-element itself opts out.
+    appearance: none;
+    border-radius: 50%;
+    width: var(--_slider-thumb-size);
+    height: var(--_slider-thumb-size);
+    background-color: $fill;
+    border: rem(2px) solid var-get($theme, 'slider-thumb-border-color');
+    box-shadow: var(--ig-elevation-1);
+
+    // This has to be explicitly set to avoid the thumb being clipped by the
+    // track.
+    box-sizing: border-box;
+    margin: 0;
+}
+
+// Vendor pseudo-elements must never share a selector list: a list containing a
+// pseudo-element the engine doesn't recognize is invalid as a whole, so pairing
+// `::-moz-range-track,::-webkit-slider-runnable-track` makes Chrome drop the
+// -webkit- half too. Each gets its own rule, emitted from here.
+@mixin slider($thumb-fill) {
+    &::-webkit-slider-runnable-track {
+        @include slider-track();
+        @content;
+    }
+
+    &::-moz-range-track {
+        @include slider-track();
+        @content;
+    }
+
+    &::-webkit-slider-thumb {
+        @include slider-thumb($thumb-fill);
+    }
+
+    &::-moz-range-thumb {
+        @include slider-thumb($thumb-fill);
+    }
+}
+
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --_picker-popover-size: #{sizable(rem(290px), rem(314px), rem(360px))};
+    --_input-row-spacing: #{rem(16px)};
+    --_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(16px))};
+    --_swatches-spacing: #{rem(16px)};
+    --_swatches-row-gap: #{rem(12px)};
+    --_picker-rows-grid-template-columns: #{sizable(rem(90px), rem(100px), rem(115px))} auto #{sizable(rem(62px), rem(72px), rem(88px))};
+    --_picker-rows-inline-spacing: #{rem(16px)};
+    --_picker-column-gap: #{sizable(rem(14px), rem(12px), rem(16px))};
+    --_picker-buttons-gap: var(--_picker-column-gap);
+
+    // Always a fully saturated hue - the component overwrites this on every
+    // update. Black would never be a valid value for it: it is the hue the
+    // saturation/value plane is built from, not a color that can be picked.
+    --_current-color: hsl(0deg 100% 50%);
+    --_slider-track-size: #{rem(16px)};
+    --_slider-thumb-size: #{rem(16px)};
+
+    // The focus ring of a swatch, which takes it from the panel.
+    // TODO: provisional until the design team gives one.
+    --_swatch-focus-color: #{var-get($theme, 'anchor-outline-color')};
+    --_transparency-grid: #{transparency-grid(
+        var-get($theme, 'transparency-grid-odd'),
+        var-get($theme, 'transparency-grid-even')
+    )};
+
+    // The gradients span the travel of the thumb center and follow the range
+    // direction, which is right to left in RTL.
+    --_slider-track-direction: to right;
+    --_slider-track-inset: calc(var(--_slider-thumb-size) / 2);
+
+    // Pure hues at equal steps give `hsl(h 100% 50%)` at each point.
+    --_hue-slider-track: linear-gradient(
+        var(--_slider-track-direction),
+        #f00 var(--_slider-track-inset),
+        #ff0, #0f0, #0ff, #00f, #f0f,
+        #f00 calc(100% - var(--_slider-track-inset))
+    );
+    --_alpha-color: var(--_selected-color, var(--_current-color));
+    --_alpha-slider-track:
+        linear-gradient(
+            var(--_slider-track-direction),
+            rgb(from var(--_alpha-color) r g b / 0%) var(--_slider-track-inset),
+            rgb(from var(--_alpha-color) r g b / 100%) calc(100% - var(--_slider-track-inset))
+        ),
+        var(--_transparency-grid);
+    --_alpha-track-position: 0 0;
+    --_alpha-track-size: contain, var(--_slider-track-size) var(--_slider-track-size);
+
+    input[type='range'] {
+        background: transparent;
+        cursor: pointer;
+    }
+
+    [part='hue'] {
+        @include slider(var(--_current-color)) {
+            background: var(--_hue-slider-track);
+        }
+    }
+
+    [part='alpha'] {
+        @include slider(var(--_alpha-color)) {
+            background-image: var(--_alpha-slider-track);
+            background-position: var(--_alpha-track-position);
+            background-size: var(--_alpha-track-size);
+        }
+    }
+
+    [part='main-row'],
+    [part='alpha-row'],
+    [part='inputs-row'] {
+        padding-inline: var(--_picker-rows-inline-spacing);
+        column-gap: var(--_picker-column-gap);
+    }
+    
+    [part='main-row'],
+    [part='alpha-row'] {
+        grid-template-columns: var(--_picker-rows-grid-template-columns);
+        
+        input {
+            margin: 0;
+        }
+    }
+
+    // Alone in the page, the panel paints the surface of the popup.
+    [part~='base'] {
+        background: var-get($theme, 'picker-background');
+        border-radius: var-get($theme, 'picker-border-radius');
+        border: rem(1px) solid var-get($theme, 'picker-border-color');
+
+        igc-divider {
+            --ig-divider-color: #{var-get($theme, 'swatch-separator-color')};
+
+            grid-column: 1 / -1;
+        }
+
+        &:has([part~='swatches']:not([hidden])) {
+            --_input-row-spacing: #{sizable(rem(16px), rem(16px), rem(24px))};
+        }
+    }
+
+    [part='swatches'] {
+        grid-template-columns: repeat(8, var-get($theme, 'swatch-size'));
+    }
+
+    [part='picker-canvas'] {
+        border-color: var-get($theme, 'picker-canvas-border-color');
+        border-radius: var-get($theme, 'picker-border-radius');
+
+        > igc-picker-canvas {
+            border-radius: calc(var-get($theme, 'picker-border-radius') - rem(1px));
+        }
+    }
+
+    [part='buttons'] {
+        column-gap: var(--_picker-buttons-gap);
+    }
+}
+
+:host(:dir(rtl)),
+:host([dir='rtl']) {
+    --_slider-track-direction: to left;
+}

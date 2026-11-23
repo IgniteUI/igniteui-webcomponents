@@ -1,0 +1,14 @@
+@use 'styles/utilities' as *;
+@use 'components/color-picker/themes/light/themes' as *;
+
+$theme: $material;
+
+:host {
+    // The anchor outline is transparent in this theme.
+    --_swatch-focus-color: #{var-get($theme, 'label-color')};
+    --_swatches-spacing: #{sizable(rem(16px), rem(16px), rem(24px)) rem(16px) rem(16px) rem(16px)};
+
+    [part='inputs-row'] {
+        grid-template-columns: max(sizable(rem(96px), rem(104px), rem(112px))) 1fr;
+    }
+}

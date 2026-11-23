@@ -154,6 +154,77 @@ describe('Color properties', () => {
       );
     });
 
+    it('reads any `color(srgb)` color as whole channels in range', () => {
+      // A channel outside 0-1 is outside the gamut. Firefox may map it into
+      // the gamut, not clip it, so only the range is checked there.
+      const unit = fc.integer({ min: -500, max: 1500 }).map((v) => v / 1000);
+
+      fc.assert(
+        fc.property(fc.tuple(unit, unit, unit), alpha, (channels, a) => {
+          const [r, g, b] = channels;
+          const parsed = parseColor(`color(srgb ${r} ${g} ${b} / ${a})`, ctx);
+
+          for (const channel of parsed.value) {
+            expect(Number.isInteger(channel), `${parsed.value}`).to.be.true;
+          }
+          expectInRange(parsed.value, [255, 255, 255]);
+          expect(parsed.alpha).to.be.closeTo(a, 1 / 255 + EPSILON);
+
+          if (channels.every((channel) => channel >= 0 && channel <= 1)) {
+            expectCloseTo(
+              parsed.value,
+              channels.map((channel) => channel * 255),
+              0.5 + EPSILON
+            );
+          }
+        })
+      );
+    });
+
+    it('parses any color outside the legacy syntax into sRGB', () => {
+      const unit = fc.integer({ min: 0, max: 1000 }).map((v) => v / 1000);
+      const modernColor = fc.oneof(
+        fc
+          .tuple(
+            fc.integer({ min: 0, max: 100 }),
+            fc.integer({ min: 0, max: 400 }).map((v) => v / 1000),
+            fc.integer({ min: 0, max: 360 })
+          )
+          .map(([l, c, h]) => `oklch(${l}% ${c} ${h})`),
+        fc
+          .tuple(
+            fc.integer({ min: 0, max: 100 }),
+            fc.integer({ min: -150, max: 150 }),
+            fc.integer({ min: -150, max: 150 })
+          )
+          .map(([l, a, b]) => `lab(${l}% ${a} ${b})`),
+        fc
+          .tuple(
+            fc.constantFrom(
+              'display-p3',
+              'rec2020',
+              'a98-rgb',
+              'prophoto-rgb',
+              'srgb-linear',
+              'xyz'
+            ),
+            unit,
+            unit,
+            unit
+          )
+          .map(([space, ...values]) => `color(${space} ${values.join(' ')})`)
+      );
+
+      fc.assert(
+        fc.property(modernColor, (value) => {
+          const model = ColorModel.parse(value);
+
+          expect(model.isEmpty, value).to.be.false;
+          expect(model.asString('hex'), value).to.match(/^#[0-9a-f]{6}$/);
+        })
+      );
+    });
+
     it('parses the string of a color model back to the same color', () => {
       const tolerance: Record<ColorFormat, number> = {
         hex: 0.5,
