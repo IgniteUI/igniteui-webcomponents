@@ -50,6 +50,7 @@
     - [Commit session, on confirm](#commit-session-on-confirm)
     - [Commit session properties](#commit-session-properties)
     - [Date value shape](#date-value-shape)
+    - [Disabled popup](#disabled-popup)
     - [Value state motion](#value-state-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -82,7 +83,8 @@
 |      19 | 2026-11-18 | A clear is reported when the focus leaves the picker; a value write brings its month into view unless `activeDate` is set; an open shows the value in the first month; a render no longer moves the calendar back to `activeDate` |
 |      20 | 2026-11-20 | A form reset discards the text typed in the inner editor that is not committed, so the next blur does not commit it; a reset that empties the value shows the empty mask in the focused editor |
 |      21 | 2026-11-20 | The value accepts an ISO string with a signed six digit year |
-|      22 | 2026-11-20 | A date that the user picks animates the input; a value from code, also from an `igcChange` handler, shows at once |
+|      22 | 2026-11-23 | A disabled picker stays closed; the shared disabled popup suite |
+|      23 | 2026-11-20 | A date that the user picks animates the input; a value from code, also from an `igcChange` handler, shows at once |
 
 ## Overview
 
@@ -548,7 +550,7 @@ When focus is within the calendar, the keyboard navigation follows the
 | ---------------------- | -------------------------- | --------- | ----------------------------- | ----------------- | ------------------------------------------------------------------------ |
 | value                  | value                      | No        | `Date \| null`                | -                 | The committed value of the picker.                                       |
 | mode                   | mode                       | No        | `PickerMode`                  | `dropdown`        | Whether the calendar opens in a dropdown or in a modal dialog. In `dialog` mode, the user cannot type in the input. |
-| open                   | open                       | Yes       | `boolean`                     | false             | Whether the component is open.                                         |
+| open                   | open                       | Yes       | `boolean`                     | false             | Whether the component is open. A disabled form control stays closed.   |
 | label                  | label                      | No        | `string`                      | -                 | The label of the picker.                                                 |
 | placeholder            | placeholder                | No        | `string`                      | the input format  | The placeholder text of the control.                                     |
 | inputFormat            | input-format               | No        | `string`                      | from the locale   | The date format of the input while the user edits the value. Without it, the input uses the input format of the locale. |
@@ -592,7 +594,7 @@ When focus is within the calendar, the keyboard navigation follows the
 | ----------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | focus             | `(options?: FocusOptions): void`                                                        | Sets focus on the picker.                                                           |
 | blur              | `(): void`                                                                              | Removes focus from the picker.                                                      |
-| show              | `(): Promise<boolean>`                                                                  | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                                |
+| show              | `(): Promise<boolean>`                                                                  | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open or is a disabled form control, or when a later call replaces this one.                                  |
 | hide              | `(): Promise<boolean>`                                                                  | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                                |
 | toggle            | `(): Promise<boolean>`                                                                  | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                            |
 | clear             | `(): void`                                                                              | Clears the value and the input text of the picker.                                  |
@@ -858,10 +860,14 @@ Generated by `runExternalLabelAssociationTests` and `runAriaProjectionTests`.
 68. Without a DOM: the value gives the calendar one date or none, comes from the first date of a calendar selection,
     and closes the picker on each pick.
 
+### Disabled popup
+
+69. The shared runner `runDisabledPopupTests`.
+
 ### Value state motion
 
-69. A pick from the calendar marks the input as a user change.
-70. A value that an `igcChange` handler sets ends the user change, so the input shows it at once.
+70. A pick from the calendar marks the input as a user change.
+71. A value that an `igcChange` handler sets ends the user change, so the input shows it at once.
 
 ## Assumptions and limitations
 

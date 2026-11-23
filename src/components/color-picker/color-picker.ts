@@ -555,7 +555,12 @@ export default class IgcColorPickerComponent extends I18nMixin(
 
     new EyeDropper()
       .open()
-      .then((result) => this._commitValue(result.sRGBHex, 'igcInput'))
+      .then((result) => {
+        // The pick can end after the picker is disabled.
+        if (!this.disabled) {
+          this._commitValue(result.sRGBHex, 'igcInput');
+        }
+      })
       .catch(() => {});
   }
 
@@ -570,7 +575,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
     );
     const color = swatch?.dataset.color;
 
-    if (color) {
+    if (color && !this.disabled) {
       this._commitValue(color, 'igcInput');
     }
   }

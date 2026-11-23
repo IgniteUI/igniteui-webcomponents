@@ -36,6 +36,7 @@
     - [Color model and parsing](#color-model-and-parsing)
     - [Converters](#converters)
     - [Host ARIA](#host-aria)
+    - [Disabled popup](#disabled-popup)
     - [Value state motion](#value-state-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -64,7 +65,8 @@
 |      15 | 2026-11-18 | A change of the user marks the control touched, so a change that fails validation shows the invalid styles at once |
 |      16 | 2026-11-18 | A value set from code is not a user change, also while focus is inside, so no `igcChange` reports it |
 |      17 | 2026-11-18 | In input mode, the text input shows only the invalid state of the picker, and reports the validity of the picker |
-|      18 | 2026-11-20 | In input mode, a color that the user picks animates the input; a value from code shows at once |
+|      18 | 2026-11-23 | A disabled picker stays closed; the shared disabled popup suite |
+|      19 | 2026-11-20 | In input mode, a color that the user picks animates the input; a value from code shows at once |
 
 ## Overview
 
@@ -338,7 +340,7 @@ All of the above are skipped while the component is `disabled`. A key that an IM
 | hideFormats       | hide-formats    | Yes       | `boolean`                 | false     | Whether the format select is hidden.                                     |
 | locale            | locale          | No        | `string`                  | -         | The locale for the resource strings. Falls back to the inherited locale, then the global one.    |
 | resourceStrings   | -               | No        | `IColorPickerResourceStrings` | EN    | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                   |
-| open              | open            | Yes       | `boolean`                 | false     | Whether the component is open.                                         |
+| open              | open            | Yes       | `boolean`                 | false     | Whether the component is open. A disabled form control stays closed.   |
 | scrollStrategy    | scroll-strategy | No        | `PopoverScrollStrategy`   | `hide`    | The behavior of the component when a parent container scrolls.           |
 | required          | required        | Yes       | `boolean`                 | false     | Whether the control is required. A required control that has no value, or is not checked, fails validation.                     |
 | disabled          | disabled        | Yes       | `boolean`                 | false     | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                     |
@@ -356,7 +358,7 @@ All of the above are skipped while the component is `disabled`. A key that an IM
 | ----------------- | -------------------------------- | ----------------------------------------------------------------------- |
 | focus             | `(options?: FocusOptions): void` | Sets focus on the color picker.                                         |
 | blur              | `(): void`                       | Removes focus from the color picker.                                    |
-| show              | `(): Promise<boolean>`           | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one. |
+| show              | `(): Promise<boolean>`           | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open or is a disabled form control, or when a later call replaces this one. |
 | hide              | `(): Promise<boolean>`           | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one. |
 | toggle            | `(): Promise<boolean>`           | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes. |
 | checkValidity     | `(): boolean`                    | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid. |
@@ -465,8 +467,9 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 9. Color channels, including the alpha input.
 10. Inner events - the `igcInput` of the alpha input, the color value input and the input anchor, the open and close
     events of the format select, and the `igcColorPicked` of the canvas do not reach a listener on the picker.
-11. Swatches - rendering the grid and applying a swatch.
-12. Copy and eye dropper, in environments with and without platform support.
+11. Swatches - rendering the grid and applying a swatch. A swatch click while disabled changes nothing.
+12. Copy and eye dropper, in environments with and without platform support. An eye dropper pick that ends after
+    the picker is disabled changes nothing.
 13. Open and close - the pointer, keyboard and outside-click paths. A closed picker does not cancel <kbd>Escape</kbd>. An
     <kbd>Escape</kbd> that an IME handles keeps the picker open.
 14. Input mode - the anchor input, its label and its prefix.
@@ -518,12 +521,16 @@ The focus after the form checks and the `invalid` event rules come from the form
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
     `disabled` set does not cancel an earlier call on another element.
 
+### Disabled popup
+
+31. The shared runner `runDisabledPopupTests`, with the anchor as the `aria-expanded` target.
+
 ### Value state motion
 
 In input mode.
 
-31. A typed color marks the anchor input as a user change.
-32. A value from code right after it ends the user change, so the input shows it at once.
+32. A typed color marks the anchor input as a user change.
+33. A value from code right after it ends the user change, so the input shows it at once.
 
 ## Assumptions and limitations
 

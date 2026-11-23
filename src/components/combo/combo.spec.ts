@@ -26,6 +26,7 @@ import {
   layoutComplete,
   getComboDOM,
 } from '#internals/testing/combo.spec.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
@@ -962,6 +963,20 @@ describe('Combo', () => {
         firstOf(items(combo)).click();
         expect(combo.value).to.eql(['BG01']);
         expect(eventSpy).calledWithExactly('igcChange', args);
+      });
+
+      it('ignores an item click while disabled', async () => {
+        combo.open = true;
+        await comboStable(combo);
+        const eventSpy = spy(combo, 'emitEvent');
+
+        combo.disabled = true;
+        await elementUpdated(combo);
+        firstOf(items(combo)).click();
+        await elementUpdated(combo);
+
+        expect(combo.value).to.eql([]);
+        expect(eventSpy).not.calledWith('igcChange');
       });
 
       it('should not repeat a value in newValue when data records share a value key', async () => {
@@ -2830,4 +2845,8 @@ describe('Combo', () => {
   });
 
   runFocusBeforeRenderTests(html`<igc-combo label="Label"></igc-combo>`);
+
+  runDisabledPopupTests(IgcComboComponent, {
+    getAriaTarget: (host) => getComboDOM(() => host).nativeInput,
+  });
 });

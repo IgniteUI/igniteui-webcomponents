@@ -32,7 +32,7 @@ export class IgcBaseComboBoxComponent extends LitElement {
   });
 
   /**
-   * Whether the component is open.
+   * Whether the component is open. A disabled form control stays closed.
    * @attr open
    * @default false
    */
@@ -60,6 +60,11 @@ export class IgcBaseComboBoxComponent extends LitElement {
   protected override willUpdate(props: PropertyValues): void {
     super.willUpdate(props);
 
+    // Check the state, not a change: a fieldset changes no property.
+    if (this.open && this._isDisabled) {
+      this.open = false;
+    }
+
     // `keepOpenOnOutsideClick` belongs to `IgcComboBoxBaseLikeComponent`.
     if (props.has('open') || props.has('keepOpenOnOutsideClick')) {
       this._rootClickController.update();
@@ -78,6 +83,11 @@ export class IgcBaseComboBoxComponent extends LitElement {
 
   /** The popup that turns inert on close. A close moves the focus out of it. */
   declare protected readonly _popup?: Element | null;
+
+  /** Only a form control has `disabled`. */
+  protected get _isDisabled(): boolean {
+    return 'disabled' in this && this.disabled === true;
+  }
 
   /** Takes the focus from a closing popup. */
   protected _returnFocus(): void {
@@ -108,13 +118,15 @@ export class IgcBaseComboBoxComponent extends LitElement {
   }
 
   protected _show(emitEvent = false): Promise<boolean> {
-    return this._toggleController.show(emitEvent);
+    return this._isDisabled
+      ? Promise.resolve(false)
+      : this._toggleController.show(emitEvent);
   }
 
   /**
    * Opens the component. It does not emit events. The promise resolves to
-   * `false` when the component is already open, or when a later call replaces
-   * this one.
+   * `false` when the component is already open or is a disabled form control,
+   * or when a later call replaces this one.
    */
   public async show(): Promise<boolean> {
     return this._show();

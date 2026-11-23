@@ -56,6 +56,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A color change of the user marks the picker touched, so a change that fails validation shows the invalid styles at once.
   - A value set from code while the focus is in the picker no longer emits `igcChange` when the focus leaves.
   - In input mode, the text input no longer shows the invalid styles when the focus moves from it to the color button. The text input shows the invalid state of the picker, together with its validation message.
+- #### Color picker, Combo, Date picker, Date range picker, Select
+  - Disabling an open component closes it, also when a disabled fieldset disables it. A disabled component does not open: `show()` and `toggle()` resolve to `false`, and the `open` attribute does not apply. In dialog mode, disabling the date range picker discards a range that you did not confirm with Done, as Cancel does. Before, the popup stayed open next to the disabled control, and a click in the color picker or the select changed the value. [#2601](https://github.com/IgniteUI/igniteui-webcomponents/issues/2601)
 - #### Combo
   - A closed list has no active option. Before, when code closed the list and opened it again, the old option was still active. When an app canceled `igcOpening` while the user typed, Arrow Down opened the list on the second match.
   - In single selection, the input no longer shows the invalid styles when the focus moves from it to slotted content of the combo. The input shows the invalid state of the combo, together with its validation message.
