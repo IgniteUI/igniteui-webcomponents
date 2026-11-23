@@ -286,7 +286,7 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addContextProvider` / `addAsyncContextConsumer`              | `#internals/controllers/context-provider.js`, `async-consumer.js` | Sharing state between a parent and its children through Lit context |
 | `createGroupRegistry`                                         | `#internals/controllers/group.js`           | Grouping peers by key, such as radios by `name`                |
 | `addI18nController`                                           | `#internals/i18n/i18n-controller.js`        | Localized resource strings                                     |
-| `addValueStateMotion`                                         | `#animations/value-state.js`                | Showing a change of value state from code at once, and animating only a change by the user |
+| `addValueStateMotion` / `markInstant`                         | `#animations/value-state.js`                | Showing a change of value state from code at once, and animating only a change by the user; `markInstant` shows the changes of one frame at once |
 | `markUserChange` / `isUserChange`                             | `#internals/user-change.js`                 | Marking the update that a user action causes                   |
 
 For pointer resizing and dragging, use the `resizable()` and `draggable()` directives from

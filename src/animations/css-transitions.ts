@@ -15,6 +15,16 @@ export function getCSSTransitions(
   return animations.filter((animation) => animation instanceof CSSTransition);
 }
 
+/** Ends the CSS transitions that `getCSSTransitions()` returns, so their end styles show at once. */
+export function finishCSSTransitions(
+  element: Element | ShadowRoot,
+  options?: GetAnimationsOptions
+): void {
+  for (const transition of getCSSTransitions(element, options)) {
+    transition.finish();
+  }
+}
+
 /** Returns a promise that settles when each transition finishes or is canceled. */
 export function transitionsSettled(
   transitions: readonly Animation[]

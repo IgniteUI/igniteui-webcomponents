@@ -1,5 +1,6 @@
 import { createRef } from 'lit/directives/ref.js';
 import type { StyleInfo } from 'lit/directives/style-map.js';
+import { finishCSSTransitions } from '#animations/css-transitions.js';
 import { isLTR, replaceStyles, setStyles } from '#internals/utils/dom.js';
 import { linkOpensElsewhere } from '#internals/utils/events.js';
 import { asNumber } from '#internals/utils/math.js';
@@ -88,6 +89,9 @@ export class TabsHelpers {
 
   /** Whether the next layout scrolls the selected tab into view. */
   public scrollOnLayout = false;
+
+  /** Whether the first render, which shows at once, still lasts. It ends a frame after the strip first shows. */
+  public firstRender = true;
 
   /** The height of the height probe at the last check, and whether it was definite. */
   private _heightCheck = { probe: -1, definite: false };
@@ -354,7 +358,7 @@ export class TabsHelpers {
     this._host.requestUpdate();
   }
 
-  /** Moves the indicator to the header of `active`. Without `animate`, it moves at once. */
+  /** Moves the indicator to the header of `active`, at once without `animate` or on the first render. */
   public async setIndicator(
     active?: IgcTabComponent,
     animate = true
@@ -367,6 +371,12 @@ export class TabsHelpers {
     // Hidden tabs keep the indicator they showed with.
     if (!(inner?.checkVisibility() && indicator)) {
       return;
+    }
+
+    if (this.firstRender) {
+      requestAnimationFrame(() => {
+        this.firstRender = false;
+      });
     }
 
     const header = getTabHeader(active);
@@ -396,10 +406,8 @@ export class TabsHelpers {
       transform: `translate${column ? 'Y' : 'X'}(${offset}px)`,
     });
 
-    if (!animate) {
-      for (const animation of indicator.getAnimations()) {
-        animation.finish();
-      }
+    if (!animate || this.firstRender) {
+      finishCSSTransitions(indicator);
     }
   }
 }

@@ -34,6 +34,9 @@
     }
 }
 
+// The tabs mark the first render.
+@include value-state-transitions($on-host: true);
+
 [part~='base'],
 [part~='content'] {
     display: flex;
