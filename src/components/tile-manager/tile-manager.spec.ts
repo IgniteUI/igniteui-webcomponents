@@ -26,8 +26,8 @@ import {
 import { simulateClick } from '#internals/testing/simulate.spec.js';
 import { firstOf } from '#internals/utils/arrays.js';
 import { getCenterPoint } from '#internals/utils/dom.js';
-import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
+import { styles as transitionStyles } from './themes/view-transitions.base.css.js';
 import IgcTileManagerComponent from './tile-manager.js';
 import IgcTileComponent from './tile.js';
 
@@ -1137,29 +1137,26 @@ describe('Tile Manager component', () => {
       expect(tile.style.viewTransitionClass).to.equal('');
     });
 
-    it('fades the new content of a maximizing tile in with a theme style sheet', async () => {
+    it('fades the new content of a maximizing tile in', async () => {
       const tile = tileManager.tiles[0];
 
-      // The theme style sheets style the view transitions of the tiles.
-      await withDocumentSheets([bootstrap.styleSheet!], async () => {
-        simulateClick(getActionButtons(tile)[0]);
+      simulateClick(getActionButtons(tile)[0]);
 
-        const transition = getActiveViewTransition()!;
-        await transition.ready;
+      const transition = getActiveViewTransition()!;
+      await transition.ready;
 
-        const fadeIn = document
-          .getAnimations()
-          .find(
-            (animation) =>
-              animation instanceof CSSAnimation &&
-              animation.animationName === 'igc-tile-fade-in' &&
-              (animation.effect as KeyframeEffect).pseudoElement ===
-                `::view-transition-new(${tile.style.viewTransitionName})`
-          );
+      const fadeIn = document
+        .getAnimations()
+        .find(
+          (animation) =>
+            animation instanceof CSSAnimation &&
+            animation.animationName === 'igc-tile-fade-in' &&
+            (animation.effect as KeyframeEffect).pseudoElement ===
+              `::view-transition-new(${tile.style.viewTransitionName})`
+        );
 
-        expect(fadeIn).to.exist;
-        await transition.finished;
-      });
+      expect(fadeIn).to.exist;
+      await transition.finished;
     });
 
     it('aligns the transition of a right-to-left tile to its right edge', async () => {
@@ -1296,6 +1293,77 @@ describe('Tile Manager component', () => {
       await getActiveViewTransition()?.finished;
 
       expect(tile.style.viewTransitionName).to.equal('chart');
+    });
+  });
+
+  describe('View transition rules', () => {
+    allowMotion();
+
+    beforeEach(async () => {
+      tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
+    });
+
+    it('adds its view transition rules to the document on connect and in a transition', async () => {
+      const [maximize] = getActionButtons(tileManager.tiles[0]);
+      const application = new CSSStyleSheet();
+
+      await withDocumentSheets([], async () => {
+        document.adoptedStyleSheets = [];
+        tileManager.remove();
+        document.body.append(tileManager);
+
+        expect(document.adoptedStyleSheets).to.have.ordered.members([
+          transitionStyles.styleSheet,
+        ]);
+
+        // The application replaces the adopted sheets.
+        document.adoptedStyleSheets = [application];
+
+        for (const _ of [1, 2]) {
+          simulateClick(maximize);
+          await getActiveViewTransition()?.finished;
+
+          expect(document.adoptedStyleSheets).to.have.ordered.members([
+            application,
+            transitionStyles.styleSheet,
+          ]);
+        }
+      });
+    });
+
+    it('lets only a more specific rule of the application override its view transition rules', async () => {
+      const tile = tileManager.tiles[0];
+      const application = new CSSStyleSheet();
+      const zIndexes: string[] = [];
+
+      await withDocumentSheets([], async () => {
+        // The rule of the application comes after the tile rules.
+        document.adoptedStyleSheets = [
+          transitionStyles.styleSheet!,
+          application,
+        ];
+
+        for (const selector of [
+          '::view-transition-group(*)',
+          ':root::view-transition-group(*.igc-tile-resize)',
+        ]) {
+          application.replaceSync(`${selector} { z-index: 5; }`);
+          simulateClick(getActionButtons(tile)[0]);
+
+          const transition = getActiveViewTransition()!;
+          await transition.ready;
+
+          zIndexes.push(
+            getComputedStyle(
+              document.documentElement,
+              `::view-transition-group(${tile.style.viewTransitionName})`
+            ).zIndex
+          );
+          await transition.finished;
+        }
+      });
+
+      expect(zIndexes).to.deep.equal(['1', '5']);
     });
   });
 

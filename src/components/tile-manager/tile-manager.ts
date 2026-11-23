@@ -36,7 +36,7 @@ import { applyLayout, serializeTiles } from './serializer.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
 import IgcTileComponent from './tile.js';
-import { childTiles } from './transitions.js';
+import { adoptTransitionStyles, childTiles } from './transitions.js';
 
 /* blazorAdditionalDependency: IgcTileComponent */
 /**
@@ -222,6 +222,11 @@ export default class IgcTileManagerComponent extends LitElement {
         childList: true,
       },
     });
+  }
+
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    adoptTransitionStyles();
   }
 
   protected override firstUpdated(): void {

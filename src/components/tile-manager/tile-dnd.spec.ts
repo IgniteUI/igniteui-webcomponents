@@ -663,30 +663,27 @@ describe('Tile drag and drop', () => {
       ]);
     });
 
-    it('keeps the drag ghost on the pointer in a swap with a theme style sheet', async () => {
+    it('keeps the drag ghost on the pointer in a swap', async () => {
       const [dragged, target] = [getTile(0), getTile(1)];
 
-      // The theme style sheets style the view transitions of the tiles.
-      await withDocumentSheets([bootstrap.styleSheet!], async () => {
-        simulatePointerDown(dragged);
-        simulateTileDragOver(dragged, getCenterPoint(target));
+      simulatePointerDown(dragged);
+      simulateTileDragOver(dragged, getCenterPoint(target));
 
-        const transition = getActiveViewTransition()!;
-        await transition.ready;
+      const transition = getActiveViewTransition()!;
+      await transition.ready;
 
-        const ghostAnimations = document
-          .getAnimations()
-          .filter((animation) =>
-            (animation.effect as KeyframeEffect).pseudoElement?.includes(
-              '(dragged-tile-ghost)'
-            )
-          );
+      const ghostAnimations = document
+        .getAnimations()
+        .filter((animation) =>
+          (animation.effect as KeyframeEffect).pseudoElement?.includes(
+            '(dragged-tile-ghost)'
+          )
+        );
 
-        simulateLostPointerCapture(dragged);
-        await transition.finished;
+      simulateLostPointerCapture(dragged);
+      await transition.finished;
 
-        expect(ghostAnimations).to.be.empty;
-      });
+      expect(ghostAnimations).to.be.empty;
     });
 
     it('cancels the drag when an `igcTileDragStart` listener moves the tile', async () => {

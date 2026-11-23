@@ -64,6 +64,7 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |      11 | 2026-11-02 | Tiles fit the responsive columns, a start after the last column moves back, nested managers keep their own column count and gap |
 |      12 | 2026-11-02 | Percentage gaps in a resize, CSS `direction` in a drag, a drag copy that does not act as a tile, no count loop with the page scrollbar |
 |      13 | 2026-11-02 | View transition names only during a transition of the manager, a stacking context for the content of a tile, a drag target that stays while the pointer is in it |
+|      14 | 2026-11-17 | The tile manager adds its view transition rules to the document, instead of the theme style sheets |
 
 ## Overview
 
@@ -132,16 +133,16 @@ fullscreen by default - and its content below. While dragging is enabled, a tile
 another position, and the rest of the tiles reflow around it. While resizing is enabled, adorners appear on the
 side, the bottom and the corner of a tile, and dragging them changes its span.
 
-Maximize, restore, a resize and a swap animate with a view transition. A tile that changes its size keeps its
-content at its real size while its box grows or shrinks, so the text stays sharp. Its new content fades in during
-the first 40% of the transition. The tiles that a maximized tile covers fade in place. The drag ghost stays on the
-pointer during a swap. The view transition pseudo-elements belong to the document, so the theme style sheets
-(`themes/light/*.css` and `themes/dark/*.css`) hold their rules. They select the view transition classes
-`igc-tile-resize` and `igc-tile-rtl`, and the `dragged-tile-ghost` name. Without a theme style sheet, the tiles use
-the default transition, and so does a size change in a browser without view transition classes. Only during a
-transition, the tiles of its manager have a view transition name (`tile-transition-<id>`), so the transition captures
-only them. An application that runs its own view transition gives a name to the tiles that it moves. An inline name of
-the author stays.
+Maximize, restore, a resize and a swap animate with a view transition. A tile that changes its size keeps its content
+at its real size while its box grows or shrinks, so the text stays sharp. Its new content fades in during the first
+40% of the transition. The tiles that a maximized tile covers fade in place. The drag ghost stays on the pointer
+during a swap. The view transition pseudo-elements belong to the document, so a tile manager adds their rules to
+`document.adoptedStyleSheets` when it connects, and a tile transition adds them again if the application replaced the
+adopted sheets. A more specific rule of the application overrides them. They select the view transition classes
+`igc-tile-resize` and `igc-tile-rtl`, and the `dragged-tile-ghost` name. A size change in a browser without view
+transition classes uses the default transition. Only during a transition, the tiles of its manager have a view
+transition name (`tile-transition-<id>`), so the transition captures only them. An application that runs its own view
+transition gives a name to the tiles that it moves. An inline name of the author stays.
 
 ### Developer experience
 
@@ -586,8 +587,8 @@ The groups below mirror the `describe` blocks.
     start event of the next drag.
 45. A maximize, a restore or a resize marks the tile with `igc-tile-resize` (and `igc-tile-rtl` in RTL) until its view
     transition ends, also after two quick clicks. The view transition classes of the author stay, and an inline one
-    returns when the transition ends. While a tile is maximized, the covered tiles have no view transition name. With a
-    theme style sheet, the new content of a maximizing tile fades in, and the drag ghost has no animation in a swap.
+    returns when the transition ends. While a tile is maximized, the covered tiles have no view transition name. The
+    new content of a maximizing tile fades in, and the drag ghost has no animation in a swap.
     The tiles of a manager have a view transition name only while its transition runs, also after two quick clicks. A
     swap and a restore name only the tiles of their manager, and an inline name of the author stays.
 
@@ -601,6 +602,12 @@ The groups below mirror the `describe` blocks.
 
 47. The content of a tile, also fixed content with a z-index, stays under the next tile, and so do the resize handles
     of the tile. The resize handles stay above content with any z-index.
+
+### View transition rules
+
+48. A tile manager adds the view transition rules to the document when it connects, once per document. A tile
+    transition adds them again after the application replaced the adopted style sheets.
+49. Only a more specific rule of the application overrides the view transition rules.
 
 ## Assumptions and limitations
 

@@ -1,6 +1,20 @@
 import { startViewTransition } from '#animations/view-transition.js';
 import { getOrInsertComputed } from '#internals/utils/objects.js';
+import { styles as transitionStyles } from './themes/view-transitions.base.css.js';
 import type IgcTileComponent from './tile.js';
+
+/**
+ * Adds the view transition rules of the tiles to the document, once. A tile
+ * transition adds them again if the application replaced the adopted sheets.
+ */
+export function adoptTransitionStyles(): void {
+  const sheet = transitionStyles.styleSheet;
+  const { adoptedStyleSheets } = document;
+
+  if (sheet && !adoptedStyleSheets.includes(sheet)) {
+    adoptedStyleSheets.push(sheet);
+  }
+}
 
 /**
  * The inline view transition class of each tile before its first size
@@ -53,6 +67,8 @@ export function startTileTransition(
   parent: ParentNode | null,
   update: () => void
 ): ViewTransition {
+  adoptTransitionStyles();
+
   const releases = childTiles(parent).map(holdName);
   const transition = startViewTransition(update);
   const release = () => {
@@ -68,7 +84,7 @@ export function startTileTransition(
 /**
  * Starts a view transition in which `tile` changes its size. Until it ends, the
  * tile also has the `igc-tile-resize` view transition class, and `igc-tile-rtl`
- * in RTL. The theme style sheets style them (see `_view-transitions.scss`).
+ * in RTL.
  */
 export function startSizeTransition(
   tile: HTMLElement,

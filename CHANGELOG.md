@@ -82,6 +82,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The selected files are submitted under the current `name`. Before, a change of `name` kept them under the old name, and a `name` set after the selection submitted no files.
 - #### Form controls
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
+- #### Tile manager
+  - The tile transitions are styled also with a theme compiled from Sass. The tile manager adds their rules to the document instead of the theme style sheets. [#2608](https://github.com/IgniteUI/igniteui-webcomponents/issues/2608)
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
 - #### Mask input
