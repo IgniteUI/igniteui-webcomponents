@@ -23,6 +23,7 @@ import {
   getDOMDate,
   getRenderedMonths,
 } from '#internals/testing/calendar.spec.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
 import {
   checkDatesEqual,
   finishAnimationsFor,
@@ -863,6 +864,28 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           expect(
             eventSpy.withArgs('igcChange').args.map(([, init]) => init?.detail)
           ).to.eql([draft]);
+        });
+
+        it('restores the range from before the draft when disabled (dialog)', async () => {
+          const { value, eventSpy } = await selectDraftInDialog();
+
+          picker.disabled = true;
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+          expect(picker.value).to.eql(value);
+          expect(eventSpy).not.calledWith('igcChange');
+        });
+
+        it('restores the range from before the draft when disabled after `hide()` (dialog)', async () => {
+          const { value, eventSpy } = await selectDraftInDialog();
+
+          await picker.hide();
+          picker.disabled = true;
+          await elementUpdated(picker);
+
+          expect(picker.value).to.eql(value);
+          expect(eventSpy).not.calledWith('igcChange');
         });
 
         it('ignores Done, Cancel and Escape during the exit of `hide()` (dialog)', async () => {
@@ -2077,3 +2100,6 @@ describe('Date range picker - common tests for single and two inputs mode', () =
     });
   }
 });
+
+// Outside the describe above, whose `beforeEach` builds an unused picker.
+runDisabledPopupTests(IgcDateRangePickerComponent);

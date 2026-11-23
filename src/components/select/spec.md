@@ -47,6 +47,7 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
     - [Host ARIA](#host-aria)
     - [Header and footer content](#header-and-footer-content)
     - [Listbox popup rules](#listbox-popup-rules)
+    - [Disabled popup](#disabled-popup)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -69,6 +70,7 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 |      10 | 2026-11-18 | A selection of the user that fails validation shows the invalid styles at once, also before any focus |
 |      11 | 2026-11-18 | The inner input shows the invalid state of the select at once, and reports the validity of the select |
 |      12 | 2026-11-18 | <kbd>Tab</kbd> keeps an unmatched value; <kbd>Tab</kbd> and <kbd>Escape</kbd> ignore `defaultPrevented` on the select; the shared popup rules suite |
+|      13 | 2026-11-23 | A disabled select stays closed; the shared disabled popup suite |
 
 ## Overview
 
@@ -138,8 +140,8 @@ As a developer, I expect to be able to:
 The anchor renders like an input: a label, the display value or the placeholder, optional prefix and suffix content
 and a toggle icon that reflects the open state. Activating it opens the list of options, positioned against the
 anchor. The selected option is marked and the active option carries its own state. Selecting commits the value and
-closes the list unless `keepOpenOnSelect` is set. If the select becomes disabled while its list is open, the
-list cannot receive focus or accept a selection.
+closes the list unless `keepOpenOnSelect` is set. A disabled select stays closed: disabling it closes the list, and
+it does not open.
 
 ### Developer experience
 
@@ -301,7 +303,7 @@ code already called `preventDefault()` on the key.
 | Property               | Attribute                  | Reflected | Type                                | Default        | Description                                                     |
 | ---------------------- | -------------------------- | --------- | ----------------------------------- | -------------- | ---------------------------------------------------------------- |
 | value                  | value                      | No        | `string \| undefined`               | -              | The value of the control.                                       |
-| open                   | open                       | Yes       | `boolean`                           | false          | Whether the component is open.                                |
+| open                   | open                       | Yes       | `boolean`                           | false          | Whether the component is open. A disabled form control stays closed. |
 | label                  | label                      | No        | `string`                            | -              | The label of the control.                                       |
 | placeholder            | placeholder                | No        | `string`                            | -              | The placeholder text of the control.                            |
 | outlined               | outlined                   | Yes       | `boolean`                           | false          | Whether the control has an outlined appearance.                 |
@@ -328,7 +330,7 @@ code already called `preventDefault()` on the key.
 
 | Name              | Type signature                                              | Description                                                             |
 | ----------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                                      | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
+| show              | `(): Promise<boolean>`                                      | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open or is a disabled form control, or when a later call replaces this one.                      |
 | hide              | `(): Promise<boolean>`                                      | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
 | toggle            | `(): Promise<boolean>`                                      | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
 | select            | `(value: string \| number): IgcSelectItemComponent \| null` | Selects the item with the given value or index.                         |
@@ -459,15 +461,12 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 
 ### Selection integrity
 
-- Disabling an open select closes its list and sets `aria-expanded` to `false`.
-  The value stays unchanged and no `igcChange` event fires. Re-enabling allows selection again.
-
 7. The selection stays consistent across open and close cycles and programmatic changes. Setting the current
    `value` again keeps the active item, while a user commit and `select()` with the selected item move it there. A
    removed active item hands the navigation back to the selected item. Setting `selected` on each item again keeps
    the active item and its tab stop.
-8. Selecting a disabled item is not possible. A pointer click cannot change the selection after the open
-   control becomes disabled.
+8. Selecting a disabled item is not possible. A click on an item of a disabled select selects nothing and sends no
+   `igcChange`; after re-enabling, a click selects again.
 
 ### Asynchronously rendered items
 
@@ -568,6 +567,10 @@ Generated by `runValidationContainerTests`.
 
 44. The shared runner `runListboxPopupTests`, for a host whose keys work while the list is closed, whose
     `value` follows the selection, and that ignores all keys while disabled.
+
+### Disabled popup
+
+45. The shared runner `runDisabledPopupTests`, with the native input as the `aria-expanded` target.
 
 ## Assumptions and limitations
 

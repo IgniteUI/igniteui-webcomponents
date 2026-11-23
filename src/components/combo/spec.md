@@ -61,6 +61,7 @@
     - [Form integration tests](#form-integration-tests)
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
+    - [Disabled popup](#disabled-popup)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -106,6 +107,7 @@
 |      33 | 2026-11-18 | A closed list has no active option, also after `open` changes from code or an app cancels the opening; a change of `showSelectAll` or `groupSelection` keeps the active option on its item; in single selection, the first match is active in the update of the typed text |
 |      34 | 2026-11-19 | A change of `name` moves the submitted values to the new name at once |
 |      35 | 2026-11-19 | Test scenarios: in single selection, a pick or a clear that the app cancels after the user types shows the kept selection again, and the clear button clears a value that has no record. The selection model keeps `value` in sync; the behavior does not change |
+|      36 | 2026-11-23 | A disabled combo stays closed; the shared disabled popup suite |
 
 ## Overview
 
@@ -593,7 +595,7 @@ that cancels it.
 | selectionCommit        | selection-commit           | No        | `'immediate' \| 'confirm'`          | `immediate`       | When the user's changes of the selection apply in multiple selection mode. With `confirm`, they change a pending selection while the list is open, and Enter or the Apply button applies it with one `igcChange`. Any other close drops it. While it exists, the selection methods change it too. |
 | itemTemplate           | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each combo item.                |
 | groupHeaderTemplate    | -                          | No        | `ComboGroupHeaderTemplate<T>`       | -                 | The template for the content of each group header.              |
-| open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open.                                |
+| open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open. A disabled form control stays closed. |
 | label                  | label                      | No        | `string \| undefined`               | -                 | The label of the control.                                       |
 | placeholder            | placeholder                | No        | `string \| undefined`               | -                 | The placeholder text of the control.                            |
 | placeholderSearch      | placeholder-search         | No        | `string`                            | from the resources | The placeholder text of the search input.                      |
@@ -646,7 +648,7 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 
 | Name              | Type signature                         | Description                                                                      |
 | ----------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                 | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                             |
+| show              | `(): Promise<boolean>`                 | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open or is a disabled form control, or when a later call replaces this one.                               |
 | hide              | `(): Promise<boolean>`                 | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                             |
 | toggle            | `(): Promise<boolean>`                 | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                         |
 | select            | `(items?: Item<T> \| Item<T>[]): void` | Selects options in the list by reference or by `valueKey` value. It does not emit `igcChange`. An object that `data` does not hold is selected as it is. Without an argument, it selects all the items of `data`, or clears the selection in single selection mode. |
@@ -831,7 +833,8 @@ the shadow DOM through `getComboDOM()`.
 
 #### Change events
 
-8. `igcChange` gives the new value, the items and the change type, and a cancel keeps the selection.
+8. `igcChange` gives the new value, the items and the change type, and a cancel keeps the selection. An item click
+   while disabled changes nothing.
 
 #### Clear button
 
@@ -1055,6 +1058,10 @@ The form-associated mixin gives the focus after the form checks and the rules of
 `runValidationContainerTests` makes these tests.
 
 59. The `value-missing`, `custom-error` and `invalid` slots show for their state.
+
+### Disabled popup
+
+60. The shared runner `runDisabledPopupTests`, with the native input as the `aria-expanded` target.
 
 ## Assumptions and limitations
 

@@ -46,6 +46,7 @@
     - [Range value shape properties](#range-value-shape-properties)
     - [Range editors](#range-editors)
     - [Host ARIA](#host-aria)
+    - [Disabled popup](#disabled-popup)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -84,6 +85,7 @@
 |      26 | 2026-11-19 | A change of `name` renames the submitted `-start` and `-end` entries at once |
 |      27 | 2026-11-20 | A form reset discards the text typed in the editors that is not committed, so the next blur does not commit it; a reset that empties the value shows the empty mask in the focused editor |
 |      28 | 2026-11-20 | The ends of a range accept an ISO string with a signed six digit year; the value shape properties use any valid date |
+|      29 | 2026-11-23 | A disabled picker stays closed and disabling discards a draft; the shared disabled popup suite |
 
 ## Overview
 
@@ -486,7 +488,7 @@ apply.
 | usePredefinedRanges    | use-predefined-ranges      | Yes       | `boolean`                   | false             | Whether the picker shows chips with predefined ranges.                   |
 | customRanges           | -                          | No        | `CustomDateRange[]`         | `[]`              | The custom date ranges that the picker shows as chips. A click on a chip selects its range. |
 | mode                   | mode                       | No        | `PickerMode`                | `dropdown`        | Whether the calendar opens in a dropdown or in a modal dialog. In `dialog` mode, the user cannot type in the input. |
-| open                   | open                       | Yes       | `boolean`                   | false             | Whether the component is open.                                         |
+| open                   | open                       | Yes       | `boolean`                   | false             | Whether the component is open. A disabled form control stays closed.   |
 | label                  | label                      | No        | `string`                    | -                 | The label of the picker.                                                 |
 | labelStart             | label-start                | No        | `string`                    | `''`              | The label of the start input.                                            |
 | labelEnd               | label-end                  | No        | `string`                    | `''`              | The label of the end input.                                              |
@@ -532,7 +534,7 @@ apply.
 | ----------------- | --------------------------------------- | ----------------------------------------------------------------------- |
 | focus             | `(options?: FocusOptions): void`        | Sets focus on the picker.                                               |
 | blur              | `(): void`                              | Removes focus from the picker.                                          |
-| show              | `(): Promise<boolean>`                  | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
+| show              | `(): Promise<boolean>`                  | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open or is a disabled form control, or when a later call replaces this one.                      |
 | hide              | `(): Promise<boolean>`                  | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
 | toggle            | `(): Promise<boolean>`                  | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
 | select            | `(value: DateRangeValue \| null): void` | Sets the value of the picker to `value`. It does not emit events.       |
@@ -651,7 +653,8 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
    Done emits `igcChange` after `igcClosing`. <kbd>Escape</kbd> restores the range as the close starts, so
    Done or a reopen during the exit keeps it. A `show()` during the exit of Done, then Cancel, keeps the range of
    Done. Done, Cancel and <kbd>Escape</kbd> do nothing during the exit of `hide()`. After `hide()` and a new open,
-   Cancel restores the range from before the selection and Done reports the selection.
+   Cancel restores the range from before the selection and Done reports the selection. Disabling the picker, also
+   after `hide()`, restores the range from before the selection and reports nothing.
    A clear is reported on blur in dialog and non-editable mode, in both layouts, and one time after an open and a
    close with Cancel, Done or an outside click.
 5. Readonly state, in dropdown and in dialog mode.
@@ -772,6 +775,10 @@ The focus after the form checks and the `invalid` event rules come from the form
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
     `disabled` set does not cancel an earlier call on another element. The suite runs for one input and for two
     inputs.
+
+### Disabled popup
+
+35. The shared runner `runDisabledPopupTests`.
 
 ## Assumptions and limitations
 

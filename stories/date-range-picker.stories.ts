@@ -66,7 +66,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     value: {
       type: { name: 'other', value: 'DateRangeValue' },
       description:
-        'The value of the picker: a range with a `start` and an `end` date.',
+        'The value of the picker: a range with a `start` and an `end` date, or `null` when the range is empty.',
     },
     visibleMonths: {
       type: 'number',
@@ -294,7 +294,8 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
     },
     open: {
       type: 'boolean',
-      description: 'Whether the component is open.',
+      description:
+        'Whether the component is open. A disabled form control stays closed.',
       control: 'boolean',
       table: { defaultValue: { summary: 'false' } },
     },
@@ -338,7 +339,7 @@ const metadata: Meta<IgcDateRangePickerComponent> = {
 export default metadata;
 
 interface IgcDateRangePickerArgs {
-  /** The value of the picker: a range with a `start` and an `end` date. */
+  /** The value of the picker: a range with a `start` and an `end` date, or `null` when the range is empty. */
   value: DateRangeValue;
   /** The number of months displayed in the calendar: 1 or 2. */
   visibleMonths: number;
@@ -442,7 +443,7 @@ interface IgcDateRangePickerArgs {
   keepOpenOnSelect: boolean;
   /** Whether the component stays open when the user clicks outside of it. */
   keepOpenOnOutsideClick: boolean;
-  /** Whether the component is open. */
+  /** Whether the component is open. A disabled form control stays closed. */
   open: boolean;
   /**
    * The behavior of the component when a parent container scrolls.
