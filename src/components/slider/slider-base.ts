@@ -41,6 +41,7 @@ import {
   toggleEventListener,
 } from '#internals/utils/events.js';
 import {
+  addSteps,
   asNumber,
   asPercent,
   clamp,
@@ -68,15 +69,6 @@ export const sliderDependencies = [
   IgcPopoverComponent,
 ];
 
-/**
- * Moves `base` by `steps` steps. It rounds to the decimals of `base` and
- * `step`, so a value on a step stays.
- */
-function stepFrom(base: number, step: number, steps: number): number {
-  const decimals = Math.max(numberOfDecimals(base), numberOfDecimals(step));
-  return roundPrecise(base + steps * step, decimals);
-}
-
 const NO_FORMAT_OPTIONS: Intl.NumberFormatOptions = Object.freeze({});
 
 /**
@@ -91,7 +83,7 @@ function stepsTo(value: number, base: number, step: number): number {
     numberOfDecimals(step)
   );
   const below = Math.floor((value - base) / step);
-  const down = roundPrecise(value - stepFrom(base, step, below), places);
+  const down = roundPrecise(value - addSteps(base, step, below), places);
 
   return roundPrecise(step - down, places) <= down ? below + 1 : below;
 }
@@ -554,7 +546,7 @@ export class IgcSliderBaseComponent extends LitElement {
       return clamped;
     }
 
-    const toValue = (steps: number) => stepFrom(min, step, steps);
+    const toValue = (steps: number) => addSteps(min, step, steps);
     const steps = stepsTo(clamped, min, step);
 
     let snapped = toValue(steps);
@@ -677,7 +669,7 @@ export class IgcSliderBaseComponent extends LitElement {
     // Whole steps from the value, so a value off the steps moves as on a key.
     this._updateValue(
       step
-        ? stepFrom(activeValue, step, stepsTo(target, activeValue, step))
+        ? addSteps(activeValue, step, stepsTo(target, activeValue, step))
         : target
     );
   }

@@ -40,6 +40,9 @@ export declare class BaseFormAssociatedElement {
   /** Whether the value is unchanged since the start or the last form reset. */
   protected get _isPristine(): boolean;
 
+  /** The value of the last `igcChange`, or of the last write that needs no report. */
+  protected get _reportedValue(): unknown;
+
   /** Whether the control counts as a text field for implicit submission. */
   protected get _blocksImplicitSubmission(): boolean;
 

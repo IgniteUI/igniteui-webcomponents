@@ -20,15 +20,19 @@ export function resolveLocale(locale: string): string {
 
 /**
  * Returns the cached result of `create` for `locale`. `create` gets the
- * resolved locale, see {@link resolveLocale}.
+ * resolved locale, see {@link resolveLocale}. `keyParts` tell apart the
+ * results of other inputs for the same locale, such as format options.
  */
 export function getOrCreateForLocale<V>(
   cache: Map<string, V>,
   locale: string,
-  create: (locale: string) => V
+  create: (locale: string) => V,
+  keyParts: readonly unknown[] = []
 ): V {
   // The global locale is part of the key, because an invalid tag resolves to it.
-  return getOrInsertComputed(cache, `${locale}|${getCurrentI18n()}`, () => {
+  const key = [locale, getCurrentI18n(), ...keyParts.map(String)].join('|');
+
+  return getOrInsertComputed(cache, key, () => {
     if (cache.size >= MAX_CACHED_LOCALES) {
       cache.clear();
     }

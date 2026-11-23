@@ -51,6 +51,23 @@ export function roundPrecise(number: number, magnitude = 1): number {
   );
 }
 
+/**
+ * Returns `value` plus `count` times `step`, without a binary floating-point
+ * tail: the result has no more decimals than `value` or `step`.
+ *
+ * @example
+ * ```typescript
+ * addSteps(0.1, 0.2); // 0.3, not 0.30000000000000004
+ * addSteps(0.3, 0.1, -3); // 0
+ * ```
+ */
+export function addSteps(value: number, step: number, count = 1): number {
+  return roundPrecise(
+    value + step * count,
+    Math.max(numberOfDecimals(value), numberOfDecimals(step))
+  );
+}
+
 /** Moves the decimal point of `number` by `places`, through its exponent. */
 function shiftDecimals(number: number, places: number): number {
   const [mantissa, exponent] = number.toString().split('e');

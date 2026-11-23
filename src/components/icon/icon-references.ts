@@ -81,6 +81,14 @@ const ICON_ALIASES: Record<string, Partial<Record<IconThemeKey, string>>> = {
     indigo: 'indigo_chevron_down',
   },
   input_collapse: { default: 'keyboard_arrow_up', indigo: 'indigo_chevron_up' },
+  input_increment: {
+    default: 'keyboard_arrow_up',
+    indigo: 'indigo_chevron_up',
+  },
+  input_decrement: {
+    default: 'keyboard_arrow_down',
+    indigo: 'indigo_chevron_down',
+  },
   chevron_right: {
     default: 'keyboard_arrow_right',
     indigo: 'indigo_chevron_right',

@@ -3,6 +3,7 @@ import { expect } from '@open-wc/testing';
 import { fc, orderedPair } from '#internals/testing/fast-check-setup.spec.js';
 
 import {
+  addSteps,
   asNumber,
   clamp,
   modulo,
@@ -70,6 +71,33 @@ describe('Math utilities properties', () => {
           0.5 * 10 ** -magnitude + 1e-9
         );
       })
+    );
+  });
+
+  it('addSteps gives the exact decimal sum, and steps back to its start', () => {
+    const decimals = fc.integer({ min: 0, max: 6 });
+
+    fc.assert(
+      fc.property(
+        fc.integer({ min: -1e6, max: 1e6 }),
+        decimals,
+        fc.integer({ min: 1, max: 1e4 }),
+        decimals,
+        fc.integer({ min: -50, max: 50 }),
+        (n, k, m, j, count) => {
+          const value = Number(`${n}e-${k}`);
+          const step = Number(`${m}e-${j}`);
+          const places = Math.max(k, j);
+          // The sum in integer units of the smallest decimal place.
+          const units =
+            BigInt(n) * 10n ** BigInt(places - k) +
+            BigInt(m) * 10n ** BigInt(places - j) * BigInt(count);
+          const moved = addSteps(value, step, count);
+
+          expect(moved).to.equal(Number(`${units}e-${places}`));
+          expect(addSteps(moved, step, -count)).to.equal(value);
+        }
+      )
     );
   });
 

@@ -301,6 +301,17 @@ describe('Form value write origins', () => {
       expect(host.value).to.equal('a');
       expect(host.report()).to.be.false;
     });
+
+    it('reads as the last reported value while a change waits for a report', () => {
+      host.value = 'a';
+      host.writeAs('user', 'b');
+
+      expect(host['_reportedValue']).to.equal('a');
+
+      host.report();
+
+      expect(host['_reportedValue']).to.equal('b');
+    });
   });
 
   describe('a same-value write that changes nothing', () => {
