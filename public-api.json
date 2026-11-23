@@ -2915,14 +2915,14 @@
         "currentColor": "string",
         "markerColor": "string",
         "markerLabel": "string",
-        "markerValueFormat": "string"
+        "markerValueText": "string | undefined"
       },
       "properties": {
         "brightness": "number",
         "currentColor": "string",
         "markerColor": "string",
         "markerLabel": "string",
-        "markerValueFormat": "string",
+        "markerValueText": "string | undefined",
         "saturation": "number",
         "static tagName": "readonly string",
         "x": "number",

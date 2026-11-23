@@ -22,7 +22,7 @@ defineComponents(IgcColorSwatchComponent);
   Without a color, the swatch is the no-color swatch.
 - `label`: `string | undefined`. Attribute: `label`.
   The accessible name of the swatch. Without it, the name is the color
-  string, or "No color" for the no-color swatch.
+  name, such as "vibrant red", or "No color" for the no-color swatch.
 
 ## CSS parts
 

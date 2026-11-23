@@ -75,14 +75,14 @@ describe('Picker canvas', () => {
       );
     });
 
-    it('formats `aria-valuetext` with `markerValueFormat`', async () => {
+    it('takes the `aria-valuetext` from `markerValueText`', async () => {
       canvas.saturation = 62.4;
       canvas.brightness = 37.8;
-      canvas.markerValueFormat = 'Sättigung {0} %, Helligkeit {1} %';
+      canvas.markerValueText = 'Sättigung 62 %, Helligkeit 38 %, dunkles Blau';
       await elementUpdated(canvas);
 
       expect(getMarker(canvas).getAttribute('aria-valuetext')).to.equal(
-        'Sättigung 62 %, Helligkeit 38 %'
+        'Sättigung 62 %, Helligkeit 38 %, dunkles Blau'
       );
     });
 

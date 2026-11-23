@@ -17,6 +17,8 @@
       - [Views](#views)
       - [Recent colors](#recent-colors)
       - [Events](#events-1)
+      - [Value text and color names](#value-text-and-color-names)
+      - [Copy](#copy)
       - [In the color picker](#in-the-color-picker)
       - [Styling](#styling)
     - [Localization](#localization)
@@ -36,6 +38,8 @@
     - [Events](#events-2)
     - [Eye dropper](#eye-dropper)
     - [Marker](#marker)
+    - [Value text](#value-text)
+    - [Copy](#copy-1)
     - [Swatches](#swatches-1)
     - [Swatch keyboard](#swatch-keyboard)
     - [Views](#views-1)
@@ -54,6 +58,7 @@
 |       3 | 2026-11-23 | Review fixes: one selected swatch, `var()` only, a plain swatch fill, the format names from the resource strings, the panel theme files |
 |       4 | 2026-11-23 | The `oklch` format |
 |       5 | 2026-11-23 | Enter applies the draft of a color picker in the confirm mode |
+|       6 | 2026-11-23 | The value text of the sliders, color names and the copy feedback |
 
 ## Overview
 
@@ -191,8 +196,10 @@ The swatches of the panel are `igc-color-swatch` children. A swatch has a `color
   Before hydration, a server-rendered swatch shows its color but no selected state.
 - **Invalid colors.** A swatch with an invalid color, or a `var()` that does not resolve to a color, is never
   selected, and a pick of it does nothing.
-- **Names.** A swatch is named by its `label`, else by its color string. The no-color swatch without a `label` is named
-  by the `color_picker_no_color` string of the panel ("No color").
+- **Names.** A swatch is named by its `label`, else by its [color name](#value-text-and-color-names), such as "vibrant
+  red". The name of a color that is not opaque adds its alpha, such as "vibrant red, alpha 50%". A swatch with an invalid
+  color is named by its color string. The no-color swatch without a `label` is named by the `color_picker_no_color`
+  string of the panel ("No color").
 
 #### Views
 
@@ -251,6 +258,43 @@ that color emits no `igcChange`.
 A commit of the color value input emits no `igcInput`, as in the color picker. A value from code and a format change
 emit no events.
 
+#### Value text and color names
+
+Assistive technology reads a value text for each slider:
+
+| Control       | Value text                                             | Example                                            |
+| ------------- | ------------------------------------------------------ | -------------------------------------------------- |
+| Hue slider    | The angle and the name of the hue at the slider position | 120 degrees, green                               |
+| Alpha slider  | The alpha percentage                                   | 50%                                                |
+| Canvas marker | The saturation, the brightness and the color name      | Saturation 100%, brightness 67%, dark vibrant blue |
+
+The numbers use the number format of the locale. A color name has a hue word and can have a lightness word and a
+chroma word before it:
+
+- Lightness: very dark, dark, light, very light.
+- Chroma: grayish, vibrant.
+- Hue: red, orange, brown, yellow, yellow green, green, cyan, blue, purple, magenta, pink.
+
+A color with almost no chroma is black, white or gray, and a gray can have a lightness word. The panel calculates the
+words from the OKLCH lightness, chroma and hue of the color:
+
+- The hue word comes from the OKLCH hue. A dark orange is brown, and brown is never vibrant. A very light red is pink.
+- The lightness word compares the color with the most chromatic sRGB color of its hue. Pure yellow and pure blue have no
+  lightness word, and navy is "dark blue".
+- The chroma word compares the chroma with an estimate of the most chroma that sRGB has at the lightness and hue of
+  the color. The estimate is a triangle of black, white and the most chromatic color of the hue.
+
+The words and their order come from the resource strings, and `color_picker_value_with_name` joins a value and a name.
+See [Localization](#localization). While the value is empty, the value text of the canvas marker has no color name. The
+hue slider still names its hue, which is the hue of the canvas.
+
+#### Copy
+
+The copy button writes the value to the clipboard. After a copy, the button shows a check icon and the name "Copied"
+for one second. After a failure, it shows an error icon and the name "Copy failed". A copy without the clipboard API,
+as outside a secure context, fails. Only the latest copy shows its result, and a copy that ends after the panel leaves
+the page shows nothing. The panel has no live region, so a screen reader can miss the new name.
+
 #### In the color picker
 
 The color picker renders a panel in its popup. It passes `format`, `show-alpha`, `hide-formats`, `swatches`, `views`,
@@ -278,11 +322,18 @@ The panel uses the strings of the color picker, from the `igniteui-i18n-core` pa
 `resourceStrings` properties. The [color picker localization](../color-picker/spec.md#localization) lists the keys. In
 the color picker, the panel takes the strings of the picker.
 
-The panel uses eight strings that `igniteui-i18n-core` does not ship yet: `color_picker_no_color` ("No color"),
+The panel uses strings that `igniteui-i18n-core` does not ship yet: `color_picker_no_color` ("No color"),
 `color_picker_swatches` ("Color swatches"), `color_picker_view_gradient` ("Gradient"), `color_picker_view_swatches`
-("Swatches"), and the format names `color_picker_format_hex` ("Hex"), `color_picker_format_rgb` ("RGB"),
-`color_picker_format_hsl` ("HSL") and `color_picker_format_oklch` ("OKLCH"). Until it does, every locale shows the
-English text, and `resourceStrings` can replace them.
+("Swatches"), the format names `color_picker_format_hex` ("Hex"), `color_picker_format_rgb` ("RGB"),
+`color_picker_format_hsl` ("HSL") and `color_picker_format_oklch` ("OKLCH"), the copy names `color_picker_copied`
+("Copied") and `color_picker_copy_failed` ("Copy failed"), `color_picker_value_with_name` ("{0}, {1}") and the color
+name strings `color_picker_name_*`. Until it does, every locale shows the English text, and `resourceStrings` can
+replace them.
+
+A color name takes the words of `color_picker_name_*` in the order of `color_picker_name_pattern` ("{0} {1} {2}"):
+`{0}` is the lightness word, `{1}` the chroma word and `{2}` the hue word. A word that a color does not have leaves no
+extra space, so a language that puts the adjectives after the noun uses "{2} {0} {1}", and a language with no spaces
+uses "{0}{1}{2}". `color_picker_name_with_alpha` ("{0}, alpha {1}") adds the alpha to the name of a swatch.
 
 ### Keyboard interactions
 
@@ -381,7 +432,7 @@ A color option of the swatch list. It has no theme of its own; it takes the vari
 | Property | Attribute | Reflected | Type     | Default | Description                                                                 |
 | -------- | --------- | --------- | -------- | ------- | --------------------------------------------------------------------------- |
 | color    | color     | No        | `string` | Not set | Any CSS color, also `var()`. Without a color, the swatch is the no-color swatch. |
-| label    | label     | No        | `string` | Not set | The accessible name. Without it, the name is the color string or "No color". |
+| label    | label     | No        | `string` | Not set | The accessible name of the swatch. Without it, the name is the color name, such as "vibrant red", or "No color" for the no-color swatch. |
 
 | Part   | Description                                                            |
 | ------ | ---------------------------------------------------------------------- |
@@ -409,7 +460,7 @@ A labelled group of swatches. It shares its base with `igc-select-group` and `ig
 The panel suite is [`color-panel.spec.ts`](./color-panel.spec.ts). The canvas, the color model, the parser, the
 converters and the property-based tests live with the color picker; see the
 [color picker test scenarios](../color-picker/spec.md#test-scenarios). The color picker suite also covers the panel in
-the popup through the picker.
+the popup through the picker. The color name rule has its own suite, `color-name.spec.ts`, with the color picker.
 
 ### Rendering
 
@@ -436,10 +487,23 @@ A pick emits `igcInput` and `igcChange`.
 
 The marker moves to a value from code, and takes its place when a hidden panel shows.
 
+### Value text
+
+The angle and the hue name of the hue slider, the alpha percentage of the alpha slider, the color name in the value text
+of the canvas marker and no name for an empty value, the numbers in the format of the locale, and the words and the
+order from the resource strings.
+
+### Copy
+
+The check icon and "Copied" for one second after a copy, the error icon and "Copy failed" after a failure and without a
+clipboard, the a11y audit in both states, the timer restarted by a second copy, only the result of the latest copy, no
+result for a copy that ends after a disconnect, and the copy icon again after a disconnect.
+
 ### Swatches
 
 The a11y audit with groups, the named listbox, the `swatches` property in front of the children, the names (label,
-color, "No color", the strings of the panel), the group name, the selected swatch with alpha, only the first of two
+color name with alpha, "No color", the words and the locale of the panel, the color string of an invalid color, a new
+name for a new color), the group name, the selected swatch with alpha, only the first of two
 swatches with the same color selected, the `selected` part, the no-color swatch selected while empty, a `var()` swatch
 resolved again when the panel shows, the events of a pick, a pick that clears, invalid colors and `var()` values,
 swatches that the app adds and removes, and no list without swatches.
@@ -460,8 +524,10 @@ unknown tokens.
 - The color model is sRGB. See the [color picker limitations](../color-picker/spec.md#assumptions-and-limitations).
 - The eye dropper button is rendered enabled only where the platform implements the `EyeDropper` API. Support is
   captured once, at construction time.
-- Copying to the clipboard depends on the `navigator.clipboard` API and a secure context; it silently does nothing
-  where it is unavailable or denied.
+- Copying to the clipboard depends on the `navigator.clipboard` API and a secure context. Where it is unavailable or
+  denied, the copy button shows "Copy failed".
+- Color names are approximate. The rule that picks the words is the same in all locales; only the words and their
+  order change.
 - The panel has no `disabled` property. To make it inactive, set `inert` on it.
 - A `var()` swatch reads its color again only at the times that [Swatches](#swatches) lists.
 - The selected mark of a swatch, the swatch focus ring, the group label and the view switcher use provisional styles
@@ -475,12 +541,14 @@ unknown tokens.
 ### ARIA roles and properties
 
 - The host has no role. The controls inside have their own names.
-- The hue and alpha sliders are native range inputs labelled through `aria-label`.
-- The canvas marker is a `slider` with `aria-valuetext` for both axes.
+- The hue and alpha sliders are native range inputs labelled through `aria-label`. Their `aria-valuetext` gives the
+  angle and the hue name, and the alpha percentage.
+- The canvas marker is a `slider` with `aria-valuetext` for both axes and the color name.
 - The format select and the color value input have visually hidden labels.
-- The copy and eye dropper buttons expose visually hidden text.
+- The copy and eye dropper buttons expose visually hidden text. After a copy, the name of the copy button is "Copied"
+  or "Copy failed" for one second.
 - The swatch list is a `listbox` named "Color swatches". Each swatch is an `option` with `aria-selected`, named by its
-  label or its color. A swatch group is a `group` named by its label. The swatch mirrors its role and name onto
+  label or its color name. A swatch group is a `group` named by its label. The swatch mirrors its role and name onto
   content attributes, so that tools that read only attributes, such as axe, see them.
 - The view switcher is a button group in single selection: a `radiogroup` of two `radio` buttons with
   `aria-checked`. The texts of the buttons name the views.

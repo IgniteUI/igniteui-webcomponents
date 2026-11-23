@@ -5,7 +5,7 @@ import {
   type PropertyValues,
   type TemplateResult,
 } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { live } from 'lit/directives/live.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -37,18 +37,27 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
+import { createTimer } from '#internals/timing.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import {
   getElementFromPath,
   stopPropagation,
 } from '#internals/utils/events.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
+import { formatString } from '#internals/utils/strings.js';
 import { all } from '#themes/color-panel/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonGroupComponent from '../button-group/button-group.js';
 import IgcToggleButtonComponent from '../button-group/toggle-button.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
+import {
+  formatColorName,
+  formatHueValue,
+  formatPercent,
+  formatSwatchName,
+  formatValueWithName,
+} from '../color-picker/color-name.js';
 import { colorPickerI18nConfig, formatNameKeys } from '../color-picker/i18n.js';
 import {
   ColorModel,
@@ -111,6 +120,18 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
 
 /** The vertical distance in pixels within which two swatches share a row. */
 const ROW_TOLERANCE = 1;
+
+/** The icon and the name of the copy button in each status. */
+const COPY_STATUSES = {
+  copy: { icon: 'copy_content', labelKey: 'color_picker_copy' },
+  success: { icon: 'copy_success', labelKey: 'color_picker_copied' },
+  error: { icon: 'error', labelKey: 'color_picker_copy_failed' },
+} as const;
+
+type CopyStatus = keyof typeof COPY_STATUSES;
+
+/** How long the copy button shows the result of a copy, in milliseconds. */
+const COPY_RESET_DELAY = 1000;
 
 /** The controls where Enter applies the draft of a color picker in the confirm mode. */
 const valueControls = `${IgcColorSwatchComponent.tagName}, ${IgcPickerCanvasComponent.tagName}, input[type="range"]`;
@@ -207,8 +228,20 @@ export default class IgcColorPanelComponent extends I18nMixin(
 
   private _hasSlottedSwatches = false;
 
+  @state()
+  private _copyStatus: CopyStatus = 'copy';
+
+  /** Only the latest copy in the page shows its result. */
+  private _copyId = 0;
+
+  private readonly _copyTimer = createTimer(
+    () => (this._copyStatus = 'copy'),
+    COPY_RESET_DELAY
+  );
+
   private readonly _panelContext: ColorPanelContext = {
     noColorLabel: () => this.resourceStrings.color_picker_no_color,
+    swatchName: (color) => formatSwatchName(color, this),
     refreshSwatches: () => {
       this._swatchesStale = true;
       this.requestUpdate();
@@ -337,7 +370,8 @@ export default class IgcColorPanelComponent extends I18nMixin(
     addContextProvider(this, {
       context: colorPanelContext,
       value: () => this._panelContext,
-      watch: ['resourceStrings'],
+      // The locale formats the alpha of a swatch name.
+      watch: ['resourceStrings', 'locale'],
     });
 
     // The canvas has no size while the panel is hidden, as in a closed popup.
@@ -387,6 +421,13 @@ export default class IgcColorPanelComponent extends I18nMixin(
   }
 
   //#region Lit lifecycle methods
+
+  public override disconnectedCallback(): void {
+    this._copyId++;
+    this._copyTimer.stop();
+    this._copyStatus = 'copy';
+    super.disconnectedCallback();
+  }
 
   protected override update(props: PropertyValues<this>): void {
     this._applyColorProperties();
@@ -573,8 +614,21 @@ export default class IgcColorPanelComponent extends I18nMixin(
       .catch(() => {});
   }
 
-  private _handleCopy(): void {
-    navigator.clipboard?.writeText(this.value).catch(() => {});
+  private async _handleCopy(): Promise<void> {
+    const id = ++this._copyId;
+    let status: CopyStatus = 'success';
+
+    try {
+      // Outside a secure context there is no clipboard, and this throws.
+      await navigator.clipboard.writeText(this.value);
+    } catch {
+      status = 'error';
+    }
+
+    if (id === this._copyId) {
+      this._copyStatus = status;
+      this._copyTimer.start();
+    }
   }
 
   private _handleSwatchClick(event: Event): void {
@@ -860,7 +914,21 @@ export default class IgcColorPanelComponent extends I18nMixin(
   //#endregion
 
   private _renderCanvasGradient(): TemplateResult {
+    const strings = this.resourceStrings;
     const [, saturation, brightness] = this._color.toHSV();
+    const axes = formatString(
+      strings.color_picker_canvas_value,
+      Math.round(saturation),
+      Math.round(brightness)
+    );
+    // An empty value has no color name.
+    const valueText = this._color.isEmpty
+      ? axes
+      : formatValueWithName(
+          axes,
+          formatColorName(this._color.toRGB(), strings),
+          strings
+        );
 
     return html`
       <igc-picker-canvas
@@ -873,22 +941,25 @@ export default class IgcColorPanelComponent extends I18nMixin(
         markerColor=${opaqueColor(this._color)}
         .saturation=${saturation}
         .brightness=${brightness}
-        .markerLabel=${this.resourceStrings.color_picker_canvas_label}
-        .markerValueFormat=${this.resourceStrings.color_picker_canvas_value}
+        .markerLabel=${strings.color_picker_canvas_label}
+        .markerValueText=${valueText}
       >
       </igc-picker-canvas>
     `;
   }
 
   private _renderHueSlider(): TemplateResult {
+    const hue = Math.round(this._color.h);
+
     return html`
       <input
         aria-label=${this.resourceStrings.color_picker_hue}
+        aria-valuetext=${formatHueValue(hue, this)}
         type="range"
         part="hue"
         min="0"
         max="360"
-        .value=${String(Math.round(this._color.h))}
+        .value=${String(hue)}
         @input=${this._handleHueValueChange}
         @change=${this._handleGestureEnd}
       />
@@ -917,13 +988,14 @@ export default class IgcColorPanelComponent extends I18nMixin(
 
   private _renderButtons(): TemplateResult {
     const strings = this.resourceStrings;
+    const copy = COPY_STATUSES[this._copyStatus];
 
     return html`
       <div part="buttons">
         ${this._renderIconButton(
           'copy',
-          'copy_content',
-          strings.color_picker_copy,
+          copy.icon,
+          strings[copy.labelKey],
           this._handleCopy
         )}
         ${this._renderIconButton(
@@ -943,6 +1015,7 @@ export default class IgcColorPanelComponent extends I18nMixin(
     return html`
       <input
         aria-label=${strings.color_picker_alpha}
+        aria-valuetext=${formatPercent(this._alphaPercent / 100, this.locale)}
         type="range"
         part="alpha"
         min="0"

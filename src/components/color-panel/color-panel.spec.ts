@@ -6,7 +6,13 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { resetMouse, sendMouse } from '@web/test-runner-commands';
-import { type SinonSpy, spy } from 'sinon';
+import {
+  type SinonFakeTimers,
+  type SinonSpy,
+  spy,
+  stub,
+  useFakeTimers,
+} from 'sinon';
 
 import { internalsOf } from '#internals/controllers/internals.js';
 import {
@@ -31,6 +37,7 @@ import {
 } from '#internals/testing/simulate.spec.js';
 import { getDeepActiveElement } from '#internals/utils/dom.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
+import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcColorPickerComponent from '../color-picker/color-picker.js';
 import type IgcPickerCanvasComponent from '../color-picker/picker-canvas.js';
 import type IgcInputComponent from '../input/input.js';
@@ -53,6 +60,10 @@ const getCanvas = (panel: IgcColorPanelComponent) =>
   query<IgcPickerCanvasComponent>(panel, 'igc-picker-canvas');
 const getHue = (panel: IgcColorPanelComponent) =>
   query<HTMLInputElement>(panel, '[part="hue"]');
+const getAlphaSlider = (panel: IgcColorPanelComponent) =>
+  query<HTMLInputElement>(panel, '[part="alpha"]');
+const getCopy = (panel: IgcColorPanelComponent) =>
+  query<IgcIconButtonComponent>(panel, '[part="copy"]');
 const getColorInput = (panel: IgcColorPanelComponent) =>
   query<IgcInputComponent>(panel, '#color-input');
 const getAlphaInput = (panel: IgcColorPanelComponent) =>
@@ -550,6 +561,271 @@ describe('Color panel', () => {
       expect(canvas.y).to.be.closeTo(y, 0.5);
     });
   });
+  describe('Value text', () => {
+    beforeEach(async () => {
+      panel = await fixture<IgcColorPanelComponent>(
+        html`<igc-color-panel
+          show-alpha
+          value="rgb(0 0 255 / 0.25)"
+        ></igc-color-panel>`
+      );
+      await elementUpdated(getCanvas(panel));
+    });
+
+    const markerText = () =>
+      getCanvas(panel)
+        .renderRoot.querySelector('[part~="marker"]')!
+        .getAttribute('aria-valuetext');
+
+    it('gives the hue slider the angle and the name of the hue', async () => {
+      expect(getHue(panel).getAttribute('aria-valuetext')).to.equal(
+        '240 degrees, blue'
+      );
+
+      panel.value = '#ff8000';
+      await elementUpdated(panel);
+
+      expect(getHue(panel).getAttribute('aria-valuetext')).to.equal(
+        '30 degrees, orange'
+      );
+    });
+
+    it('gives the alpha slider the alpha percentage', () => {
+      expect(getAlphaSlider(panel).getAttribute('aria-valuetext')).to.equal(
+        '25%'
+      );
+    });
+
+    it('adds the color name to the value text of the canvas marker', async () => {
+      expect(markerText()).to.equal(
+        'Saturation 100%, brightness 100%, vibrant blue'
+      );
+
+      panel.value = '#808080';
+      await elementUpdated(panel);
+      await elementUpdated(getCanvas(panel));
+
+      expect(markerText()).to.equal('Saturation 0%, brightness 50%, gray');
+    });
+
+    it('gives an empty value no color name', async () => {
+      panel.value = '';
+      await elementUpdated(panel);
+      await elementUpdated(getCanvas(panel));
+
+      expect(markerText()).to.equal('Saturation 0%, brightness 100%');
+      expect(getHue(panel).getAttribute('aria-valuetext')).to.equal(
+        '0 degrees, red'
+      );
+    });
+
+    it('formats the numbers in the locale of the panel', async () => {
+      panel.locale = 'de';
+      await elementUpdated(panel);
+
+      const angle = new Intl.NumberFormat('de', {
+        style: 'unit',
+        unit: 'degree',
+        unitDisplay: 'long',
+      });
+      const percent = new Intl.NumberFormat('de', { style: 'percent' });
+
+      expect(getHue(panel).getAttribute('aria-valuetext')).to.equal(
+        `${angle.format(240)}, blue`
+      );
+      expect(getAlphaSlider(panel).getAttribute('aria-valuetext')).to.equal(
+        percent.format(0.25)
+      );
+    });
+
+    it('takes the words and the order from the resource strings', async () => {
+      panel.resourceStrings = {
+        color_picker_value_with_name: '{1} ({0})',
+        color_picker_name_blue: 'Blau',
+        color_picker_name_vibrant: 'kräftiges',
+      };
+      await elementUpdated(panel);
+      await elementUpdated(getCanvas(panel));
+
+      expect(getHue(panel).getAttribute('aria-valuetext')).to.equal(
+        'Blau (240 degrees)'
+      );
+      expect(markerText()).to.equal(
+        'kräftiges Blau (Saturation 100%, brightness 100%)'
+      );
+    });
+  });
+
+  describe('Copy', () => {
+    let clock: SinonFakeTimers | undefined;
+
+    beforeEach(async () => {
+      panel = await fixture<IgcColorPanelComponent>(
+        html`<igc-color-panel value="#ff0000"></igc-color-panel>`
+      );
+    });
+
+    afterEach(() => {
+      clock?.restore();
+      clock = undefined;
+    });
+
+    /** The icon and the name of the copy button. */
+    function copyButton(): [string, string] {
+      const button = getCopy(panel);
+      return [button.name ?? '', button.textContent!.trim()];
+    }
+
+    const idle: [string, string] = [
+      'copy_content',
+      'Copy color value to clipboard',
+    ];
+
+    async function copy(): Promise<void> {
+      simulateClick(getCopy(panel));
+      // The result shows after the clipboard promise settles.
+      await nextFrame();
+      await elementUpdated(panel);
+    }
+
+    async function tick(ms: number): Promise<void> {
+      clock!.tick(ms);
+      await elementUpdated(panel);
+    }
+
+    it('shows the success icon and "Copied" for a second after a copy', async () => {
+      const writeText = stub(navigator.clipboard, 'writeText').resolves();
+      clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+
+      try {
+        expect(copyButton()).to.eql(idle);
+
+        simulateClick(getCopy(panel));
+        await writeText.firstCall.returnValue;
+        await elementUpdated(panel);
+
+        expect(writeText).calledOnceWith('#ff0000');
+        expect(copyButton()).to.eql(['copy_success', 'Copied']);
+
+        await tick(999);
+        expect(copyButton()).to.eql(['copy_success', 'Copied']);
+
+        await tick(1);
+        expect(copyButton()).to.eql(idle);
+      } finally {
+        writeText.restore();
+      }
+    });
+
+    it('shows the error icon and "Copy failed" after a failed copy', async () => {
+      const writeText = stub(navigator.clipboard, 'writeText').rejects(
+        new DOMException('Denied', 'NotAllowedError')
+      );
+
+      try {
+        await copy();
+        expect(copyButton()).to.eql(['error', 'Copy failed']);
+        await expect(panel).shadowDom.to.be.accessible(axeHiddenLabelOptions);
+      } finally {
+        writeText.restore();
+      }
+    });
+
+    it('shows "Copy failed" without a clipboard', async () => {
+      const clipboard = stub(navigator, 'clipboard').value(undefined);
+
+      try {
+        await copy();
+        expect(copyButton()).to.eql(['error', 'Copy failed']);
+      } finally {
+        clipboard.restore();
+      }
+    });
+
+    it('shows the copy icon again one second after the latest copy', async () => {
+      const writeText = stub(navigator.clipboard, 'writeText').resolves();
+      clock = useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+
+      try {
+        simulateClick(getCopy(panel));
+        await writeText.firstCall.returnValue;
+        await tick(600);
+
+        simulateClick(getCopy(panel));
+        await writeText.secondCall.returnValue;
+        await tick(600);
+        expect(copyButton()).to.eql(['copy_success', 'Copied']);
+
+        await tick(400);
+        expect(copyButton()).to.eql(idle);
+      } finally {
+        writeText.restore();
+      }
+    });
+
+    it('shows only the result of the latest copy', async () => {
+      const first = Promise.withResolvers<void>();
+      const writeText = stub(navigator.clipboard, 'writeText');
+      writeText.onFirstCall().returns(first.promise);
+      writeText.onSecondCall().resolves();
+
+      try {
+        simulateClick(getCopy(panel));
+        await copy();
+        expect(copyButton()).to.eql(['copy_success', 'Copied']);
+        await expect(panel).shadowDom.to.be.accessible(axeHiddenLabelOptions);
+
+        // The first copy fails after the second one ends.
+        first.reject(new DOMException('Denied', 'NotAllowedError'));
+        await nextFrame();
+        await elementUpdated(panel);
+
+        expect(copyButton()).to.eql(['copy_success', 'Copied']);
+      } finally {
+        writeText.restore();
+      }
+    });
+
+    it('shows nothing for a copy that ends after a disconnect', async () => {
+      const pending = Promise.withResolvers<void>();
+      const writeText = stub(navigator.clipboard, 'writeText').returns(
+        pending.promise
+      );
+
+      try {
+        simulateClick(getCopy(panel));
+        const parent = panel.parentElement!;
+
+        panel.remove();
+        parent.append(panel);
+        pending.resolve();
+        await nextFrame();
+        await elementUpdated(panel);
+
+        expect(copyButton()).to.eql(idle);
+      } finally {
+        writeText.restore();
+      }
+    });
+
+    it('shows the copy icon again when the panel disconnects', async () => {
+      const writeText = stub(navigator.clipboard, 'writeText').resolves();
+
+      try {
+        await copy();
+        const parent = panel.parentElement!;
+
+        panel.remove();
+        parent.append(panel);
+        await elementUpdated(panel);
+
+        expect(copyButton()).to.eql(idle);
+      } finally {
+        writeText.restore();
+      }
+    });
+  });
+
   describe('Swatches', () => {
     let children: IgcColorSwatchComponent[];
     let group: IgcColorSwatchGroupComponent;
@@ -602,7 +878,7 @@ describe('Color panel', () => {
       const own = getOwnSwatches(panel);
 
       expect(own.map((swatch) => swatch.color)).to.eql(['#0000ff', '']);
-      expect(nameOf(own[0])).to.equal('#0000ff');
+      expect(nameOf(own[0])).to.equal('vibrant blue');
       // An empty string gives the no-color swatch.
       expect(nameOf(own[1])).to.equal('No color');
 
@@ -614,13 +890,45 @@ describe('Color panel', () => {
       expect(getDeepActiveElement()).to.equal(own[0]);
     });
 
-    it('names a swatch by its label, else its color, else "No color"', () => {
+    it('names a swatch by its label, else its color name, else "No color"', () => {
+      // `var(--brand)` is #123456. The alpha of #ff000080 is 50%.
       expect(children.map(nameOf)).to.eql([
         'No color',
         'Green',
-        'var(--brand)',
-        '#ff000080',
+        'dark blue',
+        'vibrant red, alpha 50%',
       ]);
+    });
+
+    it('names a swatch with the words and the locale of the panel', async () => {
+      panel.locale = 'fr';
+      panel.resourceStrings = {
+        color_picker_name_pattern: '{2} {0} {1}',
+        color_picker_name_red: 'rouge',
+        color_picker_name_vibrant: 'vif',
+      };
+      await swatchesSettled(panel);
+      await elementUpdated(children[3]);
+
+      const percent = new Intl.NumberFormat('fr', { style: 'percent' });
+
+      expect(nameOf(children[3])).to.equal(
+        `rouge vif, alpha ${percent.format(0.5)}`
+      );
+    });
+
+    it('names a swatch by its color string while the color is invalid', async () => {
+      children[3].color = 'not-a-color';
+      await swatchesSettled(panel);
+
+      expect(nameOf(children[3])).to.equal('not-a-color');
+    });
+
+    it('renames a swatch when its color changes', async () => {
+      children[3].color = '#00ffff';
+      await elementUpdated(children[3]);
+
+      expect(nameOf(children[3])).to.equal('vibrant cyan');
     });
 
     it('names the no-color swatch with the resource strings of the panel', async () => {

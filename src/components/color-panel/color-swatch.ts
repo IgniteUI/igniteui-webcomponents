@@ -47,6 +47,14 @@ export default class IgcColorSwatchComponent extends LitElement {
     }
   );
 
+  // The panel sets `ariaSelected` and the selected state through
+  // `internalsOf()`.
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: { role: 'option', ariaSelected: 'false' },
+    reflectRole: true,
+    reflectLabel: true,
+  });
+
   private readonly _fillRef = createRef<HTMLElement>();
 
   /** The `color` that {@link _key} comes from. */
@@ -57,12 +65,20 @@ export default class IgcColorSwatchComponent extends LitElement {
 
   private _key: ColorKey | null = null;
 
+  /** The resolved color. A no-color swatch and an invalid color have none. */
+  private _model?: ColorModel;
+
   private get _color(): string {
     return this.color?.trim() ?? '';
   }
 
   private get _accessibleName(): string {
-    return this.label || this._color || this._panel.value?.noColorLabel() || '';
+    const panel = this._panel.value;
+
+    if (this.label) return this.label;
+    if (!this._color) return panel?.noColorLabel() ?? '';
+
+    return (this._model && panel?.swatchName(this._model)) || this._color;
   }
 
   //#endregion
@@ -83,7 +99,7 @@ export default class IgcColorSwatchComponent extends LitElement {
 
   /**
    * The accessible name of the swatch. Without it, the name is the color
-   * string, or "No color" for the no-color swatch.
+   * name, such as "vibrant red", or "No color" for the no-color swatch.
    *
    * @attr label
    */
@@ -92,24 +108,15 @@ export default class IgcColorSwatchComponent extends LitElement {
 
   //#endregion
 
-  constructor() {
-    super();
-
-    // The panel sets `ariaSelected` and the selected state through
-    // `internalsOf()`.
-    addInternalsController(this, {
-      initialARIA: { role: 'option', ariaSelected: 'false' },
-      reflectRole: true,
-      reflectLabel: true,
-      aria: () => ({ ariaLabel: this._accessibleName }),
-    });
-  }
-
   //#region Lit lifecycle methods
 
   public override disconnectedCallback(): void {
     super.disconnectedCallback();
     this._panel.value?.refreshSwatches();
+  }
+
+  protected override willUpdate(): void {
+    this._syncName();
   }
 
   protected override updated(props: PropertyValues<this>): void {
@@ -141,7 +148,7 @@ export default class IgcColorSwatchComponent extends LitElement {
     this._contextual = false;
 
     if (!color) {
-      this._key = '';
+      this._setModel();
       return;
     }
 
@@ -170,7 +177,25 @@ export default class IgcColorSwatchComponent extends LitElement {
       }
     }
 
-    this._key = model.isEmpty ? null : colorKey(model);
+    this._setModel(model.isEmpty ? undefined : model);
+  }
+
+  /** Names the swatch at once: a `var()` color resolves after the render. */
+  private _setModel(model?: ColorModel): void {
+    this._model = model;
+
+    if (model) {
+      this._key = colorKey(model);
+    } else {
+      // An invalid color has no key. The no-color swatch has the empty key.
+      this._key = this._color ? null : '';
+    }
+
+    this._syncName();
+  }
+
+  private _syncName(): void {
+    this._internals.setARIA({ ariaLabel: this._accessibleName });
   }
 
   //#endregion

@@ -1261,7 +1261,9 @@ describe('Color picker', () => {
           '[part~="swatch"]'
         );
       expect(buttons.length).to.equal(2);
-      expect(internalsOf(buttons[0])?.getARIA('ariaLabel')).to.equal('#ff0000');
+      expect(internalsOf(buttons[0])?.getARIA('ariaLabel')).to.equal(
+        'vibrant red'
+      );
       expect(buttons[0].color).to.equal('#ff0000');
 
       const inputSpy = spy(picker, 'emitEvent');

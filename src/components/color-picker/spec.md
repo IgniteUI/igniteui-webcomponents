@@ -41,6 +41,7 @@
     - [Value state motion](#value-state-motion)
     - [Color panel](#color-panel)
     - [Confirm mode](#confirm-mode-1)
+    - [Color names](#color-names)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -77,6 +78,7 @@
 |      24 | 2026-11-23 | Review fixes: one selected swatch, the format names from the resource strings, the same color keeps the model |
 |      25 | 2026-11-23 | The `oklch` format |
 |      26 | 2026-11-23 | The confirm mode of `selection-commit`: the draft, the preview, Cancel and Apply, and the `footer` slot |
+|      27 | 2026-11-23 | The value text of the sliders, color names, swatch names from the color name, and the copy feedback |
 
 ## Overview
 
@@ -331,8 +333,9 @@ See [Views](../color-panel/spec.md#views).
 
 #### Copy and eye dropper
 
-The copy button writes the current value to the clipboard, silently ignoring a failure or an unavailable API. The
-eye dropper button is rendered enabled only when the platform implements the `EyeDropper` API; support is captured
+The copy button writes the current value to the clipboard. For one second after a copy, it shows a check icon and the
+name "Copied", or an error icon and "Copy failed" after a failure or without the clipboard API. See
+[Copy](../color-panel/spec.md#copy). The eye dropper button is rendered enabled only when the platform implements the `EyeDropper` API; support is captured
 once, at construction time. Picking a color through it sets the value and emits `igcInput`.
 
 #### Confirm mode
@@ -449,9 +452,20 @@ Cancel and Apply in the confirm mode.
 | `color_picker_apply`         | Apply                             | The text of the Apply button of the confirm mode.              |
 | `color_picker_cancel`        | Cancel                            | The text of the Cancel button of the confirm mode.             |
 | `color_picker_initial_color` | Initial color                     | The name of the preview button that restores the initial color. |
+| `color_picker_copied`        | Copied                            | The name of the copy button for one second after a copy.       |
+| `color_picker_copy_failed`   | Copy failed                       | The name of the copy button for one second after a failed copy. |
+| `color_picker_value_with_name` | {0}, {1}                        | The value text of the hue slider and the canvas marker. `{0}` is the value and `{1}` the color name or the hue name. |
+| `color_picker_name_pattern`  | {0} {1} {2}                       | The word order of a color name. `{0}` is the lightness word, `{1}` the chroma word and `{2}` the hue word. |
+| `color_picker_name_with_alpha` | {0}, alpha {1}                  | The name of a swatch that is not opaque. `{0}` is the color name and `{1}` the alpha percentage. |
+| `color_picker_name_very_dark`, `color_picker_name_dark`, `color_picker_name_light`, `color_picker_name_very_light` | very dark, dark, light, very light | The lightness words of a color name. |
+| `color_picker_name_grayish`, `color_picker_name_vibrant` | grayish, vibrant | The chroma words of a color name. |
+| `color_picker_name_red`, `color_picker_name_orange`, `color_picker_name_brown`, `color_picker_name_yellow`, `color_picker_name_yellow_green`, `color_picker_name_green`, `color_picker_name_cyan`, `color_picker_name_blue`, `color_picker_name_purple`, `color_picker_name_magenta`, `color_picker_name_pink` | red, orange, brown, yellow, yellow green, green, cyan, blue, purple, magenta, pink | The hue words of a color name. |
+| `color_picker_name_black`, `color_picker_name_white`, `color_picker_name_gray` | black, white, gray | The names of the colors with almost no chroma. |
 
-The last twelve keys are not in `igniteui-i18n-core` yet. Until they are, every locale shows the English text, and
-`resourceStrings` can replace them. Color values are locale-independent CSS strings.
+The keys after `color_picker_value` are not in `igniteui-i18n-core` yet. Until they are, every locale shows the English
+text, and `resourceStrings` can replace them. Color values are locale-independent CSS strings. The value text of the
+sliders uses the number format of the locale. The [color panel](../color-panel/spec.md#value-text-and-color-names)
+describes the color names.
 
 ### Keyboard interactions
 
@@ -607,7 +621,7 @@ The `--_` variables in its styles, for example `--_current-color`, are internal.
 
 ## Test scenarios
 
-The component is covered by six suites in this directory, all running in a real browser through
+The component is covered by eight suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
@@ -617,6 +631,8 @@ The component is covered by six suites in this directory, all running in a real 
 | [`model.spec.ts`](./model.spec.ts) | The color model. |
 | [`common.spec.ts`](./common.spec.ts) | Color string parsing and validation. |
 | [`converters.spec.ts`](./converters.spec.ts) | The color space converters. |
+| [`color-name.spec.ts`](./color-name.spec.ts) | The color name rule. |
+| [`color-name.property.spec.ts`](./color-name.property.spec.ts) | Property-based tests for the color names. |
 | [`color.property.spec.ts`](./color.property.spec.ts) | Property-based (fuzz) tests for the converters, the parser and the model. |
 
 The component suite reuses `createFormAssociatedTestBed`, `runValidationContainerTests`,
@@ -663,7 +679,8 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Picker canvas
 
-18. Rendering of the gradient and the marker, with the marker label and the format of its value text.
+18. Rendering of the gradient and the marker, with the marker label, its default value text and the value text that
+    the panel gives it.
 19. Keyboard interaction - the arrow keys move the marker and update the saturation and value. The marker steps in
     whole percents of the canvas, at any canvas size: 1 % with an arrow, 10 % with <kbd>Shift</kbd> + Arrow, Page Up,
     Page Down, Home and End. Only the axis that moves snaps. The steps stop at the edges, keep the arrow direction in
@@ -698,14 +715,16 @@ The focus after the form checks and the `invalid` event rules come from the form
     the same color. Any 8-bit color comes back from its `oklch` string, exactly in Firefox and WebKit and within one
     step in Chromium.
 27. Model - every color space stays in range for any sequence of channel writes, and a clone equals its source.
+28. Color names - every 8-bit color gets a name made of the words of the word set in the order of the pattern, for the
+    word orders of English, French and Japanese, and a color with equal channels is black, white or a gray.
 
 ### Host ARIA
 
-28. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+29. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
-29. In button mode, the anchor lists the helper text before the host description, also after the first
+30. In button mode, the anchor lists the helper text before the host description, also after the first
     render.
-30. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+31. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -713,47 +732,53 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Disabled popup
 
-31. The shared runner `runDisabledPopupTests`, with the anchor as the `aria-expanded` target.
+32. The shared runner `runDisabledPopupTests`, with the anchor as the `aria-expanded` target.
 
 ### Value state motion
 
 In input mode.
 
-32. A typed color marks the anchor input as a user change.
-33. A value from code right after it ends the user change, so the input shows it at once.
+33. A typed color marks the anchor input as a user change.
+34. A value from code right after it ends the user change, so the input shows it at once.
 
 ### Color panel
 
-34. The popup shows the color panel, and the picker forwards the parts of the panel; a `::part(hue)` rule reaches the
+35. The popup shows the color panel, and the picker forwards the parts of the panel; a `::part(hue)` rule reaches the
     hue slider of the panel. The picker passes its options and strings to the panel, and the value of the panel equals
     the value of the picker, also after a format change. The events of the panel stay inside the picker.
-35. The picker shows its swatch children in the swatch list of the panel, the swatch list is a stop of the focus trap,
+36. The picker shows its swatch children in the swatch list of the panel, the swatch list is a stop of the focus trap,
     and a click on a child swatch sets the value. The picker passes `views` and `active-view`, and a click on the view
     switcher sets the `activeView` of the picker.
 
 ### Confirm mode
 
-36. The a11y audit. The footer shows the preview, Cancel and Apply only in the confirm mode, and the `footer` slot
+37. The a11y audit. The footer shows the preview, Cancel and Apply only in the confirm mode, and the `footer` slot
     content in both modes.
-37. A change in the popup is a draft: `value`, the anchor and the initial half of the preview keep the color, and no
+38. A change in the popup is a draft: `value`, the anchor and the initial half of the preview keep the color, and no
     value event is emitted. Apply writes the draft, emits one `igcChange`, closes and focuses the anchor; an Apply
     without a change emits nothing.
-38. Cancel, Escape, Alt + Arrow Up, an outside click, a scroll close, `hide()`, `open = false` and disabling drop
+39. Cancel, Escape, Alt + Arrow Up, an outside click, a scroll close, `hide()`, `open = false` and disabling drop
     the draft with no value events. A canceled `igcClosing` keeps the draft on Cancel, and Apply writes it.
-39. Enter on a swatch picks and applies, and Space only picks. Enter on the canvas marker and on a slider applies.
+40. Enter on a swatch picks and applies, and Space only picks. Enter on the canvas marker and on a slider applies.
     Enter in the color value input commits the text into the draft and does not apply. An alpha commit goes into the
     draft. In the immediate mode, Enter on a slider does not close.
-40. The initial half of the preview restores the initial color. The text field of the input mode shows the value
+41. The initial half of the preview restores the initial color. The text field of the input mode shows the value
     during a draft. A new value from code ends the draft, and the same color keeps it. A format change keeps the
     draft. The end of the confirm mode drops the draft. The clear icon drops the draft and clears as a user change,
     and a commit of the text field of the input mode drops the draft.
+
+### Color names
+
+42. The grays by lightness, black and white; no lightness word for the pure colors; the lightness compared with the most
+    chromatic color of the hue (navy is "dark blue"); grayish colors; a dark orange as brown and a very light red as
+    pink; and the hue word of the pure color of each HSV hue, for the hue slider.
 
 ## Assumptions and limitations
 
 - The eye dropper button is always rendered, but it is only enabled when the platform implements the `EyeDropper`
   API. Support is captured once at construction time, so injecting or removing the global afterwards has no effect.
-- Copying to the clipboard depends on the `navigator.clipboard` API and a secure context; it silently does nothing
-  where it is unavailable or denied.
+- Copying to the clipboard depends on the `navigator.clipboard` API and a secure context. Where it is unavailable or
+  denied, the copy button shows "Copy failed".
 - `value` accepts any valid CSS color string, but the observable value is always normalized to the active `format`,
   so round-tripping an input string is not guaranteed to be byte-for-byte identical. An empty, whitespace-only or
   invalid string clears the value, except when it is committed through the popover or anchor color input, where a
@@ -778,14 +803,19 @@ In input mode.
   are announced.
 - The trigger button of the default mode and the swatch button of the input mode reflect the open state through
   `aria-expanded`. The text input of the input mode does not carry it.
-- The hue and alpha sliders are native range inputs labelled through `aria-label`.
-- The gradient canvas marker is focusable and operable with the arrow keys, <kbd>Shift</kbd> + Arrow, Page Up, Page
+- The hue and alpha sliders are native range inputs labelled through `aria-label`. Their `aria-valuetext` gives the
+  angle and the hue name, such as "120 degrees, green", and the alpha percentage.
+- While a color is set, the value text of the gradient canvas marker ends with the color name, such as "dark vibrant
+  blue". The gradient
+  canvas marker is focusable and operable with the arrow keys, <kbd>Shift</kbd> + Arrow, Page Up, Page
   Down, Home and End.
 - The format switcher is a select with a visually-hidden label, and the color value input carries one as well.
-- The copy and eye dropper buttons expose visually-hidden text.
+- The copy and eye dropper buttons expose visually-hidden text. For one second after a copy, the name of the copy
+  button is "Copied" or "Copy failed".
 - The clear icon of input mode is a `button` named by `color_picker_clear`, as in the combo. It is not a tab stop;
   the keyboard clears the value through the text field.
-- The swatch list is a `listbox` of `option` swatches with `aria-selected`, and a swatch group is a named `group`. See
+- The swatch list is a `listbox` of `option` swatches with `aria-selected`, and a swatch group is a named `group`. A
+  swatch without a `label` is named by its color name. See
   the [color panel accessibility](../color-panel/spec.md#aria-roles-and-properties).
 - In the confirm mode, the initial half of the preview is a `button` named by `color_picker_initial_color`. The draft
   half is decoration. Cancel and Apply are `igc-button` elements with their text.

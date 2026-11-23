@@ -4,6 +4,7 @@ import type IgcButtonGroupComponent from '../components/button-group/button-grou
 import type IgcToggleButtonComponent from '../components/button-group/toggle-button.js';
 import type IgcCarouselComponent from '../components/carousel/carousel.js';
 import type { ChatState } from '../components/chat/chat-state.js';
+import type { ColorModel } from '../components/color-picker/model.js';
 import type IgcTileManagerComponent from '../components/tile-manager/tile-manager.js';
 import type {
   ColorFormat,
@@ -52,6 +53,8 @@ export type ColorPickerContext = {
 export type ColorPanelContext = {
   /** The accessible name of a no-color swatch without a `label`. */
   noColorLabel: () => string;
+  /** The accessible name of a swatch without a `label`: the color name. */
+  swatchName: (color: ColorModel) => string;
   /**
    * Tells the panel that a swatch connected, disconnected or changed its
    * color. The panel then reads the colors of all swatches again.

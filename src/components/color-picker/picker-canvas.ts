@@ -136,11 +136,9 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
   public y = 0;
 
   /**
-   * The HSV saturation the marker currently sits at (0-100).
-   *
-   * The canvas positions the marker in pixels and has no notion of the color
-   * space behind it, so the owning picker feeds the saturation/value pair back
-   * in purely to give the marker an announceable value.
+   * The HSV saturation the marker sits at (0-100), the `aria-valuenow` of the
+   * marker. The canvas positions the marker in pixels, so the color panel
+   * gives it the saturation and the brightness.
    */
   @property({ type: Number, attribute: false })
   public saturation = 0;
@@ -160,12 +158,11 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
     ColorPickerResourceStringsEN.color_picker_canvas_label!;
 
   /**
-   * The format of the marker `aria-valuetext`. `{0}` is the saturation and
-   * `{1}` the brightness, both as whole percentages.
+   * The `aria-valuetext` of the marker. Without it, the marker gives the
+   * saturation and the brightness in English.
    */
   @property()
-  public markerValueFormat: string =
-    ColorPickerResourceStringsEN.color_picker_canvas_value!;
+  public markerValueText?: string;
 
   constructor() {
     super();
@@ -322,11 +319,14 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
         aria-valuemin="0"
         aria-valuemax="100"
         aria-valuenow=${saturation}
-        aria-valuetext=${formatString(
-          this.markerValueFormat,
-          saturation,
-          brightness
-        )}
+        aria-valuetext=${
+          this.markerValueText ??
+          formatString(
+            ColorPickerResourceStringsEN.color_picker_canvas_value!,
+            saturation,
+            brightness
+          )
+        }
       ></div>
     `;
   }
