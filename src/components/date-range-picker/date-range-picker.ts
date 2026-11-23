@@ -1,5 +1,5 @@
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -24,6 +24,7 @@ import { all } from '#themes/date-range-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
+import type { DateRangeDescriptor } from '../calendar/types.js';
 import type { CommitPolicy } from '../date-picker/commit-session.js';
 import {
   IgcDatePickerBaseComponent,
@@ -42,9 +43,14 @@ import IgcDateRangeInputComponent from './date-range-input.js';
 import { DateRangePosition } from './date-range-mask-parser.js';
 import { styles } from './date-range-picker.base.css.js';
 import { dateRangeI18nConfig } from './i18n.js';
-import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
+import IgcPredefinedRangesAreaComponent, {
+  findRangeChip,
+  isPredefinedRangeKey,
+  type RangeSelectEvent,
+} from './predefined-ranges-area.js';
 import { type RangeEditors, rangeEditors } from './range-editors.js';
 import {
+  isSameDays,
   normalizeRange,
   rangeShape,
   rangeTransformers,
@@ -57,16 +63,56 @@ export type { DateRangeValue } from '../types.js';
 /* jsonAPIPlainObject */
 /** A predefined date range with label for {@link IgcDateRangePickerComponent.customRanges} */
 export interface CustomDateRange {
+  /** The text of the chip. */
   label: string;
-  dateRange: DateRangeValue;
+  /** The range of the chip. `getDateRange` replaces it. */
+  dateRange?: DateRangeValue;
+  /** The key of the range, which `selectedRange` reports. Without it, the key is the label. */
+  key?: string;
+  /* blazorSuppress */
+  /**
+   * Returns the range when the user selects the chip, or when `selectedRange` selects it.
+   * With `min`, `max` or `disabledDates`, the picker also calls it when it shows the chips.
+   * Use it for a period relative to today, such as the last quarter. It replaces `dateRange`.
+   */
+  getDateRange?: () => DateRangeValue;
 }
 
-export type IgcDateRangePickerComponentEventMap =
-  IgcPickerBaseEventMap<DateRangeValue>;
+/** The keys of the built-in ranges. Weeks start on `weekStart`, and quarters are calendar quarters. */
+export type PredefinedRangeKey =
+  | 'today'
+  | 'yesterday'
+  | 'last7Days'
+  | 'last30Days'
+  | 'lastWeek'
+  | 'currentMonth'
+  | 'lastMonth'
+  | 'currentQuarter'
+  | 'lastQuarter'
+  | 'quarterToDate'
+  | 'currentYear'
+  | 'lastYear'
+  | 'yearToDate';
+
+export interface IgcSelectedRangeChangeEventArgs {
+  /** The key of the range, or `null` when the value does not come from a range. */
+  key: string | null;
+  /** The label of the range, or `null` when the key is `null`. */
+  label: string | null;
+  /** The value of the picker. */
+  value: DateRangeValue | null;
+}
+
+export interface IgcDateRangePickerComponentEventMap extends IgcPickerBaseEventMap<DateRangeValue> {
+  igcSelectedRangeChange: CustomEvent<IgcSelectedRangeChangeEventArgs>;
+}
 
 export type { DateRangePickerResourceStringsType } from './i18n.js';
 
 const nextId = createIdGenerator('date-range-picker');
+
+/** The chips check their ranges only while open, so each open checks a relative range against the day. */
+const noConstraints: DateRangeDescriptor[] = [];
 const Slots = setSlots(
   'prefix',
   'prefix-start',
@@ -137,6 +183,7 @@ const Slots = setSlots(
  * @fires igcClosed - Emitted after a user interaction closes the calendar.
  * @fires igcChange - Emitted when the user commits a change to the value.
  * @fires igcInput - Emitted when the user types in an input.
+ * @fires igcSelectedRangeChange - Emitted before `igcChange` when a commit of the user changes `selectedRange`. In dialog mode, Done commits.
  *
  * @csspart inputs - The wrapper of the start input, the separator and the end input (two inputs).
  * @csspart separator - The separator element between the two inputs.
@@ -253,6 +300,19 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   private _placeholder?: string;
 
+  /** The key of the range that set the value. */
+  @state()
+  private _rangeKey: string | null = null;
+
+  /** The key at the last commit. */
+  private _committedRangeKey: string | null = null;
+
+  /** Whether `_rangeKey` waits for `customRanges`. */
+  private _rangeKeyPending = false;
+
+  /** The key of a chip, for the write of its range. */
+  private _chipKey?: string;
+
   private get _editors(): RangeEditors {
     return rangeEditors(this.renderRoot, this.useTwoInputs);
   }
@@ -262,9 +322,40 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return this.renderRoot ? this._editors.editors() : [];
   }
 
+  private get _committedRange(): DateRangeValue | null {
+    return this._reportedValue as DateRangeValue | null;
+  }
+
   // #endregion
 
   // #region Base class hooks
+
+  protected override get _value(): DateRangeValue | null {
+    return super._value;
+  }
+
+  /** A chip sets its key. The committed dates restore the committed key, as Cancel does; other dates clear it. */
+  protected override set _value(value: DateRangeValue | null) {
+    const chipKey = this._chipKey;
+    const previous = this.value;
+    const committed = this._committedRange;
+
+    this._chipKey = undefined;
+    super._value = value;
+
+    const key =
+      chipKey ??
+      (this._formValue.isSameValue(this.value, committed)
+        ? this._committedRangeKey
+        : this._formValue.isSameValue(this.value, previous)
+          ? this._rangeKey
+          : null);
+
+    if (key !== this._rangeKey) {
+      this._rangeKey = key;
+      this._rangeKeyPending = false;
+    }
+  }
 
   protected override get _calendarResourceStrings() {
     return this.resourceStrings;
@@ -303,6 +394,25 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return this._isDropDown ? 'at-once' : 'on-confirm';
   }
 
+  /** Emits `igcSelectedRangeChange` before `igcChange`, also when only the key changed. */
+  protected override _reportChange(detail: unknown, force = false): void {
+    const key = this._rangeKey;
+
+    if (key !== this._committedRangeKey) {
+      this._committedRangeKey = key;
+      this.emitEvent('igcSelectedRangeChange', {
+        detail: {
+          key,
+          label:
+            key === null ? null : (findRangeChip(this, key)?.label ?? null),
+          value: this.value,
+        },
+      });
+    }
+
+    super._reportChange(detail, force);
+  }
+
   // #endregion
 
   // #region General properties
@@ -316,6 +426,8 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   public set value(value: DateRangeValue | string | null | undefined) {
     this._value = convertToDateRange(value);
     this._session.endDraft();
+    // A set from code commits its key without an event.
+    this._committedRangeKey = this._rangeKey;
   }
 
   public get value(): DateRangeValue | null {
@@ -341,6 +453,35 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
    */
   @property({ attribute: false })
   public customRanges: CustomDateRange[] = [];
+
+  /**
+   * The built-in ranges that show while `usePredefinedRanges` is set, in this order.
+   * The picker skips an unknown key and a repeated key.
+   */
+  @property({ attribute: false })
+  public predefinedRanges: PredefinedRangeKey[] = [
+    'last7Days',
+    'currentMonth',
+    'last30Days',
+    'yearToDate',
+  ];
+
+  /* @tsTwoWayProperty(true, "igcSelectedRangeChange", "detail.key", false) */
+  /**
+   * The key of the range that set the value: a built-in key, such as `lastQuarter`, also of a range that does not
+   * show, or the key of a custom range. The chip of the range shows as selected.
+   * Set it to select the range and set its value. A key that no custom range has yet waits for `customRanges`.
+   * It is `null` when the user types or draws other dates, and when the value changes to other dates from code.
+   * @attr selected-range
+   */
+  @property({ attribute: 'selected-range' })
+  public set selectedRange(key: string | null) {
+    this._selectRangeKey(key ?? null);
+  }
+
+  public get selectedRange(): string | null {
+    return this._rangeKey;
+  }
 
   /**
    * Whether the picker shows the start and the end date in two separate inputs.
@@ -435,6 +576,14 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     }
 
     super.willUpdate(changedProperties);
+
+    // Before the first render, a key from code follows the settings set after it, such as `weekStart`.
+    if (
+      (!this.hasUpdated && this._rangeKey !== null) ||
+      (this._rangeKeyPending && changedProperties.has('customRanges'))
+    ) {
+      this._selectRangeKey(this._rangeKey);
+    }
   }
 
   // #endregion
@@ -498,6 +647,30 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   // #region Private methods
 
+  /** Selects the range of `key` from code, and commits the key and the value. */
+  private _selectRangeKey(key: string | null): void {
+    const range = key === null ? undefined : findRangeChip(this, key);
+    const value = range?.getDateRange() ?? null;
+    this._rangeKeyPending = key !== null && !range;
+
+    // A framework sets the key on each render. The current or the committed key with its days changes nothing, so a
+    // draft stays. Days, not times: a custom range can end at the current time.
+    const keeps = (current: DateRangeValue | null) =>
+      !value || isSameDays(value, current);
+
+    if (
+      (key === this._rangeKey && keeps(this.value)) ||
+      (key === this._committedRangeKey && keeps(this._committedRange))
+    ) {
+      return;
+    }
+
+    if (value && !isSameDays(value, this.value)) {
+      this.value = value;
+    }
+    this._rangeKey = this._committedRangeKey = key;
+  }
+
   /**
    * Stops the inner event of an editor, and returns whether the editor belongs to the layout that `useTwoInputs`
    * selects. An editor that a layout change removes commits nothing, as its typed text goes with it. The events of
@@ -511,11 +684,16 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return this._ownedEditors.includes(target);
   }
 
-  /** Applies a predefined range like a calendar selection. */
-  private _handleRangeSelect({ detail }: CustomEvent<DateRangeValue>): void {
+  /** Applies a range chip like a calendar selection, with its key. In dialog mode, Done commits it. */
+  private _handleRangeSelect({ detail, key }: RangeSelectEvent): void {
     if (this._isClosing) return;
 
-    this._session.pick(detail);
+    this._chipKey = key;
+    try {
+      this._session.pick(detail);
+    } finally {
+      this._chipKey = undefined;
+    }
 
     if (this._commitPolicy() === 'at-once' && !this.keepOpenOnSelect) {
       this._hide(true);
@@ -542,13 +720,21 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   }
 
   protected _renderPredefinedRanges() {
-    const hasRanges = this.usePredefinedRanges || !isEmpty(this.customRanges);
+    const hasRanges =
+      (this.usePredefinedRanges &&
+        this.predefinedRanges.some(isPredefinedRangeKey)) ||
+      !isEmpty(this.customRanges);
 
     return hasRanges
       ? html`
           <igc-predefined-ranges-area
             .usePredefinedRanges=${this.usePredefinedRanges}
+            .predefinedRanges=${this.predefinedRanges}
             .customRanges=${this.customRanges}
+            .weekStart=${this.weekStart}
+            .selectedRange=${this._rangeKey}
+            .dateConstraints=${this.open ? this._dateConstraints : noConstraints}
+            .disabled=${this.readOnly}
             .resourceStrings=${this.resourceStrings}
             @igcRangeSelect=${this._handleRangeSelect}
             exportparts="ranges"

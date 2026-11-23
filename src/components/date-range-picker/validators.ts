@@ -1,4 +1,3 @@
-import { calendarRange } from '#internals/date/model.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import {
   createMaxDateTimeValidator,
@@ -6,9 +5,8 @@ import {
   requiredValidator,
   type Validator,
 } from '#internals/validators.js';
-import { isDateInRanges } from '../calendar/helpers.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
-import { isCompleteDateRange } from './range-shape.js';
+import { isCompleteDateRange, rangeOverlaps } from './range-shape.js';
 
 /** The ends of the current range, each validated against the bound on its own. */
 function rangeEnds({ value }: IgcDateRangePickerComponent) {
@@ -44,9 +42,7 @@ const badInputDateRangeValidator: Validator<IgcDateRangePickerComponent> = {
       return true;
     }
 
-    return Array.from(
-      calendarRange({ start: value.start, end: value.end, inclusive: true })
-    ).every((date) => !isDateInRanges(date, disabledDates));
+    return !rangeOverlaps(value, disabledDates);
   },
 };
 

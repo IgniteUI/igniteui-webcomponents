@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### Date range picker
+  - A custom range can have `getDateRange` in place of `dateRange`. The picker calls it when the user selects the chip. Thus a period relative to today, such as the last quarter, stays current after midnight. `dateRange` is now optional. `getDateRange` is not available in Blazor. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
+  - `selectedRange` (`selected-range`) is the key of the range that set the value, and its chip shows as selected. The built-in keys are those of `PredefinedRangeKey`. A custom range has an optional `key`. Without it, the key is the label. Set `selectedRange` to select a range and set its value from code, for example from saved state. The key is `null` after the user selects other dates. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
+  - `igcSelectedRangeChange` is emitted before `igcChange` when a commit of the user changes `selectedRange`. The detail has the `key`, the `label` and the `value`. New type: `IgcSelectedRangeChangeEventArgs`. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
+  - `predefinedRanges` chooses the built-in ranges that `usePredefinedRanges` shows, and their order. The default is the four ranges that the picker showed before. New built-in ranges: `today`, `yesterday`, `lastWeek`, `lastMonth`, `currentQuarter`, `lastQuarter`, `quarterToDate`, `currentYear` and `lastYear`. `lastWeek` starts on `weekStart`, and the quarters are calendar quarters. Their labels come from the resource strings `date_range_picker_today` to `date_range_picker_lastYear`. A locale that does not have them yet shows them in English. New type: `PredefinedRangeKey`. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
+  - A range chip is disabled when its range includes a date before `min`, after `max` or in `disabledDates`, so a chip no longer sets a value that is not valid. The picker checks the ranges each time it opens. Thus a relative range follows the day. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
 - #### QR code
   - `dot-style`, `square-style` and `corner-dot-style` take `squircle`, a square with soft corners.
   - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.
@@ -80,6 +86,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - In single input mode, the calendar shows the month of the end that you type or spin, as it does with two inputs. Before, it showed only the month of the start.
   - The `igcInput` and `igcChange` events of content in the prefix and suffix slots of the inputs reach your handlers, and they no longer change the value of the picker. Before, the picker stopped them, and an `igcChange` from that content cleared the value, or its end date with two inputs.
   - A change of `name` renames the submitted `-start` and `-end` entries at once. Before, the form submitted the range under the old name.
+  - The range chips of a read-only picker that opens from code are disabled. Before, a chip changed the value. [#2534](https://github.com/IgniteUI/igniteui-webcomponents/issues/2534)
 - #### File input
   - The selected files are submitted under the current `name`. Before, a change of `name` kept them under the old name, and a `name` set after the selection submitted no files.
 - #### Form controls

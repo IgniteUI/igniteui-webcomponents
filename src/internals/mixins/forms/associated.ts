@@ -658,6 +658,11 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       }
     }
 
+    /** The value of the last `igcChange`, or of the last write that needs no report. */
+    protected get _reportedValue(): unknown {
+      return this.__reported;
+    }
+
     /** Emits `igcChange` when the value differs from the reported value. */
     protected _reportChange(detail: unknown, force = false): void {
       if (

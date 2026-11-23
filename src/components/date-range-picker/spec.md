@@ -86,6 +86,7 @@
 |      27 | 2026-11-20 | A form reset discards the text typed in the editors that is not committed, so the next blur does not commit it; a reset that empties the value shows the empty mask in the focused editor |
 |      28 | 2026-11-20 | The ends of a range accept an ISO string with a signed six digit year; the value shape properties use any valid date |
 |      29 | 2026-11-23 | A disabled picker stays closed and disabling discards a draft; the shared disabled popup suite |
+|      30 | 2026-11-23 | Range keys: `selectedRange`, `igcSelectedRangeChange`, `getDateRange` and `predefinedRanges` with nine new built-in ranges; a chip whose range breaks the constraints is disabled |
 
 ## Overview
 
@@ -106,8 +107,9 @@ element.
 - **Two value display modes**: a single field with both dates, or two inputs with a separator.
 - **Two presentation modes**: an anchored dropdown or a modal dialog with Done and Cancel actions.
 - **Range selection**: the composed calendar runs in range mode and shows two months by default.
-- **Predefined ranges**: a set of built-in range chips - last 7 days, current month, last 30 days, year to date -
-  and application-defined custom ranges.
+- **Predefined ranges**: built-in range chips - from today and yesterday to the last quarter and the last year - in
+  the order the application chooses, and application-defined custom ranges, also relative to today. The chip of the range that set the value shows as
+  selected, and `selectedRange` names it.
 - **Constraint validation**: `required`, `min`, `max` and `disabledDates`, evaluated against both ends of the range.
 - **Locale awareness**: input and display formats, calendar strings, the separator and the action buttons all
   resolve from the active locale.
@@ -142,6 +144,7 @@ As an end-user, I expect to be able to:
 - select a start and an end date by drawing a range in a calendar.
 - type the start and the end date directly when the picker exposes two inputs.
 - pick a common range - the last 7 days, the current month - with a single click.
+- see which range I picked when I open the picker again.
 - see both dates rendered in a readable, locale-appropriate format.
 - clear the whole range with a single click.
 - confirm or cancel my selection when the calendar is presented as a dialog.
@@ -154,7 +157,9 @@ As a developer, I expect to be able to:
 - bind a `{ start, end }` value, as an object or through a JSON attribute.
 - choose between the single input and the two inputs presentation.
 - present the calendar as a dropdown or as a modal dialog.
-- offer the built-in predefined ranges, and define my own custom ranges.
+- offer the built-in predefined ranges, choose them and their order, and define my own custom ranges, also relative to
+  today.
+- know which range the user picked, store it by its key, and select it again from saved state.
 - set the input and the display format for both editors at once.
 - set `min`, `max` and `disabledDates` which drive both the calendar and the validity.
 - label the two editors separately, and place separate icons and content around each.
@@ -261,20 +266,77 @@ Done or on dismissing the dialog.
 ```typescript
 interface CustomDateRange {
   label: string;
-  dateRange: DateRangeValue;
+  dateRange?: DateRangeValue;
+  key?: string;
+  getDateRange?: () => DateRangeValue;
 }
 
 picker.customRanges = [
   {
-    label: 'This quarter',
-    dateRange: { start: new Date(2026, 6, 1), end: new Date(2026, 8, 30) },
+    label: 'Launch week',
+    dateRange: { start: new Date(2026, 10, 2), end: new Date(2026, 10, 8) },
+  },
+  {
+    key: 'lastQuarter',
+    label: 'Last quarter',
+    getDateRange: () => {
+      const today = new Date();
+      const quarter = Math.floor(today.getMonth() / 3);
+      return {
+        start: new Date(today.getFullYear(), (quarter - 1) * 3, 1),
+        end: new Date(today.getFullYear(), quarter * 3, 0),
+      };
+    },
   },
 ];
+
+picker.addEventListener('igcChange', () => saveFilter(picker.selectedRange));
+picker.selectedRange = savedFilter; // for example 'lastQuarter'
 ```
 
-The chips are rendered by an internal `igc-predefined-ranges-area` component. The built-in set is Last 7 Days,
-Current Month, Last 30 Days and Year to Date, and its labels come from the resource strings. Last 7 Days and
-Last 30 Days end today and count today as one of their days. The ranges use the date of the click.
+The chips are rendered by an internal `igc-predefined-ranges-area` component. `predefinedRanges` chooses the
+built-in ranges that `usePredefinedRanges` shows, and their order, before the custom ranges. The default is Last 7
+Days, Current Month, Last 30 Days and Year to Date. The picker skips an unknown key and a repeated key. The labels
+come from the resource strings. The ranges use the date of the click.
+
+```typescript
+picker.predefinedRanges = ['today', 'lastWeek', 'lastMonth', 'quarterToDate', 'lastQuarter'];
+```
+
+| Key              | Range                                                  |
+| ---------------- | ------------------------------------------------------ |
+| `today`          | Today.                                                 |
+| `yesterday`      | Yesterday.                                             |
+| `last7Days`      | The 7 days that end today.                             |
+| `last30Days`     | The 30 days that end today.                            |
+| `lastWeek`       | The full week before this week. The weeks start on `weekStart`. |
+| `currentMonth`   | The first to the last day of this month.               |
+| `lastMonth`      | The first to the last day of the previous month.       |
+| `currentQuarter` | The first to the last day of this quarter.             |
+| `lastQuarter`    | The first to the last day of the previous quarter.     |
+| `quarterToDate`  | The first day of this quarter to today.                |
+| `currentYear`    | January 1 to December 31 of this year.                 |
+| `lastYear`       | January 1 to December 31 of the previous year.         |
+| `yearToDate`     | January 1 to today.                                    |
+
+The quarters are calendar quarters, from January. For fiscal periods, use custom ranges.
+
+`getDateRange` replaces `dateRange`. The picker calls it when the user selects the chip and when `selectedRange`
+selects the range, so a period relative to today stays current on a page that is open past midnight. Blazor does not
+get `getDateRange`, because a function does not cross to .NET.
+
+A chip whose range includes a date before `min`, after `max` or in `disabledDates` is disabled, as the calendar
+disables such dates. A range with one end checks that end. The picker checks the ranges when it renders the chips and
+each time it opens, so it calls `getDateRange` then too, but only while `min`, `max` or `disabledDates` is set.
+
+Each range has a key: the key of a built-in range, and the `key` of a custom range, else its label. `selectedRange` is the key of the range that set the value, and the chip of
+that key shows as selected. A user commit that changes the key emits `igcSelectedRangeChange`, with the `key`, the
+`label` and the `value`, before `igcChange`. The event is the two-way binding of `selectedRange`.
+
+Setting `selectedRange` selects the range at once and sets its value, with no events. It finds a built-in range also
+while it does not show. A key that no custom range has yet waits for the next `customRanges`. Keys
+should be unique; the chips that show come first, in their order. Bind `value` or `selectedRange`, not both: the last
+write wins.
 
 #### Display and input formats
 
@@ -422,6 +484,23 @@ as touched, so an invalid value shows its invalid styles at once, also when the 
 **Range chips.** In dropdown mode, activating a chip closes the picker, unless `keepOpenOnSelect` is set. In dialog
 mode the dialog stays open.
 
+**The range key.** A chip sets the key with the value: at once in dropdown mode, as a draft in dialog mode, which Done
+and an outside click commit and Cancel, <kbd>Escape</kbd> and disabling restore. When the value changes to other
+dates - a draw in the calendar, a typed date, `clear()`, a form reset or a value from code - the key is `null`. A value
+with the same dates keeps the key, and a value with the committed dates, such as the range that Cancel restores,
+brings back the committed key. A key that `hide()` left in the dialog stays a draft, as the range does: after a new open,
+Done reports it and Cancel restores the committed key. In dialog mode, a key change with the same dates, for example
+two ranges that end today, emits only `igcSelectedRangeChange` on Done; in dropdown mode a chip emits `igcChange` on
+each click, as a calendar selection does. A value from code is committed at once, so it is not reported on Done.
+
+Setting the current or the committed key again sets the value again only when its days moved, for example after
+midnight; otherwise it does nothing, also during a draft in the dialog. The days count, not the times, so a custom
+range that ends at the current time keeps its value. A value from code with the committed dates brings back the
+committed key. So a framework that sets `selectedRange` on each render does not reset an edit in progress, but a
+`value` from code ends the draft. Before the first render, a key from code follows the settings set after it, such as
+`weekStart` and `customRanges`. The chip of a key whose days moved stays selected until the application sets the key
+again.
+
 **Opening and closing the dialog.** The dialog fades in on an open, and `igcOpened` follows the entrance. Cancel,
 Done, <kbd>Escape</kbd> and an outside click play the exit animation of the dialog, and `open` stays `true` until it
 ends; the calendar and the range chips ignore a selection then, and Done, Cancel and <kbd>Escape</kbd> do nothing.
@@ -431,7 +510,8 @@ when the close goes on. So a canceled `igcClosing` keeps the dialog open with th
 restore: the selected range stays the value, with no `igcChange`. The date picker suite covers the shared behavior.
 
 **Readonly.** Keyboard navigation, toggling the calendar and clearing through the clear icon are all disabled, and
-the calendar and clear icons appear visually disabled.
+the calendar and clear icons appear visually disabled. A read-only picker that opens from code ignores a click in the
+calendar, and its range chips are disabled.
 
 ### Localization
 
@@ -446,6 +526,18 @@ The following strings are localizable, on top of the calendar resource strings:
 | `date_range_picker_currentMonth`   | Current Month  | A predefined range chip.                |
 | `date_range_picker_last30Days`     | Last 30 Days   | A predefined range chip.                |
 | `date_range_picker_yearToDate`     | Year to Date   | A predefined range chip.                |
+| `date_range_picker_today`          | Today          | A predefined range chip.                |
+| `date_range_picker_yesterday`      | Yesterday      | A predefined range chip.                |
+| `date_range_picker_lastWeek`       | Last Week      | A predefined range chip.                |
+| `date_range_picker_lastMonth`      | Last Month     | A predefined range chip.                |
+| `date_range_picker_currentQuarter` | Current Quarter | A predefined range chip.               |
+| `date_range_picker_lastQuarter`    | Last Quarter   | A predefined range chip.                |
+| `date_range_picker_quarterToDate`  | Quarter to Date | A predefined range chip.               |
+| `date_range_picker_currentYear`    | Current Year   | A predefined range chip.                |
+| `date_range_picker_lastYear`       | Last Year      | A predefined range chip.                |
+
+`igniteui-i18n-core` does not have the last nine keys yet. Until it has them, every locale shows these labels in
+English, unless `resourceStrings` sets them. TypeScript needs a cast for that until the core interface has the keys.
 
 `locale` overrides the locale for a single picker and drives the input format, the display format and the calendar
 week start; `resourceStrings` overrides individual strings, and the picker gives the calendar strings to its calendar.
@@ -487,6 +579,8 @@ apply.
 | useTwoInputs           | use-two-inputs             | Yes       | `boolean`                   | false             | Whether the picker shows the start and the end date in two separate inputs. |
 | usePredefinedRanges    | use-predefined-ranges      | Yes       | `boolean`                   | false             | Whether the picker shows chips with predefined ranges.                   |
 | customRanges           | -                          | No        | `CustomDateRange[]`         | `[]`              | The custom date ranges that the picker shows as chips. A click on a chip selects its range. |
+| predefinedRanges       | -                          | No        | `PredefinedRangeKey[]`      | `['last7Days', 'currentMonth', 'last30Days', 'yearToDate']` | The built-in ranges that show while `usePredefinedRanges` is set, in this order. The picker skips an unknown key and a repeated key. |
+| selectedRange          | selected-range             | No        | `string \| null`            | `null`            | The key of the range that set the value: a built-in key, such as `lastQuarter`, also of a range that does not show, or the key of a custom range. The chip of the range shows as selected. Set it to select the range and set its value. A key that no custom range has yet waits for `customRanges`. It is `null` when the user types or draws other dates, and when the value changes to other dates from code. |
 | mode                   | mode                       | No        | `PickerMode`                | `dropdown`        | Whether the calendar opens in a dropdown or in a modal dialog. In `dialog` mode, the user cannot type in the input. |
 | open                   | open                       | Yes       | `boolean`                   | false             | Whether the component is open. A disabled form control stays closed.   |
 | label                  | label                      | No        | `string`                    | -                 | The label of the picker.                                                 |
@@ -553,6 +647,7 @@ apply.
 | igcClosed  | false       | -                        | Emitted after a user interaction closes the calendar. |
 | igcChange  | false       | `DateRangeValue \| null` | Emitted when the user commits a change to the value. |
 | igcInput   | false       | `DateRangeValue \| null` | Emitted when the user types in an input.             |
+| igcSelectedRangeChange | false | `IgcSelectedRangeChangeEventArgs` | Emitted before `igcChange` when a commit of the user changes `selectedRange`. In dialog mode, Done commits. |
 
 The picker handles the `igcInput` and `igcChange` events of its editors only. The same events from content in the
 `prefix` and `suffix` slots and their `-start` and `-end` forms go on to the application and do not change the value.
@@ -658,65 +753,82 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
    A clear is reported on blur in dialog and non-editable mode, in both layouts, and one time after an open and a
    close with Cancel, Done or an outside click.
 5. Readonly state, in dropdown and in dialog mode.
-6. Predefined ranges - the built-in chips and the custom ranges, a chip during the exit of the dialog, and a chip
-   that keeps the dropdown open with `keepOpenOnSelect`.
-7. Locale week start - the calendar derives its week start from the locale when `week-start` is not set.
-8. Value rules - the value and the default are `null` without a value, and an empty range is stored as `null`.
-   Reversed ends set from code, as an attribute and as the default are swapped, and the time of the ends set as an
-   attribute stays. A custom chip with reversed ends commits and reports the range in order. A value in the first
-   month set while the second month is active keeps the months in view, a value set from code brings its first
-   defined date into view, and an open without a value shows the current active date in the first month. With `activeDate` set, a pick in the second month keeps the months in view, and a new
-   `activeDate` still moves the calendar.
-9. Each layout - the same scenarios run for the single input and for two inputs: the accessibility audit and the
-   title slot; the value as an attribute, through a mode change and with `nonEditable`; `clear()` and `select()`;
-   selection through the calendar in dropdown and in dialog mode, with Done, an outside click, Cancel and
-   <kbd>Escape</kbd>; a click on the input, and the clear icon with and without a render before the blur; the
-   keyboard toggle; the input and change events of slotted content, which the picker leaves alone; an edit that a
-   layout change drops; a click on the input and on the clear icon of a read-only picker.
+6. Predefined ranges - the built-in chips and the custom ranges, a chip during the exit of the dialog, and a chip that
+   keeps the dropdown open with `keepOpenOnSelect`.
+7. Selected range - the key of a built-in chip and of a custom chip with and without `key`, `igcSelectedRangeChange`
+   before `igcChange` and not again for the same chip; a draw in the calendar, a typed date and a value from code with
+   other dates clear the key, the same dates keep it; in dialog mode Done commits the key, Cancel restores it, Cancel
+   after `clear()` keeps the clear and its `null` key, a key that `hide()` left stays a draft that Done reports and
+   Cancel restores, a key that a value from code cleared is not reported, and a key change with the same dates emits
+   only `igcSelectedRangeChange`; `selectedRange` from code selects a range, also a hidden built-in one, the chips
+   that show come first, and a key waits for `customRanges`; the same key, value and ranges on each render change
+   nothing, and setting the draft key again keeps the draft; the same key after midnight moves the dates, and a custom
+   range that ends at the current time keeps its value; a read-only picker disables the chips; a form reset to other
+   dates clears the key.
+8. Built-in ranges - the default and the order of `predefinedRanges` before the custom ranges, `lastWeek` with the
+   `weekStart` of the picker, a built-in range that does not show, a custom range with a built-in key that does not
+   show, and no ranges area without ranges or with unknown keys only.
+9. Chip checks - `min`, `max` and `disabledDates` disable the chips whose range fails them, the picker computes the
+   ranges for the checks only while it is open, a disabled chip ignores a click, and the picker checks the chips again
+   on each open.
+10. Locale week start - the calendar derives its week start from the locale when `week-start` is not set.
+11. Value rules - the value and the default are `null` without a value, and an empty range is stored as `null`.
+    Reversed ends set from code, as an attribute and as the default are swapped, and the time of the ends set as an
+    attribute stays. A custom chip with reversed ends commits and reports the range in order. A value in the first
+    month set while the second month is active keeps the months in view, a value set from code brings its first
+    defined date into view, and an open without a value shows the current active date in the first month. With
+    `activeDate` set, a pick in the second month keeps the months in view, and a new `activeDate` still moves the
+    calendar.
+12. Each layout - the same scenarios run for the single input and for two inputs: the accessibility audit and the
+    title slot; the value as an attribute, through a mode change and with `nonEditable`; `clear()` and `select()`;
+    selection through the calendar in dropdown and in dialog mode, with Done, an outside click, Cancel and
+    <kbd>Escape</kbd>; a click on the input, and the clear icon with and without a render before the blur; the
+    keyboard toggle; the input and change events of slotted content, which the picker leaves alone; an edit that a
+    layout change drops; a click on the input and on the clear icon of a read-only picker.
 
 ### Single input suite
 
-10. Properties and localization.
-11. Scroll strategy - the `scroll`, `hide` and `close` behaviors of the anchored calendar.
-12. Methods. `stepUp` and `stepDown` of the range input update its value at once, also while it is focused and empty.
+13. Properties and localization.
+14. Scroll strategy - the `scroll`, `hide` and `close` behaviors of the anchored calendar.
+15. Methods. `stepUp` and `stepDown` of the range input update its value at once, also while it is focused and empty.
     The default part is the day of the start date, a part that the format does not show still spins, and an empty
     end takes today without a step. A value set from code while the input is focused is not reported on blur.
-13. Interactions - interactions with the input and the open and clear buttons. A closed picker does not cancel
+16. Interactions - interactions with the input and the open and clear buttons. A closed picker does not cancel
     <kbd>Escape</kbd>. <kbd>Ctrl</kbd> + arrow stops at each part edge, also without separators. Arrow keys and `stepUp`
     in a range with one typed end spin that end and keep the text of the other end. Typing or a spin in the end brings
     the end into view; an edit with the caret in the separator brings the start into view.
-14. Undo and redo of the masked range text.
-15. Slots.
+17. Undo and redo of the masked range text.
+18. Slots.
 
 ### Two inputs suite
 
-16. Rendering and initialization with a value.
-17. Properties and localization.
-18. Validity of the editors - the editors report the validity of the picker, also while it is pristine, and show
+19. Rendering and initialization with a value.
+20. Properties and localization.
+21. Validity of the editors - the editors report the validity of the picker, also while it is pristine, and show
     only the invalid state of the picker.
-19. Interactions - selection through the calendar, interactions with the inputs and the open and clear buttons, and
+22. Interactions - selection through the calendar, interactions with the inputs and the open and clear buttons, and
     the readonly state. An editor commit keeps the time of both ends. A typed end before the start is swapped in
     the `igcInput` detail and in the calendar, while the editors keep the typed order. A clear through the icon is
     reported one time, when the focus leaves the picker, and not when the focus moves to the other input.
-20. Slots.
+23. Slots.
 
 ### Form integration suite
 
 The form suite runs these groups in each layout:
 
-21. Form associated - submission, also under a changed `name`, reset and the disabled ancestor state. A reset during an
+24. Form associated - submission, also under a changed `name`, reset and the disabled ancestor state. A reset during an
     edit discards the typed text, with and without a default, and the next blur keeps the restored value. A reset
     that empties the value shows the empty mask in the focused editor. <kbd>Enter</kbd> submits when the range is
     valid, and a real <kbd>Enter</kbd> submits once. Each editor shows the invalid state of the picker.
-22. Initial validation - a click on the calendar icon does not make a required picker invalid.
-23. `defaultValue` - initial state, submission, reset and validation.
-24. Validation message slots, generated by `runValidationContainerTests`.
+25. Initial validation - a click on the calendar icon does not make a required picker invalid.
+26. `defaultValue` - initial state, submission, reset and validation.
+27. Validation message slots, generated by `runValidationContainerTests`.
 
 It also has a group for each layout:
 
-25. Single input - a partial range below `min` reports the required message, and the editor shows the invalid state
+28. Single input - a partial range below `min` reports the required message, and the editor shows the invalid state
     of the picker at once.
-26. Two inputs - the validity follows a switch between the layouts; a value that the start editor commits marks the
+29. Two inputs - the validity follows a switch between the layouts; a value that the start editor commits marks the
     picker as touched, so an out-of-range start shows the invalid state without a blur; a reset clears the invalid
     styles of an editor that was touched, and keeps the default range in the editors.
 
@@ -725,17 +837,27 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Predefined ranges area
 
-27. The internal `igc-predefined-ranges-area` renders the built-in and the custom chips and emits its selection.
-    Built-in range dates: the day count and a click after midnight.
+30. Predefined Area Component Tests - the internal `igc-predefined-ranges-area` passes the a11y audit, renders the
+    built-in and the custom chips, and emits its selection.
+31. Built-in range dates - the day count and a click after midnight.
+32. All built-in ranges - the order of `predefinedRanges` without unknown keys and repeats, the English labels, the
+    dates of each range on a fixed day, across a year boundary and at the end of a month (also February of a leap
+    year), `lastWeek` for four week starts, and the English fallback in a locale without the new keys, unless the
+    strings set them.
+33. Range keys - the key of each chip, or its label, also for a `null` key; `getDateRange` at the click, also after
+    midnight; the chip of `selectedRange` is selected with `aria-pressed`, passes the a11y audit, and stays selected
+    after a click on it; `dateConstraints` and `disabled` disable chips, with the a11y audit, each kind of constraint
+    is checked against the whole range, a range with one end checks that end, a click on the host of a disabled chip
+    does nothing, and the custom ranges are computed at render only while there are constraints.
 
 ### Range mask parser
 
-28. Initialization (a literal separator and a widened year format), range parsing, range formatting, part queries,
+34. Initialization (a literal separator and a widened year format), range parsing, range formatting, part queries,
     spinning, prompt updates and mask updates.
 
 ### Range mask parser properties
 
-29. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
+35. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
     around the separator after a mask change, and no throw or invalid date for any string. A strict value parse
     gives a range only when both ends are complete; a lenient one parses each end as typed, and gives `null` when
     neither end is a valid date or the mask is blank. For the part editing:
@@ -744,14 +866,14 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Range value shape
 
-30. Without a DOM: an empty range is `null`; a range in order stays the same object; reversed ends swap, by time also
+36. Without a DOM: an empty range is `null`; a range in order stays the same object; reversed ends swap, by time also
     on the same day; a missing end becomes `null`. The form value transformers normalize a value, a default value and
     an attribute string, and compare ranges by their dates. The calendar dates of a range, a range in one day, a
     partial range and no range; the range of a calendar selection; a complete range.
 
 ### Range value shape properties
 
-31. For generated ranges: the normalize step is idempotent, gives `null` only for an empty range and the ends in order
+37. For generated ranges: the normalize step is idempotent, gives `null` only for an empty range and the ends in order
     of time otherwise, and keeps each date with its time. A complete range goes to the calendar and back unchanged,
     and a calendar selection comes back as its first and last date, which closes the picker when there is more than one.
     An attribute string is normalized like the range of its dates, for any valid dates, also ones with a signed six
@@ -759,7 +881,7 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Range editors
 
-32. For each layout: the editors, the start editor first, and none in a root without them; the range of the editors;
+38. For each layout: the editors, the start editor first, and none in a root without them; the range of the editors;
     the typed range and the typed date during an edit of the start, while the committed range stays; the focus on the
     start editor after a pick, which selects its text only with two inputs. In the single input, the end at the
     caret, also at the edge of a part and nothing in the separator, gives the typed date; with two inputs, each
@@ -767,9 +889,9 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Host ARIA
 
-33. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+39. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required` on each editor.
-34. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+40. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -778,7 +900,7 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Disabled popup
 
-35. The shared runner `runDisabledPopupTests`.
+41. The shared runner `runDisabledPopupTests`.
 
 ## Assumptions and limitations
 
@@ -788,7 +910,13 @@ The focus after the form checks and the `invalid` event rules come from the form
   `labelEnd`. Slotting `igc-date-time-input` elements as the editors was evaluated and discarded.
 - The value holds local `Date` objects; time zones are not modelled.
 - `min`, `max` and `disabledDates` restrict the calendar and drive validation, but they do not prevent an
-  out-of-range date from being typed in; such a value invalidates the component instead.
+  out-of-range date from being typed in; such a value invalidates the component instead. The range chips of such
+  ranges are disabled, but `selectedRange` from code still selects them.
+- A relative range that the user selected does not move by itself after midnight. The application sets
+  `selectedRange` again to move the dates. A framework that sets every property on each render, such as React, sets
+  the key again on each render, so after midnight a render moves the dates without `igcChange`. Load the data from
+  `value`, not only from `igcChange`.
+- With server-side rendering, a `selected-range` attribute computes the dates on the clock of the server.
 - `hideHeader`, `headerOrientation` and the `title` slot are only in effect in dialog mode.
 - In dialog mode, `hide()`, `toggle()` and a change of `open` do not commit or restore the selected range, also after
   a canceled `igcClosing`. An application that cancels the close, for example to ask for a confirmation, restores the
@@ -801,6 +929,8 @@ The focus after the form checks and the `invalid` event rules come from the form
 ### ARIA roles and properties
 
 - Each input part is a native text input with an associated label; the host delegates focus to it.
+- The range chips are toggle buttons: the chip of `selectedRange` has `aria-pressed="true"`, the others
+  `aria-pressed="false"`. A chip whose range fails the checks is a disabled button, which the keyboard skips.
 - The picker projects `aria-haspopup`, its expanded state and the relation to the calendar surface onto the native
   input of the editor, as element references, because an IDREF does not cross a shadow boundary.
 - The calendar surface is exposed as a dialog labelled by the picker.

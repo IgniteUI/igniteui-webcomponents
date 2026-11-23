@@ -119,6 +119,9 @@ export declare class BaseFormAssociatedElement {
   /** Records a write that keeps the value, as a write of the current origin. */
   protected _recordSameValueWrite(): void;
 
+  /** The value of the last `igcChange`, or of the last write that needs no report. */
+  protected get _reportedValue(): unknown;
+
   /**
    * Emits `igcChange` with `detail` when the value differs from the reported
    * value, or always with `force`. The value becomes the reported value.

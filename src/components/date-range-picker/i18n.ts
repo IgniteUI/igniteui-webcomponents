@@ -12,6 +12,22 @@ import type { I18nMixinConfig } from '#internals/mixins/i18n.js';
 export type DateRangePickerResourceStringsType =
   IDateRangePickerResourceStrings & ICalendarResourceStrings;
 
+/**
+ * The English labels of the built-in ranges that `igniteui-i18n-core` lacks.
+ * TODO: remove when `IDateRangePickerResourceStrings` has these keys.
+ */
+const PredefinedRangeResourceStringsEN = {
+  date_range_picker_today: 'Today',
+  date_range_picker_yesterday: 'Yesterday',
+  date_range_picker_lastWeek: 'Last Week',
+  date_range_picker_lastMonth: 'Last Month',
+  date_range_picker_currentQuarter: 'Current Quarter',
+  date_range_picker_lastQuarter: 'Last Quarter',
+  date_range_picker_quarterToDate: 'Quarter to Date',
+  date_range_picker_currentYear: 'Current Year',
+  date_range_picker_lastYear: 'Last Year',
+};
+
 /** The resource strings that the date range components accept. */
 type DateRangeResourceStrings =
   | IgcDateRangePickerResourceStrings
@@ -33,6 +49,7 @@ export const dateRangeI18nConfig: I18nMixinConfig<
 > = {
   defaultEN: {
     ...DateRangePickerResourceStringsEN,
+    ...PredefinedRangeResourceStringsEN,
     ...CalendarResourceStringsEN,
   },
   resourceMap: dateRangePickerResourcesMap,
