@@ -2,13 +2,18 @@ import { clamp } from '#internals/utils/math.js';
 import { canHideModules, type ModuleRange } from '../model/cutout.js';
 import { EC_LEVEL_INDEX } from '../model/encode.js';
 import type { QrErrorCorrectionLevel, QrLogoShape } from '../types.js';
-import { arcRect, ellipsePath, squircleRect } from './helpers.js';
+import {
+  arcBoxPath,
+  type Box,
+  ellipseBoxPath,
+  squircleBoxPath,
+} from './helpers.js';
 
-/** A logo box centered on the code, in modules from the top-left corner of the matrix. */
-export type LogoBox = { x: number; y: number; width: number; height: number };
-
-/** A logo box, its shape, and the cutout: the modules that the shape covers, in part or in full. */
-export type LogoLayout = LogoBox & {
+/**
+ * A logo box centered on the code, in modules from the top-left corner of the matrix, its shape,
+ * and the cutout: the modules that the shape covers, in part or in full.
+ */
+export type LogoLayout = Box & {
   shape: QrLogoShape;
   cutout: ModuleRange[];
 };
@@ -21,9 +26,18 @@ export type LogoSettings = {
   shape: QrLogoShape;
 };
 
-/** Returns the corner radius of a `rounded` logo: a quarter of the shorter side. */
 function cornerRadius(width: number, height: number): number {
   return Math.min(width, height) / 4;
+}
+
+/** Returns `box` less `inset` on each side. */
+export function insetBox({ x, y, width, height }: Box, inset: number): Box {
+  return {
+    x: x + inset,
+    y: y + inset,
+    width: width - 2 * inset,
+    height: height - 2 * inset,
+  };
 }
 
 type LogoShapeGeometry = {
@@ -37,38 +51,22 @@ type LogoShapeGeometry = {
     halfWidth: number,
     halfHeight: number
   ) => boolean;
-  /** Returns the clip path of the shape in `box`, less `inset` on each side. */
-  clip?: (box: LogoBox, inset: number) => string;
+  /** Returns the clip path of the shape in `inner`: its `box` less `inset` on each side. */
+  clip?: (inner: Box, inset: number, box: Box) => string;
 };
 
-/** Returns `box` less `inset` on each side. */
-function insetBox({ x, y, width, height }: LogoBox, inset: number): LogoBox {
-  return {
-    x: x + inset,
-    y: y + inset,
-    width: width - 2 * inset,
-    height: height - 2 * inset,
-  };
-}
-
-/** The geometry of each logo shape. Each cell of the box range overlaps a `square`. */
+/** Each cell of the box range overlaps a `square`. */
 const LOGO_SHAPES: Record<QrLogoShape, LogoShapeGeometry> = {
   square: { covers: () => true },
   circle: {
     covers: (dx, dy, halfWidth, halfHeight) =>
       (dx / halfWidth) ** 2 + (dy / halfHeight) ** 2 < 1,
-    clip: (box, inset) => {
-      const { x, y, width, height } = insetBox(box, inset);
-      return ellipsePath(x + width / 2, y + height / 2, width / 2, height / 2);
-    },
+    clip: ellipseBoxPath,
   },
   squircle: {
     covers: (dx, dy, halfWidth, halfHeight) =>
       (dx / halfWidth) ** 4 + (dy / halfHeight) ** 4 < 1,
-    clip: (box, inset) => {
-      const { x, y, width, height } = insetBox(box, inset);
-      return squircleRect(x, y, width, height);
-    },
+    clip: squircleBoxPath,
   },
   rounded: {
     covers: (dx, dy, halfWidth, halfHeight) => {
@@ -78,11 +76,11 @@ const LOGO_SHAPES: Record<QrLogoShape, LogoShapeGeometry> = {
       return dx < halfWidth && dy < halfHeight && cx * cx + cy * cy < r * r;
     },
     // The curve keeps its center, so the clip is the exact inset of the shape.
-    clip: (box, inset) => {
-      const { x, y, width, height } = insetBox(box, inset);
-      const r = cornerRadius(box.width, box.height) - inset;
-      return arcRect(x, y, width, height, Math.max(r, 0));
-    },
+    clip: (inner, inset, box) =>
+      arcBoxPath(
+        inner,
+        Math.max(cornerRadius(box.width, box.height) - inset, 0)
+      ),
   },
 };
 
@@ -96,7 +94,7 @@ function geometryOf(shape: QrLogoShape): LogoShapeGeometry {
  */
 function getCutout(
   shape: QrLogoShape,
-  { x, y, width, height }: LogoBox
+  { x, y, width, height }: Box
 ): ModuleRange[] {
   const { covers } = geometryOf(shape);
   const halfWidth = width / 2;
@@ -137,10 +135,10 @@ function getCutout(
  */
 export function logoClipPath(
   shape: QrLogoShape,
-  box: LogoBox,
+  box: Box,
   inset: number
 ): string | undefined {
-  return geometryOf(shape).clip?.(box, inset);
+  return geometryOf(shape).clip?.(insetBox(box, inset), inset, box);
 }
 
 function getLogoLayout(

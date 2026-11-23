@@ -38,8 +38,7 @@ defineComponents(IgcQrCodeComponent);
 - `margin`: `number`. Default: `4`. Attribute: `margin`.
   The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather
   than pixels. This is the blank border area surrounding the code, which helps ensure that it
-  can be properly scanned. It is a minimum: the modules cover whole pixels, and the pixels that
-  are left over make the quiet zone wider.
+  can be properly scanned. It is a minimum: spare pixels make the quiet zone wider.
 - `logoSrc`: `string | undefined`. Attribute: `logo-src`.
   The source URL of an optional logo image at the center of the QR code.
   The component does not render a logo that fails to load, a `javascript:` or `vbscript:` URL,

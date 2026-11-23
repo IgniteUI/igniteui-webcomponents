@@ -15,15 +15,9 @@ const TEXT_ENCODER = new TextEncoder();
 type Mode = {
   name: QrEncodingMode;
   indicator: number;
-  /**
-   * The count field widths for versions 1-9, 10-26 and 27-40. A count too large for its field
-   * needs more bits than the last version of the group holds.
-   */
+  /** The count field widths for versions 1-9, 10-26 and 27-40. */
   countBits: readonly number[];
-  /**
-   * The cost of `char` in sixths of a bit, so that 10 bits for 3 digits and 11 bits for
-   * 2 alphanumeric characters are whole numbers, or `Infinity`.
-   */
+  /** The cost of `char` in sixths of a bit (10/3 and 11/2 are whole), or `Infinity`. */
   cost(char: string): number;
   /** Writes the count field of `text`, `width` bits wide, and its data. */
   write(bits: number[], text: string, width: number): void;
@@ -95,12 +89,22 @@ function pushBits(bits: number[], value: number, length: number): void {
   }
 }
 
+/** The bits of the mode indicator and the count field of a segment in `mode`. */
+function getHeaderBits(mode: Mode, group: number): number {
+  return 4 + mode.countBits[group];
+}
+
 function getSegmentBits({ mode, text }: Segment, group: number): number {
   let cost = 0;
   for (const char of text) {
     cost += MODES[mode].cost(char);
   }
-  return 4 + MODES[mode].countBits[group] + Math.ceil(cost / 6);
+  return getHeaderBits(MODES[mode], group) + Math.ceil(cost / 6);
+}
+
+/** Returns the wider of two modes. `MODES` goes from the narrowest character set to the widest. */
+function widerMode(a: number, b: number): number {
+  return Math.max(a, b);
 }
 
 /**
@@ -109,9 +113,7 @@ function getSegmentBits({ mode, text }: Segment, group: number): number {
  */
 function splitSegments(chars: string[], group: number): Segment[] {
   const modeCount = MODES.length;
-  const headers = MODES.map(
-    (_, mode) => getSegmentBits({ mode, text: '' }, group) * 6
-  );
+  const headers = MODES.map((mode) => getHeaderBits(mode, group) * 6);
   // The cheapest path whose next character is in each mode.
   const costs = headers.slice();
   const stayCosts = headers.map(() => 0);
@@ -160,7 +162,7 @@ function splitSegments(chars: string[], group: number): Segment[] {
     while (segments.length > 0) {
       const last = segments.at(-1)!;
       const merged: Segment = {
-        mode: Math.max(last.mode, segment.mode),
+        mode: widerMode(last.mode, segment.mode),
         text: last.text + segment.text,
       };
 
@@ -206,7 +208,7 @@ function fitVersion(
     const start = Math.max(first, (GROUP_LAST_VERSIONS[group - 1] ?? 0) + 1);
     const end = Math.min(last, groupLast);
 
-    // Even as digits, at 10 bits for 3, the characters need more bits than the group holds.
+    // Skip a group too small even for all-digit data.
     if (
       start > end ||
       chars.length * 10 > getDataCodewordsCount(end, ecIndex) * 24

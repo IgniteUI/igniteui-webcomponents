@@ -1,6 +1,6 @@
 import { setOrRemoveAttribute } from '#internals/utils/dom.js';
 import type { QrCodeExportFormat } from '../types.js';
-import { snapToPixels } from './helpers.js';
+import { snapToPixels } from './snap.js';
 
 type QrRasterFormat = Exclude<QrCodeExportFormat, 'svg'>;
 

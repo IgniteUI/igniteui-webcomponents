@@ -35,8 +35,9 @@ import {
   serializeSvg,
   snapSvg,
 } from './renderer/export.js';
-import { resolveCornerDotStyle, snapToPixels } from './renderer/helpers.js';
+import { type CodeGrid, resolveCornerDotStyle } from './renderer/helpers.js';
 import { fitLogo, type LogoLayout } from './renderer/logo.js';
+import { snapToPixels } from './renderer/snap.js';
 import {
   DEFAULT_SIZE_RATIO,
   MAX_SAFE_AREA,
@@ -189,8 +190,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   /**
    * The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather
    * than pixels. This is the blank border area surrounding the code, which helps ensure that it
-   * can be properly scanned. It is a minimum: the modules cover whole pixels, and the pixels that
-   * are left over make the quiet zone wider.
+   * can be properly scanned. It is a minimum: spare pixels make the quiet zone wider.
    *
    * @attr margin
    * @default 4
@@ -679,14 +679,17 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
 
     const totalModules = size + this.margin * 2;
     const moduleSize = size / totalModules;
-    const marginPx = this.margin * moduleSize;
     const svgSize = moduleSize * totalModules;
-    const snap = snapToPixels(this.size, size, this.margin);
-
-    const patterns = {
+    const grid: CodeGrid = {
       size,
       moduleSize,
-      marginPx,
+      marginPx: this.margin * moduleSize,
+      svgSize,
+    };
+    const snap = snapToPixels(this.size, size, this.margin);
+
+    const patternOptions = {
+      grid,
       squareStyle: this.squareStyle,
       dotStyle: resolveCornerDotStyle(
         this.squareStyle,
@@ -701,24 +704,23 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
       layout: fit?.layout,
       unitSize: (this.size / svgSize) * (snap?.scale ?? 1),
       margin: this.logoMargin,
-      svgSize,
-      moduleSize,
-      marginPx,
+      grid,
       maskId,
       clipId: `${this._id}-clip`,
       transform: snap?.transform,
     });
 
     const gradientId = `${this._id}-gradient`;
-    const hasGradient =
-      this.gradient === 'linear' || this.gradient === 'radial';
-    const gradient = hasGradient
+    const gradientType =
+      this.gradient === 'linear' || this.gradient === 'radial'
+        ? this.gradient
+        : undefined;
+    const gradient = gradientType
       ? renderQrGradient({
           id: gradientId,
-          gradient: this.gradient!,
+          gradient: gradientType,
           angle: this.gradientAngle,
-          svgSize,
-          marginPx,
+          grid,
         })
       : nothing;
 
@@ -739,18 +741,18 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
           mask=${bindIf(shouldApplyMask, `url(#${maskId})`)}
           transform=${ifDefined(snap?.transform)}
           style=${styleMap({
-            '--_paint': hasGradient ? `url(#${gradientId})` : undefined,
+            '--_paint': gradientType && `url(#${gradientId})`,
           })}
         >
           ${renderQrDots({
             matrix,
-            moduleSize,
-            marginPx,
+            grid,
             dotStyle: this.dotStyle,
             dotScale: this._getDotScale(),
             cutout: shouldApplyMask ? fit?.layout.cutout : undefined,
           })}
-          ${renderQrAlignment(patterns)} ${renderQrFinders(patterns)}
+          ${renderQrAlignment(patternOptions)}
+          ${renderQrFinders(patternOptions)}
         </g>
         ${image}
       </svg>

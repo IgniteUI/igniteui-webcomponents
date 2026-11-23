@@ -1,4 +1,4 @@
-import { clampRange, type ModuleRange } from '../model/cutout.js';
+import { forEachModule, type ModuleRange } from '../model/cutout.js';
 import { getAlignmentPatternCenters } from '../model/matrix.js';
 import type {
   QrCornerDotStyle,
@@ -6,11 +6,30 @@ import type {
   QrDotStyle,
 } from '../types.js';
 
-function squarePath(x: number, y: number, s: number): string {
-  return `M${x},${y}h${s}v${s}h${-s}Z`;
+/** A box in SVG units. */
+export type Box = { x: number; y: number; width: number; height: number };
+
+/** The modules of a code in SVG units: the side of a module, and the quiet zone before the first. */
+export type ModuleGrid = { moduleSize: number; marginPx: number };
+
+/** A code of `size` modules on a view box with the side `svgSize`. */
+export type CodeGrid = ModuleGrid & { size: number; svgSize: number };
+
+/** Converts a module index to an SVG coordinate. */
+export function moduleToPx(
+  index: number,
+  { moduleSize, marginPx }: ModuleGrid
+): number {
+  return index * moduleSize + marginPx;
 }
 
-export function ellipsePath(
+//#region Shapes
+
+function squarePath(x: number, y: number, side: number): string {
+  return `M${x},${y}h${side}v${side}h${-side}Z`;
+}
+
+function ellipsePath(
   cx: number,
   cy: number,
   rx: number,
@@ -28,28 +47,30 @@ function circlePath(cx: number, cy: number, r: number, sweep = 0): string {
   return ellipsePath(cx, cy, r, r, sweep);
 }
 
+/** Returns the path of an ellipse that fills `box`. */
+export function ellipseBoxPath({ x, y, width, height }: Box): string {
+  return ellipsePath(x + width / 2, y + height / 2, width / 2, height / 2);
+}
+
 /**
  * The distance of the cubic control points from the axis, as a ratio of the half side, that puts
  * the curve on the superellipse |x|⁴ + |y|⁴ = 1 at 45°: (2^-¼ - ½) / ⅜.
  */
 const SQUIRCLE_KAPPA = 0.909_057;
 
-/** The radius of the corners of a `rounded` module, and of the fillets of `liquid`, per side. */
+/** The corner radius of a `rounded` module and of a `liquid` fillet, per module side. */
 const ROUNDED_RADIUS = 0.45;
 
-/**
- * Returns `build(side)`, kept for the last side: the relative part of a shape that all the
- * modules of one size share.
- */
+/** Returns `build`, memoized for the last side: the relative path that modules of one size share. */
 function cachedBySide(
   build: (side: number) => string
 ): (side: number) => string {
-  let side = Number.NaN;
+  let lastSide = Number.NaN;
   let path = '';
-  return (s) => {
-    if (s !== side) {
-      side = s;
-      path = build(s);
+  return (side) => {
+    if (side !== lastSide) {
+      lastSide = side;
+      path = build(side);
     }
     return path;
   };
@@ -73,21 +94,52 @@ function squircleCurves(width: number, height: number): string {
   );
 }
 
-const squircleTail = cachedBySide((s) => squircleCurves(s, s));
+const squircleTail = cachedBySide((side) => squircleCurves(side, side));
 
-/** Returns the path of a squircle that fills the square of side `s` at `x`, `y`. */
-function squirclePath(x: number, y: number, s: number): string {
-  return `M${x + s},${y + s / 2}${squircleTail(s)}`;
+/** Returns the path of a squircle that fills `box`. */
+export function squircleBoxPath({ x, y, width, height }: Box): string {
+  const curves =
+    width === height ? squircleTail(width) : squircleCurves(width, height);
+  return `M${x + width},${y + height / 2}${curves}`;
 }
 
-/** Returns the path of a squircle that fills the box at `x`, `y`. */
-export function squircleRect(
+function squirclePath(x: number, y: number, side: number): string {
+  return squircleBoxPath({ x, y, width: side, height: side });
+}
+
+/** Draws a corner of radius `r` to `dx`, `dy`; `horizontal` when the edge before it is. */
+type CornerCommand = (
+  r: number,
+  dx: number,
+  dy: number,
+  horizontal: boolean
+) => string;
+
+const quadCorner: CornerCommand = (_r, dx, dy, horizontal) =>
+  horizontal ? `q${dx},0 ${dx},${dy}` : `q0,${dy} ${dx},${dy}`;
+
+const arcCorner: CornerCommand = (r, dx, dy) =>
+  r ? `a${r},${r} 0 0 1 ${dx},${dy}` : '';
+
+/** Returns the path of a rectangle with a radius for each corner, drawn with `corner`. */
+function rectPerCorner(
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
+  rTL: number,
+  rTR: number,
+  rBR: number,
+  rBL: number,
+  corner: CornerCommand
 ): string {
-  return `M${x + width},${y + height / 2}${squircleCurves(width, height)}`;
+  return (
+    `M${x + rTL},${y}` +
+    `h${width - rTL - rTR}${corner(rTR, rTR, rTR, true)}` +
+    `v${height - rTR - rBR}${corner(rBR, -rBR, rBR, false)}` +
+    `h${-(width - rBR - rBL)}${corner(rBL, -rBL, -rBL, true)}` +
+    `v${-(height - rBL - rTL)}${corner(rTL, rTL, -rTL, false)}z`
+  );
 }
 
 function roundedRect(
@@ -97,253 +149,85 @@ function roundedRect(
   height: number,
   radius: number
 ): string {
-  const cr = Math.min(radius, width / 2, height / 2);
-  return roundedRectPerCorner(x, y, width, height, cr, cr, cr, cr);
+  const r = Math.min(radius, width / 2, height / 2);
+  return rectPerCorner(x, y, width, height, r, r, r, r, quadCorner);
 }
 
-function roundedRectPerCorner(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  rTL: number,
-  rTR: number,
-  rBR: number,
-  rBL: number
+/** Returns the path of `box` with circular corners of `radius`. */
+export function arcBoxPath(
+  { x, y, width, height }: Box,
+  radius: number
 ): string {
-  return (
-    `M${x + rTL},${y}` +
-    `h${width - rTL - rTR}` +
-    `q${rTR},0 ${rTR},${rTR}` +
-    `v${height - rTR - rBR}` +
-    `q0,${rBR} ${-rBR},${rBR}` +
-    `h${-(width - rBR - rBL)}` +
-    `q${-rBL},0 ${-rBL},${-rBL}` +
-    `v${-(height - rBL - rTL)}` +
-    `q0,${-rTL} ${rTL},${-rTL}z`
+  return rectPerCorner(
+    x,
+    y,
+    width,
+    height,
+    radius,
+    radius,
+    radius,
+    radius,
+    arcCorner
   );
 }
 
-/** `roundedRectPerCorner` with circular arcs for the corners. */
-function arcRectPerCorner(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  rTL: number,
-  rTR: number,
-  rBR: number,
-  rBL: number
-): string {
-  const arc = (r: number, dx: number, dy: number) =>
-    r ? `a${r},${r} 0 0 1 ${dx},${dy}` : '';
-  return (
-    `M${x + rTL},${y}` +
-    `h${width - rTL - rTR}${arc(rTR, rTR, rTR)}` +
-    `v${height - rTR - rBR}${arc(rBR, -rBR, rBR)}` +
-    `h${-(width - rBR - rBL)}${arc(rBL, -rBL, -rBL)}` +
-    `v${-(height - rBL - rTL)}${arc(rTL, rTL, -rTL)}z`
-  );
-}
-
-const diamondTail = cachedBySide((s) => {
-  const h = s / 2;
-  return `l${h},${h}l${-h},${h}l${-h},${-h}z`;
+const diamondTail = cachedBySide((side) => {
+  const half = side / 2;
+  return `l${half},${half}l${-half},${half}l${-half},${-half}z`;
 });
 
-function diamondPath(x: number, y: number, s: number): string {
-  return `M${x + s / 2},${y}${diamondTail(s)}`;
+function diamondPath(x: number, y: number, side: number): string {
+  return `M${x + side / 2},${y}${diamondTail(side)}`;
 }
 
-const plusTail = cachedBySide((s) => {
-  const a = s / 4;
-  return `h${2 * a}v${a}h${a}v${2 * a}h${-a}v${a}h${-2 * a}v${-a}h${-a}v${-2 * a}h${a}z`;
+const plusTail = cachedBySide((side) => {
+  const arm = side / 4;
+  return `h${2 * arm}v${arm}h${arm}v${2 * arm}h${-arm}v${arm}h${-2 * arm}v${-arm}h${-arm}v${-2 * arm}h${arm}z`;
 });
 
-/** Returns the path of a cross with arms half as wide as the square of side `s` at `x`, `y`. */
-function plusPath(x: number, y: number, s: number): string {
-  return `M${x + s / 4},${y}${plusTail(s)}`;
+/** Returns the path of a cross with arms half as wide as the square of `side` at `x`, `y`. */
+function plusPath(x: number, y: number, side: number): string {
+  return `M${x + side / 4},${y}${plusTail(side)}`;
 }
 
 /**
- * Returns the path of a leaf in the square of side `s` at `x`, `y`: its top-left and
- * bottom-right corners are round, or its top-right and bottom-left ones on the `antiDiagonal`.
- * A radius over a quarter of the side fails to decode.
+ * Returns a square whose top-left and bottom-right corners, or the other two on the
+ * `antiDiagonal`, are round at a quarter of the side. A larger radius fails to decode.
  */
 function leafPath(
   x: number,
   y: number,
-  s: number,
+  side: number,
   antiDiagonal: boolean
 ): string {
-  const r = s / 4;
-  return antiDiagonal
-    ? arcRectPerCorner(x, y, s, s, 0, r, 0, r)
-    : arcRectPerCorner(x, y, s, s, r, 0, r, 0);
-}
-
-/** Returns the path of a rectangle with circular corners of radius `r`. */
-export function arcRect(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  r: number
-): string {
-  return arcRectPerCorner(x, y, width, height, r, r, r, r);
-}
-
-/** Returns the path of a pill with round ends on its short sides. */
-function pillPath(x: number, y: number, width: number, height: number): string {
-  return arcRect(x, y, width, height, Math.min(width, height) / 2);
-}
-
-/**
- * The zone of each cell of a matrix: `OPEN_ZONE`, or `CUTOUT_ZONE` under the logo, positive for
- * a dark data module and negative for a light cell. A cell of a finder pattern, its separator or
- * an alignment pattern is 0, because the data modules do not draw it.
- */
-type ZoneGrid = number[][];
-
-const OPEN_ZONE = 1;
-const CUTOUT_ZONE = 2;
-
-/** Whether the cells at `r`, `c` and `r2`, `c2` are dark data modules of one zone. */
-function joins(
-  zones: ZoneGrid,
-  r: number,
-  c: number,
-  r2: number,
-  c2: number
-): boolean {
-  return zones[r][c] > 0 && zones[r2]?.[c2] === zones[r][c];
-}
-
-/** Whether the modules of `dotStyle` join their neighbors, so that the logo cutout changes them. */
-export function joinsModules(dotStyle: QrDotStyle, dotScale: number): boolean {
-  return (
-    dotStyle.endsWith('-bars') ||
-    (dotScale === 1 && (dotStyle === 'rounded' || dotStyle === 'liquid'))
+  const radius = side / 4;
+  const [topLeft, topRight] = antiDiagonal ? [0, radius] : [radius, 0];
+  return rectPerCorner(
+    x,
+    y,
+    side,
+    side,
+    topLeft,
+    topRight,
+    topLeft,
+    topRight,
+    arcCorner
   );
 }
 
-/**
- * Returns the SVG path of the data module at row `r` and column `c`, in a cell of side `s`
- * at `x`, `y`. The module is `scale` times the cell, centered in it. A `'rounded'` module
- * keeps a square corner toward each neighbor that it joins, when `canJoin` is set.
- */
-function dotPath(
-  zones: ZoneGrid,
-  r: number,
-  c: number,
-  x: number,
-  y: number,
-  s: number,
-  style: QrDotStyle,
-  scale: number,
-  canJoin: boolean
-): string {
-  const size = s * scale;
-  const inset = (s - size) / 2;
-
-  switch (style) {
-    case 'circle':
-      return circlePath(x + s / 2, y + s / 2, size / 2);
-    case 'squircle':
-      return squirclePath(x + inset, y + inset, size);
-    case 'diamond':
-      return diamondPath(x + inset, y + inset, size);
-    case 'plus':
-      return plusPath(x + inset, y + inset, size);
-    case 'rounded':
-    case 'liquid': {
-      const R = size * ROUNDED_RADIUS;
-      const join = (r2: number, c2: number) =>
-        canJoin && joins(zones, r, c, r2, c2);
-      const top = join(r - 1, c);
-      const right = join(r, c + 1);
-      const bottom = join(r + 1, c);
-      const left = join(r, c - 1);
-      return roundedRectPerCorner(
-        x + inset,
-        y + inset,
-        size,
-        size,
-        top || left ? 0 : R,
-        top || right ? 0 : R,
-        bottom || right ? 0 : R,
-        bottom || left ? 0 : R
-      );
-    }
-    default:
-      return squarePath(x + inset, y + inset, size);
-  }
+/** Returns the path of a pill: two half circles on the short sides. */
+function pillPath(x: number, y: number, width: number, height: number): string {
+  const radius = Math.min(width, height) / 2;
+  const arc = (dx: number, dy: number) =>
+    `a${radius},${radius} 0 0 1 ${dx},${dy}`;
+  return width >= height
+    ? `M${x + radius},${y}h${width - 2 * radius}${arc(0, 2 * radius)}h${2 * radius - width}${arc(0, -2 * radius)}z`
+    : `M${x},${y + radius}${arc(2 * radius, 0)}v${height - 2 * radius}${arc(-2 * radius, 0)}z`;
 }
 
-/** Returns the SVG path of the center dot of a finder or an alignment pattern. */
-function cornerDotPath(
-  x: number,
-  y: number,
-  size: number,
-  style: QrCornerDotStyle,
-  antiDiagonal: boolean
-): string {
-  switch (style) {
-    case 'circle':
-      return circlePath(x + size / 2, y + size / 2, size / 2);
-    case 'rounded': {
-      return roundedRect(x, y, size, size, size * 0.3);
-    }
-    case 'squircle':
-      return squirclePath(x, y, size);
-    case 'leaf':
-      return leafPath(x, y, size, antiDiagonal);
-    default:
-      return squarePath(x, y, size);
-  }
-}
+//#endregion
 
-/** Returns the SVG path of a ring of side `size` and of width `ring`. */
-function cornerSquarePath(
-  x: number,
-  y: number,
-  size: number,
-  ring: number,
-  style: QrCornerSquareStyle,
-  antiDiagonal: boolean
-): string {
-  const inner = size - 2 * ring;
-  const cut = (shape: (x: number, y: number, s: number) => string) =>
-    shape(x + ring, y + ring, inner);
-
-  switch (style) {
-    case 'leaf': {
-      const leaf = (left: number, top: number, s: number) =>
-        leafPath(left, top, s, antiDiagonal);
-      return `${leaf(x, y, size)} ${cut(leaf)}`;
-    }
-    case 'square':
-      return `${squarePath(x, y, size)} ${cut(squarePath)}`;
-    case 'rounded':
-      return `${roundedRect(x, y, size, size, size * 0.15)} ${cut(squarePath)}`;
-    case 'squircle':
-      return `${squirclePath(x, y, size)} ${cut(squirclePath)}`;
-    default: {
-      const cx = x + size / 2;
-      const cy = y + size / 2;
-      return circlePath(cx, cy, size / 2) + circlePath(cx, cy, inner / 2, 1);
-    }
-  }
-}
-
-/** Converts a module grid index to a pixel coordinate, accounting for margin. */
-export function moduleToPx(
-  moduleIndex: number,
-  moduleSize: number,
-  marginPx: number
-): number {
-  return moduleIndex * moduleSize + marginPx;
-}
+//#region Finder and alignment patterns
 
 function finderCorners(size: number): [number, number][] {
   return [
@@ -355,6 +239,61 @@ function finderCorners(size: number): [number, number][] {
 
 function alignmentCenters(size: number): [number, number][] {
   return getAlignmentPatternCenters((size - 17) / 4);
+}
+
+/** Returns the SVG path of the center dot of a finder or an alignment pattern. */
+function cornerDotPath(
+  x: number,
+  y: number,
+  side: number,
+  style: QrCornerDotStyle,
+  antiDiagonal: boolean
+): string {
+  switch (style) {
+    case 'circle':
+      return circlePath(x + side / 2, y + side / 2, side / 2);
+    case 'rounded':
+      return roundedRect(x, y, side, side, side * 0.3);
+    case 'squircle':
+      return squirclePath(x, y, side);
+    case 'leaf':
+      return leafPath(x, y, side, antiDiagonal);
+    default:
+      return squarePath(x, y, side);
+  }
+}
+
+/** Returns the SVG path of a ring of `side` and of width `ring`. */
+function cornerSquarePath(
+  x: number,
+  y: number,
+  side: number,
+  ring: number,
+  style: QrCornerSquareStyle,
+  antiDiagonal: boolean
+): string {
+  const inner = side - 2 * ring;
+  const hole = (shape: (x: number, y: number, side: number) => string) =>
+    shape(x + ring, y + ring, inner);
+
+  switch (style) {
+    case 'leaf': {
+      const leaf = (left: number, top: number, leafSide: number) =>
+        leafPath(left, top, leafSide, antiDiagonal);
+      return `${leaf(x, y, side)} ${hole(leaf)}`;
+    }
+    case 'square':
+      return `${squarePath(x, y, side)} ${hole(squarePath)}`;
+    case 'rounded':
+      return `${roundedRect(x, y, side, side, side * 0.15)} ${hole(squarePath)}`;
+    case 'squircle':
+      return `${squirclePath(x, y, side)} ${hole(squirclePath)}`;
+    default: {
+      const cx = x + side / 2;
+      const cy = y + side / 2;
+      return circlePath(cx, cy, side / 2) + circlePath(cx, cy, inner / 2, 1);
+    }
+  }
 }
 
 /**
@@ -370,35 +309,80 @@ export function patternPaths(
   dotStyle: QrCornerDotStyle,
   antiDiagonal = false
 ): [ring: string, dot: string] {
-  const size = modules * moduleSize;
+  const side = modules * moduleSize;
   const inset = 2 * moduleSize;
   return [
-    cornerSquarePath(x, y, size, moduleSize, squareStyle, antiDiagonal),
+    cornerSquarePath(x, y, side, moduleSize, squareStyle, antiDiagonal),
     cornerDotPath(
       x + inset,
       y + inset,
-      size - 2 * inset,
+      side - 2 * inset,
       dotStyle,
       antiDiagonal
     ),
   ];
 }
 
-/** Returns the zone grid of a matrix with the logo `cutout`. */
-function zoneGrid(data: boolean[][], cutout: ModuleRange[]): ZoneGrid {
+/**
+ * Returns the top-left SVG coordinates of the three finder patterns. The `leaf` of the top-right
+ * and the bottom-left ones is round on the anti-diagonal, so that each leaf points at the center
+ * of the code.
+ */
+export function getFinderPatterns(
+  grid: CodeGrid
+): { x: number; y: number; antiDiagonal: boolean }[] {
+  return finderCorners(grid.size).map(([r, c], index) => ({
+    x: moduleToPx(c, grid),
+    y: moduleToPx(r, grid),
+    antiDiagonal: index > 0,
+  }));
+}
+
+/**
+ * Returns the SVG path of the alignment patterns: a ring of `squareStyle` and a center dot of
+ * `dotStyle` for each. Fill it with the `evenodd` rule.
+ */
+export function alignmentPath(
+  grid: CodeGrid,
+  squareStyle: QrCornerSquareStyle,
+  dotStyle: QrCornerDotStyle
+): string {
+  return alignmentCenters(grid.size)
+    .flatMap(([r, c]) =>
+      patternPaths(
+        moduleToPx(c - 2, grid),
+        moduleToPx(r - 2, grid),
+        5,
+        grid.moduleSize,
+        squareStyle,
+        dotStyle
+      )
+    )
+    .join(' ');
+}
+
+//#endregion
+
+//#region Data modules
+
+const OPEN_ZONE = 1;
+const CUTOUT_ZONE = 2;
+
+/**
+ * The cells of a matrix: whether each one is dark, and its zone, `CUTOUT_ZONE` under the logo or
+ * else `OPEN_ZONE`. A cell of a finder pattern, its separator or an alignment pattern has zone 0,
+ * because the data modules do not draw it.
+ */
+type ModuleCells = { dark: boolean[][]; zones: number[][] };
+
+function getModuleCells(data: boolean[][], cutout: ModuleRange[]): ModuleCells {
   const size = data.length;
-  const zones = data.map((row) =>
-    row.map((dark) => (dark ? OPEN_ZONE : -OPEN_ZONE))
-  );
-  const mark = (range: ModuleRange, zone: number) => {
-    const { top, left, bottom, right } = clampRange(range, size);
-    for (let r = top; r <= bottom; r++) {
-      for (let c = left; c <= right; c++) {
-        zones[r][c] = zones[r][c] > 0 ? zone : -zone;
-      }
-    }
-  };
-  const square = (top: number, left: number, side: number) => ({
+  const zones = data.map((row) => row.map(() => OPEN_ZONE));
+  const mark = (range: ModuleRange, zone: number) =>
+    forEachModule(range, size, (r, c) => {
+      zones[r][c] = zone;
+    });
+  const square = (top: number, left: number, side: number): ModuleRange => ({
     top,
     left,
     bottom: top + side - 1,
@@ -413,21 +397,97 @@ function zoneGrid(data: boolean[][], cutout: ModuleRange[]): ZoneGrid {
     mark(square(row - 2, col - 2, 5), 0);
   }
 
-  return zones;
+  return { dark: data, zones };
+}
+
+/** Whether the cell at `r`, `c` is a dark data module of `zone`. */
+function isModuleOf(
+  { dark, zones }: ModuleCells,
+  r: number,
+  c: number,
+  zone: number
+): boolean {
+  return zone > 0 && dark[r]?.[c] === true && zones[r][c] === zone;
+}
+
+/** Whether the cells at `r`, `c` and `r2`, `c2` are dark data modules of one zone. */
+function joins(
+  cells: ModuleCells,
+  r: number,
+  c: number,
+  r2: number,
+  c2: number
+): boolean {
+  const zone = cells.zones[r][c];
+  return isModuleOf(cells, r, c, zone) && isModuleOf(cells, r2, c2, zone);
+}
+
+/** Draws a module in the square of `side` at `x`, `y`, for the module at row `r` and column `c`. */
+type ModuleShape = (
+  x: number,
+  y: number,
+  side: number,
+  r: number,
+  c: number
+) => string;
+
+/** Returns `shape` for each dark data module, `scale` times its cell and centered in it. */
+function modulePaths(
+  cells: ModuleCells,
+  grid: ModuleGrid,
+  scale: number,
+  shape: ModuleShape
+): string[] {
+  const side = grid.moduleSize * scale;
+  const inset = (grid.moduleSize - side) / 2;
+  const paths: string[] = [];
+
+  for (const [r, row] of cells.dark.entries()) {
+    for (const [c, dark] of row.entries()) {
+      if (dark && cells.zones[r][c] > 0) {
+        const x = moduleToPx(c, grid) + inset;
+        const y = moduleToPx(r, grid) + inset;
+        paths.push(shape(x, y, side, r, c));
+      }
+    }
+  }
+
+  return paths;
+}
+
+/** Returns `rounded` modules, with a square corner toward each neighbor that they join. */
+function roundedPaths(
+  cells: ModuleCells,
+  grid: ModuleGrid,
+  scale: number,
+  joined: boolean
+): string[] {
+  return modulePaths(cells, grid, scale, (x, y, side, r, c) => {
+    const radius = side * ROUNDED_RADIUS;
+    const top = joined && joins(cells, r, c, r - 1, c);
+    const right = joined && joins(cells, r, c, r, c + 1);
+    const bottom = joined && joins(cells, r, c, r + 1, c);
+    const left = joined && joins(cells, r, c, r, c - 1);
+    return rectPerCorner(
+      x,
+      y,
+      side,
+      side,
+      top || left ? 0 : radius,
+      top || right ? 0 : radius,
+      bottom || right ? 0 : radius,
+      bottom || left ? 0 : radius,
+      quadCorner
+    );
+  });
 }
 
 /**
- * Returns the concave fillets of `liquid`: one in each corner of a light cell where the two
- * neighbors and the diagonal neighbor at that corner are dark and in the zone of the cell, so
- * an L-join has no sharp inside corner.
+ * Returns the concave `liquid` fillets: one in each corner of a light cell whose two side
+ * neighbors and diagonal neighbor at that corner are dark and in its zone.
  */
-function filletPaths(
-  zones: ZoneGrid,
-  moduleSize: number,
-  marginPx: number
-): string[] {
-  const size = zones.length;
-  const R = moduleSize * ROUNDED_RADIUS;
+function filletPaths(cells: ModuleCells, grid: ModuleGrid): string[] {
+  const radius = grid.moduleSize * ROUNDED_RADIUS;
   // The directions of the neighbors at each corner, and the fillet from the corner point.
   const corners = [
     [-1, -1],
@@ -437,23 +497,23 @@ function filletPaths(
   ].map(([dr, dc]) => ({
     dr,
     dc,
-    fillet: `h${-dc * R}a${R},${R} 0 0 ${dr === dc ? 0 : 1} ${dc * R},${-dr * R}z`,
+    fillet: `h${-dc * radius}a${radius},${radius} 0 0 ${dr === dc ? 0 : 1} ${dc * radius},${-dr * radius}z`,
   }));
   const paths: string[] = [];
 
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      const zone = -zones[r][c];
-      if (zone <= 0) continue;
+  for (const [r, row] of cells.dark.entries()) {
+    for (const [c, dark] of row.entries()) {
+      const zone = cells.zones[r][c];
+      if (dark || zone === 0) continue;
 
       for (const { dr, dc, fillet } of corners) {
         if (
-          zones[r + dr]?.[c] === zone &&
-          joins(zones, r + dr, c, r, c + dc) &&
-          joins(zones, r + dr, c, r + dr, c + dc)
+          isModuleOf(cells, r + dr, c, zone) &&
+          isModuleOf(cells, r, c + dc, zone) &&
+          isModuleOf(cells, r + dr, c + dc, zone)
         ) {
-          const x = moduleToPx(c + (dc > 0 ? 1 : 0), moduleSize, marginPx);
-          const y = moduleToPx(r + (dr > 0 ? 1 : 0), moduleSize, marginPx);
+          const x = moduleToPx(c + (dc > 0 ? 1 : 0), grid);
+          const y = moduleToPx(r + (dr > 0 ? 1 : 0), grid);
           paths.push(`M${x},${y}${fillet}`);
         }
       }
@@ -464,39 +524,42 @@ function filletPaths(
 }
 
 /**
- * Returns one pill for each run of dark modules of one zone in a row, or in a column when
- * `vertical` is set. `scale` sets the thickness and insets the ends.
+ * Returns one pill for each run of joined modules in a row, or in a column when `vertical` is
+ * set. `scale` sets the thickness and insets the ends.
  */
 function barPaths(
-  zones: ZoneGrid,
-  moduleSize: number,
-  marginPx: number,
+  cells: ModuleCells,
+  grid: ModuleGrid,
   scale: number,
   vertical: boolean
 ): string[] {
-  const size = zones.length;
-  const thickness = moduleSize * scale;
-  const inset = (moduleSize - thickness) / 2;
-  const cell = (line: number, i: number): [number, number] =>
-    vertical ? [i, line] : [line, i];
+  const size = cells.dark.length;
+  const thickness = grid.moduleSize * scale;
+  const inset = (grid.moduleSize - thickness) / 2;
+  const row = (line: number, i: number) => (vertical ? i : line);
+  const col = (line: number, i: number) => (vertical ? line : i);
+  const joinsNext = (line: number, i: number) =>
+    joins(
+      cells,
+      row(line, i),
+      col(line, i),
+      row(line, i + 1),
+      col(line, i + 1)
+    );
   const paths: string[] = [];
 
   for (let line = 0; line < size; line++) {
     for (let start = 0; start < size; start++) {
-      const [r, c] = cell(line, start);
-      if (zones[r][c] <= 0) continue;
+      const r = row(line, start);
+      const c = col(line, start);
+      if (!isModuleOf(cells, r, c, cells.zones[r][c])) continue;
 
       let end = start;
-      while (
-        end + 1 < size &&
-        joins(zones, ...cell(line, end), ...cell(line, end + 1))
-      ) {
-        end++;
-      }
+      while (end + 1 < size && joinsNext(line, end)) end++;
 
-      const across = moduleToPx(line, moduleSize, marginPx) + inset;
-      const along = moduleToPx(start, moduleSize, marginPx) + inset;
-      const length = (end - start + 1) * moduleSize - 2 * inset;
+      const across = moduleToPx(line, grid) + inset;
+      const along = moduleToPx(start, grid) + inset;
+      const length = (end - start + 1) * grid.moduleSize - 2 * inset;
 
       paths.push(
         vertical
@@ -508,6 +571,78 @@ function barPaths(
   }
 
   return paths;
+}
+
+type DotStyleGeometry = {
+  /** The style of the corner dots when `cornerDotStyle` is not set. */
+  cornerDot: QrCornerDotStyle;
+  /** Whether the modules join their neighbors at `scale`. */
+  joins: (scale: number) => boolean;
+  /** Returns the paths of the dark data modules; `joined` is the result of `joins`. */
+  paths: (
+    cells: ModuleCells,
+    grid: ModuleGrid,
+    scale: number,
+    joined: boolean
+  ) => string[];
+};
+
+const shaped =
+  (shape: ModuleShape): DotStyleGeometry['paths'] =>
+  (cells, grid, scale) =>
+    modulePaths(cells, grid, scale, shape);
+
+const never = () => false;
+const atFullSize = (scale: number) => scale === 1;
+
+/**
+ * The geometry of each dot style. A `diamond` or `plus` finder center fails to decode, so their
+ * corner dot is a square. A joining style has no single-shape form, so its corner dot is rounded.
+ */
+const DOT_STYLES: Record<QrDotStyle, DotStyleGeometry> = {
+  square: { cornerDot: 'square', joins: never, paths: shaped(squarePath) },
+  circle: {
+    cornerDot: 'circle',
+    joins: never,
+    paths: shaped((x, y, side) =>
+      circlePath(x + side / 2, y + side / 2, side / 2)
+    ),
+  },
+  squircle: {
+    cornerDot: 'squircle',
+    joins: never,
+    paths: shaped(squirclePath),
+  },
+  diamond: { cornerDot: 'square', joins: never, paths: shaped(diamondPath) },
+  plus: { cornerDot: 'square', joins: never, paths: shaped(plusPath) },
+  rounded: { cornerDot: 'rounded', joins: atFullSize, paths: roundedPaths },
+  liquid: {
+    cornerDot: 'rounded',
+    joins: atFullSize,
+    paths: (cells, grid, scale, joined) => [
+      ...roundedPaths(cells, grid, scale, joined),
+      ...(joined ? filletPaths(cells, grid) : []),
+    ],
+  },
+  'horizontal-bars': {
+    cornerDot: 'rounded',
+    joins: () => true,
+    paths: (cells, grid, scale) => barPaths(cells, grid, scale, false),
+  },
+  'vertical-bars': {
+    cornerDot: 'rounded',
+    joins: () => true,
+    paths: (cells, grid, scale) => barPaths(cells, grid, scale, true),
+  },
+};
+
+function dotStyleOf(dotStyle: QrDotStyle): DotStyleGeometry {
+  return DOT_STYLES[dotStyle] ?? DOT_STYLES.square;
+}
+
+/** Whether the modules of `dotStyle` join their neighbors, so that the logo cutout changes them. */
+export function joinsModules(dotStyle: QrDotStyle, dotScale: number): boolean {
+  return dotStyleOf(dotStyle).joins(dotScale);
 }
 
 /**
@@ -523,82 +658,14 @@ export function renderDataModules(
   dotScale: number,
   cutout: ModuleRange[] = []
 ): string[] {
-  const size = data.length;
-  const zones = zoneGrid(data, cutout);
-  const canJoin = joinsModules(dotStyle, dotScale);
-
-  if (dotStyle === 'horizontal-bars' || dotStyle === 'vertical-bars') {
-    return barPaths(
-      zones,
-      moduleSize,
-      marginPx,
-      dotScale,
-      dotStyle === 'vertical-bars'
-    );
-  }
-
-  const paths: string[] = [];
-
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      if (zones[r][c] <= 0) continue;
-
-      const x = moduleToPx(c, moduleSize, marginPx);
-      const y = moduleToPx(r, moduleSize, marginPx);
-
-      paths.push(
-        dotPath(zones, r, c, x, y, moduleSize, dotStyle, dotScale, canJoin)
-      );
-    }
-  }
-
-  if (dotStyle === 'liquid' && canJoin) {
-    paths.push(...filletPaths(zones, moduleSize, marginPx));
-  }
-
-  return paths;
+  const style = dotStyleOf(dotStyle);
+  return style.paths(
+    getModuleCells(data, cutout),
+    { moduleSize, marginPx },
+    dotScale,
+    style.joins(dotScale)
+  );
 }
-
-/**
- * Returns the SVG path of the alignment patterns of a matrix of `size` modules: a ring of
- * `squareStyle` and a center dot of `dotStyle` for each. Fill it with the `evenodd` rule.
- */
-export function alignmentPath(
-  size: number,
-  moduleSize: number,
-  marginPx: number,
-  squareStyle: QrCornerSquareStyle,
-  dotStyle: QrCornerDotStyle
-): string {
-  return alignmentCenters(size)
-    .flatMap(([r, c]) =>
-      patternPaths(
-        moduleToPx(c - 2, moduleSize, marginPx),
-        moduleToPx(r - 2, moduleSize, marginPx),
-        5,
-        moduleSize,
-        squareStyle,
-        dotStyle
-      )
-    )
-    .join(' ');
-}
-
-/**
- * The corner dot of each dot style. A diamond or plus finder center fails to decode, and a
- * joining style has no single-shape form.
- */
-const CORNER_DOTS: Record<QrDotStyle, QrCornerDotStyle> = {
-  square: 'square',
-  circle: 'circle',
-  rounded: 'rounded',
-  squircle: 'squircle',
-  diamond: 'square',
-  plus: 'square',
-  liquid: 'rounded',
-  'horizontal-bars': 'rounded',
-  'vertical-bars': 'rounded',
-};
 
 /**
  * Returns the style that the corner dots draw: `cornerDotStyle`, or else the one of `dotStyle`.
@@ -610,55 +677,11 @@ export function resolveCornerDotStyle(
   cornerDotStyle: QrCornerDotStyle | undefined,
   dotStyle: QrDotStyle
 ): QrCornerDotStyle {
-  const style = cornerDotStyle || CORNER_DOTS[dotStyle];
+  const style = cornerDotStyle || dotStyleOf(dotStyle).cornerDot;
 
   return squareStyle === 'circle' && (style === 'square' || style === 'leaf')
     ? 'circle'
     : style;
 }
 
-/**
- * Returns the transform that puts each module of a code of `side` modules on whole pixels of an
- * image of `pixels`, with the spare pixels in the quiet zone. Below 1 pixel per module, it returns
- * `undefined`.
- */
-export function snapToPixels(
-  pixels: number,
-  side: number,
-  margin: number
-): { transform: string; scale: number } | undefined {
-  const modules = side + 2 * margin;
-  let modulePixels = Math.floor(pixels / modules);
-
-  // A fractional margin needs whole pixels on both sides.
-  if (2 * Math.ceil(margin * modulePixels) + modulePixels * side > pixels) {
-    modulePixels--;
-  }
-
-  if (!Number.isFinite(modulePixels) || modulePixels < 1) {
-    return undefined;
-  }
-
-  const start = Math.floor((pixels - modulePixels * side) / 2);
-  const scale = (modulePixels * modules) / pixels;
-  const offset = (side * (start - modulePixels * margin)) / pixels;
-
-  return { transform: `translate(${offset} ${offset}) scale(${scale})`, scale };
-}
-
-/**
- * Returns the top-left pixel coordinates of the three finder patterns. The `leaf` of the
- * top-right and the bottom-left ones is round on the anti-diagonal, so that each leaf points at
- * the center of the code.
- */
-export function getFinderPatterns(
-  size: number,
-  moduleSize: number,
-  marginPx: number
-): { x: number; y: number; antiDiagonal: boolean }[] {
-  return finderCorners(size).map(([r, c], index) => ({
-    x: moduleToPx(c, moduleSize, marginPx),
-    y: moduleToPx(r, moduleSize, marginPx),
-    antiDiagonal: index > 0,
-  }));
-}
+//#endregion

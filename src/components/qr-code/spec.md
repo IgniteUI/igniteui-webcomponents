@@ -498,7 +498,7 @@ None. The SVG is rendered entirely from the properties of the component.
 
 ### Theming
 
-7. The `background`, `dots`, `corner-square` and `corner-dot` parts are exposed.
+7. The `background`, `dots`, `corner-square`, `corner-dot` and `alignment` parts are exposed.
 8. The default colors are the schema ones, and the documented custom properties override them.
 9. `--ig-qr-code-dark-color` cascades to the corner square and the corner dot, and an explicit corner override
    wins over the cascade. The alignment patterns take `--ig-qr-code-dark-color`.
@@ -620,7 +620,8 @@ A decoder (zxing-cpp, from the `zxing-wasm` package) reads the PNG that `toImage
 each module.
 
 53. Each basic `dot-style` (`square`, `circle`, `rounded` and `squircle`) decodes with each basic `square-style` and
-    `corner-dot-style`, in a Latin square of the three shapes.
+    `corner-dot-style`, in a Latin square of the three shapes. Each other `dot-style` decodes with the same pairs of
+    corner shapes.
 54. Each `dot-style` decodes at the smallest `dotScale`, also in a version 12 code.
 55. A code with a white or a black logo, at the default and the largest `logoSize`, decodes at each error correction
     level.

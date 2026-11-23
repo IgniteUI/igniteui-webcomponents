@@ -13,17 +13,17 @@ export type ModuleRange = {
   right: number;
 };
 
-/** Returns `range` clipped to a matrix of `size` modules. */
-export function clampRange(
+/** Calls `visit` for each module of `range` in a matrix of `size` modules. */
+export function forEachModule(
   { top, left, bottom, right }: ModuleRange,
-  size: number
-): ModuleRange {
-  return {
-    top: Math.max(top, 0),
-    left: Math.max(left, 0),
-    bottom: Math.min(bottom, size - 1),
-    right: Math.min(right, size - 1),
-  };
+  size: number,
+  visit: (row: number, col: number) => void
+): void {
+  for (let row = Math.max(top, 0); row <= Math.min(bottom, size - 1); row++) {
+    for (let col = Math.max(left, 0); col <= Math.min(right, size - 1); col++) {
+      visit(row, col);
+    }
+  }
 }
 
 /** The module map value of a locator module, which a scanner needs to read the code. */
@@ -95,18 +95,18 @@ export function canHideModules(
   const map = getModuleMap(version);
   const hidden = new Set<number>();
 
+  let hidesLocator = false;
+
   for (const range of cutout) {
-    const { top, left, bottom, right } = clampRange(range, size);
+    forEachModule(range, size, (row, col) => {
+      const codeword = map[row * size + col];
 
-    for (let row = top; row <= bottom; row++) {
-      for (let col = left; col <= right; col++) {
-        const codeword = map[row * size + col];
-
-        if (codeword === LOCATOR_MODULE) return false;
-        if (codeword >= 0) hidden.add(codeword);
-      }
-    }
+      if (codeword === LOCATOR_MODULE) hidesLocator = true;
+      if (codeword >= 0) hidden.add(codeword);
+    });
   }
+
+  if (hidesLocator) return false;
 
   const protection = MISDECODE_PROTECTION[version - 1]?.[level] ?? 0;
   const correctable =

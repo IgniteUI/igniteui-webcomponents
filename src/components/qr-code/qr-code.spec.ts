@@ -9,6 +9,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { restore, type SinonStub, stub } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { expectCloseTo } from '#internals/testing/helpers.spec.js';
 import {
   prepareQrDecoder,
   readQr,
@@ -20,6 +21,11 @@ import IgcQrCodeComponent from './qr-code.js';
 import { rasterizeSvg } from './renderer/export.js';
 import { renderDataModules } from './renderer/helpers.js';
 import type { QrDotStyle, QrErrorCorrectionLevel } from './types.js';
+
+/** A black logo twice as wide as it is high. */
+const WIDE_LOGO = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100"/></svg>'
+)}`;
 
 describe('IgcQrCodeComponent', () => {
   before(() => {
@@ -383,8 +389,10 @@ describe('IgcQrCodeComponent', () => {
 
       it('paints one color for a gradient value that is not linear or radial', async () => {
         const el = await fixture<IgcQrCodeComponent>(
-          html`<igc-qr-code value=${VALUE} gradient="conic"></igc-qr-code>`
+          html`<igc-qr-code value=${VALUE}></igc-qr-code>`
         );
+        el.setAttribute('gradient', 'conic');
+        await elementUpdated(el);
 
         expect(gradientOf(el)).to.be.null;
         expect(fillOf(getPart(el, 'dots'))).to.equal('rgb(0, 0, 0)');
@@ -392,8 +400,9 @@ describe('IgcQrCodeComponent', () => {
 
       it('treats a gradient-angle that is not a number as 0', async () => {
         const el = await fixture<IgcQrCodeComponent>(
-          html`<igc-qr-code gradient-angle="up"></igc-qr-code>`
+          html`<igc-qr-code></igc-qr-code>`
         );
+        el.setAttribute('gradient-angle', 'up');
         expect(el.gradientAngle).to.equal(0);
       });
 
@@ -440,12 +449,12 @@ describe('IgcQrCodeComponent', () => {
         // Version 1 with the default margin: the matrix fills the view box from `start` to `end`.
         const start = (4 * 21) / 29;
         const end = 21 - start;
-        const expectLine = (expected: number[]) => {
-          const line = readNumbers(gradientOf(el)!, ['x1', 'y1', 'x2', 'y2']);
-          for (const [index, value] of line.entries()) {
-            expect(value).to.be.closeTo(expected[index], 1e-9);
-          }
-        };
+        const expectLine = (expected: number[]) =>
+          expectCloseTo(
+            readNumbers(gradientOf(el)!, ['x1', 'y1', 'x2', 'y2']),
+            expected,
+            1e-9
+          );
 
         expectLine([start, 10.5, end, 10.5]);
 
@@ -919,7 +928,7 @@ describe('IgcQrCodeComponent', () => {
       });
     });
 
-    describe('New shapes', () => {
+    describe('Diamond, plus, liquid, bars and leaf', () => {
       // Dark modules at (10, 10), (10, 11), (10, 12) and (11, 10), away from the patterns.
       const matrix = Array.from({ length: 21 }, (_, r) =>
         Array.from(
@@ -1644,11 +1653,6 @@ describe('IgcQrCodeComponent', () => {
           .to.be.false;
       });
 
-      // A logo twice as wide as it is high.
-      const WIDE_LOGO = `data:image/svg+xml,${encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100"/></svg>'
-      )}`;
-
       for (const [logoShape, logo, name] of [
         ['circle', VALID_LOGO, 'circle'],
         ['rounded', VALID_LOGO, 'rounded'],
@@ -1751,7 +1755,12 @@ describe('IgcQrCodeComponent', () => {
       it('keeps a larger logo of each other shape than of a square on a pinned version', async () => {
         const widths: Record<string, number> = {};
 
-        for (const logoShape of ['square', 'circle', 'rounded', 'squircle']) {
+        for (const logoShape of [
+          'square',
+          'circle',
+          'rounded',
+          'squircle',
+        ] as const) {
           const el = await fixture<IgcQrCodeComponent>(
             html`<igc-qr-code
               value="test"
@@ -2463,7 +2472,7 @@ describe('IgcQrCodeComponent', () => {
     // Version 12 at level M, with many alignment patterns.
     const LONG_VALUE = `${PRODUCT_URL}?a=${PRODUCT_URL}&b=${PRODUCT_URL}&c=${PRODUCT_URL}`;
     const SHAPES = ['square', 'circle', 'rounded', 'squircle'] as const;
-    const NEW_DOT_STYLES = [
+    const OTHER_DOT_STYLES = [
       'diamond',
       'plus',
       'liquid',
@@ -2532,7 +2541,7 @@ describe('IgcQrCodeComponent', () => {
       it(`reads the alignment patterns of square-style="${squareStyle}"`, async () => {
         Object.assign(el, { value: LONG_VALUE, squareStyle });
 
-        for (const dotStyle of [...SHAPES, ...NEW_DOT_STYLES]) {
+        for (const dotStyle of [...SHAPES, ...OTHER_DOT_STYLES]) {
           el.dotStyle = dotStyle;
 
           for (const pixels of [7, 8]) {
@@ -2544,7 +2553,7 @@ describe('IgcQrCodeComponent', () => {
       });
     }
 
-    for (const dotStyle of NEW_DOT_STYLES) {
+    for (const dotStyle of OTHER_DOT_STYLES) {
       it(`reads dot-style="${dotStyle}" at full size and at the smallest dot-scale`, async () => {
         el.dotStyle = dotStyle;
         expect(await scan()).to.equal(PRODUCT_URL);
@@ -2592,6 +2601,21 @@ describe('IgcQrCodeComponent', () => {
               ).to.equal(value);
             }
           }
+        }
+      });
+    }
+
+    for (const [index, dotStyle] of OTHER_DOT_STYLES.entries()) {
+      // The Latin square of the basic shapes below, for the corners of each other dot style.
+      it(`reads dot-style="${dotStyle}" with each corner shape`, async () => {
+        el.dotStyle = dotStyle;
+
+        for (const [offset, squareStyle] of SHAPES.entries()) {
+          const cornerDotStyle = SHAPES[(index + offset) % SHAPES.length];
+          Object.assign(el, { squareStyle, cornerDotStyle });
+          expect(await scan(), `${squareStyle}, ${cornerDotStyle}`).to.equal(
+            PRODUCT_URL
+          );
         }
       });
     }
@@ -2672,10 +2696,6 @@ describe('IgcQrCodeComponent', () => {
     }
 
     it('reads a wide and a pinned shaped logo', async () => {
-      const wide = `data:image/svg+xml,${encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100"/></svg>'
-      )}`;
-
       for (const logoShape of ['circle', 'rounded', 'squircle'] as const) {
         for (const errorLevel of ['M', 'H'] as const) {
           Object.assign(el, {
@@ -2683,7 +2703,7 @@ describe('IgcQrCodeComponent', () => {
             version: undefined,
             logoShape,
             errorLevel,
-            logoSrc: wide,
+            logoSrc: WIDE_LOGO,
             logoSize: 1,
             logoMargin: 3,
           });

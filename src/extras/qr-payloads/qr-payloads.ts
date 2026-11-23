@@ -1,9 +1,7 @@
 import { isValidDate } from '#internals/date/converters.js';
 
-/**
- * Builders for the text of QR codes that scanner apps turn into an action: a Wi-Fi login, a
- * contact card, a SEPA payment and a calendar event.
- */
+// Builders for the text of QR codes that scanner apps turn into an action: a Wi-Fi login, a
+// contact card, a SEPA payment and a calendar event.
 
 export interface WifiPayloadOptions {
   /** The name of the network. */

@@ -1,5 +1,6 @@
 import { nothing, svg, type TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { bindIf } from '#internals/utils/lit.js';
 import type { ModuleRange } from '../model/cutout.js';
 import type {
   QrCornerDotStyle,
@@ -9,13 +10,14 @@ import type {
 } from '../types.js';
 import {
   alignmentPath,
+  type CodeGrid,
   getFinderPatterns,
   joinsModules,
   moduleToPx,
   patternPaths,
   renderDataModules,
 } from './helpers.js';
-import { type LogoLayout, logoClipPath } from './logo.js';
+import { insetBox, type LogoLayout, logoClipPath } from './logo.js';
 
 //#region Logo areas
 
@@ -37,8 +39,7 @@ const DEFAULT_SIZE_RATIO = 0.4;
 
 type RenderQrDotsProperties = {
   matrix: boolean[][];
-  moduleSize: number;
-  marginPx: number;
+  grid: CodeGrid;
   dotStyle: QrDotStyle;
   dotScale: number;
   cutout?: ModuleRange[];
@@ -50,8 +51,7 @@ const paths = new WeakMap<boolean[][], { key: string; path: string }>();
 /** Renders the data modules as a single SVG path. */
 export function renderQrDots({
   matrix,
-  moduleSize,
-  marginPx,
+  grid: { moduleSize, marginPx },
   dotStyle,
   dotScale,
   cutout,
@@ -77,58 +77,62 @@ export function renderQrDots({
   return svg`<path part="dots" d=${cached.path} />`;
 }
 
-type RenderPatternsProperties = {
-  size: number;
-  moduleSize: number;
-  marginPx: number;
+export type RenderPatternsProperties = {
+  grid: CodeGrid;
   dotStyle: QrCornerDotStyle;
   squareStyle: QrCornerSquareStyle;
 };
 
 /** Renders the three finder-pattern corners. */
 export function renderQrFinders({
-  size,
-  moduleSize,
-  marginPx,
+  grid,
   dotStyle,
   squareStyle,
 }: RenderPatternsProperties): TemplateResult[] {
-  return getFinderPatterns(size, moduleSize, marginPx).map(
-    ({ x, y, antiDiagonal }) => {
-      const [squarePath, dotPath] = patternPaths(
-        x,
-        y,
-        7,
-        moduleSize,
-        squareStyle,
-        dotStyle,
-        antiDiagonal
-      );
+  return getFinderPatterns(grid).map(({ x, y, antiDiagonal }) => {
+    const [squarePath, dotPath] = patternPaths(
+      x,
+      y,
+      7,
+      grid.moduleSize,
+      squareStyle,
+      dotStyle,
+      antiDiagonal
+    );
 
-      return svg`
+    return svg`
       <g>
         <path part="corner-square" d=${squarePath} fill-rule="evenodd"></path>
         <path part="corner-dot" d=${dotPath}></path>
       </g>
     `;
-    }
-  );
+  });
 }
 
 /** Renders the alignment patterns as a single SVG path, or nothing for version 1. */
 export function renderQrAlignment({
-  size,
-  moduleSize,
-  marginPx,
+  grid,
   dotStyle,
   squareStyle,
 }: RenderPatternsProperties): TemplateResult | typeof nothing {
-  const path = alignmentPath(size, moduleSize, marginPx, squareStyle, dotStyle);
+  const path = alignmentPath(grid, squareStyle, dotStyle);
 
   return path
     ? svg`<path part="alignment" d=${path} fill-rule="evenodd"></path>`
     : nothing;
 }
+
+type QrMaskAndImage = {
+  mask: TemplateResult | typeof nothing;
+  image: TemplateResult | typeof nothing;
+  shouldApplyMask: boolean;
+};
+
+const NO_LOGO: QrMaskAndImage = {
+  mask: nothing,
+  image: nothing,
+  shouldApplyMask: false,
+};
 
 type RenderQrMaskAndImageProperties = {
   src: string;
@@ -136,9 +140,7 @@ type RenderQrMaskAndImageProperties = {
   /** The CSS pixels of one SVG unit, which convert `margin` to units. */
   unitSize: number;
   margin?: number;
-  svgSize: number;
-  moduleSize: number;
-  marginPx: number;
+  grid: CodeGrid;
   maskId: string;
   clipId: string;
   transform?: string;
@@ -154,30 +156,24 @@ export function renderQrMaskAndImage({
   layout,
   unitSize,
   margin,
-  svgSize,
-  moduleSize,
-  marginPx,
+  grid,
   maskId,
   clipId,
   transform,
-}: RenderQrMaskAndImageProperties) {
-  if (!layout) {
-    return { mask: nothing, image: nothing, shouldApplyMask: false };
-  }
+}: RenderQrMaskAndImageProperties): QrMaskAndImage {
+  if (!layout) return NO_LOGO;
 
-  const toSvg = (modules: number) => moduleToPx(modules, moduleSize, marginPx);
+  const toSvg = (modules: number) => moduleToPx(modules, grid);
   const boxMargin = (margin ?? 0) / unitSize;
+  const box = {
+    x: toSvg(layout.x),
+    y: toSvg(layout.y),
+    width: layout.width * grid.moduleSize,
+    height: layout.height * grid.moduleSize,
+  };
+  const { x, y, width, height } = insetBox(box, boxMargin);
 
-  const x = toSvg(layout.x) + boxMargin;
-  const y = toSvg(layout.y) + boxMargin;
-  const width = Math.max(0, layout.width * moduleSize - boxMargin * 2);
-  const height = Math.max(0, layout.height * moduleSize - boxMargin * 2);
-
-  const shouldApplyMask = width > 0 && height > 0;
-
-  if (!shouldApplyMask) {
-    return { mask: nothing, image: nothing, shouldApplyMask };
-  }
+  if (width <= 0 || height <= 0) return NO_LOGO;
 
   const cuts = layout.cutout.map(({ top, left, bottom, right }) => {
     const cutX = toSvg(left);
@@ -185,38 +181,28 @@ export function renderQrMaskAndImage({
     return svg`<rect x=${cutX} y=${cutY} width=${toSvg(right + 1) - cutX} height=${toSvg(bottom + 1) - cutY} fill="black" />`;
   });
 
-  const clip = logoClipPath(
-    layout.shape,
-    {
-      x: toSvg(layout.x),
-      y: toSvg(layout.y),
-      width: layout.width * moduleSize,
-      height: layout.height * moduleSize,
-    },
-    boxMargin
-  );
+  const clip = logoClipPath(layout.shape, box, boxMargin);
 
   const mask = svg`
       <defs>
         <mask id=${maskId}>
-          <rect width=${svgSize} height=${svgSize} fill="white" />
+          <rect width=${grid.svgSize} height=${grid.svgSize} fill="white" />
           ${cuts}
         </mask>
         ${clip ? svg`<clipPath id=${clipId}><path d=${clip} /></clipPath>` : nothing}
       </defs>
   `;
 
-  const image = svg`<image href=${src} x=${x} y=${y} width=${width} height=${height} clip-path=${ifDefined(clip && `url(#${clipId})`)} transform=${ifDefined(transform)} />`;
+  const image = svg`<image href=${src} x=${x} y=${y} width=${width} height=${height} clip-path=${bindIf(clip, `url(#${clipId})`)} transform=${ifDefined(transform)} />`;
 
-  return { mask, image, shouldApplyMask };
+  return { mask, image, shouldApplyMask: true };
 }
 
 type RenderQrGradientProperties = {
   id: string;
   gradient: QrGradient;
   angle: number;
-  svgSize: number;
-  marginPx: number;
+  grid: CodeGrid;
 };
 
 /**
@@ -227,8 +213,7 @@ export function renderQrGradient({
   id,
   gradient,
   angle,
-  svgSize,
-  marginPx,
+  grid: { svgSize, marginPx },
 }: RenderQrGradientProperties): TemplateResult {
   const center = svgSize / 2;
   const half = center - marginPx;

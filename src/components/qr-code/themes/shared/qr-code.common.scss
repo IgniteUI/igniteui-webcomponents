@@ -3,21 +3,21 @@
 
 $theme: $base;
 
-[part='background'] {
+[part~='background'] {
     fill: var-get($theme, 'background');
 }
 
 // The template sets `--_paint` to the gradient of the instance.
-[part='dots'],
+[part~='dots'],
 [part~='alignment'] {
     fill: var(--_paint, #{var-get($theme, 'dark-color')});
 }
 
-[part='corner-square'] {
+[part~='corner-square'] {
     fill: var(--ig-qr-code-corner-square-color, var(--_paint, #{var-get($theme, 'corner-square-color')}));
 }
 
-[part='corner-dot'] {
+[part~='corner-dot'] {
     fill: var(--ig-qr-code-corner-dot-color, var(--_paint, #{var-get($theme, 'corner-dot-color')}));
 }
 

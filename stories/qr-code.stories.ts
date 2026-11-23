@@ -71,7 +71,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
     margin: {
       type: 'number',
       description:
-        'The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather\nthan pixels. This is the blank border area surrounding the code, which helps ensure that it\ncan be properly scanned. It is a minimum: the modules cover whole pixels, and the pixels that\nare left over make the quiet zone wider.',
+        'The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather\nthan pixels. This is the blank border area surrounding the code, which helps ensure that it\ncan be properly scanned. It is a minimum: spare pixels make the quiet zone wider.',
       control: 'number',
       table: { defaultValue: { summary: '4' } },
     },
@@ -230,8 +230,7 @@ interface IgcQrCodeArgs {
   /**
    * The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather
    * than pixels. This is the blank border area surrounding the code, which helps ensure that it
-   * can be properly scanned. It is a minimum: the modules cover whole pixels, and the pixels that
-   * are left over make the quiet zone wider.
+   * can be properly scanned. It is a minimum: spare pixels make the quiet zone wider.
    */
   margin: number;
   /**
