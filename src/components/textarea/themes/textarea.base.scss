@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/animations/easings' as *;
+@include value-state-transitions($on-host: true);
 
 :host {
     --component-size: var(--ig-size, var(--ig-size-large, 3));
@@ -84,7 +85,10 @@ textarea[data-auto-size] {
     width: max-content;
     align-items: center;
     height: 100%;
-    transition: color .25s $out-cubic, background .25s $out-cubic;
+
+    @include with-motion() {
+        transition: color .25s $out-cubic, background .25s $out-cubic;
+    }
 
     igc-icon {
         width: sizable(rem(18px), rem(20px), rem(24px)) ;

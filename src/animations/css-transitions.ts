@@ -1,14 +1,18 @@
 /**
- * Returns the CSS transitions of `element`, and of its descendants with
- * `{ subtree: true }`. Author animations, which can run forever, are left out.
+ * Returns the CSS transitions of `element`, and with `{ subtree: true }` of its
+ * descendants. A shadow root gives all its tree. Author animations, which can
+ * run forever, are left out.
  */
 export function getCSSTransitions(
-  element: Element,
+  element: Element | ShadowRoot,
   options?: GetAnimationsOptions
 ): CSSTransition[] {
-  return element
-    .getAnimations(options)
-    .filter((animation) => animation instanceof CSSTransition);
+  const animations =
+    element instanceof ShadowRoot
+      ? element.getAnimations()
+      : element.getAnimations(options);
+
+  return animations.filter((animation) => animation instanceof CSSTransition);
 }
 
 /** Returns a promise that settles when each transition finishes or is canceled. */

@@ -19,7 +19,13 @@ describe('Toggle Button', () => {
 
   const DIFF_OPTIONS = {
     ignoreChildren: ['button'],
-    ignoreAttributes: ['part', 'type', 'aria-pressed', 'aria-disabled'],
+    ignoreAttributes: [
+      'part',
+      'type',
+      'aria-pressed',
+      'aria-disabled',
+      'data-instant',
+    ],
   };
 
   let button: IgcToggleButtonComponent;

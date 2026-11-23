@@ -47,6 +47,7 @@
     - [Range editors](#range-editors)
     - [Host ARIA](#host-aria)
     - [Disabled popup](#disabled-popup)
+    - [Value state motion](#value-state-motion)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -86,6 +87,7 @@
 |      27 | 2026-11-20 | A form reset discards the text typed in the editors that is not committed, so the next blur does not commit it; a reset that empties the value shows the empty mask in the focused editor |
 |      28 | 2026-11-20 | The ends of a range accept an ISO string with a signed six digit year; the value shape properties use any valid date |
 |      29 | 2026-11-23 | A disabled picker stays closed and disabling discards a draft; the shared disabled popup suite |
+|      30 | 2026-11-20 | A range that the user picks animates the inputs; a value from code, also from an `igcChange` handler, shows at once |
 
 ## Overview
 
@@ -201,6 +203,10 @@ As a developer, I expect to be able to:
   type reads the typed text of its end and keeps the text of the other end, also a `stepUp` or `stepDown` from code,
   which commits the value at once. An empty range spins to today at both
   ends, and an empty end to today, both without a step.
+
+**Motion.** A range that the user picks or types animates the inputs, such as the Material label that moves up. A value
+from code shows at once, also a value that an `igcChange` handler sets. The common suite covers a calendar pick and a
+handler value; the [date-time input](../date-time-input/spec.md) suite covers a typed value and a value from code.
 
 ### Developer experience
 
@@ -779,6 +785,13 @@ The focus after the form checks and the `invalid` event rules come from the form
 ### Disabled popup
 
 35. The shared runner `runDisabledPopupTests`.
+
+### Value state motion
+
+In the common suite.
+
+36. A range picked from the calendar marks the input as a user change.
+37. A value that an `igcChange` handler sets ends the user change, so the input shows it at once.
 
 ## Assumptions and limitations
 

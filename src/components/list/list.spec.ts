@@ -2,6 +2,8 @@ import { expect, fixture, html, nextFrame, waitUntil } from '@open-wc/testing';
 
 import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { hoverWithMouse } from '#internals/testing/helpers.spec.js';
+import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import IgcListHeaderComponent from './list-header.js';
 import type IgcListItemComponent from './list-item.js';
 import IgcListComponent from './list.js';
@@ -125,5 +127,18 @@ describe('List', () => {
 
       expect(skipped(items[99])).to.be.false;
     });
+  });
+
+  // The user cannot select an item, so a hover is the user interaction.
+  runValueStateMotionTests<IgcListItemComponent>({
+    template: html`<igc-list><igc-list-item>Item</igc-list-item></igc-list>`,
+    changedTemplate: html`
+      <igc-list><igc-list-item selected>Item</igc-list-item></igc-list>
+    `,
+    control: (list) => list.querySelector('igc-list-item')!,
+    changeFromCode: (item) => {
+      item.selected = true;
+    },
+    changeByUser: (item) => hoverWithMouse(item),
   });
 });
