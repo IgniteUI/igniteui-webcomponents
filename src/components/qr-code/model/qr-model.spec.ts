@@ -1,9 +1,11 @@
 import { expect } from '@open-wc/testing';
 
+import { canHideModules, getModuleMap, LOCATOR_MODULE } from './cutout.js';
 import { encodeQR } from './encode.js';
 import {
   calculateECC,
   getDataCodewordsCount,
+  getTotalCodewordsCount,
   interleaveBlocks,
 } from './error-correction.js';
 import {
@@ -13,6 +15,7 @@ import {
   selectBestMask,
 } from './mask.js';
 import {
+  createFunctionPatterns,
   generateQRCodeMatrix,
   getAlignmentPatternPositions,
 } from './matrix.js';
@@ -572,6 +575,104 @@ describe('QR model - matrix generation', () => {
       }
       expect(hasTrue).to.equal(true);
       expect(hasFalse).to.equal(true);
+    });
+  });
+});
+
+describe('QR model - logo cutout', () => {
+  describe('getModuleMap()', () => {
+    it('gives each codeword 8 modules and leaves only the function modules and the remainder bits out', () => {
+      for (let version = 1; version <= 40; version++) {
+        const map = getModuleMap(version);
+        const { functionModules, locatorModules } =
+          createFunctionPatterns(version);
+        const size = functionModules.length;
+        const total = getTotalCodewordsCount(version);
+        const counts = new Array<number>(total).fill(0);
+        let dataModules = 0;
+        let misplacedLocators = 0;
+
+        // One assertion for each version: an `expect` for each module is too slow.
+        for (const [index, codeword] of map.entries()) {
+          const row = Math.floor(index / size);
+          const col = index % size;
+          if (!functionModules[row][col]) {
+            dataModules++;
+          }
+          if (codeword >= 0) {
+            counts[codeword]++;
+          }
+          if ((codeword === LOCATOR_MODULE) !== locatorModules[row][col]) {
+            misplacedLocators++;
+          }
+        }
+
+        expect(misplacedLocators, `V${version}`).to.equal(0);
+        expect(
+          counts.every((count) => count === 8),
+          `V${version}`
+        ).to.be.true;
+        // ISO/IEC 18004 has at most 7 remainder bits.
+        expect(dataModules - total * 8, `V${version}`).to.be.within(0, 7);
+      }
+    });
+  });
+
+  describe('canHideModules()', () => {
+    // In version 1, codewords 0, 1 and 2 fill columns 19 and 20 from row 20 up to row 9,
+    // four rows each.
+    it('lets a block lose as many codewords as it corrects', () => {
+      // Level L corrects 2 codewords: 7 error correction codewords, 3 of them for
+      // misdecode protection.
+      expect(canHideModules(1, 0, { top: 13, left: 19, bottom: 20, right: 20 }))
+        .to.be.true;
+      expect(canHideModules(1, 0, { top: 9, left: 19, bottom: 20, right: 20 }))
+        .to.be.false;
+      // Level M corrects 4.
+      expect(canHideModules(1, 1, { top: 9, left: 19, bottom: 20, right: 20 }))
+        .to.be.true;
+    });
+
+    it('counts a codeword with one hidden module as lost', () => {
+      // Rows 12, 16 and 20 hold one module of codewords 2, 1 and 0.
+      expect(canHideModules(1, 0, { top: 16, left: 20, bottom: 20, right: 20 }))
+        .to.be.true;
+      expect(canHideModules(1, 0, { top: 12, left: 20, bottom: 20, right: 20 }))
+        .to.be.false;
+    });
+
+    it('does not hide a finder pattern, its separator or the format information', () => {
+      for (const [row, col] of [
+        [3, 3],
+        [7, 3],
+        [13, 7],
+        [8, 8],
+        [8, 19],
+        [17, 8],
+      ]) {
+        expect(
+          canHideModules(1, 3, {
+            top: row,
+            left: col,
+            bottom: row,
+            right: col,
+          }),
+          `${row}, ${col}`
+        ).to.be.false;
+      }
+    });
+
+    it('does not hide the version information', () => {
+      // Version 7 has 45 modules; the information sits in columns 34 to 36 of rows 0 to 5.
+      expect(canHideModules(7, 3, { top: 0, left: 34, bottom: 0, right: 34 }))
+        .to.be.false;
+      expect(canHideModules(7, 3, { top: 34, left: 5, bottom: 34, right: 5 }))
+        .to.be.false;
+    });
+
+    it('ignores the modules outside the matrix', () => {
+      expect(canHideModules(1, 3, { top: -2, left: 10, bottom: -1, right: 12 }))
+        .to.be.true;
     });
   });
 });

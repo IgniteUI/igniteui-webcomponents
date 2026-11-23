@@ -167,18 +167,14 @@ function reserveVersionInfoAreas(
 }
 
 /**
- * Places the codeword bits in a zig-zag from the bottom-right corner and skips the function
- * modules. The modules after the last bit stay light.
+ * Calls `visit` for each module that is not a function module, in the order that the codeword
+ * bits fill them: two columns at a time, in a zig-zag from the bottom-right corner.
  */
-function placeDataBits(
-  matrix: boolean[][],
+export function forEachDataModule(
   functionModules: boolean[][],
-  codewords: number[]
+  visit: (row: number, col: number) => void
 ): void {
-  const size = matrix.length;
-  const totalBits = codewords.length * 8;
-  let bitIndex = 0;
-
+  const size = functionModules.length;
   let col = size - 1;
   let goingUp = true;
 
@@ -197,13 +193,7 @@ function placeDataBits(
         const c = col - dc;
         if (c < 0) continue;
         if (functionModules[row][c]) continue;
-        // The remainder bits stay 0, as `createMatrix` fills them.
-        if (bitIndex < totalBits) {
-          const byteIndex = Math.floor(bitIndex / 8);
-          const bitPosition = 7 - (bitIndex % 8);
-          matrix[row][c] = ((codewords[byteIndex] >> bitPosition) & 1) === 1;
-          bitIndex++;
-        }
+        visit(row, c);
       }
     }
     col -= 2;
@@ -211,25 +201,35 @@ function placeDataBits(
   }
 }
 
-/** Result produced by `generateQRCodeMatrix`. */
-export interface QRCodeMatrixResult {
-  /** The fully masked QR boolean matrix ready for rendering. */
-  matrix: boolean[][];
-  /** QR version (1–40) that was used. */
-  version: number;
-  /** Side length of the matrix in modules (= `version * 4 + 17`). */
-  size: number;
+/** Places the codeword bits in the data modules. The modules after the last bit stay light. */
+function placeDataBits(
+  matrix: boolean[][],
+  functionModules: boolean[][],
+  codewords: number[]
+): void {
+  const totalBits = codewords.length * 8;
+  let bitIndex = 0;
+
+  forEachDataModule(functionModules, (row, col) => {
+    if (bitIndex < totalBits) {
+      const byteIndex = Math.floor(bitIndex / 8);
+      const bitPosition = 7 - (bitIndex % 8);
+      matrix[row][col] = ((codewords[byteIndex] >> bitPosition) & 1) === 1;
+      bitIndex++;
+    }
+  });
 }
 
-/** Encodes `data`, builds the module matrix and applies the best mask. */
-export function generateQRCodeMatrix(
-  data: string,
-  ecLevel: QrErrorCorrectionLevel = 'M',
-  requiredVersion?: number
-): QRCodeMatrixResult {
-  const encoded = encodeQR(data, ecLevel, requiredVersion);
-  const { codewords, version, ecLevelIndex } = encoded;
-
+/**
+ * Returns a matrix of `version` with only its function patterns, the map of the function modules,
+ * and the map of the locator modules: the finder patterns with their separators, and the format
+ * and version information.
+ */
+export function createFunctionPatterns(version: number): {
+  matrix: boolean[][];
+  functionModules: boolean[][];
+  locatorModules: boolean[][];
+} {
   const size = version * 4 + 17;
   const matrix = createMatrix(size);
   const functionModules = createMatrix(size);
@@ -237,6 +237,13 @@ export function generateQRCodeMatrix(
   placeFinderPattern(matrix, functionModules, 0, 0);
   placeFinderPattern(matrix, functionModules, 0, size - 7);
   placeFinderPattern(matrix, functionModules, size - 7, 0);
+
+  reserveVersionInfoAreas(matrix, functionModules, version);
+
+  for (const [r, c] of formatInfoModules(size)) functionModules[r][c] = true;
+
+  // The patterns below do not overlap the locator modules.
+  const locatorModules = functionModules.map((row) => row.slice());
 
   placeTimingPatterns(matrix, functionModules);
 
@@ -260,10 +267,30 @@ export function generateQRCodeMatrix(
     }
   }
 
-  reserveVersionInfoAreas(matrix, functionModules, version);
+  return { matrix, functionModules, locatorModules };
+}
 
-  const formatModules = formatInfoModules(size);
-  for (const [r, c] of formatModules) functionModules[r][c] = true;
+/** Result produced by `generateQRCodeMatrix`. */
+export interface QRCodeMatrixResult {
+  /** The fully masked QR boolean matrix ready for rendering. */
+  matrix: boolean[][];
+  /** QR version (1–40) that was used. */
+  version: number;
+  /** Side length of the matrix in modules (= `version * 4 + 17`). */
+  size: number;
+}
+
+/** Encodes `data`, builds the module matrix and applies the best mask. */
+export function generateQRCodeMatrix(
+  data: string,
+  ecLevel: QrErrorCorrectionLevel = 'M',
+  requiredVersion?: number
+): QRCodeMatrixResult {
+  const encoded = encodeQR(data, ecLevel, requiredVersion);
+  const { codewords, version, ecLevelIndex } = encoded;
+
+  const size = version * 4 + 17;
+  const { matrix, functionModules } = createFunctionPatterns(version);
 
   placeDataBits(matrix, functionModules, codewords);
 
@@ -273,7 +300,7 @@ export function generateQRCodeMatrix(
   toggleMask(matrix, functionModules, bestMask);
 
   const formatBits = getFormatInfo(ecLevelIndex, bestMask);
-  for (const [r, c, bit] of formatModules) {
+  for (const [r, c, bit] of formatInfoModules(size)) {
     matrix[r][c] = ((formatBits >> bit) & 1) === 1;
   }
   matrix[size - 8][8] = true;

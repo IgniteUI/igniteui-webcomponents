@@ -9,12 +9,16 @@ import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { bindIf } from '#internals/utils/lit.js';
-import { clamp, numberInRangeInclusive } from '#internals/utils/math.js';
+import {
+  asNumber,
+  clamp,
+  numberInRangeInclusive,
+} from '#internals/utils/math.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { all } from '#themes/qr-code/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
-import { isValidVersion } from './model/encode.js';
+import { encodeQR, isValidVersion } from './model/encode.js';
 import type { QRCodeMatrixResult } from './model/matrix.js';
 import { generateQRCodeMatrix } from './model/matrix.js';
 import {
@@ -28,6 +32,7 @@ import {
   rasterizeSvg,
   serializeSvg,
 } from './renderer/export.js';
+import { fitLogo, type LogoLayout } from './renderer/logo.js';
 import {
   DEFAULT_SIZE_RATIO,
   MAX_SAFE_AREA,
@@ -42,12 +47,19 @@ import type {
   QrCodeCopyFormat,
   QrCodeCopyOptions,
   QrCodeExportOptions,
+  QrCornerDotStyle,
   QrCornerSquareStyle,
   QrDotStyle,
   QrErrorCorrectionLevel,
 } from './types.js';
 
 const nextMaskId = createIdGenerator('igc-qr-code-mask');
+
+/** The logo layout, and the version to request for it: unset keeps the automatic version. */
+type LogoFit = { version?: number; layout: LogoLayout };
+
+/** The smallest `dotScale`. Smaller circle modules fail to decode in large versions. */
+const MIN_DOT_SCALE = 0.7;
 
 /** A test, not a lower-cased copy: a data URI can be large. */
 const BLOCKED_LOGO_SOURCE = /^\s*(?:javascript:|vbscript:|data:(?!image\/))/i;
@@ -89,6 +101,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     result: QRCodeMatrixResult | null;
     error?: unknown;
   };
+  private _logoFitCache?: { settings: string; fit: LogoFit | null };
 
   @state()
   private _logoAspectRatio = 1;
@@ -118,7 +131,9 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * Valid values are integers from 1 to 40, where each version corresponds to a specific module size and data capacity.
    *
    * When it is not set, or it is not an integer from 1 to 40, the component selects the smallest
-   * version that holds the value. When the value does not fit the version, the component renders nothing.
+   * version that holds the value and that stays readable under the logo. When the value does not
+   * fit the version, the component renders nothing. On a version that is set, a logo gets smaller
+   * to keep the code readable.
    *
    * @attr version
    */
@@ -184,10 +199,14 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
    * correction level). The value is a number from 0 to 1, where 0 means no logo and 1
    * means the logo covers the full safe area (not the entire QR code). Other values are clamped.
    * The default value is 0.4, meaning the logo covers 40% of that safe area (~3.6% of the QR code).
+   * The area of the code leaves out the quiet zone, so `margin` does not change the logo.
    *
    * When `error-level` is not set and the logo is larger than the safe area of level 'M', the
    * component uses the smallest error correction level that holds the logo. When `error-level`
    * is set, the logo does not grow past the safe area of that level.
+   *
+   * On a small code, the logo can hide more codewords than the error correction recovers. The
+   * component then uses a larger version, or, when `version` is set, a smaller logo.
    *
    * @attr logo-size
    * @default 0.4
@@ -205,8 +224,9 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   public logoMargin?: number;
 
   /**
-   * The style of the data modules (dots) in the QR code, and of the inner dot of each finder-pattern
-   * corner. This can be 'square', 'circle', or 'rounded'.
+   * The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
+   * 'rounded', or 'squircle'. The inner dot of each finder-pattern corner uses the same style
+   * unless `cornerDotStyle` is set.
    *
    * @attr dot-style
    * @default 'square'
@@ -215,13 +235,35 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   public dotStyle: QrDotStyle = 'square';
 
   /**
-   * The style of the corner squares in the QR code. This can be 'square', 'circle', or 'rounded'.
+   * The size of each data module, as a ratio of its cell in the module grid. The value is a
+   * number from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the
+   * modules, so 'rounded' modules do not join their neighbors. The finder-pattern corners keep
+   * their full size. A smaller value can make the code harder to scan with a camera.
+   *
+   * @attr dot-scale
+   * @default 1
+   */
+  @property({ type: Number, attribute: 'dot-scale' })
+  public dotScale = 1;
+
+  /**
+   * The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',
+   * or 'squircle'.
    *
    * @attr square-style
    * @default 'square'
    */
   @property({ attribute: 'square-style' })
   public squareStyle: QrCornerSquareStyle = 'square';
+
+  /**
+   * The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',
+   * 'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`.
+   *
+   * @attr corner-dot-style
+   */
+  @property({ attribute: 'corner-dot-style' })
+  public cornerDotStyle?: QrCornerDotStyle;
 
   /** @internal */
   protected override update(props: PropertyValues<this>): void {
@@ -309,12 +351,61 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     return { errorLevel: this._pickErrorLevel(targetArea), area: targetArea };
   }
 
+  /** Returns `dotScale` clamped from `MIN_DOT_SCALE` to 1, or 1 when it is not a number. */
+  private _getDotScale(): number {
+    return clamp(asNumber(this.dotScale, 1), MIN_DOT_SCALE, 1);
+  }
+
+  /**
+   * Returns the logo layout, with the version to request when the logo needs a larger one than
+   * the value, or `null` when the value cannot be encoded.
+   */
+  private _getLogoFit(
+    value: string,
+    errorLevel: QrErrorCorrectionLevel,
+    area: number
+  ): LogoFit | null {
+    const version = this.version;
+    const aspectRatio = this._logoAspectRatio;
+    const settings = JSON.stringify([
+      value,
+      errorLevel,
+      version,
+      area,
+      aspectRatio,
+    ]);
+
+    if (this._logoFitCache?.settings === settings) {
+      return this._logoFitCache.fit;
+    }
+
+    let fit: LogoFit | null = null;
+
+    try {
+      const smallest = version ?? encodeQR(value, errorLevel).version;
+      const fitted = fitLogo(smallest, version !== undefined, {
+        errorLevel,
+        area,
+        aspectRatio,
+      });
+      fit = {
+        version: fitted.version === smallest ? version : fitted.version,
+        layout: fitted.layout,
+      };
+    } catch {
+      // `_getMatrix()` reports the error.
+    }
+
+    this._logoFitCache = { settings, fit };
+    return fit;
+  }
+
   /** Returns `null` when the value cannot be encoded. */
   private _getMatrix(
     value: string,
-    errorLevel: QrErrorCorrectionLevel
+    errorLevel: QrErrorCorrectionLevel,
+    version: number | undefined
   ): QRCodeMatrixResult | null {
-    const version = this.version;
     const cached = this._matrixCache;
     if (
       cached &&
@@ -505,7 +596,13 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     const hasLogo = this._hasValidLogoSrc() && !this._logoLoadFailed;
     const { errorLevel, area } = this._getErrorLevelAndArea(hasLogo);
 
-    const encoded = this._getMatrix(this.value, errorLevel);
+    const fit =
+      area > 0 ? this._getLogoFit(this.value, errorLevel, area) : null;
+    const encoded = this._getMatrix(
+      this.value,
+      errorLevel,
+      fit?.version ?? this.version
+    );
     if (!encoded) return nothing;
 
     const { matrix, size } = encoded;
@@ -516,13 +613,13 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     const svgSize = moduleSize * totalModules;
 
     const { mask, image, shouldApplyMask } = renderQrMaskAndImage({
-      hasLogo,
       src: this.logoSrc!,
-      aspectRatio: this._logoAspectRatio,
-      area,
+      layout: fit?.layout,
       size: this.size,
       margin: this.logoMargin,
       svgSize,
+      moduleSize,
+      marginPx,
       maskId: this._maskId,
     });
 
@@ -545,12 +642,13 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
             moduleSize,
             marginPx,
             dotStyle: this.dotStyle,
+            dotScale: this._getDotScale(),
           })}
           ${renderQrFinders({
             size,
             moduleSize,
             marginPx,
-            dotStyle: this.dotStyle,
+            dotStyle: this.cornerDotStyle || this.dotStyle,
             squareStyle: this.squareStyle,
           })}
         </g>

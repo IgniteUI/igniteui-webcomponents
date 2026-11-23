@@ -20,11 +20,13 @@ import {
   type City,
   cities,
   comboStable,
+  expectActiveOption,
   openComboPopover,
   items,
   layoutComplete,
   getComboDOM,
 } from '#internals/testing/combo.spec.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   runAriaProjectionTests,
@@ -130,20 +132,12 @@ describe('Combo', () => {
   const filterCombo = async (term: string) => {
     dom.input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
     await elementUpdated(combo);
-    // `_handleMainInput` sets the active index after its own `updateComplete`.
+    // `_handleMainInput` clears the single selection after its own `updateComplete`.
     await elementUpdated(combo);
     await layoutComplete(combo);
   };
 
-  /** The text of the active option, which the list also names, or none. */
-  const expectActive = (name?: string) => {
-    const item = dom.list.querySelector<HTMLElement>('[active]');
-
-    expect(item?.textContent?.trim()).to.equal(name);
-    expect(dom.list.getAttribute('aria-activedescendant')).to.equal(
-      item?.id ?? null
-    );
-  };
+  const expectActive = (name?: string) => expectActiveOption(combo, name);
 
   const searchFor = async (detail: string) => {
     dom.searchInput.dispatchEvent(new CustomEvent('igcInput', { detail }));
@@ -971,6 +965,20 @@ describe('Combo', () => {
         expect(eventSpy).calledWithExactly('igcChange', args);
       });
 
+      it('ignores an item click while disabled', async () => {
+        combo.open = true;
+        await comboStable(combo);
+        const eventSpy = spy(combo, 'emitEvent');
+
+        combo.disabled = true;
+        await elementUpdated(combo);
+        firstOf(items(combo)).click();
+        await elementUpdated(combo);
+
+        expect(combo.value).to.eql([]);
+        expect(eventSpy).not.calledWith('igcChange');
+      });
+
       it('should not repeat a value in newValue when data records share a value key', async () => {
         const twins = [
           { id: 'a', name: 'first-a', country: 'X', zip: '1' },
@@ -1485,6 +1493,27 @@ describe('Combo', () => {
         expect(eventSpy).not.calledWith('igcChange');
       });
 
+      it('has no active option after code closes the list and opens it again', async () => {
+        for (const singleSelect of [false, true]) {
+          combo.singleSelect = singleSelect;
+          await openComboPopover(combo);
+          simulateKeyboard(dom.list, arrowDown);
+          await comboStable(combo);
+          expectActive('Sofia');
+
+          combo.open = false;
+          await comboStable(combo);
+          expectActive();
+
+          combo.open = true;
+          await comboStable(combo);
+          expectActive();
+
+          combo.open = false;
+          await comboStable(combo);
+        }
+      });
+
       it('keeps the active option on its item when a search changes the list', async () => {
         await openComboPopover(combo);
         simulateKeyboard(dom.list, arrowDown, 4);
@@ -1683,6 +1712,44 @@ describe('Combo', () => {
         expect(firstOf(combo.value)).to.equal('BG01');
       });
 
+      it('activates the first match in the update of the typed text', async () => {
+        combo.singleSelect = true;
+        await elementUpdated(combo);
+        await openComboPopover(combo);
+
+        dom.input.dispatchEvent(new CustomEvent('igcInput', { detail: 'o' }));
+        // `elementUpdated` would also wait for a second update.
+        await combo.updateComplete;
+        const early = dom.list.getAttribute('aria-activedescendant');
+
+        await comboStable(combo);
+
+        expectActive('Sofia');
+        expect(early).to.equal(dom.list.getAttribute('aria-activedescendant'));
+      });
+
+      it('has no active option while an app keeps the list closed during typing', async () => {
+        combo.singleSelect = true;
+        await elementUpdated(combo);
+        combo.addEventListener(
+          'igcOpening',
+          (event: CustomEvent) => event.preventDefault(),
+          { once: true }
+        );
+
+        await filterCombo('o');
+
+        expect(combo.open).to.be.false;
+        expectActive();
+
+        // The list opens on the first match, not on the one after it.
+        simulateKeyboard(dom.input, arrowDown);
+        await comboStable(combo);
+
+        expect(combo.open).to.be.true;
+        expectActive('Sofia');
+      });
+
       it('leaves the Enter that commits an IME composition in the main input to the IME', async () => {
         combo.singleSelect = true;
         await elementUpdated(combo);
@@ -1866,6 +1933,51 @@ describe('Combo', () => {
 
         expect(combo.value).to.be.empty;
         expect(dom.input.value).to.equal('');
+      });
+
+      describe('A canceled change after typing', () => {
+        beforeEach(async () => {
+          combo.singleSelect = true;
+          combo.select('BG02');
+          await elementUpdated(combo);
+          combo.addEventListener('igcChange', (event) =>
+            event.preventDefault()
+          );
+
+          // The typed text, which the canceled deselection keeps.
+          dom.input.value = 'Var';
+          await filterCombo('Var');
+          expect(combo.value).to.eql(['BG02']);
+          expect(dom.input.value).to.equal('Var');
+        });
+
+        it('shows the kept selection again after a pick', async () => {
+          await comboStable(combo);
+          simulateClick(firstOf(items(combo)));
+          await elementUpdated(combo);
+
+          expect(combo.value).to.eql(['BG02']);
+          expect(dom.input.value).to.equal('Plovdiv');
+        });
+
+        it('shows the kept selection again after a clear', async () => {
+          simulateClick(dom.clearIcon!);
+          await elementUpdated(combo);
+
+          expect(combo.value).to.eql(['BG02']);
+          expect(dom.input.value).to.equal('Plovdiv');
+        });
+      });
+
+      it('clears a value without a record with the clear button', async () => {
+        combo.singleSelect = true;
+        combo.value = ['XX99'];
+        await elementUpdated(combo);
+
+        simulateClick(dom.clearIcon!);
+        await elementUpdated(combo);
+
+        expect(combo.value).to.be.empty;
       });
     });
 
@@ -2733,4 +2845,8 @@ describe('Combo', () => {
   });
 
   runFocusBeforeRenderTests(html`<igc-combo label="Label"></igc-combo>`);
+
+  runDisabledPopupTests(IgcComboComponent, {
+    getAriaTarget: (host) => getComboDOM(() => host).nativeInput,
+  });
 });

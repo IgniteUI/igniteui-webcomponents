@@ -930,6 +930,17 @@ describe('Input component', () => {
         expect(spec.element.value).to.equal('abc');
       });
 
+      it('stays pristine after a change of the value attribute', () => {
+        spec.element.setAttribute('value', 'xyz');
+
+        expect(spec.element.value).to.equal('xyz');
+        spec.assertIsPristine();
+
+        // As for a native input, a pristine control takes the new default.
+        spec.element.defaultValue = 'def';
+        expect(spec.element.value).to.equal('def');
+      });
+
       it('is correctly submitted on pressing Enter', () => {
         spec.setProperties({ value: 'cba' });
         expect(

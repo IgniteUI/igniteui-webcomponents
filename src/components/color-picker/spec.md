@@ -36,6 +36,7 @@
     - [Color model and parsing](#color-model-and-parsing)
     - [Converters](#converters)
     - [Host ARIA](#host-aria)
+    - [Disabled popup](#disabled-popup)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -60,6 +61,10 @@
 |      12 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API |
 |      13 | 2026-11-06 | A closed picker does not cancel <kbd>Escape</kbd> |
 |      14 | 2026-11-11 | The keys that an IME handles do nothing |
+|      15 | 2026-11-18 | A change of the user marks the control touched, so a change that fails validation shows the invalid styles at once |
+|      16 | 2026-11-18 | A value set from code is not a user change, also while focus is inside, so no `igcChange` reports it |
+|      17 | 2026-11-18 | In input mode, the text input shows only the invalid state of the picker, and reports the validity of the picker |
+|      18 | 2026-11-23 | A disabled picker stays closed; the shared disabled popup suite |
 
 ## Overview
 
@@ -159,9 +164,11 @@ set the base color, drag the alpha slider or type an exact alpha value when `sho
 string into the color value input, activate a predefined swatch, copy the value, or pick a color from the screen
 with the eye dropper.
 
-Every interim interaction emits `igcInput`. The component records the value when focus enters it and compares it
-when focus leaves entirely, emitting `igcChange` exactly once if it changed - dragging the canvas or the sliders, or
-typing, never emits `igcChange` by itself.
+Every interim interaction emits `igcInput` and marks the control touched, so a change that fails validation shows
+the invalid styles at once. When focus leaves the component entirely, it compares the color with the last reported
+color - the color of the last `igcChange` or the last value set from code, in any format - and emits `igcChange`
+exactly once if it changed. Dragging the canvas or the sliders, or typing, never emits `igcChange` by itself. A value set from code is
+not a user change, so it emits no `igcChange`, also while focus is inside the component.
 
 ### Developer experience
 
@@ -243,7 +250,8 @@ once, at construction time. Picking a color through it sets the value and emits 
 
 The control submits its value under `name`, restores its default value on a form reset, and supports `required` and
 custom validity. Validation messages are rendered through the shared validator container; see the
-[validation container specification](../validation-container/spec.md).
+[validation container specification](../validation-container/spec.md). In input mode, the text input shows the invalid
+state of the picker, and no invalid state of its own.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
@@ -326,7 +334,7 @@ All of the above are skipped while the component is `disabled`. A key that an IM
 | hideFormats       | hide-formats    | Yes       | `boolean`                 | false     | Whether the format select is hidden.                                     |
 | locale            | locale          | No        | `string`                  | -         | The locale for the resource strings. Falls back to the inherited locale, then the global one.    |
 | resourceStrings   | -               | No        | `IColorPickerResourceStrings` | EN    | The texts of the component. The strings that you set replace the strings of the current locale. Reading returns all the strings, with your strings over the locale strings.                                   |
-| open              | open            | Yes       | `boolean`                 | false     | Whether the component is open.                                         |
+| open              | open            | Yes       | `boolean`                 | false     | Whether the component is open. A disabled form control stays closed.   |
 | scrollStrategy    | scroll-strategy | No        | `PopoverScrollStrategy`   | `hide`    | The behavior of the component when a parent container scrolls.           |
 | required          | required        | Yes       | `boolean`                 | false     | Whether the control is required. A required control that has no value, or is not checked, fails validation.                     |
 | disabled          | disabled        | Yes       | `boolean`                 | false     | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                                     |
@@ -344,7 +352,7 @@ All of the above are skipped while the component is `disabled`. A key that an IM
 | ----------------- | -------------------------------- | ----------------------------------------------------------------------- |
 | focus             | `(options?: FocusOptions): void` | Sets focus on the color picker.                                         |
 | blur              | `(): void`                       | Removes focus from the color picker.                                    |
-| show              | `(): Promise<boolean>`           | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one. |
+| show              | `(): Promise<boolean>`           | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open or is a disabled form control, or when a later call replaces this one. |
 | hide              | `(): Promise<boolean>`           | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one. |
 | toggle            | `(): Promise<boolean>`           | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes. |
 | checkValidity     | `(): boolean`                    | Checks validity and emits `invalid` when the control is invalid. Returns `true` when the control is valid. |
@@ -448,17 +456,20 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 5. API - the public properties and methods.
 6. Empty value - the checkered anchor, the empty serialized value, and clearing through the inputs.
 7. Color value input - typing a color string, reverting an invalid one and clearing on an empty one.
-8. `igcChange` - emitted once when focus leaves the component and the value has changed.
+8. `igcChange` - emitted once when focus leaves the component and the user changed the value. A value set from code
+   while focus is inside emits nothing, and neither does a color that returns to the reported one in another format.
 9. Color channels, including the alpha input.
 10. Inner events - the `igcInput` of the alpha input, the color value input and the input anchor, the open and close
     events of the format select, and the `igcColorPicked` of the canvas do not reach a listener on the picker.
-11. Swatches - rendering the grid and applying a swatch.
-12. Copy and eye dropper, in environments with and without platform support.
+11. Swatches - rendering the grid and applying a swatch. A swatch click while disabled changes nothing.
+12. Copy and eye dropper, in environments with and without platform support. An eye dropper pick that ends after
+    the picker is disabled changes nothing.
 13. Open and close - the pointer, keyboard and outside-click paths. A closed picker does not cancel <kbd>Escape</kbd>. An
     <kbd>Escape</kbd> that an IME handles keeps the picker open.
 14. Input mode - the anchor input, its label and its prefix.
 15. Rendering of the picker surface rows, and the direction of the slider tracks in LTR and RTL.
-16. Form association, the touched state, `defaultValue`, the initial format, and validation.
+16. Form association, the touched state, `defaultValue`, the initial format, and validation. In input mode, the text
+    input shows the invalid state of the picker at once.
 17. Validation message slots, generated by `runValidationContainerTests`.
 18. External label association and ARIA projection, generated by `runExternalLabelAssociationTests` and
     `runAriaProjectionTests`.
@@ -503,6 +514,10 @@ The focus after the form checks and the `invalid` event rules come from the form
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
     `disabled` set does not cancel an earlier call on another element.
+
+### Disabled popup
+
+31. The shared runner `runDisabledPopupTests`, with the anchor as the `aria-expanded` target.
 
 ## Assumptions and limitations
 

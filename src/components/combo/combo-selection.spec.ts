@@ -17,6 +17,7 @@ import {
   type City,
   cities,
   comboStable,
+  expectActiveOption,
   openComboPopover,
   items,
 } from '#internals/testing/combo.spec.js';
@@ -561,18 +562,25 @@ describe('Combo', () => {
       expect(items(combo).filter((item) => item.selected)).lengthOf(1);
     });
 
-    it('resets the active option when it shows or hides', async () => {
-      // The first city. Without the option, its index is the next city.
+    it('keeps the active item when it shows or hides', async () => {
       simulateKeyboard(list, homeKey);
       simulateKeyboard(list, arrowDown);
       await comboStable(combo);
-
-      expect(items(combo).filter((item) => item.active)).lengthOf(1);
+      expectActiveOption(combo, 'Sofia');
 
       combo.showSelectAll = false;
       await comboStable(combo);
+      expectActiveOption(combo, 'Sofia');
 
-      expect(items(combo).some((item) => item.active)).to.be.false;
+      combo.showSelectAll = true;
+      await comboStable(combo);
+      expectActiveOption(combo, 'Sofia');
+
+      // The change removes the active option.
+      simulateKeyboard(list, homeKey);
+      combo.showSelectAll = false;
+      await comboStable(combo);
+      expectActiveOption(combo);
     });
 
     it('selects only the clicked item when the item has no value', async () => {
@@ -811,6 +819,21 @@ describe('Combo', () => {
       await comboStable(combo);
 
       expect(changes()[0].items).to.eql(['BG01', 'BG02', 'BG03']);
+    });
+
+    it('keeps the active item when group selection turns off or on', async () => {
+      simulateKeyboard(list, homeKey);
+      simulateKeyboard(list, arrowDown);
+      await comboStable(combo);
+      expectActiveOption(combo, 'Sofia');
+
+      combo.groupSelection = false;
+      await comboStable(combo);
+      expectActiveOption(combo, 'Sofia');
+
+      combo.groupSelection = true;
+      await comboStable(combo);
+      expectActiveOption(combo, 'Sofia');
     });
 
     it('resets the active option when group selection turns off', async () => {

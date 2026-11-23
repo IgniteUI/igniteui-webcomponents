@@ -1,4 +1,5 @@
 import { elementUpdated, expect } from '@open-wc/testing';
+import { arrowRight } from '#internals/controllers/key-bindings.js';
 import type { CalendarDay } from '#internals/date/model.js';
 import { formatDisplayDate } from '#internals/i18n/date-formats.js';
 import {
@@ -6,9 +7,14 @@ import {
   getDOMDate,
 } from '#internals/testing/calendar.spec.js';
 import { checkDatesEqual } from '#internals/testing/helpers.spec.js';
-import { simulateClick } from '#internals/testing/simulate.spec.js';
+import {
+  simulateClick,
+  simulateInput,
+  simulateKeyboard,
+} from '#internals/testing/simulate.spec.js';
 import { equal } from '#internals/utils/objects.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
+import type { PickerEditor } from '../date-picker/date-picker.base.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DateRangeValue } from '../types.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
@@ -96,25 +102,46 @@ export const getIcon = (picker: IgcDateRangePickerComponent, name: string) => {
   return picker.renderRoot.querySelector(`[name='${name}']`)!;
 };
 
-export const checkInputsInvalidState = async (
-  el: IgcDateRangePickerComponent,
-  first: boolean,
-  second?: boolean
-) => {
-  await elementUpdated(el);
-  const inputs = el.renderRoot.querySelectorAll(
-    IgcDateTimeInputComponent.tagName
+/** The rendered editors of `picker`, the start editor first. */
+export const getEditors = (picker: IgcDateRangePickerComponent) =>
+  Array.from(
+    picker.renderRoot.querySelectorAll<PickerEditor>(
+      `${IgcDateRangeInputComponent.tagName}, ${IgcDateTimeInputComponent.tagName}`
+    )
   );
-  expect(inputs[0].invalid).to.equal(first);
-  expect(inputs[1].invalid).to.equal(second);
+
+/** The range that the rendered editors hold, `null` when they are empty. */
+export const getEditorRange = (
+  picker: IgcDateRangePickerComponent
+): DateRangeValue | null => {
+  const [first, second] = getEditors(picker);
+  const range =
+    first instanceof IgcDateRangeInputComponent
+      ? first.value
+      : {
+          start: first?.value ?? null,
+          end:
+            second instanceof IgcDateTimeInputComponent ? second.value : null,
+        };
+
+  return range?.start || range?.end ? range : null;
 };
 
-export const getInput = (
-  picker: IgcDateRangePickerComponent
-): HTMLInputElement => {
-  const rangeInput = picker.renderRoot.querySelector(
-    IgcDateRangeInputComponent.tagName
-  )! as IgcDateRangeInputComponent;
-  const input = rangeInput.renderRoot.querySelector('input')!;
-  return input;
+/** The native input of the start editor. */
+export const getInput = (picker: IgcDateRangePickerComponent) =>
+  getEditors(picker)[0].renderRoot.querySelector('input')!;
+
+/** Types `text` at `position`. The keydown records the caret, as a real key press does. */
+export const typeAt = (
+  input: HTMLInputElement,
+  text: string,
+  position: number
+): void => {
+  input.setSelectionRange(position, position + 1);
+  simulateKeyboard(input, arrowRight);
+
+  simulateInput(input, {
+    value: input.value.substring(0, position) + text,
+    inputType: 'insertText',
+  });
 };

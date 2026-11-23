@@ -54,14 +54,15 @@ defineComponents(IgcRadioComponent);
   Removes focus from the radio control.
 - `checkValidity(): boolean`
   Checks the validity of the whole group. Each invalid radio of the group
-  emits `invalid`.
+  emits `invalid`, in DOM order.
 - `reportValidity(): boolean`
-  Checks the validity of the group. An invalid radio emits `invalid` and
-  takes the focus. It shows its own validation messages, not the message of
-  the browser.
+  Checks the validity of the whole group. Each invalid radio of the group
+  emits `invalid`, in DOM order. When this radio is invalid, it takes the
+  focus. It shows its own validation messages, not the message of the
+  browser.
 - `setCustomValidity(message: string): void`
-  Sets a custom validation message on every radio of the group. The radios
-  are invalid while `message` is not empty.
+  Sets a custom validation message on every radio that is in the group at
+  the time of the call. The radios are invalid while `message` is not empty.
 
 ## Events
 

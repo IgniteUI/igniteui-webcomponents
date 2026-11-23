@@ -198,6 +198,10 @@ declare global {
   - `@coercedProperty` coerces a value or runs a side effect on a change. See
     [Properties and Attributes](#properties-and-attributes).
   - Guard each branch with `changedProperties.has()`.
+  - Override `requestUpdate()` only when a reaction cannot wait for the next update, also for
+    a property of a base class. Lit calls it from the setter with the name and the old value.
+    Call `super.requestUpdate()` first, and compare the value with the old value. The form
+    mixin submits the form value again there, and the radio moves to the group of a new `name`.
 - Export a new component from `src/index.ts`, in alphabetical order:
 
   ```ts
@@ -273,6 +277,7 @@ Before you write lifecycle code, look for a controller that already does it:
 | `addToggleCommands`                                           | `#internals/controllers/command.js`         | The `--show`, `--hide` and `--toggle` invoker commands         |
 | `addIdRefResolver`                                            | `#internals/controllers/id-resolver.js`     | Resolving IDREF attributes to elements                         |
 | `addRootClickController`                                      | `#internals/controllers/root-click.js`      | Closing overlays on an outside click                           |
+| `addListboxPopup`                                             | `#internals/controllers/listbox-popup.js`   | The keys, clicks and selection of a single selection list in a popup, such as the select and the dropdown |
 | `createMutationController` / `addResizeObserverController`    | `#internals/controllers/*-observer.js`      | Observing DOM mutations and size changes                       |
 | `addGesturesController`                                       | `#internals/controllers/gestures.js`        | Swipe gestures                                                 |
 | `addKeyboardFocusRing`                                        | `#internals/controllers/focus-ring.js`      | Focus styles for keyboard focus only                           |
@@ -285,8 +290,12 @@ Before you write lifecycle code, look for a controller that already does it:
 For pointer resizing and dragging, use the `resizable()` and `draggable()` directives from
 `#internals/directives/`.
 
-Store a controller in a `readonly` field that is initialized inline. The exceptions are
-`addThemingController` and `addKeybindings`, which you call in the constructor:
+Store a controller in a `readonly` field that is initialized inline. Call these controllers in the
+constructor instead: `addThemingController`, `addKeybindings`, and a controller that the component
+never reads after it adds it, such as `addAriaProjector` or the combo navigation. TypeScript rejects
+a private field that is never read.
+
+A controller in a field:
 
 ```ts
 private readonly _slots = addSlotController(this, {
@@ -807,6 +816,9 @@ export default class IgcInputComponent extends FormAssociatedRequiredMixin(
   required message first.
 - For non-string values, pass transformers to `createFormValueState`. See
   `form-transformers.ts` (`FormValueDateTimeTransformers`, `FormValueNumberTransformers`, …).
+- A `setFormValue` transformer that reads a host property, such as `name` or a mode, lists that
+  property in `reads`. A change of a listed property submits the value again at once. Without
+  the entry, the submitted value stays stale until the next value write.
 
 **Updating the value.** `setValueAndFormState()` writes the value, sends it to the form and
 validates again. Use it in the public setter and in the input handlers. A set of

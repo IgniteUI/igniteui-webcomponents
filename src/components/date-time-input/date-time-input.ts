@@ -11,16 +11,8 @@ import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from '../input/themes/input.base.css.js';
 import { styles as shared } from '../input/themes/shared/input.common.css.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
-import {
-  createDatePart,
-  type DatePart,
-  type DatePartDeltas,
-  DatePartType,
-} from './date-part.js';
-import {
-  IgcDateTimeInputBaseComponent,
-  type PartDirection,
-} from './date-time-input.base.js';
+import type { DatePart } from './date-part.js';
+import { IgcDateTimeInputBaseComponent } from './date-time-input.base.js';
 import { DateTimeMaskParser } from './datetime-mask-parser.js';
 
 export interface IgcDateTimeInputComponentEventMap {
@@ -122,61 +114,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   //#endregion
 
-  //#region Navigation
-
-  /** The cursor position for part navigation. */
-  protected override _calculatePartNavigationPosition(
-    inputValue: string,
-    direction: PartDirection
-  ): number {
-    const cursorPos = this._maskSelection.start;
-    const dateParts = this._parser.parts;
-
-    if (direction === 'back') {
-      const part = dateParts.findLast(
-        (part) => part.type === DatePartType.Literal && part.end < cursorPos
-      );
-      return part?.end ?? 0;
-    }
-
-    const part = dateParts.find(
-      (part) => part.type === DatePartType.Literal && part.start > cursorPos
-    );
-    return part?.start ?? inputValue.length;
-  }
-
-  //#endregion
-
   //#region Internal API
-
-  /** The date part at the cursor, or undefined outside any date part. */
-  protected override _getDatePartAtCursor(): DatePart | undefined {
-    return this._parser.getPartForCursor(this._inputSelection.start)?.type as
-      | DatePart
-      | undefined;
-  }
-
-  /** The part to target when the input is not focused: Date, then Hours, then the first part. */
-  protected override _getDefaultDatePart(): DatePart | undefined {
-    return (this._parser.getPartByType(DatePartType.Date)?.type ??
-      this._parser.getPartByType(DatePartType.Hours)?.type ??
-      this._parser.getFirstPart()?.type) as DatePart | undefined;
-  }
-
-  protected override _parseMask(strict: boolean): Date | null {
-    if (
-      strict ? !this._isMaskComplete() : this._parser.isBlank(this._maskedValue)
-    ) {
-      return null;
-    }
-
-    const parsed = this._parser.parseDate(this._maskedValue);
-    return isValidDate(parsed) ? parsed : null;
-  }
-
-  protected override _formatValue(value: Date | null): string {
-    return this._parser.formatDate(value);
-  }
 
   /** The formatted value shown when the input is not focused. */
   protected override _buildDisplayValue(): string {
@@ -185,55 +123,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       : '';
   }
 
-  protected override _setCurrentDateTime(): void {
-    this._setDraftValue(new Date());
-    this._emitInputEvent();
-  }
-
   /** The `igcInput` detail is the parsed value as an ISO string (the legacy contract). */
   protected override _emitInputEvent(): void {
     this._emitTouchedEvent('igcInput', {
       detail: this._uncommittedValue?.toISOString(),
     });
-  }
-
-  protected override _calculateSpunValue(
-    datePart: DatePart,
-    delta: number | undefined,
-    sign: 1 | -1
-  ): Date {
-    const effectiveDelta =
-      delta || this.spinDelta?.[datePart as keyof DatePartDeltas] || 1;
-
-    return this._spinDatePart(datePart, sign * Math.abs(effectiveDelta));
-  }
-
-  protected _spinDatePart(datePart: DatePart, delta: number): Date {
-    const current = this._uncommittedValue;
-
-    if (!isValidDate(current)) {
-      return new Date();
-    }
-
-    const newDate = new Date(current.getTime());
-    const partType = datePart as unknown as DatePartType;
-
-    let part = this._parser.getPartByType(partType);
-    if (!part) {
-      // An explicit spin, e.g. stepDown(DatePart.Minutes), can target a part not in the format.
-      part = createDatePart(partType, { start: 0, end: 0, format: '' });
-    }
-
-    const amPmValue = this._readAmPmFromMask(part);
-
-    part.spin(delta, {
-      date: newDate,
-      spinLoop: this.spinLoop,
-      amPmValue,
-      originalDate: current,
-    });
-
-    return newDate;
   }
 
   //#endregion

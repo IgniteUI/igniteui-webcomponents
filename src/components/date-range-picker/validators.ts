@@ -9,6 +9,7 @@ import { isSpanInRanges } from '../calendar/helpers.js';
 import type { DateRangeDescriptor } from '../calendar/types.js';
 import type { DateRangeValue } from '../types.js';
 import type IgcDateRangePickerComponent from './date-range-picker.js';
+import { isCompleteDateRange } from './range-shape.js';
 
 /** The ends of the current range, each validated against the bound on its own. */
 function rangeEnds({ value }: IgcDateRangePickerComponent) {
@@ -62,10 +63,4 @@ export function rangeAvoids(
 ): boolean {
   const first = start ?? end;
   return !first || !isSpanInRanges(first, end ?? first, ranges);
-}
-
-export function isCompleteDateRange(
-  value: DateRangeValue | null
-): value is { start: Date; end: Date } {
-  return value != null && value.start != null && value.end != null;
 }

@@ -61,6 +61,7 @@
     - [Form integration tests](#form-integration-tests)
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
+    - [Disabled popup](#disabled-popup)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -101,6 +102,12 @@
 |      28 | 2026-11-13 | One record for each value, and each record of a selected value shows as selected; a value keeps its place when it gets a record; select all gives the order of `data`, then the values that `data` does not hold; a value that a pending deselection removed stays out of the pending selection after a new `data` |
 |      29 | 2026-11-13 | Review fixes: primitive records show as selected again; any record of a repeated value selects its first record, also in a commit, and a toggle option lists one record for each value; a `value` array that changed in place and is set again syncs the selection; a new `displayKey` or `valueKey` updates the input text; a new `data` filters by the current text of the items that keep their records and indexes a key that changed in place; a new `valueKey` merges values to their first records and drops the same-value sync; in single selection, a framework that writes back the cleared `value` keeps the typed text, and a blur that clears the input lets the same selection show its text again |
 |      30 | 2026-11-16 | The active option stays on its item when a search, a selection or a new `data` changes the list, and the list scrolls to it; after the combo leaves the document and comes back, no option is active; in single selection, a selection sends the `igcSearchInput` of the cleared text before the selection changes; Tab out of the combo drops the pending selection of the confirm mode; the `Component` test scenarios follow the groups of the spec file |
+|      31 | 2026-11-18 | A change of the `value` attribute keeps the combo pristine, as for a native control |
+|      32 | 2026-11-18 | The input shows only the invalid state of the combo, and reports the validity of the combo |
+|      33 | 2026-11-18 | A closed list has no active option, also after `open` changes from code or an app cancels the opening; a change of `showSelectAll` or `groupSelection` keeps the active option on its item; in single selection, the first match is active in the update of the typed text |
+|      34 | 2026-11-19 | A change of `name` moves the submitted values to the new name at once |
+|      35 | 2026-11-19 | Test scenarios: in single selection, a pick or a clear that the app cancels after the user types shows the kept selection again, and the clear button clears a value that has no record. The selection model keeps `value` in sync; the behavior does not change |
+|      36 | 2026-11-23 | A disabled combo stays closed; the shared disabled popup suite |
 
 ## Overview
 
@@ -397,8 +404,10 @@ or host ARIA names it.
 </form>
 ```
 
-- The form submits the selection under `name`.
+- The form submits the selection under `name`. After a change of `name`, multiple selection submits under the new name
+  at once, and single selection after the next update, when the `name` attribute changes.
 - A form reset restores `defaultValue`, and removes the invalid styles of the control and its input.
+- The input shows the invalid state of the combo, and no invalid state of its own.
 - An invalid control stops the submission.
 - In single selection, <kbd>Enter</kbd> with the list closed submits the form, as in a native input with a list. The
   [rules of the input](../input/spec.md#form-integration) apply, and the combo counts as a text field. While the list is
@@ -545,11 +554,17 @@ While the list is open:
 
 In multiple selection, the search input filters the list while it has the focus.
 
-When a search, a selection or a new `data` changes the list, the active option stays on its item (the same object, or
-the same `valueKey` value) and the list scrolls to it, or no option is active when the list no longer shows it. Without
-`valueKey`, a copy of an item is another item, as for the selection. New remote results start with no active option.
-An active placeholder keeps its place, so the option that comes there becomes active. Arrow Up without an active
-option acts as from the first option.
+A search, a selection, a new `data`, and a change of `showSelectAll` or `groupSelection` change the list. Then the
+active option stays on its item (the same object, or the same `valueKey` value), and the list scrolls to it. When the
+list no longer shows the item, or the item is no longer an option, no option is active. Without `valueKey`, a copy of
+an item is another item, as for the selection. New remote results start with no active option. An active placeholder
+keeps its place, so the option that comes there becomes active. Arrow Up without an active option acts as from the
+first option.
+
+A closed list has no active option, also when `open` changes from code. A change of `singleSelect` and the clear icon
+also leave no option active. In single selection, the text in the main input makes its first match active in the same
+update that filters the list. When an app cancels `igcOpening` while the user types, the list stays closed with no
+active option, and Arrow Down then opens it on the first match.
 
 A key that an IME handles does nothing in the combo, for example the Enter that commits a composition or the Escape
 that cancels it.
@@ -580,7 +595,7 @@ that cancels it.
 | selectionCommit        | selection-commit           | No        | `'immediate' \| 'confirm'`          | `immediate`       | When the user's changes of the selection apply in multiple selection mode. With `confirm`, they change a pending selection while the list is open, and Enter or the Apply button applies it with one `igcChange`. Any other close drops it. While it exists, the selection methods change it too. |
 | itemTemplate           | -                          | No        | `ComboItemTemplate<T>`              | -                 | The template for the content of each combo item.                |
 | groupHeaderTemplate    | -                          | No        | `ComboGroupHeaderTemplate<T>`       | -                 | The template for the content of each group header.              |
-| open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open.                                |
+| open                   | open                       | Yes       | `boolean`                           | false             | Whether the component is open. A disabled form control stays closed. |
 | label                  | label                      | No        | `string \| undefined`               | -                 | The label of the control.                                       |
 | placeholder            | placeholder                | No        | `string \| undefined`               | -                 | The placeholder text of the control.                            |
 | placeholderSearch      | placeholder-search         | No        | `string`                            | from the resources | The placeholder text of the search input.                      |
@@ -633,7 +648,7 @@ type ComboGroupHeaderTemplate<T extends object> = (props: {
 
 | Name              | Type signature                         | Description                                                                      |
 | ----------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                 | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                             |
+| show              | `(): Promise<boolean>`                 | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open or is a disabled form control, or when a later call replaces this one.                               |
 | hide              | `(): Promise<boolean>`                 | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                             |
 | toggle            | `(): Promise<boolean>`                 | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                         |
 | select            | `(items?: Item<T> \| Item<T>[]): void` | Selects options in the list by reference or by `valueKey` value. It does not emit `igcChange`. An object that `data` does not hold is selected as it is. Without an argument, it selects all the items of `data`, or clears the selection in single selection mode. |
@@ -780,7 +795,8 @@ The files share their data and helpers through
 `createFormAssociatedTestBed`, `runValidationContainerTests`, `runExternalLabelAssociationTests`,
 `runAriaProjectionTests`, `runFocusBeforeRenderTests` and the `simulate*` helpers from
 [`src/internals/testing`](../../internals/testing). The unit specs in [`controllers`](./controllers) test the data
-state, the data requests and the selection model without a browser fixture.
+state, the data requests, the selection model with its sync of `value`, and the active option without a browser
+fixture.
 
 ### Component
 
@@ -817,7 +833,8 @@ the shadow DOM through `getComboDOM()`.
 
 #### Change events
 
-8. `igcChange` gives the new value, the items and the change type, and a cancel keeps the selection.
+8. `igcChange` gives the new value, the items and the change type, and a cancel keeps the selection. An item click
+   while disabled changes nothing.
 
 #### Clear button
 
@@ -830,15 +847,19 @@ the shadow DOM through `getComboDOM()`.
 #### Keyboard navigation
 
 11. The keyboard navigation of the list, also Arrow Down at the end of the matches. After the combo leaves the
-    document and comes back, no option is active. A search or a new `data` with copies keeps the active option on its
-    item, also the select-all option or a group header, and the list scrolls to it. A search that hides it leaves none
-    active, and Arrow Up then acts as from the first option.
+    document and comes back, or code closes the list and opens it again in either selection mode, no option is
+    active. A search or a new `data` with copies keeps the active option on its item, also the select-all option or a
+    group header, and the list scrolls to it. A search that hides it leaves none active, and Arrow Up then acts as from
+    the first option.
 
 #### Single selection
 
 12. Enter, Tab and Escape in single selection, and the main input that filters the list. The Enter of an IME
     composition in the main input does not select an option. A Tab or a click outside after a search keeps a valid
-    state (issue 2221). A selection from a search keeps the active option on the selected item.
+    state (issue 2221). A selection from a search keeps the active option on the selected item. The first match is
+    active in the update of the typed text. The list has no active option while an app keeps it closed during
+    typing. When the app cancels a pick or a clear after the user types, the input shows the kept selection again.
+    The clear button clears a value that has no record.
 
 #### Grouping and templates
 
@@ -963,7 +984,8 @@ the shadow DOM through `getComboDOM()`.
     indeterminate with the `indeterminate` part. A click then selects only the other shown items. A canceled `igcChange` keeps the selection. A new `value`
     while the list is open updates the option and the items.
 39. Home reaches the option, Space toggles it, and Arrow Up from it moves to the search input. A change of
-    `showSelectAll` clears the active option. A click on an item without a value selects only that item.
+    `showSelectAll` keeps the active item. When the change removes the active option, no option is active. A click on
+    an item without a value selects only that item.
 40. With `totalItemCount` in remote mode, the option does not change the requests or the positions of the
     placeholders. The selection methods select only the loaded items.
 
@@ -1012,6 +1034,8 @@ the shadow DOM through `getComboDOM()`.
 ### Form integration tests
 
 53. The combo is form associated, submits its selection, and resets with the form, also the input of single selection.
+    The input shows the invalid state of the combo at once. A change of `name` moves the submitted values to the new
+    name.
 54. It shows the disabled state of an ancestor `fieldset`.
 55. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
     required constraint.
@@ -1025,7 +1049,8 @@ The form-associated mixin gives the focus after the form checks and the rules of
 
 ### defaultValue
 
-57. Form integration in single selection, in multiple selection, and with data that comes late.
+57. Form integration in single selection, in multiple selection, and with data that comes late. A change of the
+    `value` attribute keeps the combo pristine.
 58. Validation against the default value.
 
 ### Validation message slots
@@ -1033,6 +1058,10 @@ The form-associated mixin gives the focus after the form checks and the rules of
 `runValidationContainerTests` makes these tests.
 
 59. The `value-missing`, `custom-error` and `invalid` slots show for their state.
+
+### Disabled popup
+
+60. The shared runner `runDisabledPopupTests`, with the native input as the `aria-expanded` target.
 
 ## Assumptions and limitations
 

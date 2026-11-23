@@ -11,13 +11,6 @@ import {
 } from '../controllers/toggle.js';
 import { coercedProperty } from '../decorators/coerced-property.js';
 import type { UnpackCustomEvent } from '../mixins/event-emitter.js';
-import { isEmpty } from '../utils/arrays.js';
-import {
-  closestComposed,
-  getFocusableElements,
-  isElement,
-} from '../utils/dom.js';
-import { focusTabStop } from '../utils/events.js';
 
 /* blazorIndirectRender */
 /* omitModule */
@@ -39,7 +32,7 @@ export class IgcBaseComboBoxComponent extends LitElement {
   });
 
   /**
-   * Whether the component is open.
+   * Whether the component is open. A disabled form control stays closed.
    * @attr open
    * @default false
    */
@@ -67,6 +60,11 @@ export class IgcBaseComboBoxComponent extends LitElement {
   protected override willUpdate(props: PropertyValues): void {
     super.willUpdate(props);
 
+    // Check the state, not a change: a fieldset changes no property.
+    if (this.open && this._isDisabled) {
+      this.open = false;
+    }
+
     // `keepOpenOnOutsideClick` belongs to `IgcComboBoxBaseLikeComponent`.
     if (props.has('open') || props.has('keepOpenOnOutsideClick')) {
       this._rootClickController.update();
@@ -85,6 +83,11 @@ export class IgcBaseComboBoxComponent extends LitElement {
 
   /** The popup that turns inert on close. A close moves the focus out of it. */
   declare protected readonly _popup?: Element | null;
+
+  /** Only a form control has `disabled`. */
+  protected get _isDisabled(): boolean {
+    return 'disabled' in this && this.disabled === true;
+  }
 
   /** Takes the focus from a closing popup. */
   protected _returnFocus(): void {
@@ -115,13 +118,15 @@ export class IgcBaseComboBoxComponent extends LitElement {
   }
 
   protected _show(emitEvent = false): Promise<boolean> {
-    return this._toggleController.show(emitEvent);
+    return this._isDisabled
+      ? Promise.resolve(false)
+      : this._toggleController.show(emitEvent);
   }
 
   /**
    * Opens the component. It does not emit events. The promise resolves to
-   * `false` when the component is already open, or when a later call replaces
-   * this one.
+   * `false` when the component is already open or is a disabled form control,
+   * or when a later call replaces this one.
    */
   public async show(): Promise<boolean> {
     return this._show();
@@ -176,73 +181,4 @@ export function getItems<T extends HTMLElement>(
   tagName: string
 ): T[] {
   return isServer ? [] : Array.from(root.querySelectorAll<T>(tagName));
-}
-
-/**
- * Whether `event` comes from content of `popup` that is not an item, such as a
- * control in the header or the footer. That content keeps its own keys.
- */
-export function isPopupContentEvent(
-  event: Event,
-  popup: Element | null,
-  itemTag: string
-): boolean {
-  // An item is on the path before the popup that holds it.
-  for (const node of event.composedPath()) {
-    if (node === popup) {
-      return true;
-    }
-    if (isElement(node) && node.localName === itemTag) {
-      return false;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Moves a Tab `event` through `anchor` and the focusable content of an open
- * `popup`, and returns whether the Tab leaves the popup. Without content other
- * than items, only a plain Tab leaves.
- */
-export function tabThroughPopup(
-  event: KeyboardEvent,
-  anchor: HTMLElement | undefined,
-  popup: Element | null,
-  itemTag: string
-): boolean {
-  // A control in an item gets the keys of the item, so it is not a stop.
-  const content = popup
-    ? Iterator.from(getFocusableElements(popup))
-        .filter(
-          (element) =>
-            element.localName === itemTag || !closestComposed(element, itemTag)
-        )
-        .toArray()
-    : [];
-  const stops =
-    anchor && content.some((element) => element.localName !== itemTag)
-      ? [anchor, ...content]
-      : [];
-
-  if (focusTabStop(event, stops)) {
-    event.preventDefault();
-    return false;
-  }
-
-  return !(event.shiftKey && isEmpty(stops));
-}
-
-/** Keeps the last selected item, and makes it the only active item. */
-export function setInitialSelectionState<
-  T extends HTMLElement & { selected: boolean; active: boolean },
->(items: T[]): T | null {
-  const lastSelected = items.findLast((item) => item.selected) ?? null;
-
-  for (const item of items) {
-    item.selected = item === lastSelected;
-    item.active = item === lastSelected;
-  }
-
-  return lastSelected;
 }

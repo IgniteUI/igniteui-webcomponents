@@ -321,6 +321,25 @@ describe('Form Integration', () => {
     spec.assertSubmitHasValue(firstOf(files));
   });
 
+  it('submits the files under a new name', async () => {
+    simulateFileUpload(input, files);
+    await elementUpdated(spec.element);
+
+    await spec.rename('renamed');
+
+    spec.assertSubmitHasValue(firstOf(files));
+  });
+
+  it('submits the files when the name comes after the pick', async () => {
+    spec.setProperties({ name: '' });
+    simulateFileUpload(input, files);
+    await elementUpdated(spec.element);
+
+    spec.setProperties({ name: 'late' });
+
+    spec.assertSubmitHasValue(firstOf(files));
+  });
+
   it('is correctly resets on form reset', async () => {
     simulateFileUpload(input, files);
     await elementUpdated(spec.element);

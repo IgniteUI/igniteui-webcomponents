@@ -1,6 +1,7 @@
 import type { ICalendarResourceStrings } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
+import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcComboBoxBaseLikeComponent } from '#internals/bases/combo-box.js';
 import { addAriaProjector } from '#internals/controllers/aria-projection.js';
@@ -12,6 +13,7 @@ import {
   escapeKey,
 } from '#internals/controllers/key-bindings.js';
 import { convertToDate } from '#internals/date/converters.js';
+import { CalendarDay } from '#internals/date/model.js';
 import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import {
@@ -21,6 +23,7 @@ import {
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import type { FormValue } from '#internals/mixins/forms/form-value.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { asArray, firstOf } from '#internals/utils/arrays.js';
 import {
@@ -32,14 +35,17 @@ import {
 import { bindIf } from '#internals/utils/lit.js';
 import { equal } from '#internals/utils/objects.js';
 import type { ThemingController } from '#theming/theming-controller.js';
-import IgcCalendarComponent, { focusActiveDate } from '../calendar/calendar.js';
+import IgcCalendarComponent, {
+  focusActiveDate,
+  type ShowDateOptions,
+  showDate,
+} from '../calendar/calendar.js';
 import {
   createDateConstraints,
   getLocaleWeekStart,
 } from '../calendar/helpers.js';
 import type {
   CalendarHeaderOrientation,
-  CalendarSelection,
   DateRangeDescriptor,
   WeekDays,
 } from '../calendar/types.js';
@@ -55,6 +61,8 @@ import type {
   PickerMode,
 } from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
+import { type CommitPolicy, CommitSession } from './commit-session.js';
+import type { CalendarBinding, PickerValueShape } from './value-shape.js';
 
 /**
  * The events emitted by a picker driven by a calendar.
@@ -77,9 +85,6 @@ const calendarExportParts =
   label-inner: calendar-label-inner, week-number, week-number-inner, date,
   date-inner, first, last, inactive, hidden, weekend, range, special, disabled, single, preview,
   month, month-inner, year, year-inner, selected, current` as const;
-
-/** Stable identity for "no range", so that the calendar binding is committed only once. */
-const emptyValues: Date[] = [];
 
 /** The components rendered by the picker chrome of every picker. */
 export const pickerDependencies = [
@@ -129,7 +134,19 @@ export abstract class IgcDatePickerBaseComponent<
 
   //#region Internal state and properties
 
-  protected _oldValue: T | null = null;
+  protected readonly _session = new CommitSession<T>({
+    policy: () => this._commitPolicy(),
+    read: () => this._value,
+    write: (value) =>
+      this._writeFrom('edit', () => {
+        this._value = value;
+      }),
+    report: (force) => this._reportChange(this._value, force),
+  });
+
+  /** The value as the user types it. Without a draft, the calendar shows the value. */
+  @state({ hasChanged: (value, old) => !equal(value, old) })
+  protected _draft?: { value: T | null };
 
   protected _activeDate: Date | null = null;
   protected _min: Date | null = null;
@@ -146,6 +163,31 @@ export abstract class IgcDatePickerBaseComponent<
   @query(IgcDialogComponent.tagName)
   private readonly _dialog?: IgcDialogComponent;
 
+  private get _calendarSelection(): CalendarBinding {
+    return this._shape.toCalendar(
+      this._draft ? this._draft.value : this._value
+    );
+  }
+
+  private get _startDate(): Date | null {
+    const { value, values } = this._shape.toCalendar(this._value);
+    return this._activeDate ?? value ?? firstOf(values) ?? null;
+  }
+
+  protected get _value(): T | null {
+    return this._formValue.value;
+  }
+
+  protected set _value(value: T | null) {
+    const previous = this._value;
+    this._formValue.setValueAndFormState(value);
+    this._draft = undefined;
+    if (!this._activeDate) {
+      this._setCalendarActiveDate(this._startDate);
+    }
+    this.requestUpdate('value', previous);
+  }
+
   protected get _isDropDown(): boolean {
     return this.mode === 'dropdown';
   }
@@ -157,11 +199,6 @@ export abstract class IgcDatePickerBaseComponent<
   /** Whether a click on the editor or the label opens the dialog. */
   protected get _opensOnClick(): boolean {
     return !(this._isDropDown || this.readOnly);
-  }
-
-  /** Whether the calendar ignores input, while the picker is closed or disabled. */
-  protected get _isCalendarInert(): boolean {
-    return !this.open || this.disabled;
   }
 
   /** Dialog mode is always read-only, the rest depends on the configuration. */
@@ -187,47 +224,22 @@ export abstract class IgcDatePickerBaseComponent<
   /** Supplied by `I18nMixin` in each picker; TypeScript does not check the two match. */
   protected abstract readonly _i18nController: { locale: string };
 
-  /** Each picker declares its own public `value`, because the type, converter and form state differ. */
-  protected abstract get _value(): T | null;
-  protected abstract set _value(value: T | null);
+  protected abstract readonly _shape: PickerValueShape<T>;
 
-  protected abstract get _editors(): (PickerEditor | undefined)[];
+  declare protected readonly _formValue: FormValue<T | null>;
 
-  protected abstract get _hasValue(): boolean;
-
-  protected abstract get _calendarSelection(): CalendarSelection;
+  protected abstract override get _ownedEditors(): (PickerEditor | undefined)[];
 
   /** The strings the picker forwards to its calendar. */
   protected abstract get _calendarResourceStrings(): IgcCalendarResourceStrings &
     Required<ICalendarResourceStrings>;
 
-  /** The editor whose native input gets the host name and `aria-haspopup="dialog"`. */
-  protected abstract get _projectionTarget(): Element | null;
-
   /** Restores focus to the editor after a calendar selection. */
   protected abstract _focusAndSelectInput(): void;
-
-  /** The value of the picker for `dates`, which the calendar gives in ascending order. */
-  protected abstract _valueFromCalendarSelection(dates: Date[]): T | null;
 
   //#endregion
 
   //#region Overridable hooks
-
-  /** The value reflected in the calendar when it is in single selection mode. */
-  protected get _calendarValue(): Date | null {
-    return null;
-  }
-
-  /** The values reflected in the calendar when it is in range selection mode. */
-  protected get _calendarValues(): Date[] | null {
-    return null;
-  }
-
-  /** The active date for the first render when there is a value but no active date. Read one time. */
-  protected get _defaultActiveDate(): Date | null {
-    return this._calendarValue;
-  }
 
   protected get _calendarIconTitle(): string | undefined {
     return undefined;
@@ -248,26 +260,9 @@ export abstract class IgcDatePickerBaseComponent<
     return undefined;
   }
 
-  /** Whether the current calendar selection is complete enough to close the picker. */
-  protected _canCloseOnSelect(): boolean {
-    return true;
-  }
-
-  /** Invoked when the picker is dismissed through the Escape key. */
-  protected _handleDismiss(): void {}
-
-  /** Invoked when focus has left the picker for good. */
-  protected _onBlur(): void {}
-
-  /** Invoked when the dialog asks to close and the picker accepts the close. */
-  protected _onDialogClosing(): void {}
-
-  /** Invoked when the picker is toggled, before the update is awaited. */
-  protected _syncCalendarOnToggle(): void {}
-
-  /** Whether a calendar selection commits the value at once. Else the picker stays open. */
-  protected _commitsCalendarSelection(): boolean {
-    return true;
+  /** When a calendar selection is committed. */
+  protected _commitPolicy(): CommitPolicy {
+    return 'at-once';
   }
 
   //#endregion
@@ -491,7 +486,7 @@ export abstract class IgcDatePickerBaseComponent<
     super();
 
     addAriaProjector(this, {
-      target: () => this._projectionTarget,
+      target: () => firstOf(this._ownedEditors) ?? null,
       state: () => ({
         hasPopup: 'dialog',
         required: this.required ? 'true' : undefined,
@@ -508,21 +503,13 @@ export abstract class IgcDatePickerBaseComponent<
       .set(escapeKey, this._onEscapeKey, { when: () => this.open });
   }
 
-  protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    super.willUpdate(changedProperties);
+  protected override willUpdate(props: PropertyValues): void {
+    super.willUpdate(props);
 
-    if (changedProperties.has('open') && this.open) {
-      this._markCommitted();
-    }
-  }
-
-  protected override formResetCallback(): void {
-    super.formResetCallback();
-
-    // The browser never resets the inner editors, which are outside the form.
-    // Without this, a touched editor keeps its invalid styles after a reset.
-    for (const editor of this._editors) {
-      editor?.['formResetCallback']();
+    // Disabling is not a confirm. Check the state, not a change: a draft can
+    // outlive `hide()`, and a fieldset changes no property.
+    if (this.disabled) {
+      this._session.cancel();
     }
   }
 
@@ -530,15 +517,8 @@ export abstract class IgcDatePickerBaseComponent<
 
   //#region Internal API
 
-  /** The editors take the clear as a user edit and report it on blur. */
-  protected _clearEditors(): void {
-    for (const editor of this._editors) {
-      editor?._clearAsEdit();
-    }
-  }
-
   protected _focusInput(): void {
-    firstOf(this._editors)?.focus();
+    firstOf(this._ownedEditors)?.focus();
   }
 
   protected override _formatValidationValue(
@@ -612,7 +592,7 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   protected async _shouldCloseCalendarDropdown(): Promise<void> {
-    if (this.keepOpenOnSelect || !this._canCloseOnSelect()) {
+    if (this.keepOpenOnSelect) {
       return;
     }
 
@@ -621,41 +601,25 @@ export abstract class IgcDatePickerBaseComponent<
     }
   }
 
-  /** Points the calendar at the first defined date of `dates`. Does nothing without one, or before the calendar renders. */
   protected _setCalendarActiveDate(
-    ...dates: (Date | null | undefined)[]
+    date: Date | null | undefined,
+    options?: ShowDateOptions
   ): void {
-    const date = dates.find(Boolean);
-    if (date && this._calendar) this._calendar.activeDate = date;
+    if (date && this._calendar) showDate(this._calendar, date, options);
   }
 
   /** Writes the value back onto the calendar. A read-only picker has no binding change to commit it. */
   protected async _restoreCalendarSelection(): Promise<void> {
     await this._calendar.updateComplete;
 
-    if (this._calendarSelection === 'single') {
-      this._calendar.value = this._calendarValue;
-    } else {
-      this._calendar.values = this._calendarValues ?? emptyValues;
-    }
+    const { value, values } = this._calendarSelection;
+    this._calendar.value = value;
+    this._calendar.values = values;
   }
 
-  /** Records the value as the last committed one. */
-  protected _markCommitted(): void {
-    this._oldValue = this._value;
-  }
-
-  /** Emits `igcChange` and records the value as the last committed one. */
-  protected _emitChange(): void {
-    this.emitEvent('igcChange', { detail: this._value });
-    this._markCommitted();
-  }
-
-  /** Commits a value from an editor. An edit back to the last committed value emits nothing. */
+  /** Commits a value from an editor. An edit back to the reported value emits nothing. */
   protected _commitEditorValue(value: T | null): void {
-    this._setTouchedState();
-    this._value = value;
-    this._emitChangeIfDirty();
+    this._writeFrom('user', () => this._session.commitEdit(value));
   }
 
   /**
@@ -670,13 +634,6 @@ export abstract class IgcDatePickerBaseComponent<
     // The exit runs, or a close without one is done.
     if (this._isClosing || !this.open) apply();
     return closed;
-  }
-
-  /** Emits `igcChange` if the value has moved away from the last committed one. */
-  protected _emitChangeIfDirty(): void {
-    if (!equal(this._value, this._oldValue)) {
-      this._emitChange();
-    }
   }
 
   //#endregion
@@ -699,9 +656,12 @@ export abstract class IgcDatePickerBaseComponent<
 
   /** Clears the value and the input text of the picker. */
   public clear(): void {
-    this._markCommitted();
-    this._value = null;
-    this._clearEditors();
+    this._session.clear();
+
+    // The editors report nothing; the picker reports the clear on blur.
+    for (const editor of this._ownedEditors) {
+      editor?.clear();
+    }
   }
 
   //#endregion
@@ -710,12 +670,14 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected async _onEscapeKey(): Promise<void> {
     // Revert as the close starts, as Cancel does, so a reopen during the exit keeps the old value.
-    if (await this._closeWith(() => this._handleDismiss())) this._focusInput();
+    if (await this._closeWith(() => this._session.cancel())) this._focusInput();
   }
 
   protected override async _handleAnchorClick(): Promise<void> {
     super._handleAnchorClick();
-    this._syncCalendarOnToggle();
+    this._setCalendarActiveDate(this._startDate ?? this._calendar?.activeDate, {
+      first: true,
+    });
     await this.updateComplete;
     this._calendar[focusActiveDate]({ preventScroll: true });
   }
@@ -729,7 +691,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected _handleFocusOut(event: FocusEvent): void {
     if (focusLeftHost(this, event)) {
       this._handleBlur();
-      this._onBlur();
+      this._session.blur();
     }
   }
 
@@ -737,18 +699,21 @@ export abstract class IgcDatePickerBaseComponent<
     event: CustomEvent<Date | Date[]>
   ): Promise<void> {
     event.stopPropagation();
-    this._setTouchedState();
 
     // The running close decides the value.
     if (this.readOnly || this._isClosing) {
+      this._setTouchedState();
       await this._restoreCalendarSelection();
       return;
     }
 
-    this._value = this._valueFromCalendarSelection(asArray(event.detail));
+    const dates = asArray(event.detail);
 
-    if (this._commitsCalendarSelection()) {
-      this._emitChange();
+    this._writeFrom('user', () =>
+      this._session.pick(this._shape.fromCalendar(dates))
+    );
+
+    if (this._commitPolicy() === 'at-once' && this._shape.closesOnPick(dates)) {
       this._shouldCloseCalendarDropdown();
     }
   }
@@ -757,7 +722,7 @@ export abstract class IgcDatePickerBaseComponent<
   protected _handleDialogClosing(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    this._closeWith(() => this._onDialogClosing());
+    this._closeWith(() => this._session.confirm());
   }
 
   //#endregion
@@ -765,7 +730,7 @@ export abstract class IgcDatePickerBaseComponent<
   //#region Rendering
 
   protected _renderClearIcon(part = 'clear-icon') {
-    return this._hasValue
+    return this._value !== null
       ? html`
           <span
             slot="suffix"
@@ -837,19 +802,26 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected _renderCalendar(id: string) {
     const hideHeader = this._isDropDown || this.hideHeader;
+    const selection = this._calendarSelection;
 
     return html`
       <igc-calendar
         aria-labelledby=${id}
         role="dialog"
-        selection=${this._calendarSelection}
-        .inert=${this._isCalendarInert}
+        selection=${this._shape.selection}
+        .inert=${!this.open}
         ?show-week-numbers=${this.showWeekNumbers}
         ?hide-outside-days=${this.hideOutsideDays}
         ?hide-header=${hideHeader}
-        .activeDate=${this.activeDate ?? this._defaultActiveDate}
-        .value=${this._calendarValue}
-        .values=${this._calendarValues ?? emptyValues}
+        .activeDate=${
+          // Lit commits an object binding on each render, which would undo the user's navigation.
+          guard(
+            [this._activeDate],
+            () => this._startDate ?? CalendarDay.today.native
+          )
+        }
+        .value=${selection.value}
+        .values=${selection.values}
         .headerOrientation=${this.headerOrientation}
         .orientation=${this.orientation}
         .visibleMonths=${this._visibleMonths}
@@ -900,7 +872,7 @@ export abstract class IgcDatePickerBaseComponent<
             .scrollStrategy=${this.scrollStrategy}
             @igcPopoverScrollClose=${this._handleClosing}
           >
-            <igc-focus-trap ?disabled=${this._isCalendarInert}>
+            <igc-focus-trap ?disabled=${!this.open}>
               ${this._renderPickerContent(id)}
             </igc-focus-trap>
           </igc-popover>

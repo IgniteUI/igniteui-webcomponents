@@ -45,6 +45,9 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
     - [Form integration tests](#form-integration-tests)
     - [Validation message slots](#validation-message-slots)
     - [Host ARIA](#host-aria)
+    - [Header and footer content](#header-and-footer-content)
+    - [Listbox popup rules](#listbox-popup-rules)
+    - [Disabled popup](#disabled-popup)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -64,6 +67,10 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 |       7 | 2026-11-02 | `focus()` and `blur()` before the first render do not throw, and a `focus()` call applies after it |
 |       8 | 2026-11-04 | Setting `selected` on an item again keeps the active item; only the selected item starts active |
 |       9 | 2026-11-06 | The header and footer content keeps its keys, is outside the listbox, and Tab moves through it |
+|      10 | 2026-11-18 | A selection of the user that fails validation shows the invalid styles at once, also before any focus |
+|      11 | 2026-11-18 | The inner input shows the invalid state of the select at once, and reports the validity of the select |
+|      12 | 2026-11-18 | <kbd>Tab</kbd> keeps an unmatched value; <kbd>Tab</kbd> and <kbd>Escape</kbd> ignore `defaultPrevented` on the select; the shared popup rules suite |
+|      13 | 2026-11-23 | A disabled select stays closed; the shared disabled popup suite |
 
 ## Overview
 
@@ -133,7 +140,8 @@ As a developer, I expect to be able to:
 The anchor renders like an input: a label, the display value or the placeholder, optional prefix and suffix content
 and a toggle icon that reflects the open state. Activating it opens the list of options, positioned against the
 anchor. The selected option is marked and the active option carries its own state. Selecting commits the value and
-closes the list unless `keepOpenOnSelect` is set.
+closes the list unless `keepOpenOnSelect` is set. A disabled select stays closed: disabling it closes the list, and
+it does not open.
 
 ### Developer experience
 
@@ -238,6 +246,7 @@ name the control.
 - The value is submitted under `name`.
 - A form reset restores `defaultValue`, taken from the `value` attribute.
 - An invalid control blocks submission.
+- The inner input shows the invalid state of the select.
 
 As for a native control, a failed submit or `form.reportValidity()` moves the focus to the first invalid control of
 the form, and `reportValidity()` moves it to the control when it is invalid. `form.checkValidity()` and
@@ -267,13 +276,13 @@ While the list of options **is** visible:
 
 | Key combination                              | Result                                            |
 | -------------------------------------------- | ------------------------------------------------- |
-| <kbd>Enter</kbd>                             | Selects the active option and closes the list.    |
+| <kbd>Enter</kbd>                             | Selects the active option, if there is one, and closes the list. |
 | <kbd>Alt</kbd> + <kbd>Arrow Up/Down</kbd>    | Toggles the list of options.                      |
 | <kbd>Arrow Down</kbd> / <kbd>Arrow Right</kbd> | Activates the next option.                      |
 | <kbd>Arrow Up</kbd> / <kbd>Arrow Left</kbd>  | Activates the previous option.                    |
 | <kbd>Home</kbd> / <kbd>End</kbd>             | Activates the first or the last option.           |
 | <kbd>Escape</kbd>                            | Closes the list without changing the selection.   |
-| <kbd>Tab</kbd>                               | Selects the active option, closes the list and keeps the focus on the input. |
+| <kbd>Tab</kbd>                               | Selects the active option, if there is one, closes the list and keeps the focus on the input. |
 | <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd>, with focusable header or footer content | Moves through the input, the header content, the active option and the footer content. Past either end, does what <kbd>Tab</kbd> does without that content. |
 
 Typing while the component is focused queries the options and selects the closest match; while the list is open the
@@ -282,7 +291,8 @@ matching option is activated instead.
 The content of the `header` and `footer` slots keeps its own keys: a text field takes the typed text, the arrow keys,
 <kbd>Home</kbd> and <kbd>End</kbd>, and a button takes <kbd>Space</kbd> and <kbd>Enter</kbd>. <kbd>Escape</kbd> from
 that content closes the list, unless the content handled the key (`defaultPrevented`). When the list closes with the
-focus in it, the input gets the focus.
+focus in it, the input gets the focus. <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select itself act also when other
+code already called `preventDefault()` on the key.
 
 ## API
 
@@ -293,7 +303,7 @@ focus in it, the input gets the focus.
 | Property               | Attribute                  | Reflected | Type                                | Default        | Description                                                     |
 | ---------------------- | -------------------------- | --------- | ----------------------------------- | -------------- | ---------------------------------------------------------------- |
 | value                  | value                      | No        | `string \| undefined`               | -              | The value of the control.                                       |
-| open                   | open                       | Yes       | `boolean`                           | false          | Whether the component is open.                                |
+| open                   | open                       | Yes       | `boolean`                           | false          | Whether the component is open. A disabled form control stays closed. |
 | label                  | label                      | No        | `string`                            | -              | The label of the control.                                       |
 | placeholder            | placeholder                | No        | `string`                            | -              | The placeholder text of the control.                            |
 | outlined               | outlined                   | Yes       | `boolean`                           | false          | Whether the control has an outlined appearance.                 |
@@ -320,7 +330,7 @@ focus in it, the input gets the focus.
 
 | Name              | Type signature                                              | Description                                                             |
 | ----------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------- |
-| show              | `(): Promise<boolean>`                                      | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open, or when a later call replaces this one.                                                    |
+| show              | `(): Promise<boolean>`                                      | Opens the component. It does not emit events. The promise resolves to `false` when the component is already open or is a disabled form control, or when a later call replaces this one.                      |
 | hide              | `(): Promise<boolean>`                                      | Closes the component. It does not emit events. The promise resolves to `false` when the component is already closed, or when a later call replaces this one.                                                    |
 | toggle            | `(): Promise<boolean>`                                      | Opens the component when it is closed, and closes it when it is open. It does not emit events. The promise resolves to `true` when the state changes.                                |
 | select            | `(value: string \| number): IgcSelectItemComponent \| null` | Selects the item with the given value or index.                         |
@@ -455,7 +465,8 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
    `value` again keeps the active item, while a user commit and `select()` with the selected item move it there. A
    removed active item hands the navigation back to the selected item. Setting `selected` on each item again keeps
    the active item and its tab stop.
-8. Selecting a disabled item is not possible.
+8. Selecting a disabled item is not possible. A click on an item of a disabled select selects nothing and sends no
+   `igcChange`; after re-enabling, a click selects again.
 
 ### Asynchronously rendered items
 
@@ -492,7 +503,10 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 
 20. Clicking an item selects it and closes the list, unless `keepOpenOnSelect` is set.
 21. Clicking outside closes the list, unless `keepOpenOnOutsideClick` is set.
-22. The keyboard interactions behave as specified with the list closed and open.
+22. The keyboard interactions behave as specified with the list closed and open. <kbd>Tab</kbd> without an active
+    option keeps a `value` that matches no option. <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when
+    other code called `preventDefault()` on the key. <kbd>Escape</kbd> on a focusable `prefix` or `suffix` element closes
+    the list and focuses the input.
 
 ### Events tests
 
@@ -507,9 +521,11 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 ### Form integration tests
 
 27. Is form associated, submits its value, and does not submit when it has none.
-28. Is correctly reset on form reset, including after a `setAttribute` call.
+28. Is correctly reset on form reset, including after a `setAttribute` call. The inner input shows the invalid state of
+    the select at once.
 29. Reflects the disabled state of an ancestor `fieldset`.
-30. Fulfils the required and custom constraints.
+30. Fulfils the required and custom constraints. A selection of the user that fails validation shows the invalid
+    styles at once, also when the select never had the focus.
 31. `defaultValue` - correct initial state, submission, reset and validation.
 
 ### Validation message slots
@@ -546,6 +562,15 @@ Generated by `runValidationContainerTests`.
 41. A control inside an option is not a Tab stop.
 42. <kbd>Escape</kbd> is not cancelled while the list is closed.
 43. When the header content closes the list on <kbd>Enter</kbd>, the list stays closed.
+
+### Listbox popup rules
+
+44. The shared runner `runListboxPopupTests`, for a host whose keys work while the list is closed, whose
+    `value` follows the selection, and that ignores all keys while disabled.
+
+### Disabled popup
+
+45. The shared runner `runDisabledPopupTests`, with the native input as the `aria-expanded` target.
 
 ## Assumptions and limitations
 

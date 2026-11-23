@@ -15,6 +15,7 @@ import {
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
+import { runListboxPopupTests } from '#internals/testing/listbox-popup.spec.js';
 import {
   simulateClick,
   simulateKeyboard,
@@ -732,33 +733,6 @@ describe('Dropdown', () => {
       expect(dropDown.open).to.be.false;
     });
 
-    it('selects an item on click and closes the dropdown', async () => {
-      const targetItem = dropDown.items[3];
-
-      await openDropdown();
-
-      simulateClick(targetItem);
-      await elementUpdated(dropDown);
-
-      checkItemState(targetItem, { active: true, selected: true });
-      expect(dropDown.selectedItem?.value).to.equal(targetItem.value);
-      expect(dropDown.open).to.be.false;
-    });
-
-    it('selects an item on click and does not close when keep-open-on-select is set', async () => {
-      const targetItem = dropDown.items[3];
-
-      dropDown.keepOpenOnSelect = true;
-      await openDropdown();
-
-      simulateClick(targetItem);
-      await elementUpdated(dropDown);
-
-      checkItemState(targetItem, { active: true, selected: true });
-      expect(dropDown.selectedItem?.value).to.equal(targetItem.value);
-      expect(dropDown.open).to.be.true;
-    });
-
     it('moves the active item to the selected item on a click or `select()`', async () => {
       const targetItem = dropDown.items[1];
 
@@ -780,24 +754,6 @@ describe('Dropdown', () => {
       }
     });
 
-    it('clicking on a disabled item is a no-op', async () => {
-      const targetItem = dropDown.items[3];
-      targetItem.disabled = true;
-
-      await openDropdown();
-
-      simulateClick(targetItem);
-      await elementUpdated(dropDown);
-
-      checkItemState(targetItem, {
-        active: false,
-        selected: false,
-        disabled: true,
-      });
-      expect(dropDown.selectedItem).to.be.null;
-      expect(dropDown.open).to.be.true;
-    });
-
     it('clicking outside of the dropdown DOM tree closes the dropdown', async () => {
       await openDropdown();
 
@@ -815,17 +771,6 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
 
       expect(dropDown.open).to.be.true;
-    });
-
-    it('pressing Enter with no active item is a no-op', async () => {
-      await openDropdown();
-
-      simulateKeyboard(dropDown, enterKey);
-      await elementUpdated(dropDown);
-
-      expect(dropDown.open).to.be.true;
-      expect(dropDown.selectedItem).to.be.null;
-      expect(getActiveItem()).to.be.undefined;
     });
 
     it('re-selecting the same item does not emit igcChange again', async () => {
@@ -846,98 +791,6 @@ describe('Dropdown', () => {
 
       expect(changes.length).to.equal(1);
       expect(dropDown.selectedItem).to.equal(targetItem);
-    });
-
-    it('pressing Escape closes the dropdown without selection', async () => {
-      await openDropdown();
-
-      simulateKeyboard(dropDown, arrowDown, 4);
-      await elementUpdated(dropDown);
-
-      simulateKeyboard(dropDown, escapeKey);
-      await elementUpdated(dropDown);
-
-      checkItemState(dropDown.items[3], { active: true, selected: false });
-      expect(dropDown.selectedItem).to.be.null;
-      expect(dropDown.open).to.be.false;
-    });
-
-    it('pressing Enter selects the active item and closes the dropdown', async () => {
-      await openDropdown();
-
-      simulateKeyboard(dropDown, arrowDown, 4);
-      await elementUpdated(dropDown);
-
-      simulateKeyboard(dropDown, enterKey);
-      await elementUpdated(dropDown);
-
-      checkItemState(dropDown.items[3], { active: true, selected: true });
-      expect(dropDown.selectedItem?.value).to.equal(dropDown.items[3].value);
-      expect(dropDown.open).to.be.false;
-    });
-
-    it('pressing Enter selects the active item and does not close the dropdown with keep-open-on-select', async () => {
-      dropDown.keepOpenOnSelect = true;
-      await openDropdown();
-
-      simulateKeyboard(dropDown, arrowDown, 4);
-      await elementUpdated(dropDown);
-
-      simulateKeyboard(dropDown, enterKey);
-      await elementUpdated(dropDown);
-
-      checkItemState(dropDown.items[3], { active: true, selected: true });
-      expect(dropDown.selectedItem?.value).to.equal(dropDown.items[3].value);
-      expect(dropDown.open).to.be.true;
-    });
-
-    it('pressing Tab with no active item closes the dropdown and does no selection', async () => {
-      await openDropdown();
-
-      simulateKeyboard(dropDown, tabKey);
-      await elementUpdated(dropDown);
-
-      expect(dropDown.open).to.be.false;
-      expect(dropDown.selectedItem).to.be.null;
-      expect(getActiveItem()).to.be.undefined;
-    });
-
-    it('pressing Tab selects the active item and closes the dropdown', async () => {
-      await openDropdown();
-
-      simulateKeyboard(dropDown, arrowDown, 4);
-      await elementUpdated(dropDown);
-
-      simulateKeyboard(dropDown, tabKey);
-      await elementUpdated(dropDown);
-
-      checkItemState(dropDown.items[3], { active: true, selected: true });
-      expect(dropDown.selectedItem?.value).to.equal(dropDown.items[3].value);
-      expect(dropDown.open).to.be.false;
-    });
-
-    it('pressing Tab selects the active item and closes the dropdown regardless of keep-open-on-select', async () => {
-      dropDown.keepOpenOnSelect = true;
-      await openDropdown();
-
-      simulateKeyboard(dropDown, arrowDown, 4);
-      await elementUpdated(dropDown);
-
-      simulateKeyboard(dropDown, tabKey);
-      await elementUpdated(dropDown);
-
-      checkItemState(dropDown.items[3], { active: true, selected: true });
-      expect(dropDown.selectedItem?.value).to.equal(dropDown.items[3].value);
-      expect(dropDown.open).to.be.false;
-    });
-
-    it('activates the first item on ArrowDown if no selection is present', async () => {
-      await openDropdown();
-
-      simulateKeyboard(dropDown, arrowDown);
-      await elementUpdated(dropDown);
-
-      expect(dropDown.items[0].active).to.be.true;
     });
 
     it('sets the active element to the currently selected one', async () => {
@@ -1633,4 +1486,6 @@ describe('Dropdown', () => {
       expect(dropDown.open).to.be.true;
     });
   });
+
+  runListboxPopupTests(createBasicDropdown(), { closedKeys: false });
 });

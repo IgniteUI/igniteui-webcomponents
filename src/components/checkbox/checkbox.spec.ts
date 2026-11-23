@@ -399,6 +399,25 @@ describe('Checkbox', () => {
 
         expect(spec.element.checked).to.be.true;
       });
+
+      it('stays pristine after a change of the checked attribute', () => {
+        spec.element.setAttribute('checked', '');
+        spec.assertIsPristine();
+
+        // As for a native checkbox, a pristine control takes the new default.
+        spec.element.defaultChecked = false;
+        expect(spec.element.checked).to.be.false;
+      });
+
+      it('stays pristine after a change of the value', () => {
+        spec.element.value = 'yes';
+
+        spec.assertSubmitHasValue('yes');
+        spec.assertIsPristine();
+
+        spec.element.defaultChecked = false;
+        expect(spec.element.checked).to.be.false;
+      });
     });
 
     describe('Validation', () => {

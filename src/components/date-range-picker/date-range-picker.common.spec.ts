@@ -19,8 +19,15 @@ import { CalendarDay } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import type { IgcDateRangePickerResourceStrings } from '#internals/i18n/EN/date-range-picker.resources.js';
 import {
+  getCalendarDOM,
+  getDOMDate,
+  getRenderedMonths,
+} from '#internals/testing/calendar.spec.js';
+import { runDisabledPopupTests } from '#internals/testing/disabled-popup.spec.js';
+import {
   checkDatesEqual,
   finishAnimationsFor,
+  isFocused,
 } from '#internals/testing/helpers.spec.js';
 import {
   simulateClick,
@@ -29,9 +36,10 @@ import {
 import { formatString } from '#internals/utils/strings.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
-import IgcCalendarComponent from '../calendar/calendar.js';
+import IgcCalendarComponent, { showDate } from '../calendar/calendar.js';
 import { DateRangeType } from '../calendar/types.js';
 import IgcChipComponent from '../chip/chip.js';
+import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDialogComponent from '../dialog/dialog.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
@@ -42,7 +50,10 @@ import IgcDateRangePickerComponent, {
 } from './date-range-picker.js';
 import {
   checkSelectedRange,
+  getEditorRange,
+  getEditors,
   getIcon,
+  getInput,
   selectDates,
 } from './date-range-picker.utils.spec.js';
 import IgcPredefinedRangesAreaComponent from './predefined-ranges-area.js';
@@ -66,6 +77,23 @@ describe('Date range picker - common tests for single and two inputs mode', () =
     );
     calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
   });
+
+  /** Cancel is the first footer button and Done the last. */
+  const clickFooterButton = (selector: '' | ':last-of-type') => () =>
+    simulateClick(
+      picker.renderRoot.querySelector<HTMLElement>(
+        `igc-button[slot="footer"]${selector}`
+      )!
+    );
+
+  const clickOutsideDialog = () => {
+    const dialog = picker.renderRoot.querySelector(IgcDialogComponent.tagName)!;
+    const { x, y } = dialog.getBoundingClientRect();
+    simulateClick(dialog.renderRoot.querySelector('dialog')!, {
+      clientX: x + 1,
+      clientY: y - 1,
+    });
+  };
 
   describe('Rendering and initialization', () => {
     it('accepts a value and bounds set before the first render', async () => {
@@ -133,7 +161,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
     });
     it('should render the clear icon as soon as there is a start or end date defined', async () => {
       expect(picker.open).to.equal(false);
-      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(picker.value).to.be.null;
 
       let clear = getIcon(picker, clearIcon);
       expect(clear).to.be.null;
@@ -388,7 +416,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         ],
       };
 
-      expect(picker.value).to.deep.equal({ start: null, end: null });
+      expect(picker.value).to.be.null;
       expect(picker.weekStart).to.equal('sunday');
       expect(picker.hideOutsideDays).to.equal(false);
       expect(picker.hideHeader).to.equal(false);
@@ -793,6 +821,73 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           expect(eventSpy).not.calledWith('igcChange');
         });
 
+        it('keeps the range of Done on Cancel when the dialog shows again during the exit (dialog)', async () => {
+          const { eventSpy } = await selectDraftInDialog();
+          const draft = picker.value;
+
+          simulateClick(doneButton());
+          await picker.show();
+          expect(picker.open).to.be.true;
+
+          simulateClick(cancelButton());
+          await waitUntil(() => !picker.open);
+          picker.blur();
+          await elementUpdated(picker);
+
+          expect(picker.value).to.eql(draft);
+          expect(
+            eventSpy.withArgs('igcChange').args.map(([, init]) => init?.detail)
+          ).to.eql([draft]);
+        });
+
+        it('restores the range from before the draft on Cancel after `hide()` and an open (dialog)', async () => {
+          const { value, eventSpy } = await selectDraftInDialog();
+
+          await picker.hide();
+          await picker.show();
+          simulateClick(cancelButton());
+          await waitUntil(() => !picker.open);
+
+          expect(picker.value).to.eql(value);
+          expect(eventSpy).not.calledWith('igcChange');
+        });
+
+        it('reports the draft on Done after `hide()` and an open (dialog)', async () => {
+          const { eventSpy } = await selectDraftInDialog();
+          const draft = picker.value;
+
+          await picker.hide();
+          await picker.show();
+          simulateClick(doneButton());
+          await waitUntil(() => !picker.open);
+
+          expect(
+            eventSpy.withArgs('igcChange').args.map(([, init]) => init?.detail)
+          ).to.eql([draft]);
+        });
+
+        it('restores the range from before the draft when disabled (dialog)', async () => {
+          const { value, eventSpy } = await selectDraftInDialog();
+
+          picker.disabled = true;
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+          expect(picker.value).to.eql(value);
+          expect(eventSpy).not.calledWith('igcChange');
+        });
+
+        it('restores the range from before the draft when disabled after `hide()` (dialog)', async () => {
+          const { value, eventSpy } = await selectDraftInDialog();
+
+          await picker.hide();
+          picker.disabled = true;
+          await elementUpdated(picker);
+
+          expect(picker.value).to.eql(value);
+          expect(eventSpy).not.calledWith('igcChange');
+        });
+
         it('ignores Done, Cancel and Escape during the exit of `hide()` (dialog)', async () => {
           const { eventSpy } = await selectDraftInDialog();
           const draft = picker.value;
@@ -842,9 +937,9 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           await elementUpdated(picker);
 
           expect(eventSpy.lastCall).calledWith('igcChange', {
-            detail: { start: null, end: null },
+            detail: null,
           });
-          expect(picker.value).to.deep.equal({ start: null, end: null });
+          expect(picker.value).to.be.null;
           expect(picker.open).to.be.true;
         });
       });
@@ -948,12 +1043,104 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           });
         });
       });
+      describe('Clear and blur', () => {
+        const value = { start: today.native, end: tomorrow.native };
+
+        /** Clears a range set from code with the clear icon, with focus in the first editor. */
+        const clearWithIcon = async (useTwoInputs: boolean) => {
+          picker.useTwoInputs = useTwoInputs;
+          picker.value = value;
+          await elementUpdated(picker);
+
+          picker.renderRoot
+            .querySelector<HTMLElement>(
+              useTwoInputs
+                ? IgcDateTimeInputComponent.tagName
+                : IgcDateRangeInputComponent.tagName
+            )!
+            .focus();
+          simulateClick(getIcon(picker, clearIcon));
+          await elementUpdated(picker);
+        };
+
+        const toDialog = () => {
+          picker.mode = 'dialog';
+        };
+
+        const cases: {
+          name: string;
+          useTwoInputs: boolean;
+          setup: () => void;
+          close?: () => void;
+        }[] = [
+          ...[false, true].flatMap((useTwoInputs) => {
+            const layout = useTwoInputs ? 'two inputs' : 'single input';
+            return [
+              {
+                name: `in dialog mode (${layout})`,
+                useTwoInputs,
+                setup: toDialog,
+              },
+              {
+                name: `in non-editable dropdown mode (${layout})`,
+                useTwoInputs,
+                setup: () => {
+                  picker.nonEditable = true;
+                },
+              },
+            ];
+          }),
+          {
+            name: 'after an open and Cancel (dialog)',
+            useTwoInputs: false,
+            setup: toDialog,
+            close: clickFooterButton(''),
+          },
+          {
+            name: 'after an open and Done (dialog)',
+            useTwoInputs: false,
+            setup: toDialog,
+            close: clickFooterButton(':last-of-type'),
+          },
+          {
+            name: 'after an open and an outside click (dialog)',
+            useTwoInputs: false,
+            setup: toDialog,
+            close: clickOutsideDialog,
+          },
+        ];
+
+        for (const { name, useTwoInputs, setup, close } of cases) {
+          it(`reports the clear one time on blur ${name}`, async () => {
+            const eventSpy = spy(picker, 'emitEvent');
+            setup();
+            await clearWithIcon(useTwoInputs);
+
+            if (close) {
+              await picker.show();
+              close();
+              await waitUntil(() => !picker.open);
+            }
+
+            picker.blur();
+            await elementUpdated(picker);
+
+            expect(
+              eventSpy
+                .withArgs('igcChange')
+                .args.map(([, init]) => init?.detail)
+            ).to.eql([null]);
+            expect(picker.value).to.be.null;
+          });
+        }
+      });
+
       describe('Readonly state', () => {
         it('should not modify value through selection when readOnly is true', async () => {
           const eventSpy = spy(picker, 'emitEvent');
           picker.readOnly = true;
           await elementUpdated(picker);
-          expect(picker.value).to.deep.equal({ start: null, end: null });
+          expect(picker.value).to.be.null;
 
           await picker.show();
 
@@ -961,7 +1148,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
             IgcCalendarComponent.tagName
           )!;
           await selectDates(today, tomorrow, calendar);
-          expect(picker.value).to.deep.equal({ start: null, end: null });
+          expect(picker.value).to.be.null;
           expect(calendar.values).to.deep.equal([]);
           expect(eventSpy).not.to.be.called;
         });
@@ -1125,6 +1312,23 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           expect(popover?.open).to.be.false;
           eventSpy.resetHistory();
         }
+      });
+
+      it('keeps the picker open after a range chip when keepOpenOnSelect is set - dropdown mode', async () => {
+        picker.usePredefinedRanges = true;
+        picker.customRanges = customRanges;
+        picker.keepOpenOnSelect = true;
+        await picker.show();
+
+        simulateClick(getRangeChips()[0]);
+        await elementUpdated(picker);
+
+        expect(picker.open).to.be.true;
+        expect(getPopover()?.open).to.be.true;
+        expect(eventSpy.getCalls().map(({ args }) => args[0])).to.eql([
+          'igcSelectedRangeChange',
+          'igcChange',
+        ]);
       });
 
       it('should emit igcChange on committing the new selection through predefined ranges - dialog mode', async () => {
@@ -1419,7 +1623,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         await clickCancel();
 
         expect(picker.selectedRange).to.be.null;
-        expect(picker.value).to.eql({ start: null, end: null });
+        expect(picker.value).to.be.null;
         expect(valueEvents()).to.be.empty;
 
         await waitUntil(() => !picker.open);
@@ -1437,7 +1641,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         expect(picker.value).to.eql(sprint);
       });
 
-      it('restores the key with the value on Cancel after `clear()` (dialog)', async () => {
+      it('keeps the key with the value on Cancel after `clear()` (dialog)', async () => {
         picker.mode = 'dialog';
         await clickChip('Sprint');
 
@@ -1445,10 +1649,11 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         await elementUpdated(picker);
         expect(picker.selectedRange).to.be.null;
 
+        // The clear ends the draft, so Cancel keeps it.
         await clickCancel();
 
-        expect(picker.value).to.eql(sprint);
-        expect(picker.selectedRange).to.equal('Sprint');
+        expect(picker.value).to.be.null;
+        expect(picker.selectedRange).to.be.null;
       });
 
       it('keeps a draft when the committed key or no key is set again (dialog)', async () => {
@@ -1484,17 +1689,26 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         expect(valueEvents()).to.be.empty;
       });
 
-      it('does not report a key that `hide()` left in the dialog (dialog)', async () => {
+      it('reports on Done a key that `hide()` left in the dialog, and restores it on Cancel (dialog)', async () => {
         picker.mode = 'dialog';
         await clickChip('Sprint');
         await picker.hide();
 
-        // As for the value, the open takes the key as it is.
+        // As for the value, the key stays a draft after a new open.
+        await picker.show();
+        await clickCancel();
+
+        expect(picker.selectedRange).to.be.null;
+        expect(valueEvents()).to.be.empty;
+
+        await waitUntil(() => !picker.open);
         await clickChip('Sprint');
+        await picker.hide();
+        await picker.show();
         await clickDone();
 
         expect(picker.selectedRange).to.equal('Sprint');
-        expect(valueEvents()).to.be.empty;
+        expect(valueEvents()).to.eql(['igcSelectedRangeChange', 'igcChange']);
       });
 
       it('reports a key change with the same dates without `igcChange` (dialog)', async () => {
@@ -1563,7 +1777,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         );
 
         expect(picker.selectedRange).to.equal('sinceYesterday');
-        expect(picker.value).to.eql({ start: null, end: null });
+        expect(picker.value).to.be.null;
 
         picker.customRanges = customRanges;
         await elementUpdated(picker);
@@ -1622,7 +1836,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         expect(getChip('Last 7 Days').disabled).to.be.true;
         expect(getChip('Sprint').disabled).to.be.true;
         expect(picker.selectedRange).to.be.null;
-        expect(picker.value).to.eql({ start: null, end: null });
+        expect(picker.value).to.be.null;
         expect(valueEvents()).to.be.empty;
         expect(getChip('Last 7 Days').selected).to.be.false;
       });
@@ -1693,9 +1907,9 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         });
       });
 
-      it('disables the chips of a disabled picker that opens from code', async () => {
+      it('disables the chips of a disabled picker', async () => {
         picker.disabled = true;
-        await picker.show();
+        await elementUpdated(picker);
 
         expect(getChips().every((chip) => chip.disabled)).to.be.true;
       });
@@ -1763,7 +1977,7 @@ describe('Date range picker - common tests for single and two inputs mode', () =
           simulateClick(getChip('Sprint'));
           await elementUpdated(picker);
 
-          expect(picker.value).to.eql({ start: null, end: null });
+          expect(picker.value).to.be.null;
           expect(valueEvents()).to.be.empty;
         });
 
@@ -1792,10 +2006,157 @@ describe('Date range picker - common tests for single and two inputs mode', () =
         form.reset();
 
         expect(picker.selectedRange).to.be.null;
-        expect(picker.value).to.eql({ start: null, end: null });
+        expect(picker.value).to.be.null;
       });
     });
   });
+  describe('Value rules', () => {
+    const april10 = new Date(2025, 3, 10);
+    const may20 = new Date(2025, 4, 20);
+    const june1 = new Date(2025, 5, 1);
+    const june10 = new Date(2025, 5, 10);
+
+    async function pick(date: Date, view: number) {
+      const views = getCalendarDOM(calendar).views.allDays;
+      simulateClick(getDOMDate(CalendarDay.from(date), views[view]));
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+    }
+
+    it('is null without a value', () => {
+      expect(picker.value).to.be.null;
+      expect(picker.defaultValue).to.be.null;
+    });
+
+    it('stores an empty range as null', () => {
+      picker.value = { start: june1, end: june10 };
+      picker.value = { start: null, end: null };
+
+      expect(picker.value).to.be.null;
+    });
+
+    it('swaps reversed ends set from code, as an attribute and as the default', () => {
+      const ordered = { start: june1, end: june10 };
+
+      picker.value = { start: june10, end: june1 };
+      expect(picker.value).to.eql(ordered);
+
+      picker.setAttribute(
+        'value',
+        JSON.stringify({ start: '2025-06-10', end: '2025-06-01' })
+      );
+      expect(picker.value).to.eql(ordered);
+
+      picker.defaultValue = { start: june10, end: june1 };
+      expect(picker.defaultValue).to.eql(ordered);
+    });
+
+    it('keeps the time of the ends set as an attribute', () => {
+      picker.setAttribute(
+        'value',
+        JSON.stringify({ start: '2025-06-01T09:30', end: '2025-06-10T17:45' })
+      );
+
+      expect(picker.value).to.eql({
+        start: new Date(2025, 5, 1, 9, 30),
+        end: new Date(2025, 5, 10, 17, 45),
+      });
+    });
+
+    it('swaps the reversed range of a custom chip', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+      picker.customRanges = [
+        { label: 'Reversed', dateRange: { start: june10, end: june1 } },
+      ];
+      await picker.show();
+
+      const area = picker.renderRoot.querySelector(
+        IgcPredefinedRangesAreaComponent.tagName
+      )!;
+      simulateClick(area.renderRoot.querySelector(IgcChipComponent.tagName)!);
+      await elementUpdated(picker);
+
+      expect(picker.value).to.eql({ start: june1, end: june10 });
+      expect(eventSpy).calledWith('igcChange', {
+        detail: { start: june1, end: june10 },
+      });
+    });
+
+    it('keeps the months in view when a value in the first month is set while the second month is active', async () => {
+      picker.keepOpenOnSelect = true;
+      await picker.show();
+
+      const before = getRenderedMonths(calendar);
+      const inFirst = CalendarDay.from(
+        getCalendarDOM(calendar).views.days.activeDate
+      ).set({ date: 10 });
+      const inSecond = inFirst.add('month', 1).set({ date: 20 });
+
+      // A pick in the second month makes it the active view.
+      await pick(inSecond.native, 1);
+
+      picker.value = { start: inFirst.native, end: inSecond.native };
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      checkDatesEqual(calendar.activeDate, inFirst.native);
+      expect(getRenderedMonths(calendar)).to.eql(before);
+    });
+
+    it('keeps the months in view after a pick in the second month with `activeDate` set', async () => {
+      picker.keepOpenOnSelect = true;
+      picker.activeDate = april10;
+      await picker.show();
+
+      await pick(april10, 0);
+      await pick(may20, 1);
+
+      expect(picker.value).to.eql({ start: april10, end: may20 });
+      expect(getRenderedMonths(calendar)).to.eql([4, 5]);
+
+      // A new active date still moves the calendar.
+      const august1 = new Date(2025, 7, 1);
+      picker.activeDate = august1;
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      checkDatesEqual(calendar.activeDate, august1);
+    });
+
+    it('opens in the first month without a value', async () => {
+      await picker.show();
+      const next = CalendarDay.from(
+        getCalendarDOM(calendar).views.days.activeDate
+      ).add('month', 1);
+
+      // Makes the second month the active view.
+      showDate(calendar, next.native);
+      await elementUpdated(calendar);
+      await picker.hide();
+
+      picker.focus();
+      simulateKeyboard(picker, [altKey, arrowDown]);
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      expect(getRenderedMonths(calendar)[0]).to.equal(next.month + 1);
+      expect(
+        getCalendarDOM(calendar).views.allDays.findIndex((view) => view.active)
+      ).to.equal(0);
+    });
+
+    it('brings the first defined date of a value set from code into view', async () => {
+      await picker.show();
+
+      picker.value = { start: null, end: may20 };
+      await elementUpdated(picker);
+      await elementUpdated(calendar);
+
+      checkDatesEqual(calendar.activeDate, may20);
+      expect(getRenderedMonths(calendar)).to.eql([5, 6]);
+    });
+  });
+
   describe('Locale week start', () => {
     it('derives the calendar week start from the locale when `week-start` is not set', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
@@ -1855,4 +2216,481 @@ describe('Date range picker - common tests for single and two inputs mode', () =
       );
     });
   });
+
+  for (const useTwoInputs of [false, true]) {
+    describe(`Each layout: ${useTwoInputs ? 'two inputs' : 'single input'}`, () => {
+      const value = { start: today.native, end: tomorrow.native };
+      const startEditor = () => getEditors(picker)[0];
+      const startInput = () => getInput(picker);
+
+      const isPopupOpen = (tag: 'igc-popover' | 'igc-dialog') =>
+        picker.renderRoot.querySelector(tag)!.hasAttribute('open');
+
+      beforeEach(async () => {
+        picker.useTwoInputs = useTwoInputs;
+        await elementUpdated(picker);
+      });
+
+      describe('Rendering and initialization', () => {
+        it('is defined', async () => {
+          expect(picker).is.not.undefined;
+        });
+
+        describe('Accessibility', () => {
+          beforeEach(async () => {
+            picker.label = 'Date range';
+            picker.labelStart = 'Start';
+            picker.labelEnd = 'End';
+            await elementUpdated(picker);
+          });
+
+          it('is accessible (closed state)', async () => {
+            await expect(picker).shadowDom.to.be.accessible();
+            await expect(picker).lightDom.to.be.accessible();
+          });
+
+          it('is accessible (open state) - default dropdown mode', async () => {
+            picker.open = true;
+            await elementUpdated(picker);
+
+            await expect(picker).shadowDom.to.be.accessible();
+            await expect(picker).lightDom.to.be.accessible();
+          });
+
+          it('is accessible (open state) - dialog mode', async () => {
+            picker.open = true;
+            picker.mode = 'dialog';
+            await elementUpdated(picker);
+
+            await expect(picker).shadowDom.to.be.accessible();
+            await expect(picker).lightDom.to.be.accessible();
+          });
+        });
+
+        it('should not render title slot elements in dropdown mode', async () => {
+          picker = await fixture<IgcDateRangePickerComponent>(
+            html`<igc-date-range-picker
+              mode="dropdown"
+              ?use-two-inputs=${useTwoInputs}
+            >
+              <p slot="title">Custom title</p>
+            </igc-date-range-picker>`
+          );
+          await elementUpdated(picker);
+
+          expect(picker.renderRoot.querySelector('slot[name="title"]')).to.be
+            .null;
+          expect(picker.useTwoInputs).to.equal(useTwoInputs);
+        });
+
+        it('should render title slot elements in dialog mode', async () => {
+          picker = await fixture<IgcDateRangePickerComponent>(
+            html`<igc-date-range-picker
+              mode="dialog"
+              ?use-two-inputs=${useTwoInputs}
+            >
+              <p slot="title">Custom title</p>
+            </igc-date-range-picker>`
+          );
+          await elementUpdated(picker);
+
+          expect(picker.renderRoot.querySelector('slot[name="title"]')).to.not
+            .be.null;
+        });
+      });
+
+      describe('Properties', () => {
+        it('should set value through attribute correctly in case the date values are valid ISO 8601 strings', async () => {
+          picker.setAttribute('value', JSON.stringify(value));
+          await elementUpdated(picker);
+
+          checkSelectedRange(picker, value, useTwoInputs);
+        });
+
+        it('should keep the calendar selection and input values on changing the mode', async () => {
+          picker = await fixture<IgcDateRangePickerComponent>(
+            html`<igc-date-range-picker
+              ?use-two-inputs=${useTwoInputs}
+              .value=${value}
+            ></igc-date-range-picker>`
+          );
+
+          checkSelectedRange(picker, value, useTwoInputs);
+
+          picker.mode = 'dialog';
+          await elementUpdated(picker);
+
+          checkSelectedRange(picker, value, useTwoInputs);
+        });
+
+        it('should modify value only through calendar selection and not input when nonEditable is true', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.nonEditable = true;
+          await elementUpdated(picker);
+
+          startEditor().focus();
+          simulateKeyboard(startInput(), arrowDown);
+          await elementUpdated(picker);
+
+          expect(isFocused(startInput())).to.be.true;
+          expect(startInput().value).to.equal('');
+          expect(getEditorRange(picker)).to.be.null;
+          expect(picker.value).to.be.null;
+          expect(calendar.values).to.deep.equal([]);
+          expect(eventSpy).not.to.be.called;
+
+          await picker.show();
+          await selectDates(today, tomorrow, calendar);
+          expect(eventSpy).calledWith('igcChange');
+
+          startInput().blur();
+          await elementUpdated(picker);
+
+          checkSelectedRange(picker, value, useTwoInputs);
+        });
+      });
+
+      describe('Methods', () => {
+        it('should clear the input on invoking clear()', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.value = value;
+          await elementUpdated(picker);
+
+          checkSelectedRange(picker, value, useTwoInputs);
+
+          picker.clear();
+          await elementUpdated(picker);
+
+          expect(eventSpy).not.called;
+          expect(picker.value).to.be.null;
+          expect(getEditorRange(picker)).to.be.null;
+          expect(startInput().value).to.equal('');
+        });
+
+        it('should select a date range on invoking select', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          expect(picker.value).to.be.null;
+
+          picker.select(value);
+          await elementUpdated(picker);
+
+          expect(picker.value).to.deep.equal(value);
+          checkSelectedRange(picker, value, useTwoInputs);
+          expect(eventSpy).not.called;
+        });
+      });
+
+      describe('Selection via the calendar', () => {
+        const date1 = new CalendarDay({
+          year: today.year,
+          month: today.month,
+          date: 10,
+        });
+        const date2 = date1.add('day', 4);
+        const picked = { start: date1.native, end: date2.native };
+
+        /** Dialog mode renders a new calendar. */
+        const toDialog = async () => {
+          picker.mode = 'dialog';
+          await elementUpdated(picker);
+          calendar = picker.renderRoot.querySelector(
+            IgcCalendarComponent.tagName
+          )!;
+        };
+
+        /** Picks `picked` in the open dialog, which reports nothing yet. */
+        const pickInDialog = async (
+          eventSpy: Sinon.SinonSpy,
+          initial: DateRangeValue | null
+        ) => {
+          await toDialog();
+          picker.value = initial;
+          await elementUpdated(picker);
+
+          picker.open = true;
+          await elementUpdated(picker);
+
+          await selectDates(date1, date2, calendar);
+          expect(eventSpy).not.to.be.calledWith('igcChange');
+          expect(isPopupOpen('igc-dialog')).to.be.true;
+          checkSelectedRange(picker, picked, useTwoInputs);
+        };
+
+        it('should select a single date in dropdown mode and emit igcChange', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.open = true;
+          await elementUpdated(picker);
+          await selectDates(today, null, calendar);
+
+          expect(eventSpy).calledWith('igcChange');
+          checkSelectedRange(
+            picker,
+            { start: today.native, end: today.native },
+            useTwoInputs
+          );
+          // A single date does not close the calendar.
+          expect(isPopupOpen('igc-popover')).to.be.true;
+        });
+
+        it('should select a range of dates in dropdown mode and emit igcChange', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.open = true;
+          await elementUpdated(picker);
+          await selectDates(today, tomorrow, calendar);
+
+          expect(eventSpy).calledWith('igcChange');
+          checkSelectedRange(picker, value, useTwoInputs);
+          // The second click closes the calendar.
+          expect(isPopupOpen('igc-popover')).to.be.false;
+        });
+
+        it('should select a range of dates in dialog mode and emit igcChange when done is clicked', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          await pickInDialog(eventSpy, null);
+
+          clickFooterButton(':last-of-type')();
+          await waitUntil(() => !picker.open);
+          await elementUpdated(picker);
+
+          expect(eventSpy).calledWith('igcChange');
+          checkSelectedRange(picker, picked, useTwoInputs);
+          expect(isPopupOpen('igc-dialog')).to.be.false;
+        });
+
+        it('should select a range of dates in dialog mode and emit igcChange when clicked outside of dialog', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          await pickInDialog(eventSpy, null);
+
+          clickOutsideDialog();
+          await waitUntil(() => eventSpy.calledWith('igcClosed'));
+          await elementUpdated(picker);
+
+          expect(eventSpy).calledWith('igcChange');
+          checkSelectedRange(picker, picked, useTwoInputs);
+          expect(isPopupOpen('igc-dialog')).to.be.false;
+        });
+
+        it('should not emit igcChange when cancel is clicked and the value should be the initial value', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          await pickInDialog(eventSpy, value);
+
+          clickFooterButton('')();
+          await waitUntil(() => !picker.open);
+          await elementUpdated(picker);
+
+          expect(eventSpy).not.to.be.calledWith('igcChange');
+          expect(isPopupOpen('igc-dialog')).to.be.false;
+          checkSelectedRange(picker, value, useTwoInputs);
+        });
+
+        it('should revert to no value when cancel is clicked and initial value is null', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          await pickInDialog(eventSpy, null);
+
+          clickFooterButton('')();
+          await waitUntil(() => !picker.open);
+          await elementUpdated(picker);
+
+          expect(eventSpy).not.to.be.calledWith('igcChange');
+          expect(isPopupOpen('igc-dialog')).to.be.false;
+          expect(getEditorRange(picker)).to.be.null;
+          expect(startInput().value).to.equal('');
+          expect(calendar.values).to.deep.equal([]);
+        });
+
+        it('should not emit igcChange when escape is pressed and the value should be the initial value', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          await pickInDialog(eventSpy, value);
+
+          simulateKeyboard(picker, escapeKey);
+          await waitUntil(() => !picker.open);
+          await elementUpdated(picker);
+
+          expect(eventSpy).not.to.be.calledWith('igcChange');
+          expect(isPopupOpen('igc-dialog')).to.be.false;
+
+          // The focus returns to the input, which then shows the input format.
+          startInput().blur();
+          await elementUpdated(picker);
+
+          checkSelectedRange(picker, value, useTwoInputs);
+        });
+      });
+
+      describe('Interactions with the inputs and the open and clear buttons', () => {
+        it('leaves the input and change events of slotted content alone', async () => {
+          const slotted = document.createElement('span');
+          slotted.slot = useTwoInputs ? 'suffix-start' : 'suffix';
+          picker.append(slotted);
+          picker.value = value;
+          await elementUpdated(picker);
+
+          const eventSpy = spy(picker, 'emitEvent');
+          const reached: string[] = [];
+          const record = ({ type }: Event) => reached.push(type);
+          picker.addEventListener('igcInput', record);
+          picker.addEventListener('igcChange', record);
+
+          for (const type of ['igcInput', 'igcChange']) {
+            slotted.dispatchEvent(
+              new CustomEvent(type, {
+                bubbles: true,
+                composed: true,
+                detail: 'text',
+              })
+            );
+          }
+          await elementUpdated(picker);
+
+          expect(reached).to.eql(['igcInput', 'igcChange']);
+          expect(eventSpy).not.called;
+          expect(picker.value).to.eql(value);
+        });
+
+        it('should not open the picker when clicking the input in dropdown mode', async () => {
+          simulateClick(startEditor());
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+        });
+
+        it('should open the picker when clicking the input in dialog mode', async () => {
+          picker.mode = 'dialog';
+          await elementUpdated(picker);
+
+          simulateClick(startInput());
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.true;
+        });
+
+        for (const renderFirst of [false, true]) {
+          it(`should clear the inputs on clicking the clear icon${renderFirst ? ', with a render before the blur' : ''}`, async () => {
+            const eventSpy = spy(picker, 'emitEvent');
+            picker.value = value;
+            await elementUpdated(picker);
+
+            startEditor().focus();
+            await elementUpdated(startEditor());
+
+            simulateClick(getIcon(picker, clearIcon));
+            if (renderFirst) {
+              await elementUpdated(picker);
+            }
+
+            startInput().blur();
+            await elementUpdated(picker);
+
+            expect(isFocused(startInput())).to.be.false;
+            expect(eventSpy).to.be.calledWith('igcChange', { detail: null });
+            expect(picker.open).to.be.false;
+            expect(picker.value).to.be.null;
+            expect(getEditorRange(picker)).to.be.null;
+            expect(startInput().value).to.equal('');
+          });
+        }
+
+        it('drops an edit in an editor that a layout change removes', async () => {
+          picker.value = value;
+          await elementUpdated(picker);
+
+          const input = startInput();
+          startEditor().focus();
+          input.setSelectionRange(0, 0);
+          simulateKeyboard(input, arrowUp);
+          await elementUpdated(picker);
+
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.useTwoInputs = !useTwoInputs;
+          // The editor commits on blur, before the render removes it.
+          input.blur();
+          await elementUpdated(picker);
+
+          expect(eventSpy).not.calledWith('igcChange');
+          expect(picker.value).to.eql(value);
+          checkSelectedRange(picker, value, !useTwoInputs);
+        });
+
+        it('should toggle the calendar with keyboard combinations and keep focus', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          startEditor().focus();
+
+          expect(isFocused(startInput())).to.be.true;
+
+          simulateKeyboard(startInput(), [altKey, arrowDown]);
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.true;
+          expect(isFocused(startInput())).to.be.false;
+          expect(eventSpy.firstCall).calledWith('igcOpening');
+          expect(eventSpy.lastCall).calledWith('igcOpened');
+          eventSpy.resetHistory();
+
+          simulateKeyboard(startInput(), [altKey, arrowUp]);
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+          expect(isFocused(startInput())).to.be.true;
+          expect(eventSpy.firstCall).calledWith('igcClosing');
+          expect(eventSpy.lastCall).calledWith('igcClosed');
+
+          simulateKeyboard(startInput(), [altKey, arrowDown]);
+          await elementUpdated(picker);
+          eventSpy.resetHistory();
+
+          simulateKeyboard(startInput(), escapeKey);
+          await elementUpdated(picker);
+          await elementUpdated(startEditor());
+
+          expect(picker.open).to.be.false;
+          expect(isFocused(startInput())).to.be.true;
+          expect(eventSpy.firstCall).calledWith('igcClosing');
+          expect(eventSpy.lastCall).calledWith('igcClosed');
+        });
+      });
+
+      describe('Readonly state', () => {
+        beforeEach(async () => {
+          picker.readOnly = true;
+          picker.value = value;
+          await elementUpdated(picker);
+        });
+
+        it('should not clear the inputs via the clear icon when readOnly is true', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+
+          simulateClick(getIcon(picker, clearIcon));
+          await elementUpdated(picker);
+
+          expect(picker.value).to.deep.equal(value);
+          expect(eventSpy).not.called;
+          checkSelectedRange(picker, value, useTwoInputs);
+        });
+
+        it('should not open the calendar on clicking the input - dropdown mode', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          simulateClick(startInput());
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+          expect(eventSpy).not.called;
+        });
+
+        it('should not open the calendar on clicking the input - dialog mode', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          picker.mode = 'dialog';
+          await elementUpdated(picker);
+
+          simulateClick(startInput());
+          await elementUpdated(picker);
+
+          expect(picker.open).to.be.false;
+          expect(eventSpy).not.called;
+        });
+      });
+    });
+  }
 });
+
+// Outside the describe above, whose `beforeEach` builds an unused picker.
+runDisabledPopupTests(IgcDateRangePickerComponent);

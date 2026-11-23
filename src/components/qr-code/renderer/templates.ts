@@ -8,8 +8,10 @@ import {
   cornerDotPath,
   cornerSquarePath,
   getFinderPatterns,
+  moduleToPx,
   renderDataModules,
 } from './helpers.js';
+import type { LogoLayout } from './logo.js';
 
 //#region Logo areas
 
@@ -34,6 +36,7 @@ type RenderQrDotsProperties = {
   moduleSize: number;
   marginPx: number;
   dotStyle: QrDotStyle;
+  dotScale: number;
 };
 
 /** The last path of each matrix, keyed by geometry; an unchanged render reuses it. */
@@ -45,12 +48,19 @@ export function renderQrDots({
   moduleSize,
   marginPx,
   dotStyle,
+  dotScale,
 }: RenderQrDotsProperties): TemplateResult {
-  const key = `${moduleSize}:${marginPx}:${dotStyle}`;
+  const key = `${moduleSize}:${marginPx}:${dotStyle}:${dotScale}`;
   let cached = paths.get(matrix);
 
   if (cached?.key !== key) {
-    const modules = renderDataModules(matrix, moduleSize, marginPx, dotStyle);
+    const modules = renderDataModules(
+      matrix,
+      moduleSize,
+      marginPx,
+      dotStyle,
+      dotScale
+    );
     cached = { key, path: modules.join(' ') };
     paths.set(matrix, cached);
   }
@@ -93,49 +103,61 @@ export function renderQrFinders({
 }
 
 type RenderQrMaskAndImageProperties = {
-  hasLogo: boolean;
   src: string;
-  aspectRatio: number;
-  area: number;
+  layout?: LogoLayout;
   size: number;
   margin?: number;
   svgSize: number;
+  moduleSize: number;
+  marginPx: number;
   maskId: string;
 };
 
 /**
- * Renders the logo image and its mask. The mask is a white rectangle with a black cutout
- * under the logo.
+ * Renders the logo image and its mask: a white rectangle with a black cutout of the modules of
+ * `layout`. The image fills the logo box, less `margin` on each side.
  */
 export function renderQrMaskAndImage({
-  hasLogo,
   src,
-  aspectRatio,
-  area,
+  layout,
   size,
   margin,
   svgSize,
+  moduleSize,
+  marginPx,
   maskId,
 }: RenderQrMaskAndImageProperties) {
-  const clamped = area * svgSize * svgSize;
-  const boxWidth = Math.sqrt(clamped * aspectRatio);
-  const boxHeight = Math.sqrt(clamped / aspectRatio);
-  const boxMargin = (margin ?? 0) * (svgSize / size);
-  const boxX = (svgSize - boxWidth) / 2;
-  const boxY = (svgSize - boxHeight) / 2;
-  const x = boxX + boxMargin;
-  const y = boxY + boxMargin;
-  const width = Math.max(0, boxWidth - boxMargin * 2);
-  const height = Math.max(0, boxHeight - boxMargin * 2);
+  if (!layout) {
+    return { mask: nothing, image: nothing, shouldApplyMask: false };
+  }
 
-  const shouldApplyMask = hasLogo && width > 0 && height > 0;
+  const toSvg = (modules: number) => moduleToPx(modules, moduleSize, marginPx);
+  const boxMargin = (margin ?? 0) * (svgSize / size);
+
+  const cutX = toSvg(layout.left);
+  const cutY = toSvg(layout.top);
+  const cutRight = toSvg(layout.right + 1);
+  const cutBottom = toSvg(layout.bottom + 1);
+
+  const x = toSvg(layout.x) + boxMargin;
+  const y = toSvg(layout.y) + boxMargin;
+  const width = Math.max(0, layout.width * moduleSize - boxMargin * 2);
+  const height = Math.max(0, layout.height * moduleSize - boxMargin * 2);
+
+  const shouldApplyMask = width > 0 && height > 0;
 
   const mask = shouldApplyMask
     ? svg`
       <defs>
         <mask id=${maskId}>
           <rect width=${svgSize} height=${svgSize} fill="white" />
-          <rect x=${boxX} y=${boxY} width=${boxWidth} height=${boxHeight} fill="black" />
+          <rect
+            x=${cutX}
+            y=${cutY}
+            width=${cutRight - cutX}
+            height=${cutBottom - cutY}
+            fill="black"
+          />
         </mask>
       </defs>
   `

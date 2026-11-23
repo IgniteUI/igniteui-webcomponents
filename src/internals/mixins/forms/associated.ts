@@ -1,7 +1,10 @@
-import { isServer, type LitElement } from 'lit';
+import { isServer, type LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 import { trackLabels } from '../../controllers/aria-projection.js';
-import { addInternalsController } from '../../controllers/internals.js';
+import {
+  addInternalsController,
+  internalsOf,
+} from '../../controllers/internals.js';
 import { enterKey, isComposingKey, isKey } from '../../controllers/keys.js';
 import { getHostLocale } from '../../i18n/i18n-controller.js';
 import {
@@ -19,11 +22,23 @@ import {
   type FormAssociatedCheckboxElementInterface,
   type FormAssociatedElementInterface,
   type FormValueType,
+  type IgcFormControl,
   InternalInvalidEvent,
   InternalResetEvent,
+  type WriteOrigin,
 } from './types.js';
 
 const INVALID_STATE = 'ig-invalid';
+
+type EditorOwner = Pick<
+  FormAssociatedElementInterface,
+  'invalid' | 'checkValidity' | 'reportValidity'
+>;
+
+/** The owner of each owned editor, see `_ownedEditors`. */
+const editorOwners = new WeakMap<Element, EditorOwner>();
+
+const noEditors: readonly (IgcFormControl | undefined)[] = [];
 
 /**
  * The event emitter of the host. This mixin cannot see the event-emitter
@@ -204,11 +219,27 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     /** Set while `reportValidity()` of the control runs. */
     private _isReportingValidity = false;
     private _touched = false;
+    private __pristine = true;
+    /** Set at the first connect. */
+    private __submitsOnChange = false;
+    private _writeOrigin: WriteOrigin = 'code';
+    /** The value of the last `igcChange`, or of the last write that needs no report. */
+    private __reported: unknown;
     private _isExternalInvalid = false;
     /** The message is built on read, so it follows the locale. */
     private __failedValidator?: Validator;
 
+    private get __owner(): EditorOwner | undefined {
+      return editorOwners.get(this);
+    }
+
     private get _shouldApplyStyles(): boolean {
+      const owner = this.__owner;
+
+      if (owner) {
+        return owner.invalid;
+      }
+
       if (this._isExternalInvalid) {
         return true;
       }
@@ -219,7 +250,11 @@ function BaseFormAssociated<T extends LitElementConstructor>(
 
     protected _disabled = false;
     protected _invalid = false;
-    protected _pristine = true;
+
+    /** Whether the value is unchanged since the start or the last form reset. */
+    protected get _isPristine(): boolean {
+      return this.__pristine;
+    }
 
     protected get __validators(): Validator[] {
       return [];
@@ -228,6 +263,11 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     /** Whether the control counts as a text field for implicit submission. */
     protected get _blocksImplicitSubmission(): boolean {
       return false;
+    }
+
+    /** The inner editors that take the invalid state, validity and form reset of this control. */
+    protected get _ownedEditors(): readonly (IgcFormControl | undefined)[] {
+      return noEditors;
     }
 
     //#endregion
@@ -322,11 +362,54 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       super.connectedCallback();
 
       if (!this.hasUpdated) {
-        this._pristine = true;
+        this.__pristine = true;
         this._touched = false;
+        this.__markValueReported();
       }
 
-      this._validate();
+      // The constructor and the attributes can change what the submission reads in any order.
+      const resubmit =
+        !this.__submitsOnChange && Boolean(this._formValue?.readsHost);
+      this.__submitsOnChange = true;
+
+      if (resubmit) {
+        this.__resubmit();
+      } else {
+        this._validate();
+      }
+    }
+
+    /** @internal */
+    public override requestUpdate(
+      ...args: Parameters<LitElement['requestUpdate']>
+    ): void {
+      super.requestUpdate(...args);
+      const [name, oldValue] = args;
+
+      // Lit calls this from the setter of each reactive property, at once.
+      if (
+        this.__submitsOnChange &&
+        name !== undefined &&
+        this._formValue?.readsProperty(name) &&
+        !Object.is(
+          (this as unknown as Record<PropertyKey, unknown>)[name],
+          oldValue
+        )
+      ) {
+        this.__resubmit();
+      }
+    }
+
+    protected override update(changedProperties: PropertyValues): void {
+      super.update(changedProperties);
+
+      // Only a render can add an owned editor, and no property tells which one.
+      for (const editor of this._ownedEditors) {
+        if (editor && !editorOwners.has(editor)) {
+          editorOwners.set(editor, this);
+          internalsOf(editor)?.setState(INVALID_STATE, this._shouldApplyStyles);
+        }
+      }
     }
 
     //#endregion
@@ -424,7 +507,18 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     }
 
     private _setInvalidStyles(): void {
-      this._internals.setState(INVALID_STATE, this._shouldApplyStyles);
+      const invalid = this._shouldApplyStyles;
+      this._internals.setState(INVALID_STATE, invalid);
+
+      // Before the first render there are no editors, and `update()` gives each
+      // new one the state. On the server, a `@queryAll` getter would need a document.
+      if (!isServer && this.hasUpdated) {
+        for (const editor of this._ownedEditors) {
+          if (editor) {
+            internalsOf(editor)?.setState(INVALID_STATE, invalid);
+          }
+        }
+      }
     }
 
     private __runValidators(): {
@@ -498,7 +592,7 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       this._invalid = isInvalidControl(this);
 
       if (this._invalid) {
-        // The validation container and some inner editors render `invalid`.
+        // The validation container renders `invalid`.
         this.requestUpdate();
       }
 
@@ -522,15 +616,73 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       return (this as unknown as EventEmitterLike).emitEvent(eventName, init);
     }
 
-    /** Runs `callback` and restores the pristine flag. */
-    protected _withPristine(callback: () => void): void {
-      const pristine = this._pristine;
+    /** Runs `write` as a write of `origin`. See {@link WriteOrigin}. */
+    protected _writeFrom<R>(origin: WriteOrigin, write: () => R): R {
+      const previous = this._writeOrigin;
+      const isReported =
+        origin === 'normalize' &&
+        this._formValue.isSameValue(this._formValue.value, this.__reported);
+
+      this._writeOrigin = origin;
+
+      if (origin === 'user') {
+        this._setTouchedState();
+      }
+
+      let result: R;
 
       try {
-        callback();
+        result = write();
       } finally {
-        this._pristine = pristine;
+        this._writeOrigin = previous;
       }
+
+      if (isReported || origin === 'code' || origin === 'default') {
+        this.__markValueReported();
+      }
+
+      return result;
+    }
+
+    /** Records a write that keeps the value, as a write of the current origin. */
+    protected _recordSameValueWrite(): void {
+      const origin = this._writeOrigin;
+
+      if (origin === 'user' || origin === 'edit' || origin === 'code') {
+        this.__pristine = false;
+      }
+
+      // A bare set from code is not inside `_writeFrom`, which adopts after it.
+      if (origin === 'code') {
+        this.__markValueReported();
+      }
+    }
+
+    /** The value of the last `igcChange`, or of the last write that needs no report. */
+    protected get _reportedValue(): unknown {
+      return this.__reported;
+    }
+
+    /** Emits `igcChange` when the value differs from the reported value. */
+    protected _reportChange(detail: unknown, force = false): void {
+      if (
+        force ||
+        !this._formValue.isSameValue(this._formValue.value, this.__reported)
+      ) {
+        this.__markValueReported();
+        (this as unknown as EventEmitterLike).emitEvent('igcChange', {
+          detail,
+        });
+      }
+    }
+
+    private __markValueReported(): void {
+      this.__reported = this._formValue?.value;
+    }
+
+    /** Keeps the pristine state and the reported value. */
+    private __resubmit(): void {
+      this._writeFrom('normalize', () => this._formValue.resubmit());
     }
 
     /** @internal */
@@ -539,24 +691,31 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       prev: string | null,
       current: string | null
     ): void {
-      super.attributeChangedCallback(name, prev, current);
-
-      if (name === stateKey) {
-        // A boolean attribute sets its default by presence.
-        this._setDefaultValue(
-          name === 'checked' && isString(current) ? 'true' : current
-        );
+      if (name !== stateKey) {
+        super.attributeChangedCallback(name, prev, current);
+        return;
       }
+
+      // As for a native control, the attribute keeps the pristine state.
+      this._writeFrom('default', () =>
+        super.attributeChangedCallback(name, prev, current)
+      );
+
+      // A boolean attribute sets its default by presence.
+      this._setDefaultValue(
+        name === 'checked' && isString(current) ? 'true' : current
+      );
     }
 
     /** Sets the default, also as the state of a pristine control. @internal */
     protected _applyDefault(value: unknown): void {
       this._formValue.defaultValue = value;
 
-      if (this._pristine) {
-        (this as unknown as Record<string, unknown>)[stateKey] =
-          this._formValue.defaultValue;
-        this._pristine = true;
+      if (this.__pristine) {
+        this._writeFrom('default', () => {
+          (this as unknown as Record<string, unknown>)[stateKey] =
+            this._formValue.defaultValue;
+        });
         this._validate();
       }
     }
@@ -572,7 +731,7 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     }
 
     protected _setFormValue(value: FormValueType, state?: FormValueType): void {
-      this._pristine = false;
+      this._recordSameValueWrite();
       this._internals.setFormValue(value, state);
       this._validate();
     }
@@ -590,15 +749,19 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     }
 
     protected formResetCallback(): void {
-      this._restoreDefaultValue();
+      this._writeFrom('default', () => this._restoreDefaultValue());
       this._resetValidationState();
     }
 
     protected _resetValidationState(): void {
-      this._pristine = true;
+      this.__pristine = true;
       this._touched = false;
       this._invalid = false;
       this._isExternalInvalid = false;
+      // The browser never resets the editors, which are outside of the form.
+      for (const editor of this._ownedEditors) {
+        editor?.['_resetValidationState']();
+      }
       this._setInvalidStyles();
       emitInternalFormEvent(this, InternalResetEvent);
     }
@@ -613,6 +776,12 @@ function BaseFormAssociated<T extends LitElementConstructor>(
      * the message of the browser. Returns `true` when the control is valid.
      */
     public reportValidity(): boolean {
+      const owner = this.__owner;
+
+      if (owner) {
+        return owner.reportValidity();
+      }
+
       const state = this._reportValidity();
 
       if (!state) {
@@ -636,6 +805,12 @@ function BaseFormAssociated<T extends LitElementConstructor>(
      * `true` when the control is valid.
      */
     public checkValidity(): boolean {
+      const owner = this.__owner;
+
+      if (owner) {
+        return owner.checkValidity();
+      }
+
       this._isInternalValidation = true;
       const state = this._internals.checkValidity();
       this._invalid = !state;
@@ -686,12 +861,12 @@ export function FormAssociatedMixin<T extends LitElementConstructor>(
       return this._formValue.defaultValue;
     }
 
-    /** Sets touched first, so the `value` setter validation cycle sees it. */
+    /** Writes `value` as a user write, then emits `eventName`. */
     protected _commitValue(value: unknown, eventName: string): boolean {
-      this._setTouchedState();
-
       if ('value' in this) {
-        this.value = value;
+        this._writeFrom('user', () => {
+          this.value = value;
+        });
         return this._emitTouchedEvent(eventName, { detail: this.value });
       }
 

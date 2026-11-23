@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import { createDate } from '#internals/date/model.js';
 import { createDatePart, DatePartType, type SpinOptions } from './date-part.js';
 
 describe('DatePart Classes', () => {
@@ -341,6 +342,45 @@ describe('DatePart Classes', () => {
         part.spin(1, createSpinOptions(date));
         expect(date.getDate()).to.equal(28);
         expect(date.getFullYear()).to.equal(2025);
+      });
+
+      it('stops at the years 1 and 9999, also with spinLoop', () => {
+        const part = createDatePart(DatePartType.Year, {
+          start: 0,
+          end: 4,
+          format: 'yyyy',
+        });
+
+        for (const spinLoop of [true, false]) {
+          // Feb 29, 9996 (leap year) + 10 years -> Feb 28, 9999 (non-leap year)
+          const late = new Date(9996, 1, 29);
+          part.spin(10, createSpinOptions(late, spinLoop));
+          expect([late.getFullYear(), late.getMonth(), late.getDate()]).to.eql([
+            9999, 1, 28,
+          ]);
+
+          const early = createDate(3, 5, 15);
+          part.spin(-5, createSpinOptions(early, spinLoop));
+          expect(part.getValue(early)).to.equal('0001');
+        }
+      });
+
+      it('moves a year outside 1 to 9999 only toward that range', () => {
+        const part = createDatePart(DatePartType.Year, {
+          start: 0,
+          end: 4,
+          format: 'yyyy',
+        });
+        const spin = (year: number, delta: number) => {
+          const date = createDate(year, 5, 15);
+          part.spin(delta, createSpinOptions(date));
+          return date.getFullYear();
+        };
+
+        expect(spin(0, -1)).to.equal(0);
+        expect(spin(0, 1)).to.equal(1);
+        expect(spin(10_000, 1)).to.equal(10_000);
+        expect(spin(10_000, -1)).to.equal(9999);
       });
     });
 

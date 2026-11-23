@@ -155,6 +155,20 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
     }
   }
 
+  /**
+   * Sets a new `name`, and optionally awaits the update. Asserts that no form data key starts
+   * with the old name, so `<name>-start` counts too.
+   */
+  public async rename(name: string, waitForUpdate = false): Promise<void> {
+    const previous = this.element.name;
+    await this.setProperties({ name }, waitForUpdate);
+
+    const stale = Array.from(this.formData.keys()).filter((key) =>
+      key.startsWith(previous)
+    );
+    expect(stale, 'form data keys under the old name').to.eql([]);
+  }
+
   /** Asserts that the submitted form data has `value` for the component. */
   public assertSubmitHasValue(value: unknown, msg?: string): void {
     expect(this.submit().get(this.element.name), msg).to.eql(value);
@@ -187,7 +201,7 @@ class FormAssociatedTestBed<T extends IgcFormControl> {
   }
 
   public assertIsPristine(msg?: string): void {
-    expect(this.element['_pristine'], msg).to.be.true;
+    expect(this.element['_isPristine'], msg).to.be.true;
   }
 }
 
