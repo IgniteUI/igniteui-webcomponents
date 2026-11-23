@@ -1309,8 +1309,7 @@ describe('Tile Manager component', () => {
 
       await withDocumentSheets([], async () => {
         document.adoptedStyleSheets = [];
-        tileManager.remove();
-        document.body.append(tileManager);
+        tileManager.parentElement!.append(tileManager);
 
         expect(document.adoptedStyleSheets).to.have.ordered.members([
           transitionStyles.styleSheet,
