@@ -40,7 +40,7 @@ entry in `package.json` holds the same list.
 src/
 ├── animations/  # Animation players and presets            → #animations/*
 ├── components/  # One directory per component, each with its own spec.md
-├── extras/      # Opt-in add-ons, published under `igniteui-webcomponents/extras`
+├── extras/      # Opt-in add-ons, one directory each with a README.md, published under `igniteui-webcomponents/extras`
 ├── internals/   # Shared building blocks, never public API  → #internals/*
 ├── styles/      # Global SCSS: utilities, mixins, themes
 ├── theming/     # Theming controller and types             → #theming/*
@@ -633,7 +633,7 @@ Each component has tests in `[component].spec.ts`. They cover:
   | `helpers.spec.js`          | Animation, focus, scroll and style helpers, and `axeReflectedRelationsOptions` |
   | `fast-check-setup.spec.js` | `fc` with the seed, `SLOW_PROPERTY_RUNS`, `orderedPair` and `withFixture`      |
   | `date-arbitraries.spec.js` | Date arbitraries, wall clocks and `assumeWallClock` for date properties        |
-  | `qr-decoder.spec.js`       | `prepareQrDecoder`, which loads the zxing decoder for QR scan specs            |
+  | `qr-decoder.spec.js`       | `prepareQrDecoder`, `readQr` for an image and `readQrMatrix` for a QR matrix   |
 
   Use the simulated events, not `element.click()` or a hand-built `KeyboardEvent`. They send
   the full event sequence of a real user interaction.
@@ -1059,7 +1059,8 @@ edits.
 
 ## Specifications
 
-Each public component directory has a `spec.md`: the behavioral contract of the component.
+Each public component directory has a `spec.md`: the behavioral contract of the component. An extra that no component
+specification covers, such as `src/extras/qr-payloads`, has one too.
 JSDoc documents one API member. The specification documents the whole component: its purpose,
 its behavior, its keyboard and assistive technology support, its test coverage, and its
 limits.

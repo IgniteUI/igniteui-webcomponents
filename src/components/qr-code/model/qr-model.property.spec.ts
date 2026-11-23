@@ -1,11 +1,13 @@
 import { expect } from '@open-wc/testing';
-import { readBarcodes } from 'zxing-wasm/reader';
 
 import {
   fc,
   SLOW_PROPERTY_RUNS,
 } from '#internals/testing/fast-check-setup.spec.js';
-import { prepareQrDecoder } from '#internals/testing/qr-decoder.spec.js';
+import {
+  prepareQrDecoder,
+  readQrMatrix,
+} from '#internals/testing/qr-decoder.spec.js';
 import type { QrErrorCorrectionLevel } from '../types.js';
 import { EC_LEVEL_INDEX, encodeQR } from './encode.js';
 import { EC_BLOCKS_TABLE, getDataCodewordsCount } from './error-correction.js';
@@ -98,30 +100,6 @@ function singleModeBits(
   }
 }
 
-/** Draws `matrix` with 4 pixels for each module and a quiet zone of 4 modules. */
-function toImageData(matrix: boolean[][]): ImageData {
-  const scale = 4;
-  const offset = 4 * scale;
-  const side = matrix.length * scale + 2 * offset;
-  const image = new ImageData(side, side);
-  image.data.fill(255);
-
-  for (const [row, modules] of matrix.entries()) {
-    for (const [col, dark] of modules.entries()) {
-      if (!dark) continue;
-
-      for (let y = 0; y < scale; y++) {
-        const start = (offset + row * scale + y) * side + offset + col * scale;
-        for (let x = start; x < start + scale; x++) {
-          image.data.fill(0, x * 4, x * 4 + 3);
-        }
-      }
-    }
-  }
-
-  return image;
-}
-
 describe('QR model properties', () => {
   before(prepareQrDecoder);
 
@@ -195,12 +173,9 @@ describe('QR model properties', () => {
     await fc.assert(
       fc.asyncProperty(anyData, ecLevel, async (value, level) => {
         const { matrix } = generateQRCodeMatrix(value, level);
-        const [result] = await readBarcodes(toImageData(matrix), {
-          formats: ['QRCode'],
-          maxNumberOfSymbols: 1,
-        });
-
-        expect(result?.bytes).to.deep.equal(TEXT_ENCODER.encode(value));
+        expect(await readQrMatrix(matrix)).to.deep.equal(
+          TEXT_ENCODER.encode(value)
+        );
       }),
       { numRuns: SLOW_PROPERTY_RUNS }
     );

@@ -19,6 +19,7 @@
       - [Theming colors](#theming-colors)
       - [Exporting](#exporting)
       - [Copying to the clipboard](#copying-to-the-clipboard)
+      - [Payloads](#payloads)
       - [Programmatic control](#programmatic-control)
     - [Localization](#localization)
     - [Keyboard interactions](#keyboard-interactions)
@@ -60,12 +61,12 @@
 |       5 | 2026-10-20 | `copyToClipboard()`; exports read `size` after the pending render      |
 |       6 | 2026-10-21 | An invalid `version` falls back to the automatic version             |
 |       7 | 2026-11-17 | Shapes, `cornerDotStyle`, `dotScale`, logo cutout and version fit  |
-|       8 | 2026-11-23 | Mixed-mode segments; UTF-8 without an ECI header                     |
+|       8 | 2026-11-23 | Mixed-mode segments; no ECI header; payload helpers; export holds only the code |
 
 ## Overview
 
 The `igc-qr-code` renders a scannable QR code as an inline SVG, generated on the client from a string `value`. It
-implements the QR model — the data encoding, the error correction and the placement of the modules — internally,
+implements the QR model (the data encoding, the error correction and the placement of the modules) internally,
 with no external QR library and no network request.
 
 The component also supports visual customization: the shape of the data modules and of the finder-pattern corners,
@@ -87,6 +88,8 @@ authentication setup URLs, contact sharing and linking printed material to digit
 - **Configurable size and margin**, the second one expressed in modules.
 - **Export** to an SVG blob, or to a PNG, JPEG, WebP or SVG file, optionally scaled and downloaded.
 - **Copy to the clipboard** as a PNG or SVG image.
+- **Payload helpers** in [`igniteui-webcomponents/extras/qr-payloads`](../../extras/qr-payloads/spec.md) for a Wi-Fi
+  login, a contact card, a SEPA payment and a calendar event.
 - **Safe by default**: unsafe logo URL schemes and non-image `data:` URIs are rejected.
 
 ### Acceptance criteria
@@ -132,6 +135,7 @@ As a developer, I expect to be able to:
 - theme the colors through CSS custom properties and target the internals through parts;
 - export the code as a file or a blob, so that it can be printed or stored;
 - copy the code to the clipboard from a button, without clipboard code of my own;
+- encode a Wi-Fi login, a contact card, a SEPA payment or a calendar event without learning its format;
 - provide a custom `aria-label` for what assistive technology announces.
 
 ## Functionality
@@ -250,7 +254,7 @@ present.
 
 `toImage(options)` exports a file. `scale` multiplies the `size` of the component, `format` takes `png`, `jpeg`,
 `webp` or `svg`, `fileName` names the file and gets the extension of the format appended, and `download` opens the
-browser download dialog. The export waits for pending property changes to render and then reads `size`, so a `size`
+browser download dialog. An export holds only the code: a frame or a caption around the element is not part of it. The export waits for pending property changes to render and then reads `size`, so a `size`
 set right after the call applies to the image.
 
 ```ts
@@ -286,6 +290,12 @@ The method rejects when the component has no value, on an unsupported format or 
 Clipboard API (an insecure context), and when the browser refuses the write, for example in a document that does not
 have focus.
 
+#### Payloads
+
+Scanner apps turn some text formats into an action. `igniteui-webcomponents/extras/qr-payloads` builds the `value` for
+a Wi-Fi login, a contact card, a SEPA payment and a calendar event, and escapes the text. See its
+[README](../../extras/qr-payloads/README.md) and its [specification](../../extras/qr-payloads/spec.md).
+
 #### Programmatic control
 
 ```ts
@@ -312,18 +322,18 @@ Not applicable. The component is presentational, is not part of the tab order an
 
 | Property      | Attribute      | Reflected | Type                                | Default | Description                                                              |
 | ------------- | -------------- | --------- | ----------------------------------- | ------- | ------------------------------------------------------------------------ |
-| `value`       | `value`        | no        | `string \| undefined`               | —       | The value encoded in the QR code.                                         |
-| `version`     | `version`      | no        | `number \| undefined`               | —       | The version, 1 to 40; the smallest fitting one when unset or invalid.     |
+| `value`       | `value`        | no        | `string \| undefined`               | Not set | The value encoded in the QR code.                                         |
+| `version`     | `version`      | no        | `number \| undefined`               | Not set | The version, 1 to 40; the smallest fitting one when unset or invalid.     |
 | `errorLevel`  | `error-level`  | no        | `"L" \| "M" \| "Q" \| "H"`          | `M`     | The error correction level.                                               |
 | `size`        | `size`         | no        | `number`                            | `128`   | The rendered width and height in pixels.                                  |
 | `margin`      | `margin`       | no        | `number`                            | `4`     | The quiet-zone margin, in modules.                                        |
-| `logoSrc`     | `logo-src`     | no        | `string \| undefined`               | —       | The source of the centered logo image.                                    |
+| `logoSrc`     | `logo-src`     | no        | `string \| undefined`               | Not set | The source of the centered logo image.                                    |
 | `logoSize`    | `logo-size`    | no        | `number`                            | `0.4`   | The logo size, as a ratio of the safe area.                               |
-| `logoMargin`  | `logo-margin`  | no        | `number \| undefined`               | —       | The whitespace around the logo, in pixels.                                |
+| `logoMargin`  | `logo-margin`  | no        | `number \| undefined`               | Not set | The whitespace around the logo, in pixels.                                |
 | `dotStyle`    | `dot-style`    | no        | `QrDotStyle`                        | `square`| The shape of the data modules, and of the inner corner dot by default.    |
 | `dotScale`    | `dot-scale`    | no        | `number`                            | `1`     | The size of the data modules, from 0.7 to 1 of their cell.                |
 | `squareStyle` | `square-style` | no        | `QrCornerSquareStyle`               | `square`| The shape of the outer finder-pattern corner squares.                     |
-| `cornerDotStyle` | `corner-dot-style` | no | `QrCornerDotStyle \| undefined`      | —       | The shape of the inner corner dots; follows `dotStyle` when unset.        |
+| `cornerDotStyle` | `corner-dot-style` | no | `QrCornerDotStyle \| undefined`      | Not set | The shape of the inner corner dots; follows `dotStyle` when unset.        |
 
 `QrDotStyle`, `QrCornerSquareStyle` and `QrCornerDotStyle` are `"square" | "circle" | "rounded" | "squircle"`.
 
@@ -374,8 +384,8 @@ None. The SVG is rendered entirely from the properties of the component.
 | ---------------------------------- | ------- | ---------------------------------------------------------------------------------- |
 | `--ig-qr-code-background`          | `white` | The background color of the code.                                                   |
 | `--ig-qr-code-dark-color`          | `black` | The color of the data modules, and of the corners unless they are overridden.       |
-| `--ig-qr-code-corner-square-color` | —       | The color of the outer corner squares; falls back to `--ig-qr-code-dark-color`.     |
-| `--ig-qr-code-corner-dot-color`    | —       | The color of the inner corner dots; falls back to `--ig-qr-code-dark-color`.        |
+| `--ig-qr-code-corner-square-color` | Not set | The color of the outer corner squares; falls back to `--ig-qr-code-dark-color`.     |
+| `--ig-qr-code-corner-dot-color`    | Not set | The color of the inner corner dots; falls back to `--ig-qr-code-dark-color`.        |
 
 ## Test scenarios
 
@@ -516,8 +526,8 @@ each module.
 - On 2026-11-17, zxing-cpp did not read some codes of version 8 and above with `square-style="circle"` at some image
   sizes, with or without a logo. The same codes fail in earlier releases.
 - The component is presentational: it has no events, no slots and no keyboard interaction.
-- `logoSize` is a ratio of the safe area of the resolved error correction level — at most about 9% of the area of
-  the code — and not of the whole code.
+- `logoSize` is a ratio of the safe area of the resolved error correction level (at most about 9% of the area of
+  the code), not of the whole code.
 - Logo sources are validated for their scheme and their media type, not for their content.
 - The application owns a `version` that cannot hold the value, and a value too long for version 40. The component
   then renders nothing and warns, `toBlob()` and `toImage()` reject with the encoder error, and `copyToClipboard()`
@@ -547,5 +557,5 @@ Not applicable. The component renders a static graphic and takes no focus.
 
 ### Right to Left support
 
-The layout of a QR code — its finder patterns and its data modules — is fixed by the QR standard and must not be
+The layout of a QR code, its finder patterns and its data modules, is fixed by the QR standard and must not be
 mirrored in a Right-to-Left context. No RTL configuration is required or supported.

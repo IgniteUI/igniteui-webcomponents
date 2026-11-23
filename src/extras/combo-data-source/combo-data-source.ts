@@ -1,8 +1,8 @@
 import { createTimer } from '#internals/timing.js';
-import type IgcComboComponent from '../components/combo/combo.js';
-import { newResultsHints } from '../components/combo/controllers/results-hint.js';
-import type { IgcComboSearchInputEventArgs } from '../components/combo/types.js';
-import type { VirtualScrollDataRequest } from '../components/virtualization/types.js';
+import type IgcComboComponent from '../../components/combo/combo.js';
+import { newResultsHints } from '../../components/combo/controllers/results-hint.js';
+import type { IgcComboSearchInputEventArgs } from '../../components/combo/types.js';
+import type { VirtualScrollDataRequest } from '../../components/virtualization/types.js';
 
 /** A request for one page of the results of a search. */
 export interface ComboDataRequest {

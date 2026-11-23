@@ -8,7 +8,14 @@ import {
   IgcSwitchComponent,
   type QrCodeCopyFormat,
   type QrCodeExportFormat,
+  type QrErrorCorrectionLevel,
 } from 'igniteui-webcomponents';
+import {
+  createEpcPayload,
+  createEventPayload,
+  createVCardPayload,
+  createWifiPayload,
+} from 'igniteui-webcomponents/extras/qr-payloads';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { disableStoryControls } from './story.js';
@@ -251,6 +258,10 @@ const samples = html`
     .qr-samples figcaption {
       max-width: 12rem;
       text-align: center;
+    }
+
+    .qr-samples code {
+      overflow-wrap: anywhere;
     }
   </style>
 `;
@@ -578,40 +589,51 @@ export const WithLogo: Story = {
   },
 };
 
-type Payload = 'url' | 'wifi' | 'contact' | 'text';
-
-/** Escapes the special characters of a `WIFI:` string field. */
-function escapeWifi(value: string): string {
-  return value.replace(/([\\;,:"])/g, '\\$1');
-}
-
-/** Escapes the special characters of a vCard text value. */
-function escapeVCard(value: string): string {
-  return value.replace(/([\\;,])/g, '\\$1').replace(/\n/g, '\\n');
-}
+type Payload = 'url' | 'wifi' | 'contact' | 'payment' | 'event' | 'text';
 
 const payloads: Record<
   Payload,
-  { label: string; encode: (fields: Record<string, string>) => string }
+  {
+    label: string;
+    encode: (fields: Record<string, string>) => string;
+    errorLevel?: QrErrorCorrectionLevel;
+  }
 > = {
   url: { label: 'Website link', encode: (f) => f.url },
   wifi: {
     label: 'Wi-Fi network',
-    encode: (f) =>
-      `WIFI:T:WPA;S:${escapeWifi(f.ssid)};P:${escapeWifi(f.password)};;`,
+    encode: (f) => createWifiPayload({ ssid: f.ssid, password: f.password }),
   },
   contact: {
     label: 'Contact card',
     encode: (f) =>
-      [
-        'BEGIN:VCARD',
-        'VERSION:3.0',
-        `N:${escapeVCard(f.last)};${escapeVCard(f.first)}`,
-        `FN:${escapeVCard(`${f.first} ${f.last}`.trim())}`,
-        `TEL:${escapeVCard(f.phone)}`,
-        `EMAIL:${escapeVCard(f.email)}`,
-        'END:VCARD',
-      ].join('\n'),
+      createVCardPayload({
+        name: { given: f.first, family: f.last },
+        organization: f.organization,
+        phones: f.phone ? [{ value: f.phone, type: 'cell' }] : [],
+        emails: f.email ? [{ value: f.email, type: 'work' }] : [],
+      }),
+  },
+  payment: {
+    label: 'SEPA payment',
+    errorLevel: 'M',
+    encode: (f) =>
+      createEpcPayload({
+        name: f.beneficiary,
+        iban: f.iban,
+        amount: f.amount ? Number(f.amount) : undefined,
+        text: f.remittance,
+      }),
+  },
+  event: {
+    label: 'Calendar event',
+    encode: (f) =>
+      createEventPayload({
+        summary: f.summary,
+        start: new Date(`${f.date}T${f.start}`),
+        end: new Date(`${f.date}T${f.end}`),
+        location: f.location,
+      }),
   },
   text: { label: 'Plain text', encode: (f) => f.text },
 };
@@ -622,7 +644,7 @@ export const Generator: Story = {
     docs: {
       description: {
         story:
-          'A QR code generator. The content type decides how the fields are encoded: a URL, a `WIFI:` string that a phone uses to join the network, a vCard that a phone saves as a contact, or plain text. The code updates on each keystroke, and `aria-label` gives the code a name that describes its content. The encoded payload shows under the code.',
+          'A QR code generator. The content type decides how the fields are encoded: a URL, a Wi-Fi login, a contact card, a SEPA payment, a calendar event or plain text. The helpers of `igniteui-webcomponents/extras/qr-payloads` build the formats and escape the text. A helper throws a `RangeError` for input that its format does not allow, such as an amount with 3 decimals, and the message shows under the fields. The SEPA payment keeps the default error correction level M, as the EPC guideline asks. The code updates on each keystroke, and `aria-label` gives the code a name that describes its content. The encoded payload shows under the code.',
       },
     },
   },
@@ -632,6 +654,7 @@ export const Generator: Story = {
         '.qr-generator'
       )!;
       const type = root.querySelector('igc-select')!.value as Payload;
+      const status = root.querySelector('[role="status"]')!;
       const qr = root.querySelector('igc-qr-code')!;
       const fields = Object.fromEntries(
         Array.from(root.querySelectorAll('igc-input'), (input) => [
@@ -644,9 +667,15 @@ export const Generator: Story = {
         group.hidden = group.dataset.type !== type;
       }
 
-      qr.value = payloads[type].encode(fields);
-      qr.ariaLabel = `${payloads[type].label} QR code`;
-      root.querySelector('pre')!.textContent = qr.value;
+      try {
+        qr.value = payloads[type].encode(fields);
+        qr.errorLevel = payloads[type].errorLevel ?? 'Q';
+        qr.ariaLabel = `${payloads[type].label} QR code`;
+        status.textContent = '';
+      } catch (error) {
+        status.textContent = (error as Error).message;
+      }
+      root.querySelector('pre')!.textContent = qr.value ?? '';
     };
 
     const download = async (event: Event) => {
@@ -747,6 +776,12 @@ export const Generator: Story = {
               @igcInput=${update}
             ></igc-input>
             <igc-input
+              name="organization"
+              label="Company"
+              value="Example Ltd."
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
               name="phone"
               type="tel"
               label="Phone"
@@ -758,6 +793,67 @@ export const Generator: Story = {
               type="email"
               label="Email"
               value="maria@example.com"
+              @igcInput=${update}
+            ></igc-input>
+          </div>
+
+          <div data-type="payment" hidden>
+            <igc-input
+              name="beneficiary"
+              label="Beneficiary"
+              value="Example Charity e.V."
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="iban"
+              label="IBAN"
+              value="DE89 3704 0044 0532 0130 00"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="amount"
+              type="number"
+              label="Amount in euros"
+              value="25.00"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="remittance"
+              label="Remittance text"
+              value="Donation 2026"
+              @igcInput=${update}
+            ></igc-input>
+          </div>
+
+          <div data-type="event" hidden>
+            <igc-input
+              name="summary"
+              label="Title"
+              value="Team meetup"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="date"
+              label="Date (YYYY-MM-DD)"
+              value="2026-12-04"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="start"
+              label="Start time (HH:MM)"
+              value="18:00"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="end"
+              label="End time (HH:MM)"
+              value="21:00"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="location"
+              label="Location"
+              value="Main hall"
               @igcInput=${update}
             ></igc-input>
           </div>
@@ -786,6 +882,47 @@ export const Generator: Story = {
           ></igc-qr-code>
           <figcaption><pre>${productUrl}</pre></figcaption>
         </figure>
+      </div>
+    `;
+  },
+};
+
+export const PhoneActions: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Codes that open an app on the phone: an email draft, a call, a text message and a place on a map. They are plain URLs, so they need no helper. Encode the text parts with `encodeURIComponent()`. The text message uses the `SMSTO:` form with one number. Readers differ in how they fill in a message, so test the code on the phones of your users.',
+      },
+    },
+  },
+  render: () => {
+    const actions = [
+      {
+        caption: 'Email draft',
+        value: `mailto:support@example.com?subject=${encodeURIComponent('Order 1042')}&body=${encodeURIComponent('Hello, I have a question about my order.')}`,
+      },
+      { caption: 'Phone call', value: 'tel:+15550100' },
+      { caption: 'Text message', value: 'SMSTO:+15550100:Table 12 is ready' },
+      { caption: 'Place on a map', value: 'geo:42.6977,23.3219' },
+    ];
+
+    return html`
+      ${samples}
+      <div class="qr-samples">
+        ${actions.map(
+          ({ caption, value }) => html`
+            <figure>
+              <igc-qr-code
+                value=${value}
+                size="160"
+                aria-label="${caption} QR code"
+              ></igc-qr-code>
+              <figcaption>${caption}<br /><code>${value}</code></figcaption>
+            </figure>
+          `
+        )}
       </div>
     `;
   },
@@ -886,6 +1023,55 @@ export const Tickets: Story = {
       </div>
     `;
   },
+};
+
+export const TableCard: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A table card in a café, with a "Scan me" frame around the code. The frame is plain HTML and CSS: a `figure` with a border, a title and a caption. The component draws only the code, so `toImage()` and `copyToClipboard()` export the code without the frame. To print the card, print the page. Keep the quiet zone of the code between the frame and the modules.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .table-card {
+        display: grid;
+        justify-items: center;
+        gap: 0.75rem;
+        inline-size: max-content;
+        margin: 0;
+        padding: 1.5rem 2rem;
+        border: 4px solid var(--ig-gray-900);
+        border-radius: 1.5rem;
+        text-align: center;
+      }
+
+      .table-card .title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+    </style>
+
+    <figure class="table-card">
+      <p class="title">Scan me</p>
+      <igc-qr-code
+        value="https://example.com/menu?table=12"
+        aria-label="Menu QR code"
+        size="200"
+        dot-style="rounded"
+        square-style="rounded"
+      ></igc-qr-code>
+      <figcaption>
+        See the menu and order from table 12.<br />example.com/menu
+      </figcaption>
+    </figure>
+  `,
 };
 
 export const Export: Story = {

@@ -16,8 +16,12 @@
       "default": "./extras/index.js"
     },
     "./extras/combo-data-source": {
-      "types": "./extras/combo-data-source.d.ts",
-      "default": "./extras/combo-data-source.js"
+      "types": "./extras/combo-data-source/combo-data-source.d.ts",
+      "default": "./extras/combo-data-source/combo-data-source.js"
+    },
+    "./extras/qr-payloads": {
+      "types": "./extras/qr-payloads/qr-payloads.d.ts",
+      "default": "./extras/qr-payloads/qr-payloads.js"
     }
   },
   "imports": {

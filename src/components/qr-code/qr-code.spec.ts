@@ -7,9 +7,11 @@ import {
 } from '@open-wc/testing';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { restore, type SinonStub, stub } from 'sinon';
-import { readBarcodes } from 'zxing-wasm/reader';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { prepareQrDecoder } from '#internals/testing/qr-decoder.spec.js';
+import {
+  prepareQrDecoder,
+  readQr,
+} from '#internals/testing/qr-decoder.spec.js';
 import { asNumber } from '#internals/utils/math.js';
 import { configureTheme } from '#theming/config.js';
 import IgcQrCodeComponent from './qr-code.js';
@@ -1717,11 +1719,7 @@ describe('IgcQrCodeComponent', () => {
       const image = await el.toImage({
         scale: Math.ceil((6 * modules) / el.size),
       });
-      const [result] = await readBarcodes(image, {
-        formats: ['QRCode'],
-        maxNumberOfSymbols: 1,
-      });
-      return result?.text;
+      return (await readQr(image))?.text;
     }
 
     for (const [index, dotStyle] of SHAPES.entries()) {
