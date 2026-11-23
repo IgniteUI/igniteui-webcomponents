@@ -307,6 +307,17 @@ describe('IgcQrCodeComponent', () => {
       expect(fillOf(getPart(el, 'corner-dot'))).to.equal('rgb(0, 0, 255)');
     });
 
+    it('colors the alignment patterns with --ig-qr-code-dark-color', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code
+          value="https://example.com"
+          style="--ig-qr-code-dark-color: rgb(204, 51, 0); --ig-qr-code-corner-dot-color: rgb(0, 0, 255);"
+        ></igc-qr-code>`
+      );
+
+      expect(fillOf(getPart(el, 'alignment'))).to.equal('rgb(204, 51, 0)');
+    });
+
     it('does not invert colors when the global theme switches to dark variant', async () => {
       configureTheme('material', 'dark');
 
@@ -416,6 +427,101 @@ describe('IgcQrCodeComponent', () => {
       el.dotStyle = 'square';
       await elementUpdated(el);
       expect(path()).to.equal(square);
+    });
+  });
+
+  describe('Pixel snapping', () => {
+    // Version 2: 25 modules, and 33 with the quiet zone.
+    const VALUE = 'https://example.com';
+    const EPSILON = 1e-6;
+
+    /**
+     * Checks that each module of `svg`, a code of `el` in the document, covers the same whole
+     * number of pixels, and that the quiet zone has at least `margin` modules on each side.
+     * Returns the pixels of a module.
+     */
+    function expectWholePixels(
+      el: IgcQrCodeComponent,
+      svg: SVGSVGElement,
+      pixels: number
+    ): number {
+      const { margin } = el;
+      const side = getSide(el);
+      const moduleSize = side / (side + 2 * margin);
+      const { a, d, e, f } = svg
+        .querySelector<SVGGElement>(':scope > g')!
+        .getCTM()!;
+      const module = a * moduleSize;
+      const start = e + margin * module;
+
+      expect([d, f]).to.deep.equal([a, e]);
+      expect(module).to.be.at.least(1);
+      expect(module).to.be.closeTo(Math.round(module), EPSILON);
+      expect(start).to.be.closeTo(Math.round(start), EPSILON);
+      expect(start).to.be.at.least(margin * module - EPSILON);
+      expect(pixels - start - side * module).to.be.at.least(
+        margin * module - EPSILON
+      );
+      return module;
+    }
+
+    for (const size of [128, 256]) {
+      it(`draws each module on whole pixels at size ${size}`, async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code value=${VALUE} size=${size}></igc-qr-code>`
+        );
+
+        expect(
+          expectWholePixels(el, getSvg(el) as SVGSVGElement, size)
+        ).to.be.closeTo(Math.floor(size / 33), EPSILON);
+      });
+    }
+
+    it('keeps a fractional margin as the smallest quiet zone', async () => {
+      // 3 pixels per module would leave 1 pixel, not 1.5, on one side.
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code value=${VALUE} size="78" margin="0.5"></igc-qr-code>`
+      );
+
+      expect(
+        expectWholePixels(el, getSvg(el) as SVGSVGElement, 78)
+      ).to.be.closeTo(2, EPSILON);
+    });
+
+    it('draws each module of an export on whole pixels of the image', async () => {
+      // 29 modules with the quiet zone.
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code value=${VALUE} margin="2"></igc-qr-code>`
+      );
+      const container = await fixture<HTMLDivElement>(html`<div></div>`);
+
+      for (const scale of [2, 1.3]) {
+        const file = await el.toImage({ format: 'svg', scale });
+        const svg = new DOMParser().parseFromString(
+          await file.text(),
+          'image/svg+xml'
+        ).documentElement as unknown as SVGSVGElement;
+        container.replaceChildren(document.importNode(svg, true));
+
+        const pixels = Math.round(el.size * scale);
+
+        expect(
+          expectWholePixels(
+            el,
+            container.firstElementChild as SVGSVGElement,
+            pixels
+          )
+        ).to.be.closeTo(Math.floor(pixels / 29), EPSILON);
+      }
+    });
+
+    it('does not snap modules smaller than 1 pixel', async () => {
+      const el = await fixture<IgcQrCodeComponent>(
+        html`<igc-qr-code value=${VALUE} size="20"></igc-qr-code>`
+      );
+
+      expect(getSvg(el)!.querySelector('g')!.hasAttribute('transform')).to.be
+        .false;
     });
   });
 
@@ -532,6 +638,92 @@ describe('IgcQrCodeComponent', () => {
         el.setAttribute('corner-dot-style', '');
         await elementUpdated(el);
         expect(squareCorner()).to.be.false;
+      });
+    });
+
+    describe('Alignment patterns', () => {
+      // Version 2 has one alignment pattern, from (16, 16) to (21, 21). Its center module
+      // fills the square from (18, 18) to (19, 19).
+      async function renderVersion2(): Promise<IgcQrCodeComponent> {
+        return fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            margin="0"
+          ></igc-qr-code>`
+        );
+      }
+
+      it('draws a ring of the corner square style and a dot of the corner dot style', async () => {
+        const el = await renderVersion2();
+        const ringCorner = () => isInFill(el, 'alignment', 16.05, 16.05);
+        const dotCorner = () => isInFill(el, 'alignment', 18.05, 18.05);
+
+        expect(isInFill(el, 'alignment', 16.5, 18.5)).to.be.true;
+        expect(isInFill(el, 'alignment', 17.5, 18.5)).to.be.false;
+        expect(isInFill(el, 'alignment', 18.5, 18.5)).to.be.true;
+        expect(ringCorner()).to.be.true;
+        expect(dotCorner()).to.be.true;
+
+        Object.assign(el, { squareStyle: 'rounded', cornerDotStyle: 'circle' });
+        await elementUpdated(el);
+        expect(ringCorner()).to.be.false;
+        expect(dotCorner()).to.be.false;
+        expect(isInFill(el, 'alignment', 16.5, 18.5)).to.be.true;
+        expect(isInFill(el, 'alignment', 18.5, 18.5)).to.be.true;
+      });
+
+      it('leaves the alignment patterns out of the data modules at any dot scale', async () => {
+        const el = await renderVersion2();
+        const alignment = getPath(el, 'alignment');
+
+        for (const [x, y] of [
+          [16.5, 16.5],
+          [18.5, 16.5],
+          [18.5, 18.5],
+        ]) {
+          expect(isInFill(el, 'dots', x, y)).to.be.false;
+        }
+
+        el.dotScale = 0.7;
+        await elementUpdated(el);
+        expect(getPath(el, 'alignment')).to.equal(alignment);
+      });
+
+      it('does not join a rounded module to an alignment pattern', async () => {
+        // The alignment pattern of version 2, and one dark module right of its ring.
+        const matrix = Array.from({ length: 25 }, (_, r) =>
+          Array.from({ length: 25 }, (_, c) => {
+            const distance = Math.max(Math.abs(r - 18), Math.abs(c - 18));
+            return (r === 18 && c === 21) || (distance <= 2 && distance !== 1);
+          })
+        );
+        const svg = await fixture<SVGSVGElement>(
+          html`<svg viewBox="0 0 25 25"><path></path></svg>`
+        );
+        const path = svg.querySelector('path')!;
+        const modules = renderDataModules(matrix, 1, 0, 'rounded', 1);
+
+        expect(modules).to.have.length(1);
+        path.setAttribute('d', modules[0]);
+        expect(path.isPointInFill(new DOMPoint(21.02, 18.02))).to.be.false;
+      });
+
+      it('draws a square corner dot as a circle in a circle corner square', async () => {
+        const el = await renderVersion2();
+        Object.assign(el, { squareStyle: 'circle', cornerDotStyle: 'circle' });
+        await elementUpdated(el);
+        const dot = getPath(el, 'corner-dot');
+        const alignment = getPath(el, 'alignment');
+
+        el.cornerDotStyle = 'square';
+        await elementUpdated(el);
+        expect(getPath(el, 'corner-dot')).to.equal(dot);
+        expect(getPath(el, 'alignment')).to.equal(alignment);
+        expect(el.cornerDotStyle).to.equal('square');
+
+        el.squareStyle = 'square';
+        await elementUpdated(el);
+        expect(isInFill(el, 'corner-dot', 2.05, 2.05)).to.be.true;
       });
     });
 
@@ -971,6 +1163,23 @@ describe('IgcQrCodeComponent', () => {
         );
 
         expect(widthWithMargin).to.be.lessThan(widthNoMargin);
+      });
+
+      it('keeps logoMargin in pixels when the modules snap to whole pixels', async () => {
+        const el = await fixture<IgcQrCodeComponent>(
+          html`<igc-qr-code
+            value="https://example.com"
+            logo-src=${VALID_LOGO}
+          ></igc-qr-code>`
+        );
+        await elementUpdated(el);
+        const left = () =>
+          el.renderRoot.querySelector('image')!.getBoundingClientRect().left;
+        const start = left();
+
+        el.logoMargin = 2;
+        await elementUpdated(el);
+        expect(left() - start).to.be.closeTo(2, 1e-3);
       });
 
       it('does not render an image when logoMargin consumes the entire logo box', async () => {
@@ -1720,6 +1929,51 @@ describe('IgcQrCodeComponent', () => {
         scale: Math.ceil((6 * modules) / el.size),
       });
       return (await readQr(image))?.text;
+    }
+
+    /** Exports the code with `pixels` pixels for each module, and returns the text read from it. */
+    async function scanAt(pixels: number): Promise<string | undefined> {
+      await elementUpdated(el);
+      const modules = getSide(el) + 2 * el.margin;
+      const image = await el.toImage({ scale: (pixels * modules) / el.size });
+      return (await readQr(image))?.text;
+    }
+
+    // Sizes where the old geometry failed. A square dot draws as a circle, so it covers `circle`.
+    it('reads a circle corner square with each corner dot', async () => {
+      Object.assign(el, { dotStyle: 'circle', squareStyle: 'circle' });
+
+      for (const cornerDotStyle of ['square', 'rounded', 'squircle'] as const) {
+        for (const [value, version] of [
+          ['https://example.com/', 3],
+          [PRODUCT_URL, 10],
+        ] as const) {
+          Object.assign(el, { value, version, cornerDotStyle });
+
+          for (const pixels of [7, 8, 9]) {
+            expect(
+              await scanAt(pixels),
+              `${cornerDotStyle}, ${version}, ${pixels}`
+            ).to.equal(value);
+          }
+        }
+      }
+    });
+
+    for (const squareStyle of SHAPES) {
+      it(`reads the alignment patterns of square-style="${squareStyle}"`, async () => {
+        Object.assign(el, { value: LONG_VALUE, squareStyle });
+
+        for (const dotStyle of SHAPES) {
+          el.dotStyle = dotStyle;
+
+          for (const pixels of [7, 8]) {
+            expect(await scanAt(pixels), `${dotStyle}, ${pixels}`).to.equal(
+              LONG_VALUE
+            );
+          }
+        }
+      });
     }
 
     for (const [index, dotStyle] of SHAPES.entries()) {

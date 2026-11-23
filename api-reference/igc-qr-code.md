@@ -31,10 +31,15 @@ defineComponents(IgcQrCodeComponent);
   `undefined` or remove the attribute.
 - `size`: `number`. Default: `128`. Attribute: `size`.
   The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.
+
+  Each module covers a whole number of pixels, so the edges stay sharp. The pixels that are
+  left over widen the quiet zone, and the code can be smaller than `size`. An exported image
+  gets whole pixels at its own size.
 - `margin`: `number`. Default: `4`. Attribute: `margin`.
   The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather
   than pixels. This is the blank border area surrounding the code, which helps ensure that it
-  can be properly scanned.
+  can be properly scanned. It is a minimum: the modules cover whole pixels, and the pixels that
+  are left over make the quiet zone wider.
 - `logoSrc`: `string | undefined`. Attribute: `logo-src`.
   The source URL of an optional logo image at the center of the QR code.
   The component does not render a logo that fails to load, a `javascript:` or `vbscript:` URL,
@@ -67,10 +72,14 @@ defineComponents(IgcQrCodeComponent);
   their full size. A smaller value can make the code harder to scan with a camera.
 - `squareStyle`: `'square' | 'circle' | 'rounded' | 'squircle'`. Default: `'square'`. Attribute: `square-style`.
   The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',
-  or 'squircle'.
+  or 'squircle'. The rings of the alignment patterns use the same style.
 - `cornerDotStyle`: `'square' | 'circle' | 'rounded' | 'squircle' | undefined`. Attribute: `corner-dot-style`.
   The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',
-  'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`.
+  'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`. The centers of
+  the alignment patterns use the same style.
+
+  In a 'circle' corner square, a 'square' dot draws as 'circle', because scanners do not
+  find the pattern reliably with a square dot in a round ring.
 
 ## Methods
 
@@ -109,10 +118,11 @@ defineComponents(IgcQrCodeComponent);
 - `dots`: The data modules (dots) of the QR code.
 - `corner-square`: The outer corner (finder-pattern) squares of the QR code.
 - `corner-dot`: The inner corner (finder-pattern) dots of the QR code.
+- `alignment`: The alignment patterns of the QR code, from version 2.
 
 ## CSS custom properties
 
 - `--ig-qr-code-background`: The background color of the QR code. Default is `white`.
-- `--ig-qr-code-dark-color`: The color of the data modules (dots), and the corner square/dot colors unless overridden below. Default is `black`.
+- `--ig-qr-code-dark-color`: The color of the data modules (dots) and the alignment patterns, and the corner square/dot colors unless overridden below. Default is `black`.
 - `--ig-qr-code-corner-square-color`: The color of the outer finder-pattern corner squares. Defaults to `--ig-qr-code-dark-color`.
 - `--ig-qr-code-corner-dot-color`: The color of the inner finder-pattern corner dots. Defaults to `--ig-qr-code-dark-color`.

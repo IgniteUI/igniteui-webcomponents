@@ -1,4 +1,6 @@
+import { setOrRemoveAttribute } from '#internals/utils/dom.js';
 import type { QrCodeExportFormat } from '../types.js';
+import { snapToPixels } from './helpers.js';
 
 type QrRasterFormat = Exclude<QrCodeExportFormat, 'svg'>;
 
@@ -132,6 +134,23 @@ export async function createSvgSnapshot(
   await inlineLogo(clone);
   addLegacyLogoHref(clone);
   return clone;
+}
+
+/**
+ * Puts the modules of a snapshot on whole pixels of an image of `pixels`: rewrites the transform
+ * of the code group and of the logo, which the component renders for its own size.
+ */
+export function snapSvg(
+  svg: SVGSVGElement,
+  pixels: number,
+  margin: number
+): void {
+  const side = Math.round(svg.viewBox.baseVal.width);
+  const transform = snapToPixels(pixels, side, margin)?.transform;
+
+  for (const element of svg.querySelectorAll(':scope > g, :scope > image')) {
+    setOrRemoveAttribute(element, 'transform', transform);
+  }
 }
 
 /** Serializes an SVG element into an `image/svg+xml` blob. */

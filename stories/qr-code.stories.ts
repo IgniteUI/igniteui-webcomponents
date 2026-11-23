@@ -64,14 +64,14 @@ const metadata: Meta<IgcQrCodeComponent> = {
     size: {
       type: 'number',
       description:
-        'The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.',
+        'The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.\n\nEach module covers a whole number of pixels, so the edges stay sharp. The pixels that are\nleft over widen the quiet zone, and the code can be smaller than `size`. An exported image\ngets whole pixels at its own size.',
       control: 'number',
       table: { defaultValue: { summary: '128' } },
     },
     margin: {
       type: 'number',
       description:
-        'The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather\nthan pixels. This is the blank border area surrounding the code, which helps ensure that it\ncan be properly scanned.',
+        'The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather\nthan pixels. This is the blank border area surrounding the code, which helps ensure that it\ncan be properly scanned. It is a minimum: the modules cover whole pixels, and the pixels that\nare left over make the quiet zone wider.',
       control: 'number',
       table: { defaultValue: { summary: '4' } },
     },
@@ -118,7 +118,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
         value: ['square', 'circle', 'rounded', 'squircle'],
       },
       description:
-        "The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',\nor 'squircle'.",
+        "The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',\nor 'squircle'. The rings of the alignment patterns use the same style.",
       options: ['square', 'circle', 'rounded', 'squircle'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'square' } },
@@ -129,7 +129,7 @@ const metadata: Meta<IgcQrCodeComponent> = {
         value: ['square', 'circle', 'rounded', 'squircle'],
       },
       description:
-        "The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',\n'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`.",
+        "The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',\n'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`. The centers of\nthe alignment patterns use the same style.\n\nIn a 'circle' corner square, a 'square' dot draws as 'circle', because scanners do not\nfind the pattern reliably with a square dot in a round ring.",
       options: ['square', 'circle', 'rounded', 'squircle'],
       control: { type: 'select' },
     },
@@ -172,12 +172,19 @@ interface IgcQrCodeArgs {
    * `undefined` or remove the attribute.
    */
   errorLevel: 'L' | 'M' | 'Q' | 'H';
-  /** The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels. */
+  /**
+   * The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.
+   *
+   * Each module covers a whole number of pixels, so the edges stay sharp. The pixels that are
+   * left over widen the quiet zone, and the code can be smaller than `size`. An exported image
+   * gets whole pixels at its own size.
+   */
   size: number;
   /**
    * The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather
    * than pixels. This is the blank border area surrounding the code, which helps ensure that it
-   * can be properly scanned.
+   * can be properly scanned. It is a minimum: the modules cover whole pixels, and the pixels that
+   * are left over make the quiet zone wider.
    */
   margin: number;
   /**
@@ -222,12 +229,16 @@ interface IgcQrCodeArgs {
   dotScale: number;
   /**
    * The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',
-   * or 'squircle'.
+   * or 'squircle'. The rings of the alignment patterns use the same style.
    */
   squareStyle: 'square' | 'circle' | 'rounded' | 'squircle';
   /**
    * The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',
-   * 'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`.
+   * 'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`. The centers of
+   * the alignment patterns use the same style.
+   *
+   * In a 'circle' corner square, a 'square' dot draws as 'circle', because scanners do not
+   * find the pattern reliably with a square dot in a round ring.
    */
   cornerDotStyle: 'square' | 'circle' | 'rounded' | 'squircle';
 }
@@ -292,7 +303,7 @@ export const Shapes: Story = {
     docs: {
       description: {
         story:
-          '`dot-style` sets the shape of the data modules and of the inner dot of each corner. `square-style` sets the shape of the outer corner squares. The table shows all 16 combinations for the same value. Below it, `corner-dot-style` gives the inner corner dots a shape of their own, and `dot-scale` shrinks the data modules to leave a gap between them.',
+          '`dot-style` sets the shape of the data modules and of the inner dot of each corner. `square-style` sets the shape of the outer corner squares and of the alignment rings. The table shows all 16 combinations for the same value: in a `circle` corner square, a `square` corner dot draws as a circle, so that scanners find the corner. Below it, `corner-dot-style` gives the inner corner dots a shape of their own, and `dot-scale` shrinks the data modules to leave a gap between them.',
       },
     },
   },

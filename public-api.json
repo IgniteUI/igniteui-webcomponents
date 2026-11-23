@@ -2912,6 +2912,7 @@
       "events": {},
       "slots": [],
       "cssParts": [
+        "alignment",
         "background",
         "corner-dot",
         "corner-square",

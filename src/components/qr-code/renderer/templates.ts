@@ -1,14 +1,15 @@
 import { nothing, svg, type TemplateResult } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import type {
   QrCornerDotStyle,
   QrCornerSquareStyle,
   QrDotStyle,
 } from '../types.js';
 import {
-  cornerDotPath,
-  cornerSquarePath,
+  alignmentPath,
   getFinderPatterns,
   moduleToPx,
+  patternPaths,
   renderDataModules,
 } from './helpers.js';
 import type { LogoLayout } from './logo.js';
@@ -68,7 +69,7 @@ export function renderQrDots({
   return svg`<path part="dots" d=${cached.path} />`;
 }
 
-type RenderFindersProperties = {
+type RenderPatternsProperties = {
   size: number;
   moduleSize: number;
   marginPx: number;
@@ -83,13 +84,14 @@ export function renderQrFinders({
   marginPx,
   dotStyle,
   squareStyle,
-}: RenderFindersProperties): TemplateResult[] {
+}: RenderPatternsProperties): TemplateResult[] {
   return getFinderPatterns(size, moduleSize, marginPx).map(({ x, y }) => {
-    const squarePath = cornerSquarePath(x, y, 7 * moduleSize, squareStyle);
-    const dotPath = cornerDotPath(
-      x + 2 * moduleSize,
-      y + 2 * moduleSize,
-      3 * moduleSize,
+    const [squarePath, dotPath] = patternPaths(
+      x,
+      y,
+      7,
+      moduleSize,
+      squareStyle,
       dotStyle
     );
 
@@ -102,37 +104,56 @@ export function renderQrFinders({
   });
 }
 
+/** Renders the alignment patterns as a single SVG path, or nothing for version 1. */
+export function renderQrAlignment({
+  size,
+  moduleSize,
+  marginPx,
+  dotStyle,
+  squareStyle,
+}: RenderPatternsProperties): TemplateResult | typeof nothing {
+  const path = alignmentPath(size, moduleSize, marginPx, squareStyle, dotStyle);
+
+  return path
+    ? svg`<path part="alignment" d=${path} fill-rule="evenodd"></path>`
+    : nothing;
+}
+
 type RenderQrMaskAndImageProperties = {
   src: string;
   layout?: LogoLayout;
-  size: number;
+  /** The CSS pixels of one SVG unit, which convert `margin` to units. */
+  unitSize: number;
   margin?: number;
   svgSize: number;
   moduleSize: number;
   marginPx: number;
   maskId: string;
+  transform?: string;
 };
 
 /**
  * Renders the logo image and its mask: a white rectangle with a black cutout of the modules of
- * `layout`. The image fills the logo box, less `margin` on each side.
+ * `layout`. The image fills the logo box, less `margin` pixels on each side, and takes the
+ * `transform` of the masked group.
  */
 export function renderQrMaskAndImage({
   src,
   layout,
-  size,
+  unitSize,
   margin,
   svgSize,
   moduleSize,
   marginPx,
   maskId,
+  transform,
 }: RenderQrMaskAndImageProperties) {
   if (!layout) {
     return { mask: nothing, image: nothing, shouldApplyMask: false };
   }
 
   const toSvg = (modules: number) => moduleToPx(modules, moduleSize, marginPx);
-  const boxMargin = (margin ?? 0) * (svgSize / size);
+  const boxMargin = (margin ?? 0) / unitSize;
 
   const cutX = toSvg(layout.left);
   const cutY = toSvg(layout.top);
@@ -164,7 +185,7 @@ export function renderQrMaskAndImage({
     : nothing;
 
   const image = shouldApplyMask
-    ? svg`<image href=${src} x=${x} y=${y} width=${width} height=${height} />`
+    ? svg`<image href=${src} x=${x} y=${y} width=${width} height=${height} transform=${ifDefined(transform)} />`
     : nothing;
 
   return { mask, image, shouldApplyMask };

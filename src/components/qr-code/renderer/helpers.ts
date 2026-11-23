@@ -1,3 +1,4 @@
+import { getAlignmentPatternCenters } from '../model/matrix.js';
 import type {
   QrCornerDotStyle,
   QrCornerSquareStyle,
@@ -131,7 +132,7 @@ function dotPath(
 }
 
 /** Returns an SVG path string for the inner dot of a finder-pattern corner. */
-export function cornerDotPath(
+function cornerDotPath(
   x: number,
   y: number,
   size: number,
@@ -150,16 +151,16 @@ export function cornerDotPath(
   }
 }
 
-/** Returns the SVG path (a ring with a cutout) of the outer square of a finder corner. */
-export function cornerSquarePath(
+/** Returns the SVG path of a ring of side `size` and of width `ring`. */
+function cornerSquarePath(
   x: number,
   y: number,
   size: number,
+  ring: number,
   style: QrCornerSquareStyle
 ): string {
-  const moduleSize = size / 7;
-  const inner = size - 2 * moduleSize;
-  const innerOffset = moduleSize;
+  const inner = size - 2 * ring;
+  const innerOffset = ring;
 
   switch (style) {
     case 'square': {
@@ -202,9 +203,51 @@ function finderCorners(size: number): [number, number][] {
   ];
 }
 
+function alignmentCenters(size: number): [number, number][] {
+  return getAlignmentPatternCenters((size - 17) / 4);
+}
+
 /**
- * Returns one SVG path for each dark data module outside the finder patterns, at `dotScale`
- * times the module size.
+ * Returns the ring and the center dot of a finder pattern (7 modules) or an alignment pattern
+ * (5 modules) whose top-left module is at `x`, `y`.
+ */
+export function patternPaths(
+  x: number,
+  y: number,
+  modules: number,
+  moduleSize: number,
+  squareStyle: QrCornerSquareStyle,
+  dotStyle: QrCornerDotStyle
+): [ring: string, dot: string] {
+  const inset = 2 * moduleSize;
+  return [
+    cornerSquarePath(x, y, modules * moduleSize, moduleSize, squareStyle),
+    cornerDotPath(x + inset, y + inset, (modules - 4) * moduleSize, dotStyle),
+  ];
+}
+
+/**
+ * Returns a copy of `data` without the finder patterns, their separators and the alignment
+ * patterns, which have their own shapes. A joining style does not join a module to them.
+ */
+function dataModulesOf(data: boolean[][]): boolean[][] {
+  const size = data.length;
+  const modules = data.map((row) => row.slice());
+  const clear = (row: number, col: number, side: number) => {
+    for (let r = Math.max(row, 0); r < Math.min(row + side, size); r++) {
+      modules[r].fill(false, Math.max(col, 0), col + side);
+    }
+  };
+
+  for (const [row, col] of finderCorners(size)) clear(row - 1, col - 1, 9);
+  for (const [row, col] of alignmentCenters(size)) clear(row - 2, col - 2, 5);
+
+  return modules;
+}
+
+/**
+ * Returns one SVG path for each dark data module outside the finder and alignment patterns, at
+ * `dotScale` times the module size.
  */
 export function renderDataModules(
   data: boolean[][],
@@ -213,24 +256,89 @@ export function renderDataModules(
   dotStyle: QrDotStyle,
   dotScale: number
 ): string[] {
-  const size = data.length;
-  const far = size - 8;
+  const modules = dataModulesOf(data);
+  const size = modules.length;
   const paths: string[] = [];
 
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
-      // The finder patterns and their separators.
-      if ((r <= 7 && (c <= 7 || c >= far)) || (r >= far && c <= 7)) continue;
-      if (!data[r][c]) continue;
+      if (!modules[r][c]) continue;
 
       const x = moduleToPx(c, moduleSize, marginPx);
       const y = moduleToPx(r, moduleSize, marginPx);
 
-      paths.push(dotPath(data, r, c, x, y, moduleSize, dotStyle, dotScale));
+      paths.push(dotPath(modules, r, c, x, y, moduleSize, dotStyle, dotScale));
     }
   }
 
   return paths;
+}
+
+/**
+ * Returns the SVG path of the alignment patterns of a matrix of `size` modules: a ring of
+ * `squareStyle` and a center dot of `dotStyle` for each. Fill it with the `evenodd` rule.
+ */
+export function alignmentPath(
+  size: number,
+  moduleSize: number,
+  marginPx: number,
+  squareStyle: QrCornerSquareStyle,
+  dotStyle: QrCornerDotStyle
+): string {
+  return alignmentCenters(size)
+    .flatMap(([r, c]) =>
+      patternPaths(
+        moduleToPx(c - 2, moduleSize, marginPx),
+        moduleToPx(r - 2, moduleSize, marginPx),
+        5,
+        moduleSize,
+        squareStyle,
+        dotStyle
+      )
+    )
+    .join(' ');
+}
+
+/**
+ * Returns the style that a corner dot draws in a ring of `squareStyle`. A `circle` ring takes a
+ * round dot: zxing checks the pattern on the diagonals too, and a square dot leaves a gap there.
+ */
+export function resolveCornerDotStyle(
+  squareStyle: QrCornerSquareStyle,
+  dotStyle: QrCornerDotStyle
+): QrCornerDotStyle {
+  return squareStyle === 'circle' && dotStyle === 'square'
+    ? 'circle'
+    : dotStyle;
+}
+
+/**
+ * Returns the transform that puts each module of a code of `side` modules on whole pixels of an
+ * image of `pixels`, with the spare pixels in the quiet zone. Below 1 pixel per module, it returns
+ * `undefined`.
+ */
+export function snapToPixels(
+  pixels: number,
+  side: number,
+  margin: number
+): { transform: string; scale: number } | undefined {
+  const modules = side + 2 * margin;
+  let modulePixels = Math.floor(pixels / modules);
+
+  // A fractional margin needs whole pixels on both sides.
+  if (2 * Math.ceil(margin * modulePixels) + modulePixels * side > pixels) {
+    modulePixels--;
+  }
+
+  if (!Number.isFinite(modulePixels) || modulePixels < 1) {
+    return undefined;
+  }
+
+  const start = Math.floor((pixels - modulePixels * side) / 2);
+  const scale = (modulePixels * modules) / pixels;
+  const offset = (side * (start - modulePixels * margin)) / pixels;
+
+  return { transform: `translate(${offset} ${offset}) scale(${scale})`, scale };
 }
 
 /** Returns the top-left pixel coordinates of the three finder-pattern corners. */
