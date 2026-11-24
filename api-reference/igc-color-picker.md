@@ -2,9 +2,10 @@
 
 Color input component.
 
-The user picks a color with the HSV saturation/value canvas, the hue slider
-and the optional alpha slider. The user can also type a color string: hex,
-rgb(a), hsl(a) or a named CSS color.
+The user picks a color with the color area, the hue slider and the optional
+alpha slider. The area is saturation by value, or lightness by chroma at the
+OKLCH hue in the `oklch` format. The user can also type any CSS color string,
+such as hex, `rgb()`, `hsl()`, `oklch()` or a named color.
 
 The component supports pre-defined swatches and the native EyeDropper API,
 where the browser provides one. The anchor is a trigger button
@@ -24,11 +25,14 @@ defineComponents(IgcColorPickerComponent);
   In `mode="input"` the component forwards the label to the anchor input.
   In `mode="default"` it renders the label as a separate element.
 - `value`: `string`. Attribute: `value`.
-  The value of the component as a CSS color string. Accepts hex, rgb(a),
-  hsl(a) and named colors.
+  The value of the component as a CSS color string. Accepts any CSS color,
+  such as hex, `rgb()`, `hsl()`, `oklch()`, `color()` or a named color. A
+  color outside the sRGB gamut is clipped to it.
 
-  An empty, whitespace-only or invalid string clears the value.
-- `format`: `'hex' | 'rgb' | 'hsl'`. Default: `'hex'`. Attribute: `format`.
+  An empty, whitespace-only or invalid string clears the value. So does a
+  color that depends on its context: `currentcolor`, `var()`, `light-dark()`
+  or a system color.
+- `format`: `'hex' | 'rgb' | 'hsl' | 'oklch'`. Default: `'hex'`. Attribute: `format`.
   The color format of the string value.
 
   A format change renders `value` in the new notation. The color does not
@@ -43,15 +47,37 @@ defineComponents(IgcColorPickerComponent);
   In `"default"` mode the anchor is a trigger button. In `"input"` mode the
   anchor is an editable text field with a color swatch prefix. The prefix
   also opens the picker.
+- `selectionCommit`: `'immediate' | 'confirm'`. Default: `'immediate'`. Attribute: `selection-commit`.
+  When the changes of the user in the popup apply. With `confirm`, they
+  change a draft: `value` keeps its color, and the popup shows the initial
+  color beside the draft. Apply, or Enter on the canvas marker, a slider or
+  a swatch, applies the draft with one `igcChange`. Cancel and every other
+  close drop it.
 - `swatches`: `string[]`. Default: `[]`. No attribute.
-  Pre-defined color strings. The component renders them as clickable
-  swatches below the picker controls. A click on a swatch sets its color as
-  the value.
+  Pre-defined color strings. The component renders them as swatches in the
+  swatch list of its popup, in front of the swatch children. An empty
+  string gives the no-color swatch.
+- `views`: `string`. Default: `'gradient'`. Attribute: `views`.
+  The views of the popup, as a space-separated list of `gradient` and
+  `swatches`. With both views, a view switcher shows at the top.
+
+  With only the gradient view, the swatch list shows below the gradient
+  controls. With the swatch view, the swatch list shows only in that view.
+- `activeView`: `'gradient' | 'swatches'`. Default: `'gradient'`. Attribute: `active-view`.
+  The view on screen in the popup: `gradient` or `swatches`. The view
+  switcher sets it and emits no event. A view that `views` does not have
+  gives the first view of `views`.
+- `contrastAgainst`: `string`. Default: `''`. Attribute: `contrast-against`.
+  The background color of the contrast readout in the popup, as any CSS
+  color. A color that depends on its context, such as a `var()`, resolves
+  from the popup. The readout shows the WCAG 2 contrast ratio of the value
+  over this color, with the AA and AAA levels for normal text. An empty or
+  invalid color hides it.
 - `locale`: `string`. Attribute: `locale`.
   The locale of the component. Without it, the component takes its own
   `lang`, else the locale of the nearest ancestor that has a `locale` (a
   component) or a `lang`, and then the global locale.
-- `resourceStrings`: `Required<IColorPickerResourceStrings>`. No attribute.
+- `resourceStrings`: `Required<IgcColorPickerResourceStrings>`. No attribute.
   The texts of the component. The strings that you set replace the
   strings of the current locale. Reading returns all the strings, with
   your strings over the locale strings.
@@ -97,6 +123,9 @@ defineComponents(IgcColorPickerComponent);
   Sets focus on the color picker.
 - `blur(): void`
   Removes focus from the color picker.
+- `clear(): void`
+  Clears the value and the text of the input. As for a value set from code,
+  the component emits no events.
 - `reportValidity(): boolean`
   Checks validity. As for a native control, an invalid control emits
   `invalid` and takes the focus. It shows its own validation messages, not
@@ -131,9 +160,9 @@ defineComponents(IgcColorPickerComponent);
 - `igcClosed`
   Emitted after the picker dropdown closes on a user action.
 - `igcInput`
-  Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper.
+  Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper. In the confirm mode of `selectionCommit`, these changes emit nothing.
 - `igcChange`
-  Emitted when the focus leaves the component after the user changed the color.
+  Emitted when the focus leaves the component after the user changed the color, and when the user applies the draft of the confirm mode.
 
 ## Slots
 
@@ -141,6 +170,9 @@ defineComponents(IgcColorPickerComponent);
 - `custom-error`: Renders content when setCustomValidity(message) is set.
 - `invalid`: Renders content when the component is in invalid state (validity.valid = false).
 - `helper-text`: Renders content below the picker.
+- `clear-icon`: Renders the clear icon in input mode.
+- default: The color swatches and swatch groups. The picker shows them in the swatch list of its popup.
+- `footer`: Renders content below the color panel in the popup. In the confirm mode of `selectionCommit`, the preview, Cancel and Apply show after it.
 
 ## CSS parts
 
@@ -148,10 +180,16 @@ defineComponents(IgcColorPickerComponent);
 - `anchor`: The trigger element that opens the picker (the button in default mode, or the swatch prefix in input mode).
 - `empty`: Applied alongside `anchor` when no color value is set, rendering a checkered background.
 - `input-mode`: Added to the anchor part in input mode.
-- `label`: The label rendered after the anchor in default mode.
+- `label`: The label: the element after the anchor in default mode, or the label of the text field in input mode.
+- `field`: The text field in input mode. Set the `--ig-input-group-*` variables on it to style the field and not the inputs in the picker.
+- `input`: The container of the text field in input mode.
+- `native-input`: The native input of the text field in input mode.
+- `prefix`: The prefix wrapper of the text field in input mode. It holds the anchor.
+- `suffix`: The suffix wrapper of the text field in input mode. It holds the clear icon.
+- `clear-icon`: The clear icon wrapper in input mode. It shows while a color is set.
 - `picker`: The popover container holding the canvas, sliders, inputs and swatches.
-- `picker-canvas`: The saturation and value canvas.
-- `marker`: The marker on the canvas that shows the saturation and value.
+- `picker-canvas`: The area: saturation by value, or lightness by chroma in the `oklch` format.
+- `marker`: The marker on the area that shows the picked color.
 - `dragging`: Added to the marker part while the user drags it.
 - `main-row`: The row containing the hue slider and the copy/eyedropper buttons.
 - `alpha-row`: The row containing the alpha slider and input, rendered when `show-alpha` is set.
@@ -163,8 +201,24 @@ defineComponents(IgcColorPickerComponent);
 - `copy`: The button that copies the current color value to the clipboard.
 - `eye-dropper`: The button that activates the EyeDropper API.
 - `format-select`: The select control used to switch the color string format.
-- `swatches`: The container of the pre-defined color swatches.
-- `swatch`: An individual color swatch button.
+- `swatches`: The swatch list.
+- `swatch`: A swatch of the `swatches` property.
+- `selected`: Added to the swatch part when the swatch has the color of the value.
+- `view-switcher`: The view switcher, rendered when `views` has both views.
+- `view-button`: A button of the view switcher.
+- `active`: Added to the view-button part of the view on screen.
+- `contrast`: The contrast readout, rendered when `contrast-against` has a color and the value is not empty.
+- `contrast-ratio`: The contrast ratio of the value over `contrast-against`.
+- `contrast-mark`: A WCAG level of the contrast readout, AA or AAA.
+- `pass`: Added to the contrast-mark part of a level that the ratio passes.
+- `fail`: Added to the contrast-mark part of a level that the ratio fails.
+- `footer`: The container below the color panel in the popup. It holds the `footer` slot and, in the confirm mode, the actions.
+- `actions`: The container of the preview, Cancel and Apply in the confirm mode.
+- `preview`: The preview of the initial color and the draft in the confirm mode.
+- `preview-initial`: The button that shows the initial color and restores it.
+- `preview-current`: The color of the draft.
+- `cancel-button`: The Cancel button of the confirm mode.
+- `apply-button`: The Apply button of the confirm mode.
 
 ## CSS custom properties
 

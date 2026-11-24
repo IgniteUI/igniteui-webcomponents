@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import {
@@ -6,6 +12,11 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
+  endKey,
+  homeKey,
+  pageDownKey,
+  pageUpKey,
+  shiftKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
@@ -14,7 +25,6 @@ import {
   simulatePointerDown,
   simulatePointerMove,
 } from '#internals/testing/simulate.spec.js';
-import { asPercent } from '#internals/utils/math.js';
 import IgcPickerCanvasComponent from './picker-canvas.js';
 
 async function createCanvas() {
@@ -71,14 +81,14 @@ describe('Picker canvas', () => {
       );
     });
 
-    it('formats `aria-valuetext` with `markerValueFormat`', async () => {
+    it('takes the `aria-valuetext` from `markerValueText`', async () => {
       canvas.saturation = 62.4;
       canvas.brightness = 37.8;
-      canvas.markerValueFormat = 'Sättigung {0} %, Helligkeit {1} %';
+      canvas.markerValueText = 'Sättigung 62 %, Helligkeit 38 %, dunkles Blau';
       await elementUpdated(canvas);
 
       expect(getMarker(canvas).getAttribute('aria-valuetext')).to.equal(
-        'Sättigung 62 %, Helligkeit 38 %'
+        'Sättigung 62 %, Helligkeit 38 %, dunkles Blau'
       );
     });
 
@@ -142,37 +152,47 @@ describe('Picker canvas', () => {
   });
 
   describe('Keyboard interaction', () => {
-    it('moves the marker with arrow keys and emits `igcColorPicked`', () => {
+    it('moves the marker with arrow keys and emits `igcColorPicked`', async () => {
+      const { width, height } = canvas.getMarkerDimensions();
+      const rect = canvas.getBoundingClientRect();
+
+      // The marker center at 0%, 0%.
+      canvas.x = -width;
+      canvas.y = -height;
+      await elementUpdated(canvas);
+
       const eventSpy = spy(canvas, 'emitEvent');
 
       simulateKeyboard(canvas, arrowRight);
-      expect(canvas.x).to.equal(1);
+      expect(canvas.x).to.be.closeTo(rect.width / 100 - width, 1e-9);
       expect(eventSpy).calledOnce;
 
       simulateKeyboard(canvas, arrowDown);
-      expect(canvas.y).to.equal(1);
+      expect(canvas.y).to.be.closeTo(rect.height / 100 - height, 1e-9);
 
       simulateKeyboard(canvas, arrowLeft);
-      expect(canvas.x).to.equal(0);
+      expect(canvas.x).to.equal(-width);
 
       simulateKeyboard(canvas, arrowUp);
-      expect(canvas.y).to.equal(0);
+      expect(canvas.y).to.equal(-height);
 
       expect(eventSpy.callCount).to.equal(4);
     });
 
-    it('emits rounded percentages relative to the canvas size', () => {
-      const eventSpy = spy(canvas, 'emitEvent');
+    it('emits whole percentages of the canvas size', async () => {
       const { width, height } = canvas.getMarkerDimensions();
-      const rect = canvas.getBoundingClientRect();
+
+      // The marker center at 0%, 0%.
+      canvas.x = -width;
+      canvas.y = -height;
+      await elementUpdated(canvas);
+
+      const eventSpy = spy(canvas, 'emitEvent');
 
       simulateKeyboard(canvas, arrowRight);
 
       expect(eventSpy).calledWith('igcColorPicked', {
-        detail: {
-          x: Math.round(asPercent(1 + width, rect.width)),
-          y: Math.round(asPercent(height, rect.height)),
-        },
+        detail: { x: 1, y: 0 },
         bubbles: false,
       });
     });
@@ -190,6 +210,165 @@ describe('Picker canvas', () => {
       expect(canvas.x).to.equal(-width);
       expect(canvas.y).to.equal(-height);
       expect(eventSpy).not.called;
+    });
+
+    describe('Steps in percent', () => {
+      /** Puts the marker center at `x`% and `y`% of the canvas. */
+      async function placeMarker(x: number, y: number): Promise<void> {
+        const rect = canvas.getBoundingClientRect();
+        const { width, height } = canvas.getMarkerDimensions();
+
+        canvas.x = (x / 100) * rect.width - width;
+        canvas.y = (y / 100) * rect.height - height;
+        await elementUpdated(canvas);
+      }
+
+      /** Presses `key` and returns the detail of the `igcColorPicked` it emits. */
+      function press(key: string | string[]): unknown {
+        const eventSpy = spy(canvas, 'emitEvent');
+
+        try {
+          simulateKeyboard(canvas, key);
+          return eventSpy.lastCall?.args[1]?.detail;
+        } finally {
+          eventSpy.restore();
+        }
+      }
+
+      it('steps 1% of an axis with an arrow key', async () => {
+        await placeMarker(50, 50);
+
+        expect(press(arrowRight)).to.deep.equal({ x: 51, y: 50 });
+        expect(press(arrowDown)).to.deep.equal({ x: 51, y: 51 });
+        expect(press(arrowLeft)).to.deep.equal({ x: 50, y: 51 });
+        expect(press(arrowUp)).to.deep.equal({ x: 50, y: 50 });
+      });
+
+      it('steps 10% with Shift + Arrow, Page Up, Page Down, Home and End', async () => {
+        await placeMarker(50, 50);
+
+        const steps: [string | string[], { x: number; y: number }][] = [
+          [[shiftKey, arrowRight], { x: 60, y: 50 }],
+          [[shiftKey, arrowDown], { x: 60, y: 60 }],
+          [[shiftKey, arrowLeft], { x: 50, y: 60 }],
+          [[shiftKey, arrowUp], { x: 50, y: 50 }],
+          [pageDownKey, { x: 50, y: 60 }],
+          [pageUpKey, { x: 50, y: 50 }],
+          [endKey, { x: 60, y: 50 }],
+          [homeKey, { x: 50, y: 50 }],
+        ];
+
+        for (const [key, detail] of steps) {
+          expect(press(key), String(key)).to.deep.equal(detail);
+        }
+      });
+
+      it('moves the same percentage at another canvas size', async () => {
+        canvas.style.width = '150px';
+        await placeMarker(20, 20);
+
+        const rect = canvas.getBoundingClientRect();
+        const { width, height } = canvas.getMarkerDimensions();
+
+        expect(rect.width).to.equal(150);
+
+        expect(press([shiftKey, arrowRight])).to.deep.equal({ x: 30, y: 20 });
+        expect(canvas.x + width).to.be.closeTo(0.3 * rect.width, 1e-9);
+
+        expect(press(arrowDown)).to.deep.equal({ x: 30, y: 21 });
+        expect(canvas.y + height).to.be.closeTo(0.21 * rect.height, 1e-9);
+      });
+
+      it('snaps only the axis that moves to a whole percent', async () => {
+        await placeMarker(40.4, 50);
+        const x = canvas.x;
+
+        expect(press(arrowDown)).to.deep.equal({ x: 40, y: 51 });
+        expect(canvas.x).to.equal(x);
+      });
+
+      it('stops at the edges of the canvas', async () => {
+        await placeMarker(95, 98);
+
+        expect(press(endKey)).to.deep.equal({ x: 100, y: 98 });
+        expect(press(pageDownKey)).to.deep.equal({ x: 100, y: 100 });
+        expect(press(arrowRight)).to.be.undefined;
+        expect(press(arrowDown)).to.be.undefined;
+      });
+
+      it('moves the marker in the direction of the arrow in RTL', async () => {
+        canvas.dir = 'rtl';
+        await placeMarker(50, 50);
+
+        expect(press(arrowRight)).to.deep.equal({ x: 51, y: 50 });
+        expect(press(homeKey)).to.deep.equal({ x: 41, y: 50 });
+      });
+
+      it('does nothing while the canvas has no size', async () => {
+        canvas.style.display = 'none';
+        await elementUpdated(canvas);
+
+        expect(press(arrowRight)).to.be.undefined;
+        expect(press(endKey)).to.be.undefined;
+      });
+    });
+  });
+
+  describe('OKLCH area', () => {
+    /** The alpha of the area at a share (0-1) across and down its canvas. */
+    function alphaAt(across: number, down: number): number {
+      const plane = canvas.renderRoot.querySelector('canvas')!;
+      const x = Math.round(across * (plane.width - 1));
+      const y = Math.round(down * (plane.height - 1));
+
+      return plane.getContext('2d')!.getImageData(x, y, 1, 1).data[3];
+    }
+
+    beforeEach(async () => {
+      canvas.space = 'oklch';
+      canvas.hue = 140;
+      await elementUpdated(canvas);
+      await nextFrame();
+    });
+
+    it('paints the gamut of the hue on a canvas, in CSS pixels', () => {
+      const plane = canvas.renderRoot.querySelector('canvas')!;
+
+      expect(canvas.getAttribute('space')).to.equal('oklch');
+      expect(plane.getAttribute('aria-hidden')).to.equal('true');
+      expect([plane.width, plane.height]).to.eql([
+        canvas.clientWidth,
+        canvas.clientHeight,
+      ]);
+      // Green at lightness 50 % reaches chroma 0.161 of 0.33.
+      expect(alphaAt(0.2, 0.5)).to.equal(255);
+      expect(alphaAt(0.9, 0.5)).to.equal(0);
+    });
+
+    it('paints again for a new hue', async () => {
+      canvas.hue = 328;
+      await elementUpdated(canvas);
+      await nextFrame();
+
+      // Magenta at lightness 70 % reaches chroma 0.32.
+      expect(alphaAt(0.9, 0.3)).to.equal(255);
+    });
+
+    it('has no canvas in the HSV space', async () => {
+      canvas.space = 'hsv';
+      await elementUpdated(canvas);
+
+      expect(canvas.renderRoot.querySelector('canvas')).to.be.null;
+    });
+
+    it('lets a listener move the marker again', () => {
+      canvas.addEventListener('igcColorPicked', () => {
+        canvas.x = 10;
+      });
+
+      simulateKeyboard(canvas, arrowRight);
+
+      expect(canvas.x).to.equal(10);
     });
   });
 

@@ -24,7 +24,10 @@ import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.res
 import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
 import type { FormValue } from '#internals/mixins/forms/form-value.js';
-import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
+import {
+  renderClearIcon,
+  renderSlottedIcon,
+} from '#internals/templates/slotted-icon.js';
 import { asArray, firstOf } from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
@@ -731,15 +734,7 @@ export abstract class IgcDatePickerBaseComponent<
 
   protected _renderClearIcon(part = 'clear-icon') {
     return this._value !== null
-      ? html`
-          <span
-            slot="suffix"
-            part=${part}
-            @click=${bindIf(!this.readOnly, this.clear)}
-          >
-            ${renderSlottedIcon({ slot: part, icon: 'input_clear' })}
-          </span>
-        `
+      ? renderClearIcon(part, bindIf(!this.readOnly, this.clear))
       : nothing;
   }
 

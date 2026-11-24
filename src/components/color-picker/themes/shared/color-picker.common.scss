@@ -1,5 +1,6 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
+@use '../swatch' as *;
 @use 'components/input/themes/light/themes' as input-theme;
 
 $theme: $material;
@@ -8,58 +9,6 @@ $theme: $material;
 // adopts the input group theme - its state colors come from there, as they do in
 // select, combo and the date pickers.
 $input-theme: input-theme.$material;
-
-@mixin slider-track {
-    height: var(--_slider-track-size);
-    border-radius: var-get($theme, 'slider-track-border-radius');
-
-    // Dont use border otherwise the thumb will be misaligned.
-    box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'slider-track-border-color');
-}
-
-// `$fill` differs per slider: the hue thumb shows the pure hue it selects, the
-// alpha thumb shows the color actually picked on the canvas.
-@mixin slider-thumb($fill) {
-    // Resetting `appearance` on the input alone is not enough in Chromium - the
-    // thumb keeps its native rendering and ignores everything below until the
-    // pseudo-element itself opts out.
-    appearance: none;
-    border-radius: 50%;
-    width: var(--_slider-thumb-size);
-    height: var(--_slider-thumb-size);
-    background-color: $fill;
-    border: rem(2px) solid var-get($theme, 'slider-thumb-border-color');
-    box-shadow: var(--ig-elevation-1);
-
-    // This has to be explicitly set to avoid the thumb being clipped by the
-    // track.
-    box-sizing: border-box;
-    margin: 0;
-}
-
-// Vendor pseudo-elements must never share a selector list: a list containing a
-// pseudo-element the engine doesn't recognize is invalid as a whole, so pairing
-// `::-moz-range-track,::-webkit-slider-runnable-track` makes Chrome drop the
-// -webkit- half too. Each gets its own rule, emitted from here.
-@mixin slider($thumb-fill) {
-    &::-webkit-slider-runnable-track {
-        @include slider-track();
-        @content;
-    }
-
-    &::-moz-range-track {
-        @include slider-track();
-        @content;
-    }
-
-    &::-webkit-slider-thumb {
-        @include slider-thumb($thumb-fill);
-    }
-
-    &::-moz-range-thumb {
-        @include slider-thumb($thumb-fill);
-    }
-}
 
 // Renders three layers (bottom to top):
 // 1. Transparency grid.
@@ -95,142 +44,52 @@ $input-theme: input-theme.$material;
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --_outline-size: #{rem(1px)};
     --_picker-popover-size: #{sizable(rem(290px), rem(314px), rem(360px))};
-    --_input-row-spacing: #{rem(16px)};
-    --_alpha-row-spacing: #{sizable(rem(8px), rem(12px), rem(16px))};
-    --_swatches-spacing: #{rem(16px)};
-    --_swatches-row-gap: #{rem(12px)};
-    --_picker-rows-grid-template-columns: #{sizable(rem(90px), rem(100px), rem(115px))} auto #{sizable(rem(62px), rem(72px), rem(88px))};
-    --_picker-rows-inline-spacing: #{rem(16px)};
-    --_picker-column-gap: #{sizable(rem(14px), rem(12px), rem(16px))};
-    --_picker-buttons-gap: var(--_picker-column-gap);
-
-    // Trigger
-    // Always a fully saturated hue - the component overwrites this on every
-    // update. Black would never be a valid value for it: it is the hue the
-    // saturation/value plane is built from, not a color that can be picked.
-    --_current-color: hsl(0deg 100% 50%);
-    --_slider-track-size: #{rem(16px)};
-    --_slider-thumb-size: #{rem(16px)};
 
     // Four columns of checkerboard squares across the swatch - see `swatch-preview`.
     --_swatch-grid-size: 50% 50%;
     --_anchor-border-size: #{rem(1px)};
     --_input-mode-trigger-size: #{sizable(rem(18px), rem(20px), rem(24px))};
     --_empty-swatch: #{var-get($theme, 'invalid-color')};
-    
-    // The stops sit half the line width on either side of the diagonal,
-    // so the crossing line renders exactly 1px thick.
-    --_empty-swatch-image: linear-gradient(
-        to top right,
-        transparent calc(50% - 0.5px),
-        var(--_empty-swatch) calc(50% - 0.5px),
-        var(--_empty-swatch) calc(50% + 0.5px),
-        transparent calc(50% + 0.5px)
-    );
-    
-    // Draws a 2x2 checkerboard tile (alternating light/dark squares)
-    // used as a background to reveal transparent colors.
-    --_transparency-grid: conic-gradient(
-        #{var-get($theme, 'transparency-grid-odd')} 0deg 90deg,
-        #{var-get($theme, 'transparency-grid-even')} 90deg 180deg,
-        #{var-get($theme, 'transparency-grid-odd')} 180deg 270deg,
-        #{var-get($theme, 'transparency-grid-even')} 270deg 360deg
-    );
-
-    // The gradients span the travel of the thumb center and follow the range
-    // direction, which is right to left in RTL.
-    --_slider-track-direction: to right;
-    --_slider-track-inset: calc(var(--_slider-thumb-size) / 2);
-
-    // Pure hues at equal steps give `hsl(h 100% 50%)` at each point.
-    --_hue-slider-track: linear-gradient(
-        var(--_slider-track-direction),
-        #f00 var(--_slider-track-inset),
-        #ff0, #0f0, #0ff, #00f, #f0f,
-        #f00 calc(100% - var(--_slider-track-inset))
-    );
-    --_alpha-color: var(--_selected-color, var(--_current-color));
-    --_alpha-slider-track:
-        linear-gradient(
-            var(--_slider-track-direction),
-            rgb(from var(--_alpha-color) r g b / 0%) var(--_slider-track-inset),
-            rgb(from var(--_alpha-color) r g b / 100%) calc(100% - var(--_slider-track-inset))
-        ),
-        var(--_transparency-grid);
-    --_alpha-track-position: 0 0;
-    --_alpha-track-size: contain, var(--_slider-track-size) var(--_slider-track-size);
-
-    input[type='range'] {
-        background: transparent;
-        cursor: pointer;
-    }
-
-    [part='hue'] {
-        @include slider(var(--_current-color)) {
-            background: var(--_hue-slider-track);
-        }
-    }
-
-    [part='alpha'] {
-        @include slider(var(--_alpha-color)) {
-            background-image: var(--_alpha-slider-track);
-            background-position: var(--_alpha-track-position);
-            background-size: var(--_alpha-track-size);
-        }
-    }
-
-    [part='main-row'],
-    [part='alpha-row'],
-    [part='inputs-row'] {
-        padding-inline: var(--_picker-rows-inline-spacing);
-        column-gap: var(--_picker-column-gap);
-    }
-    
-    [part='main-row'],
-    [part='alpha-row'] {
-        grid-template-columns: var(--_picker-rows-grid-template-columns);
-        
-        input {
-            margin: 0;
-        }
-    }
+    --_empty-swatch-image: #{empty-swatch-image(var(--_empty-swatch))};
+    --_transparency-grid: #{transparency-grid(
+        var-get($theme, 'transparency-grid-odd'),
+        var-get($theme, 'transparency-grid-even')
+    )};
 
     [part='picker'] {
         background: var-get($theme, 'picker-background');
         border-radius: var-get($theme, 'picker-border-radius');
-        box-shadow: var-get($theme, 'picker-elevation');
         border: rem(1px) solid var-get($theme, 'picker-border-color');
-
-        igc-divider {
-            --ig-divider-color: #{var-get($theme, 'swatch-separator-color')};
-
-            grid-column: 1 / -1;
-        }
-
-        &:has([part~='swatches']) {
-            --_input-row-spacing: #{sizable(rem(16px), rem(16px), rem(24px))};
-        }
+        box-shadow: var-get($theme, 'picker-elevation');
     }
 
-    [part='swatches'] {
-        grid-template-columns: repeat(8, var-get($theme, 'swatch-size'));
-    }
+    [part~='preview-initial'],
+    [part~='preview-current'] {
+        @include swatch-preview();
 
-    [part='picker-canvas'] {
-        border-color: var-get($theme, 'picker-canvas-border-color');
-        border-radius: var-get($theme, 'picker-border-radius');
+        inline-size: var-get($theme, 'swatch-size');
+        block-size: var-get($theme, 'swatch-size');
+        border: var(--_anchor-border-size) solid var-get($theme, 'swatch-preview-border-color');
 
-        > igc-picker-canvas {
-            border-radius: calc(var-get($theme, 'picker-border-radius') - rem(1px));
+        &[data-empty] {
+            @include empty-swatch();
         }
     }
 
-    [part='swatch'] {
-        width: var-get($theme, 'swatch-size');
-        height: var-get($theme, 'swatch-size');
-        border: rem(1px) solid var-get($theme, 'swatch-border-color');
-        border-radius: var-get($theme, 'swatch-border-radius');
-        cursor: pointer;
+    [part~='preview-initial'] {
+        border-start-start-radius: var-get($theme, 'anchor-border-radius');
+        border-end-start-radius: var-get($theme, 'anchor-border-radius');
+
+        &:focus-visible {
+            outline: var(--_outline-size) solid var-get($theme, 'label-color');
+            outline-offset: var(--_anchor-border-size);
+        }
+    }
+
+    [part~='preview-current'] {
+        border-inline-start: none;
+        border-start-end-radius: var-get($theme, 'anchor-border-radius');
+        border-end-end-radius: var-get($theme, 'anchor-border-radius');
     }
 
     [part='label'] {
@@ -292,11 +151,6 @@ $input-theme: input-theme.$material;
     }
 }
 
-:host(:dir(rtl)),
-:host([dir='rtl']) {
-    --_slider-track-direction: to left;
-}
-
 :host(:not([disabled], :disabled)) {
     [part~='anchor']:not([part~='input-mode']) {
         &:hover {
@@ -324,10 +178,6 @@ $input-theme: input-theme.$material;
     [part~='label'] {
         color: var-get($theme, 'label-color');
         cursor: pointer;
-    }
-    
-    [part='buttons'] {
-        column-gap: var(--_picker-buttons-gap);
     }
 }
 

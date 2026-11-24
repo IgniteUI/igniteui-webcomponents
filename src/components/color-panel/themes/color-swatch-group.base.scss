@@ -1,0 +1,17 @@
+@use 'styles/utilities' as *;
+
+// The group spans the swatch list, and its swatches take the columns of the
+// list.
+:host {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    row-gap: var(--_swatches-row-gap, #{rem(12px)});
+}
+
+[part~='label'] {
+    @include type-style('subtitle-2');
+
+    grid-column: 1 / -1;
+    margin: 0;
+}

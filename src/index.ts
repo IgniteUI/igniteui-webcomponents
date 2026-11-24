@@ -15,7 +15,10 @@ export { default as IgcCarouselComponent } from './components/carousel/carousel.
 export { default as IgcCarouselIndicatorComponent } from './components/carousel/carousel-indicator.js';
 export { default as IgcCarouselSlideComponent } from './components/carousel/carousel-slide.js';
 export { default as IgcChatComponent } from './components/chat/chat.js';
+export { default as IgcColorPanelComponent } from './components/color-panel/color-panel.js';
 export { default as IgcColorPickerComponent } from './components/color-picker/color-picker.js';
+export { default as IgcColorSwatchComponent } from './components/color-panel/color-swatch.js';
+export { default as IgcColorSwatchGroupComponent } from './components/color-panel/color-swatch-group.js';
 export { default as IgcCheckboxComponent } from './components/checkbox/checkbox.js';
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress.js';
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
@@ -116,6 +119,7 @@ export {
   IgcChatResourceStringEN,
   type IgcChatResourceStrings,
 } from '#internals/i18n/EN/chat.resources.js';
+export type { IgcColorPickerResourceStrings } from './components/color-picker/i18n.js';
 export {
   type ICalendarResourceStrings,
   type ICarouselResourceStrings,
@@ -159,6 +163,7 @@ export type { IgcCheckboxComponentEventMap } from './components/checkbox/checkbo
 export type { IgcCheckboxComponentEventMap as IgcSwitchComponentEventMap } from './components/checkbox/checkbox-base.js';
 export type { IgcChipComponentEventMap } from './components/chip/chip.js';
 export type { IgcComboComponentEventMap } from './components/combo/types.js';
+export type { IgcColorPanelComponentEventMap } from './components/color-panel/color-panel.js';
 export type { IgcColorPickerComponentEventMap } from './components/color-picker/color-picker.js';
 export type { IgcDatePickerComponentEventMap } from './components/date-picker/date-picker.js';
 export type { IgcDateRangePickerComponentEventMap } from './components/date-range-picker/date-range-picker.js';

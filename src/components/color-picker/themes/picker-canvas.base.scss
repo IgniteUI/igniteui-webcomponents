@@ -17,6 +17,21 @@
     cursor: crosshair;
 }
 
+// The OKLCH area paints a canvas, transparent beyond the gamut edge.
+// TODO: provisional until the design team gives an out-of-gamut look.
+:host([space='oklch']) {
+    background-image: none;
+}
+
+canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
 // The marker tokens are emitted on the color picker host and reach here by
 // inheritance. The fallbacks mirror the schema defaults so a standalone canvas
 // still renders a visible marker.

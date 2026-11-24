@@ -1,4 +1,4 @@
-import { clamp } from '#internals/utils/math.js';
+import { clamp, modulo } from '#internals/utils/math.js';
 
 const ONE_THIRD = 1 / 3;
 const TWO_THIRDS = 2 / 3;
@@ -6,6 +6,121 @@ const TWO_THIRDS = 2 / 3;
 export type RGB = [number, number, number];
 export type HSL = [number, number, number];
 export type HSV = [number, number, number];
+export type OKLCH = [number, number, number];
+
+/**
+ * Linear sRGB to LMS: the product of the sRGB to XYZ and the XYZ to LMS
+ * matrices of CSS Color 4, as Firefox and Safari convert.
+ */
+const LINEAR_SRGB_TO_LMS = [
+  [0.41222146947076305, 0.5363325372617348, 0.05144599326750221],
+  [0.21190349581782522, 0.6806995506452344, 0.10739695353694056],
+  [0.08830245919005643, 0.2817188391361215, 0.6299787016738222],
+];
+
+const LMS_TO_OKLAB = [
+  [0.210454268309314, 0.7936177747023054, -0.0040720430116193],
+  [1.9779985324311684, -2.4285922420485799, 0.450593709617411],
+  [0.0259040424655478, 0.7827717124575296, -0.8086757549230774],
+];
+
+function multiply3x3(matrix: number[][], [x, y, z]: number[]): number[] {
+  return matrix.map((row) => row[0] * x + row[1] * y + row[2] * z);
+}
+
+function invert3x3([
+  [a, b, c],
+  [d, e, f],
+  [g, h, i],
+]: readonly number[][]): number[][] {
+  const det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+
+  return [
+    [(e * i - f * h) / det, (c * h - b * i) / det, (b * f - c * e) / det],
+    [(f * g - d * i) / det, (a * i - c * g) / det, (c * d - a * f) / det],
+    [(d * h - e * g) / det, (b * g - a * h) / det, (a * e - b * d) / det],
+  ];
+}
+
+// The exact inverses, so an OKLCH color converts back to the same sRGB.
+/** OKLab to the cube roots of LMS. */
+export const OKLAB_TO_LMS: readonly number[][] = invert3x3(LMS_TO_OKLAB);
+/** LMS to linear sRGB. */
+export const LMS_TO_LINEAR_SRGB: readonly number[][] =
+  invert3x3(LINEAR_SRGB_TO_LMS);
+
+// Scalars, not arrays: a paint of the OKLCH area converts every pixel. Each
+// name gives the output and the input: `lFromA` is the weight of `a` in L.
+const [
+  [lFromLightness, lFromA, lFromB],
+  [mFromLightness, mFromA, mFromB],
+  [sFromLightness, sFromA, sFromB],
+] = OKLAB_TO_LMS;
+const [
+  [redFromL, redFromM, redFromS],
+  [greenFromL, greenFromM, greenFromS],
+  [blueFromL, blueFromM, blueFromS],
+] = LMS_TO_LINEAR_SRGB;
+
+/**
+ * The linear sRGB channels (0-1) of an OKLab color with a lightness of 0-1.
+ * A color outside sRGB has channels outside 0-1. Writes into `out`, so a loop
+ * over many pixels makes no arrays.
+ */
+export function oklabToLinearSrgb(
+  lightness: number,
+  a: number,
+  b: number,
+  out: number[] = [0, 0, 0]
+): number[] {
+  const lRoot = lFromLightness * lightness + lFromA * a + lFromB * b;
+  const mRoot = mFromLightness * lightness + mFromA * a + mFromB * b;
+  const sRoot = sFromLightness * lightness + sFromA * a + sFromB * b;
+  const long = lRoot * lRoot * lRoot;
+  const medium = mRoot * mRoot * mRoot;
+  const short = sRoot * sRoot * sRoot;
+
+  out[0] = redFromL * long + redFromM * medium + redFromS * short;
+  out[1] = greenFromL * long + greenFromM * medium + greenFromS * short;
+  out[2] = blueFromL * long + blueFromM * medium + blueFromS * short;
+  return out;
+}
+
+/** The cosine and sine of a hue in degrees: its direction on the a-b plane. */
+export function hueDirection(hue: number): [cos: number, sin: number] {
+  const angle = (hue * Math.PI) / 180;
+  return [Math.cos(angle), Math.sin(angle)];
+}
+
+/** The alpha part of a CSS color function, such as ` / 0.5`, or `''` for none. */
+export function alphaPart(alpha: number | null): string {
+  return alpha === null ? '' : ` / ${alpha}`;
+}
+
+/** Formats RGB channels (0-255) and an optional alpha as a CSS `rgb()` color. */
+export function rgbString(rgb: RGB, alpha: number | null = null): string {
+  const [r, g, b] = rgb.map(Math.round);
+  return `rgb(${r} ${g} ${b}${alphaPart(alpha)})`;
+}
+
+/** An sRGB channel (0-255) in linear light (0-1). */
+export function linearize(channel: number): number {
+  const c = channel / 255;
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
+/**
+ * A channel in linear light (0-1) as an sRGB channel (0-255): the inverse of
+ * `linearize`.
+ */
+export function delinearize(channel: number): number {
+  const c =
+    channel <= 0.0031308
+      ? channel * 12.92
+      : 1.055 * Math.pow(channel, 1 / 2.4) - 0.055;
+
+  return c * 255;
+}
 
 export const converter = Object.freeze({
   rgb: {
@@ -81,6 +196,26 @@ export const converter = Object.freeze({
       }
 
       return [h * 360, s * 100, v * 100];
+    },
+    /** Lightness (0-100), chroma (0 to about 0.32 in sRGB) and hue (0-360). */
+    oklch: (rgb: RGB): OKLCH => {
+      const lms = multiply3x3(LINEAR_SRGB_TO_LMS, rgb.map(linearize));
+      const [l, a, b] = multiply3x3(LMS_TO_OKLAB, lms.map(Math.cbrt));
+      const h = (Math.atan2(b, a) * 180) / Math.PI;
+
+      return [l * 100, Math.hypot(a, b), modulo(h, 360)];
+    },
+  },
+  oklch: {
+    /**
+     * The sRGB channels (0-255) of a lightness (0-100), chroma and hue (0-360).
+     * A color outside sRGB gives channels outside 0-255.
+     */
+    rgb: ([l, c, h]: OKLCH): RGB => {
+      const [cos, sin] = hueDirection(h);
+      const linear = oklabToLinearSrgb(l / 100, c * cos, c * sin);
+
+      return linear.map(delinearize) as RGB;
     },
   },
   hsl: {

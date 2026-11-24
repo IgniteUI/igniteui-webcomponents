@@ -1,7 +1,21 @@
-import { clamp } from '#internals/utils/math.js';
+import { clamp, roundPrecise } from '#internals/utils/math.js';
 import type { ColorFormat } from '../types.js';
 import { tryParseColor } from './common.js';
-import { converter, type HSL, type HSV, type RGB } from './converters.js';
+import {
+  alphaPart,
+  converter,
+  type HSL,
+  type HSV,
+  type OKLCH,
+  type RGB,
+  rgbString,
+} from './converters.js';
+import {
+  cuspHsvHue,
+  gamutChroma,
+  isAchromatic,
+  pureHueOklch,
+} from './oklch.js';
 
 export type { ColorFormat };
 
@@ -23,19 +37,56 @@ function makeCanvasContext() {
 }
 export const getContext = makeCanvasContext();
 
-/** Formats RGB channels (0-255) and an optional alpha as a CSS `rgb()` color. */
-export function rgbString(rgb: RGB, alpha: number | null = null): string {
-  const [r, g, b] = rgb.map(Math.round);
-  return `rgb(${r} ${g} ${b}${alpha === null ? '' : ` / ${alpha}`})`;
+/** The color string shape of each format. Shown while a color text is empty. */
+export const formatPlaceholders: Record<ColorFormat, string> = {
+  hex: '#rrggbb',
+  rgb: 'rgb(r g b)',
+  hsl: 'hsl(h s% l%)',
+  oklch: 'oklch(l% c h)',
+};
+
+/**
+ * The formats in the key order of `formatPlaceholders`, which is the order of
+ * the format select.
+ */
+export const colorFormats = Object.keys(
+  formatPlaceholders
+) as readonly ColorFormat[];
+
+/**
+ * A color with its alpha in one notation, to compare two colors. The empty
+ * key is no color.
+ */
+export type ColorKey = string;
+
+export function colorKey(color: ColorModel): ColorKey {
+  return color.asString('rgb', true);
+}
+
+/** The color with an opaque alpha. An empty color gives white. */
+export function opaqueColor(color: ColorModel): string {
+  return rgbString(color.toRGB());
 }
 
 /**
- * A color that keeps its RGB, HSL and HSV values in sync.
+ * The color of a committed color text. An empty text gives an empty color. An
+ * invalid text gives `null`: the input shows the current color again.
+ */
+export function parseTypedColor(text: string | undefined): ColorModel | null {
+  const color = ColorModel.parse(text ?? '');
+  return color.isEmpty && text?.trim() ? null : color;
+}
+
+/**
+ * A color that keeps its RGB, HSL, HSV and OKLCH values in sync. A gray keeps
+ * the hue that the user set, and the HSV and OKLCH hues of a gray match
+ * through the cusp of the hue.
  */
 export class ColorModel {
   private _rgb: RGB;
   private _hsl: HSL;
   private _hsv: HSV;
+  private _oklch: OKLCH;
   private _alpha: number;
   private _empty = false;
 
@@ -56,8 +107,9 @@ export class ColorModel {
   }
 
   /**
-   * Parses a hex, rgb(a), hsl(a) or named color.
-   * An empty or invalid string gives an empty color.
+   * Parses a CSS color into sRGB. A color outside the sRGB gamut clips. An
+   * empty or invalid string, or a color that depends on its context, such as
+   * `currentcolor`, gives an empty color.
    */
   public static parse(color: string): ColorModel {
     const parsed = tryParseColor(color, getContext());
@@ -93,6 +145,7 @@ export class ColorModel {
     this._rgb = [value[0], value[1], value[2]];
     this._hsl = converter.rgb.hsl(this._rgb);
     this._hsv = converter.rgb.hsv(this._rgb);
+    this._oklch = this._oklchFromRgb();
     this._alpha = clamp(alpha, 0, 1);
   }
 
@@ -101,12 +154,11 @@ export class ColorModel {
     return this._empty;
   }
 
-  /** Rebuilds the two color spaces that were not the one just written to. */
+  /** Rebuilds the color spaces that were not the one just written to. */
   private _syncFrom(space: ColorSpace): void {
     switch (space) {
       case 'rgb':
-        this._hsl = converter.rgb.hsl(this._rgb);
-        this._hsv = converter.rgb.hsv(this._rgb);
+        this._syncHslHsv();
         break;
       case 'hsl':
         this._rgb = converter.hsl.rgb(this._hsl);
@@ -116,6 +168,46 @@ export class ColorModel {
         this._rgb = converter.hsv.rgb(this._hsv);
         this._hsl = converter.hsv.hsl(this._hsv);
         break;
+    }
+
+    this._oklch = this._oklchFromRgb();
+  }
+
+  /** Rebuilds HSL and HSV from RGB. */
+  private _syncHslHsv(): void {
+    this._hsl = converter.rgb.hsl(this._rgb);
+    this._hsv = converter.rgb.hsv(this._rgb);
+  }
+
+  /** The OKLCH values of the RGB channels. A gray takes the hue of its HSV cusp. */
+  private _oklchFromRgb(): OKLCH {
+    const oklch = converter.rgb.oklch(this._rgb);
+
+    if (isAchromatic(oklch[1])) {
+      oklch[1] = 0;
+      oklch[2] = pureHueOklch(this._hsv[0])[2];
+    }
+
+    return oklch;
+  }
+
+  /** Rebuilds RGB, HSL and HSV. A gray takes the HSV hue of its OKLCH cusp. */
+  private _syncFromOklch(): void {
+    const rgb = converter.oklch
+      .rgb(this._oklch)
+      .map((channel) => clamp(channel, 0, 255)) as RGB;
+    const gray = isAchromatic(this._oklch[1]);
+
+    if (gray) {
+      // Rounding leaves the channels a little apart, which gives a gray a hue.
+      rgb.fill((rgb[0] + rgb[1] + rgb[2]) / 3);
+    }
+
+    this._rgb = rgb;
+    this._syncHslHsv();
+
+    if (gray) {
+      this._hsl[0] = this._hsv[0] = cuspHsvHue(this._oklch[2]);
     }
   }
 
@@ -128,7 +220,7 @@ export class ColorModel {
   ): void {
     this._empty = false;
 
-    // Safe to hold onto: `_syncFrom` only replaces the *other* two tuples.
+    // Safe to hold onto: `_syncFrom` only replaces the *other* tuples.
     const channels =
       space === 'rgb' ? this._rgb : space === 'hsl' ? this._hsl : this._hsv;
 
@@ -223,6 +315,44 @@ export class ColorModel {
     this._syncFrom('hsv');
   }
 
+  /** Writes OKLCH values and returns whether the gamut edge cut the chroma. */
+  private _setOklch(color: OKLCH): boolean {
+    const [lightness, chroma, hue] = color;
+    const inGamut = gamutChroma(color);
+
+    this._empty = false;
+    this._oklch = [lightness, inGamut, hue];
+    this._syncFromOklch();
+    return inGamut < chroma;
+  }
+
+  /**
+   * Sets the OKLCH lightness and chroma in one update and keeps the hue and
+   * alpha. A chroma beyond the sRGB gamut is cut back to the gamut edge.
+   *
+   * @param lightness - OKLCH lightness (0-100)
+   * @param chroma - OKLCH chroma (0 and up)
+   * @returns Whether the chroma was cut.
+   */
+  public setLightnessAndChroma(lightness: number, chroma: number): boolean {
+    return this._setOklch([
+      clamp(lightness, 0, 100),
+      Math.max(chroma, 0),
+      this._oklch[2],
+    ]);
+  }
+
+  /**
+   * Sets the OKLCH hue (0-360) and keeps the lightness and alpha. A chroma
+   * beyond the sRGB gamut at the new hue is cut back to the gamut edge.
+   *
+   * @returns Whether the chroma was cut.
+   */
+  public setOklchHue(hue: number): boolean {
+    const [lightness, chroma] = this._oklch;
+    return this._setOklch([lightness, chroma, clamp(hue, 0, 360)]);
+  }
+
   /**
    * Converts the color to a CSS color string. An empty color renders as an
    * empty string.
@@ -249,13 +379,25 @@ export class ColorModel {
         return rgbString(this._rgb, alpha);
       case 'hsl': {
         const [h, s, l] = this._hsl.map(Math.round);
-        return `hsl(${h} ${s}% ${l}%${alpha === null ? '' : ` / ${alpha}`})`;
+        return `hsl(${h} ${s}% ${l}%${alphaPart(alpha)})`;
+      }
+      case 'oklch': {
+        // The fewest decimals that give every 8-bit color back in Firefox and
+        // Safari. Chromium uses other OKLab matrices and can be one step off.
+        const [l, c, h] = converter.rgb.oklch(this._rgb);
+        // A gray has no hue.
+        const hue = isAchromatic(c) ? 0 : roundPrecise(h, 2) % 360;
+        return `oklch(${roundPrecise(l, 2)}% ${roundPrecise(c, 5)} ${hue}${alphaPart(alpha)})`;
       }
     }
   }
 
   public clone(): ColorModel {
     const color = new ColorModel(this._rgb, this._alpha);
+    // The other spaces keep the hue of a gray.
+    color._hsl = [...this._hsl];
+    color._hsv = [...this._hsv];
+    color._oklch = [...this._oklch];
     color._empty = this._empty;
     return color;
   }
@@ -279,5 +421,10 @@ export class ColorModel {
 
   public toHSV(): HSV {
     return [...this._hsv];
+  }
+
+  /** Lightness (0-100), chroma and hue (0-360). A gray keeps its hue. */
+  public toOKLCH(): OKLCH {
+    return [...this._oklch];
   }
 }

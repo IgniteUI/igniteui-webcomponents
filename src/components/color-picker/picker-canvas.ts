@@ -1,5 +1,5 @@
 import { ColorPickerResourceStringsEN } from 'igniteui-i18n-core';
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
@@ -8,7 +8,13 @@ import {
   arrowLeft,
   arrowRight,
   arrowUp,
+  endKey,
+  homeKey,
+  pageDownKey,
+  pageUpKey,
+  shiftKey,
 } from '#internals/controllers/key-bindings.js';
+import { addResizeObserverController } from '#internals/controllers/resize-observer.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
@@ -19,6 +25,7 @@ import {
 import { asPercent, clamp } from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
+import { type AreaSpace, paintOklchArea } from './oklch.js';
 import { styles } from './themes/picker-canvas.base.css.js';
 
 export interface IgcPickerCanvasEventMap {
@@ -36,20 +43,62 @@ type CanvasGeometry = {
   marker: { width: number; height: number };
 };
 
+/**
+ * The keys that move the marker, and their steps in percent of each axis.
+ * An arrow moves the marker in its own direction, also in RTL, because the
+ * plane does not mirror.
+ */
+const KEY_STEPS: ReadonlyArray<
+  readonly [keys: string | string[], dx: number, dy: number]
+> = [
+  [arrowLeft, -1, 0],
+  [arrowRight, 1, 0],
+  [arrowUp, 0, -1],
+  [arrowDown, 0, 1],
+  [[shiftKey, arrowLeft], -10, 0],
+  [[shiftKey, arrowRight], 10, 0],
+  [[shiftKey, arrowUp], 0, -10],
+  [[shiftKey, arrowDown], 0, 10],
+  [pageUpKey, 0, -10],
+  [pageDownKey, 0, 10],
+  [homeKey, -10, 0],
+  [endKey, 10, 0],
+];
+
+/**
+ * Moves a marker offset by `delta` percent of `size`, to a whole percent
+ * within the canvas. `half` is the half-marker offset of the axis.
+ */
+function stepOffset(
+  offset: number,
+  half: number,
+  size: number,
+  delta: number
+): number {
+  const percent = clamp(
+    Math.round(asPercent(offset + half, size) + delta),
+    0,
+    100
+  );
+
+  return (percent / 100) * size - half;
+}
+
 /* blazorSuppress */
 /**
- * The saturation/value plane of {@link IgcColorPickerComponent} and the marker
- * that moves across it.
+ * The area of the color panel and the marker that moves across it: the HSV
+ * saturation by value, or the OKLCH lightness by chroma at a hue.
  *
- * An internal building block of `igc-color-picker` - it is registered so the
- * picker can render it, but it is not part of the public component surface and
+ * An internal building block of the color panel - it is registered so the
+ * panel can render it, but it is not part of the public component surface and
  * is not exported from the package entry point.
  *
  * @element igc-picker-canvas
  *
  * @fires igcColorPicked - Emitted when a color is picked on the canvas. Does not bubble.
+ * @fires change - Emitted when a change ends, as for a range input: at the end of a drag and after each key.
  *
- * @csspart marker - The draggable marker indicating the picked saturation/value.
+ * @csspart marker - The draggable marker on the area that shows the picked color.
  * @csspart dragging - Present on the marker while it is being dragged.
  */
 export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPickerCanvasEventMap>(
@@ -65,10 +114,28 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
   @query('[part~="marker"]', true)
   private readonly _marker?: HTMLDivElement;
 
+  @query('canvas')
+  private readonly _areaCanvas?: HTMLCanvasElement;
+
   private _dragGeometry?: CanvasGeometry;
+
+  private _paintFrame = 0;
+
+  private _image?: ImageData;
 
   @state()
   private _dragging = false;
+
+  /**
+   * The color space of the area: HSV saturation by value, or OKLCH lightness
+   * by chroma at `hue`.
+   */
+  @property({ reflect: true })
+  public space: AreaSpace = 'hsv';
+
+  /** The OKLCH hue that the OKLCH area shows. */
+  @property({ type: Number, attribute: false })
+  public hue = 0;
 
   @property()
   public currentColor = '';
@@ -76,8 +143,8 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
   /**
    * The color the marker is filled with.
    *
-   * Distinct from `currentColor`: that one is the pure hue the saturation/value
-   * plane is built from, while this is the color actually picked out of it.
+   * Distinct from `currentColor`: that one is the pure hue the area is built
+   * from, while this is the color actually picked out of it.
    */
   @property()
   public markerColor = '';
@@ -89,17 +156,17 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
   public y = 0;
 
   /**
-   * The HSV saturation the marker currently sits at (0-100).
-   *
-   * The canvas positions the marker in pixels and has no notion of the color
-   * space behind it, so the owning picker feeds the saturation/value pair back
-   * in purely to give the marker an announceable value.
+   * How far across the area the marker sits (0-100), the `aria-valuenow` of
+   * the marker: the HSV saturation, or the OKLCH chroma as a share of the
+   * chroma axis. The canvas positions the marker in pixels, so the color panel
+   * gives it both axes.
    */
   @property({ type: Number, attribute: false })
   public saturation = 0;
 
   /**
-   * The HSV value the marker currently sits at (0-100).
+   * How far up the area the marker sits (0-100): the HSV value, or the OKLCH
+   * lightness.
    *
    * Named for the B of HSB rather than the V of HSV - on a custom element a
    * bare `value` reads as a form value, which this is not.
@@ -113,12 +180,11 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
     ColorPickerResourceStringsEN.color_picker_canvas_label!;
 
   /**
-   * The format of the marker `aria-valuetext`. `{0}` is the saturation and
-   * `{1}` the brightness, both as whole percentages.
+   * The `aria-valuetext` of the marker. Without it, the marker gives the
+   * saturation and the brightness in English.
    */
   @property()
-  public markerValueFormat: string =
-    ColorPickerResourceStringsEN.color_picker_canvas_value!;
+  public markerValueText?: string;
 
   constructor() {
     super();
@@ -131,14 +197,31 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
       this._handleLostPointerCapture
     );
 
-    addKeybindings(this, { bindingDefaults: { repeat: true } })
-      .set(arrowDown, this._onArrowKey.bind(this, { dx: 0, dy: 1 }))
-      .set(arrowUp, this._onArrowKey.bind(this, { dx: 0, dy: -1 }))
-      .set(arrowLeft, this._onArrowKey.bind(this, { dx: -1, dy: 0 }))
-      .set(arrowRight, this._onArrowKey.bind(this, { dx: 1, dy: 0 }));
+    const bindings = addKeybindings(this, {
+      bindingDefaults: { repeat: true },
+    });
+
+    for (const [keys, dx, dy] of KEY_STEPS) {
+      bindings.set(keys, () => this._step(dx, dy));
+    }
+
+    addResizeObserverController(this, {
+      callback: () => this._schedulePaint(),
+      requestUpdate: false,
+    });
+  }
+
+  public override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    cancelAnimationFrame(this._paintFrame);
+    this._paintFrame = 0;
   }
 
   protected override updated(properties: PropertyValues<this>): void {
+    if (properties.has('space') || properties.has('hue')) {
+      this._schedulePaint();
+    }
+
     if (properties.has('currentColor')) {
       this.style.color = this.currentColor;
     }
@@ -173,7 +256,11 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
       return;
     }
 
-    // Emit first: the picker's writes then join this update, not a second one.
+    this.x = nextX;
+    this.y = nextY;
+
+    // After the move: the color panel can move the marker again, to stop it
+    // at the gamut edge. Its writes join this update.
     this.emitEvent('igcColorPicked', {
       detail: {
         x: Math.round(asPercent(nextX + marker.width, rect.width)),
@@ -181,13 +268,67 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
       },
       bubbles: false,
     });
-
-    this.x = nextX;
-    this.y = nextY;
   }
 
-  private _onArrowKey({ dx, dy }: { dx: number; dy: number }): void {
-    this._commitPosition(this.x + dx, this.y + dy, this._measure());
+  /** Paints the OKLCH area at most once per frame. */
+  private _schedulePaint(): void {
+    if (this.space !== 'oklch' || this._paintFrame) {
+      return;
+    }
+
+    this._paintFrame = requestAnimationFrame(() => {
+      this._paintFrame = 0;
+      this._paint();
+    });
+  }
+
+  /** Paints the OKLCH area in CSS pixels; the browser scales it up. */
+  private _paint(): void {
+    const canvas = this._areaCanvas;
+    const context = canvas?.getContext('2d');
+    const { clientWidth: width, clientHeight: height } = this;
+
+    if (!(canvas && context && width && height)) {
+      return;
+    }
+
+    // A write to the canvas size clears it, even with the same size.
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    if (this._image?.width !== width || this._image.height !== height) {
+      this._image = context.createImageData(width, height);
+    }
+
+    paintOklchArea(this._image, this.hue);
+    context.putImageData(this._image, 0, 0);
+  }
+
+  /**
+   * Moves the marker by percentages of the canvas, so a step is the same at
+   * every canvas size. Only the axis that moves snaps to a whole percent.
+   */
+  private _step(dx: number, dy: number): void {
+    const geometry = this._measure();
+    const { rect, marker } = geometry;
+
+    // A hidden canvas has no size to step against.
+    if (!(rect.width && rect.height)) {
+      return;
+    }
+
+    this._commitPosition(
+      dx ? stepOffset(this.x, marker.width, rect.width, dx) : this.x,
+      dy ? stepOffset(this.y, marker.height, rect.height, dy) : this.y,
+      geometry
+    );
+    this._emitChange();
+  }
+
+  private _emitChange(): void {
+    this.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
   private _move(event: PointerEvent): void {
@@ -218,6 +359,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
     this._dragGeometry = undefined;
     this._dragging = false;
     this._marker?.focus();
+    this._emitChange();
   }
 
   public getMarkerDimensions(): { width: number; height: number } {
@@ -242,6 +384,7 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
     // ARIA has no 2D slider, so `aria-valuetext` carries both axes.
     // Otherwise a vertical move is announced as "no change".
     return html`
+      ${this.space === 'oklch' ? html`<canvas aria-hidden="true"></canvas>` : nothing}
       <div
         part=${partMap({ marker: true, dragging: this._dragging })}
         style=${styles}
@@ -251,11 +394,14 @@ export default class IgcPickerCanvasComponent extends EventEmitterMixin<IgcPicke
         aria-valuemin="0"
         aria-valuemax="100"
         aria-valuenow=${saturation}
-        aria-valuetext=${formatString(
-          this.markerValueFormat,
-          saturation,
-          brightness
-        )}
+        aria-valuetext=${
+          this.markerValueText ??
+          formatString(
+            ColorPickerResourceStringsEN.color_picker_canvas_value!,
+            saturation,
+            brightness
+          )
+        }
       ></div>
     `;
   }

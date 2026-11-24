@@ -1,28 +1,27 @@
-import { ColorPickerResourceStringsEN } from 'igniteui-i18n-core';
 import { html, nothing, type PropertyValues, type TemplateResult } from 'lit';
-import { property, query } from 'lit/decorators.js';
-import { cache } from 'lit/directives/cache.js';
-import { guard } from 'lit/directives/guard.js';
+import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { IgcBaseComboBoxComponent } from '#internals/bases/combo-box.js';
 import {
+  type ColorPickerContext,
+  colorPickerContext,
+} from '#internals/context.js';
+import {
   addAriaProjector,
   ariaBindings,
   HELPER_TEXT_ID,
   hostAria,
 } from '#internals/controllers/aria-projection.js';
+import { addContextProvider } from '#internals/controllers/context-provider.js';
 import {
   addKeybindings,
   altKey,
   arrowDown,
-  arrowRight,
   arrowUp,
-  endKey,
   escapeKey,
-  isKey,
 } from '#internals/controllers/key-bindings.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
@@ -34,33 +33,45 @@ import type { FormValueTransformers } from '#internals/mixins/forms/form-transfo
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
-import { isEmpty } from '#internals/utils/arrays.js';
+import { renderClearIcon } from '#internals/templates/slotted-icon.js';
 import {
   addSafeEventListener,
   focusLeftHost,
-  getElementFromPath,
   stopPropagation,
 } from '#internals/utils/events.js';
 import { bindIf } from '#internals/utils/lit.js';
-import { asNumber, clamp } from '#internals/utils/math.js';
 import { all } from '#themes/color-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
-import IgcIconButtonComponent from '../button/icon-button.js';
-import IgcDividerComponent from '../divider/divider.js';
+import { renderConfirmButtons } from '../button/confirm-buttons.js';
+import IgcColorPanelComponent from '../color-panel/color-panel.js';
+import {
+  panelColor,
+  panelParts,
+  resolveView,
+  syncMarker,
+} from '../color-panel/common.js';
 import IgcFocusTrapComponent from '../focus-trap/focus-trap.js';
+import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent from '../popover/popover.js';
-import IgcSelectItemComponent from '../select/select-item.js';
-import IgcSelectComponent from '../select/select.js';
-import type { ColorFormat, ColorPickerMode } from '../types.js';
+import type {
+  ColorFormat,
+  ColorPanelView,
+  ColorPickerMode,
+  ColorPickerSelectionCommit,
+} from '../types.js';
 import IgcValidationContainerComponent from '../validation-container/validation-container.js';
 import IgcVisuallyHiddenComponent from '../visually-hidden/visually-hidden.js';
-import { ColorModel, rgbString } from './model.js';
-import IgcPickerCanvasComponent, {
-  type PickerCanvasEventDetail,
-} from './picker-canvas.js';
+import { colorPickerI18nConfig } from './i18n.js';
+import {
+  ColorModel,
+  colorKey,
+  formatPlaceholders,
+  parseTypedColor,
+  opaqueColor,
+} from './model.js';
 import { styles } from './themes/color-picker.base.css.js';
 import { styles as shared } from './themes/shared/color-picker.common.css.js';
 import { colorPickerValidators } from './validators.js';
@@ -78,48 +89,21 @@ const Slots = setSlots(
   'value-missing',
   'custom-error',
   'invalid',
-  'helper-text'
+  'helper-text',
+  'clear-icon',
+  'footer'
 );
 
-const i18n = {
-  defaultEN: ColorPickerResourceStringsEN,
-};
-
-/** The color string shape of each format. Shown while the input is empty. */
-const formatPlaceholders: Record<ColorFormat, string> = {
-  hex: '#rrggbb',
-  rgb: 'rgb(r g b)',
-  hsl: 'hsl(h s% l%)',
-};
-
-/** The alpha text is `<digits>%`. An edit removes every other character. */
-const nonDigits = /\D/g;
-
-/** The last caret offset in `<digits>%`, the position in front of the `%`. */
-function caretLimit(text: string): number {
-  return Math.max(text.length - 1, 0);
-}
-
-/**
- * The EyeDropper API subset in use. The baseline DOM typings do not include it.
- * Firefox and Safari do not implement it.
- */
-interface EyeDropperLike {
-  open(): Promise<{ sRGBHex: string }>;
-}
-
-type EyeDropperConstructor = new () => EyeDropperLike;
-
-function getEyeDropper(): EyeDropperConstructor | undefined {
-  return (globalThis as { EyeDropper?: EyeDropperConstructor }).EyeDropper;
-}
+/** The parts of the color panel that the picker exposes as its own. */
+const exportedPanelParts = panelParts.join(', ');
 
 /**
  * Color input component.
  *
- * The user picks a color with the HSV saturation/value canvas, the hue slider
- * and the optional alpha slider. The user can also type a color string: hex,
- * rgb(a), hsl(a) or a named CSS color.
+ * The user picks a color with the color area, the hue slider and the optional
+ * alpha slider. The area is saturation by value, or lightness by chroma at the
+ * OKLCH hue in the `oklch` format. The user can also type any CSS color string,
+ * such as hex, `rgb()`, `hsl()`, `oklch()` or a named color.
  *
  * The component supports pre-defined swatches and the native EyeDropper API,
  * where the browser provides one. The anchor is a trigger button
@@ -131,22 +115,31 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
  * @slot custom-error - Renders content when setCustomValidity(message) is set.
  * @slot invalid - Renders content when the component is in invalid state (validity.valid = false).
  * @slot helper-text - Renders content below the picker.
+ * @slot clear-icon - Renders the clear icon in input mode.
+ * @slot - The color swatches and swatch groups. The picker shows them in the swatch list of its popup.
+ * @slot footer - Renders content below the color panel in the popup. In the confirm mode of `selectionCommit`, the preview, Cancel and Apply show after it.
  *
  * @fires igcOpening - Emitted before the user opens the picker dropdown. Cancelable.
  * @fires igcOpened - Emitted after the picker dropdown opens on a user action.
  * @fires igcClosing - Emitted before the user closes the picker dropdown. Cancelable.
  * @fires igcClosed - Emitted after the picker dropdown closes on a user action.
- * @fires igcInput - Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper.
- * @fires igcChange - Emitted when the focus leaves the component after the user changed the color.
+ * @fires igcInput - Emitted when the user changes the color with the canvas, the sliders, the alpha input, a swatch or the eyedropper. In the confirm mode of `selectionCommit`, these changes emit nothing.
+ * @fires igcChange - Emitted when the focus leaves the component after the user changed the color, and when the user applies the draft of the confirm mode.
  *
  * @csspart color-picker - The wrapper of the anchor, the label and the helper text.
  * @csspart anchor - The trigger element that opens the picker (the button in default mode, or the swatch prefix in input mode).
  * @csspart empty - Applied alongside `anchor` when no color value is set, rendering a checkered background.
  * @csspart input-mode - Added to the anchor part in input mode.
- * @csspart label - The label rendered after the anchor in default mode.
+ * @csspart label - The label: the element after the anchor in default mode, or the label of the text field in input mode.
+ * @csspart field - The text field in input mode. Set the `--ig-input-group-*` variables on it to style the field and not the inputs in the picker.
+ * @csspart input - The container of the text field in input mode.
+ * @csspart native-input - The native input of the text field in input mode.
+ * @csspart prefix - The prefix wrapper of the text field in input mode. It holds the anchor.
+ * @csspart suffix - The suffix wrapper of the text field in input mode. It holds the clear icon.
+ * @csspart clear-icon - The clear icon wrapper in input mode. It shows while a color is set.
  * @csspart picker - The popover container holding the canvas, sliders, inputs and swatches.
- * @csspart picker-canvas - The saturation and value canvas.
- * @csspart marker - The marker on the canvas that shows the saturation and value.
+ * @csspart picker-canvas - The area: saturation by value, or lightness by chroma in the `oklch` format.
+ * @csspart marker - The marker on the area that shows the picked color.
  * @csspart dragging - Added to the marker part while the user drags it.
  * @csspart main-row - The row containing the hue slider and the copy/eyedropper buttons.
  * @csspart alpha-row - The row containing the alpha slider and input, rendered when `show-alpha` is set.
@@ -158,8 +151,24 @@ function getEyeDropper(): EyeDropperConstructor | undefined {
  * @csspart copy - The button that copies the current color value to the clipboard.
  * @csspart eye-dropper - The button that activates the EyeDropper API.
  * @csspart format-select - The select control used to switch the color string format.
- * @csspart swatches - The container of the pre-defined color swatches.
- * @csspart swatch - An individual color swatch button.
+ * @csspart swatches - The swatch list.
+ * @csspart swatch - A swatch of the `swatches` property.
+ * @csspart selected - Added to the swatch part when the swatch has the color of the value.
+ * @csspart view-switcher - The view switcher, rendered when `views` has both views.
+ * @csspart view-button - A button of the view switcher.
+ * @csspart active - Added to the view-button part of the view on screen.
+ * @csspart contrast - The contrast readout, rendered when `contrast-against` has a color and the value is not empty.
+ * @csspart contrast-ratio - The contrast ratio of the value over `contrast-against`.
+ * @csspart contrast-mark - A WCAG level of the contrast readout, AA or AAA.
+ * @csspart pass - Added to the contrast-mark part of a level that the ratio passes.
+ * @csspart fail - Added to the contrast-mark part of a level that the ratio fails.
+ * @csspart footer - The container below the color panel in the popup. It holds the `footer` slot and, in the confirm mode, the actions.
+ * @csspart actions - The container of the preview, Cancel and Apply in the confirm mode.
+ * @csspart preview - The preview of the initial color and the draft in the confirm mode.
+ * @csspart preview-initial - The button that shows the initial color and restores it.
+ * @csspart preview-current - The color of the draft.
+ * @csspart cancel-button - The Cancel button of the confirm mode.
+ * @csspart apply-button - The Apply button of the confirm mode.
  *
  * @cssproperty --ig-helper-min-lines - The minimum number of lines below the control for the helper text and the validation messages: `1`, `2` or `3`. A message that shows then uses space that is already there, so the content below does not move. Set it on a container, such as a form, to apply it to all the controls in it. Default is `0`.
  *
@@ -173,7 +182,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
       typeof IgcBaseComboBoxComponent
     >(IgcBaseComboBoxComponent)
   ),
-  i18n
+  colorPickerI18nConfig
 ) {
   public static readonly tagName = 'igc-color-picker';
   public static override styles = [componentBase, styles, shared];
@@ -185,12 +194,9 @@ export default class IgcColorPickerComponent extends I18nMixin(
       IgcInputComponent,
       IgcPopoverComponent,
       IgcFocusTrapComponent,
-      IgcSelectComponent,
-      IgcSelectItemComponent,
-      IgcPickerCanvasComponent,
-      IgcDividerComponent,
       IgcButtonComponent,
-      IgcIconButtonComponent,
+      IgcIconComponent,
+      IgcColorPanelComponent,
       IgcValidationContainerComponent,
       IgcVisuallyHiddenComponent
     );
@@ -210,8 +216,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
     // The same color in another format is the same value.
     isSameValue: (a, b) =>
       a === b ||
-      ColorModel.parse(a).asString('rgb', true) ===
-        ColorModel.parse(b).asString('rgb', true),
+      colorKey(ColorModel.parse(a)) === colorKey(ColorModel.parse(b)),
   };
 
   protected override readonly _formValue = createFormValueState(this, {
@@ -219,23 +224,42 @@ export default class IgcColorPickerComponent extends I18nMixin(
     transformers: IgcColorPickerComponent._transformers,
   });
 
-  private readonly _alphaInputRef = createRef<IgcInputComponent>();
-  private readonly _canvasRef = createRef<IgcPickerCanvasComponent>();
+  private readonly _panelRef = createRef<IgcColorPanelComponent>();
   private readonly _anchorRef = createRef<
     HTMLButtonElement | IgcInputComponent
   >();
 
-  private readonly _supportsEyeDropper = Boolean(getEyeDropper());
   private _color = ColorModel.empty();
 
-  /** The last value written for each host custom property. */
-  private readonly _appliedProperties = new Map<string, string>();
+  /** The color in the popup in the confirm mode, until Apply. */
+  @state()
+  private _draft?: ColorModel;
+
+  private readonly _themes = addThemingController(this, all);
+
+  private _activeView: ColorPanelView = 'gradient';
+
+  /** The link of the color panel to this picker. */
+  private readonly _pickerContext: ColorPickerContext = {
+    setFormat: (format) => {
+      this.format = format;
+    },
+    setActiveView: (view) => {
+      this.activeView = view;
+    },
+    isConfirmMode: () => this._isConfirmMode,
+    applyDraft: () => this._handleApply(),
+  };
 
   @query(`#${HELPER_TEXT_ID}`)
   private readonly _helperText!: IgcValidationContainerComponent | null;
 
   private get _isInputMode(): boolean {
     return this.mode === 'input';
+  }
+
+  private get _isConfirmMode(): boolean {
+    return this.selectionCommit === 'confirm';
   }
 
   /** The text input of input mode. After a mode change, the ref keeps the old anchor until the render. */
@@ -259,16 +283,26 @@ export default class IgcColorPickerComponent extends I18nMixin(
   public label?: string;
 
   /**
-   * The value of the component as a CSS color string. Accepts hex, rgb(a),
-   * hsl(a) and named colors.
+   * The value of the component as a CSS color string. Accepts any CSS color,
+   * such as hex, `rgb()`, `hsl()`, `oklch()`, `color()` or a named color. A
+   * color outside the sRGB gamut is clipped to it.
    *
-   * An empty, whitespace-only or invalid string clears the value.
+   * An empty, whitespace-only or invalid string clears the value. So does a
+   * color that depends on its context: `currentcolor`, `var()`, `light-dark()`
+   * or a system color.
    *
    * @attr value
    */
   @property()
   public set value(value: string) {
-    this._color = ColorModel.parse(value);
+    const color = ColorModel.parse(value);
+
+    // The same color keeps the hue of a gray, which a color string does not
+    // carry, as in the color panel.
+    if (colorKey(color) !== colorKey(this._color)) {
+      this._setColor(color);
+    }
+
     this._updateColor();
   }
 
@@ -320,12 +354,67 @@ export default class IgcColorPickerComponent extends I18nMixin(
   public mode: ColorPickerMode = 'default';
 
   /**
-   * Pre-defined color strings. The component renders them as clickable
-   * swatches below the picker controls. A click on a swatch sets its color as
-   * the value.
+   * When the changes of the user in the popup apply. With `confirm`, they
+   * change a draft: `value` keeps its color, and the popup shows the initial
+   * color beside the draft. Apply, or Enter on the canvas marker, a slider or
+   * a swatch, applies the draft with one `igcChange`. Cancel and every other
+   * close drop it.
+   *
+   * @attr selection-commit
+   * @default 'immediate'
+   */
+  @property({ attribute: 'selection-commit' })
+  public selectionCommit: ColorPickerSelectionCommit = 'immediate';
+
+  /**
+   * Pre-defined color strings. The component renders them as swatches in the
+   * swatch list of its popup, in front of the swatch children. An empty
+   * string gives the no-color swatch.
    */
   @property({ attribute: false })
   public swatches: string[] = [];
+
+  /**
+   * The views of the popup, as a space-separated list of `gradient` and
+   * `swatches`. With both views, a view switcher shows at the top.
+   *
+   * With only the gradient view, the swatch list shows below the gradient
+   * controls. With the swatch view, the swatch list shows only in that view.
+   *
+   * @attr views
+   * @default 'gradient'
+   */
+  @property()
+  public views = 'gradient';
+
+  /**
+   * The view on screen in the popup: `gradient` or `swatches`. The view
+   * switcher sets it and emits no event. A view that `views` does not have
+   * gives the first view of `views`.
+   *
+   * @attr active-view
+   * @default 'gradient'
+   */
+  @property({ attribute: 'active-view' })
+  public set activeView(value: ColorPanelView) {
+    this._activeView = value;
+  }
+
+  public get activeView(): ColorPanelView {
+    return resolveView(this.views, this._activeView);
+  }
+
+  /**
+   * The background color of the contrast readout in the popup, as any CSS
+   * color. A color that depends on its context, such as a `var()`, resolves
+   * from the popup. The readout shows the WCAG 2 contrast ratio of the value
+   * over this color, with the AA and AAA levels for normal text. An empty or
+   * invalid color hides it.
+   *
+   * @attr contrast-against
+   */
+  @property({ attribute: 'contrast-against' })
+  public contrastAgainst = '';
 
   //#endregion
 
@@ -334,27 +423,17 @@ export default class IgcColorPickerComponent extends I18nMixin(
   constructor() {
     super();
 
-    addThemingController(this, all);
     addSafeEventListener(this, 'focusout', this._handleFocusOut);
 
     addKeybindings(this, { skip: () => this.disabled })
-      .set(escapeKey, this._handleKeyboardClosing, { when: () => this.open })
+      .set(escapeKey, this._closeToAnchor, { when: () => this.open })
       .set([altKey, arrowDown], this._handleAnchorClick)
-      .set([altKey, arrowUp], this._handleKeyboardClosing);
+      .set([altKey, arrowUp], this._closeToAnchor);
 
-    addKeybindings(this, {
-      skip: () => this.disabled || !this._alphaInputRef.value,
-      ref: this._alphaInputRef,
-      bindingDefaults: { repeat: true },
-    })
-      .set(arrowUp, () => this._handleAlphaInputSpin(1))
-      .set(arrowDown, () => this._handleAlphaInputSpin(-1))
-      .set(arrowRight, this._handleAlphaInputCaretForward, {
-        preventDefault: false,
-      })
-      .set(endKey, this._handleAlphaInputCaretForward, {
-        preventDefault: false,
-      });
+    addContextProvider(this, {
+      context: colorPickerContext,
+      value: () => this._pickerContext,
+    });
 
     addAriaProjector(this, {
       target: () => this._inputAnchor,
@@ -363,14 +442,32 @@ export default class IgcColorPickerComponent extends I18nMixin(
     });
   }
 
+  protected override willUpdate(props: PropertyValues<this>): void {
+    super.willUpdate(props);
+
+    // Every close but Apply drops the draft, also a close for `disabled`.
+    if (
+      (props.has('open') || props.has('selectionCommit')) &&
+      !(this.open && this._isConfirmMode)
+    ) {
+      this._draft = undefined;
+    }
+  }
+
   protected override update(props: PropertyValues<this>): void {
     if (props.has('format')) {
       this._serializeInFormat();
     }
 
-    this._applyColorProperties();
-
     super.update(props);
+  }
+
+  /** Waits also for the color panel, which renders after the picker. */
+  protected override async getUpdateComplete(): Promise<boolean> {
+    const complete = await super.getUpdateComplete();
+    const panelComplete = await this._panelRef.value?.updateComplete;
+
+    return complete && (panelComplete ?? true);
   }
 
   protected override firstUpdated(): void {
@@ -383,9 +480,9 @@ export default class IgcColorPickerComponent extends I18nMixin(
   protected override updated(props: PropertyValues<this>): void {
     super.updated(props);
 
-    if (props.has('open') || props.has('value')) {
+    if (props.has('open') && this.open) {
       // Wait for the paint, then sync the marker position with the color.
-      requestAnimationFrame(() => this._syncCanvasPosition());
+      requestAnimationFrame(() => this._panelRef.value?.[syncMarker]());
     }
   }
 
@@ -401,7 +498,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
 
   //#region Event handlers
 
-  private async _handleKeyboardClosing(): Promise<void> {
+  private async _closeToAnchor(): Promise<void> {
     if (await this._hide(true)) {
       this._anchorRef.value?.focus();
     }
@@ -416,234 +513,66 @@ export default class IgcColorPickerComponent extends I18nMixin(
     this._reportChange(this.value);
   }
 
-  private _handleCanvasColorPicked(
-    event: CustomEvent<PickerCanvasEventDetail>
-  ): void {
-    stopPropagation(event);
-
-    this._color.setSaturationAndValue(event.detail.x, 100 - event.detail.y);
-    this._applyUserColor();
-  }
-
-  private _handleHueValueChange(event: Event): void {
-    stopPropagation(event);
-
-    this._color.h = asNumber((event.target as HTMLInputElement).value);
-    this._applyUserColor();
-  }
-
-  private _handleAlphaSliderValueChange(event: Event): void {
-    stopPropagation(event);
-
-    this._setAlpha(asNumber((event.target as HTMLInputElement).value));
-  }
-
-  /**
-   * Writes the alpha field again as `<digits>%` after each edit, because
-   * `beforeinput` carries `data` only for typing, not for paste, drop,
-   * composition, undo or autofill.
-   */
-  private _handleAlphaInputEdit(event: Event): void {
-    const input = this._alphaInputRef.value;
-    const native = getElementFromPath<HTMLInputElement>('input', event);
-
-    if (!input || !native) return;
-
-    const caret = native.selectionStart ?? native.value.length;
-    const typed = native.value.slice(0, caret).replace(nonDigits, '').length;
-    const digits = native.value.replace(nonDigits, '');
-    const percent = clamp(asNumber(digits), 0, 100);
-
-    const text = digits ? `${percent}%` : '';
-
-    this._writeAlphaText(input, text, Math.min(typed, caretLimit(text)));
-
-    if (digits) {
-      this._setAlpha(percent);
-    }
-  }
-
-  /**
-   * Keeps the caret and the selection in the digits. `keyup`, `focusin` and
-   * `click` can put the caret after the `%`.
-   */
-  private _handleAlphaInputCaret(event: Event): void {
-    const native = getElementFromPath<HTMLInputElement>('input', event);
-    if (!native) return;
-
-    const limit = caretLimit(native.value);
-
-    native.setSelectionRange(
-      Math.min(native.selectionStart ?? 0, limit),
-      Math.min(native.selectionEnd ?? 0, limit)
-    );
-  }
-
-  /**
-   * Steps the alpha from the color, not the text, because a held key repeats
-   * faster than a render. It writes the text itself, because a write from the
-   * render applies one frame late and the caret jumps.
-   */
-  private _handleAlphaInputSpin(increment: -1 | 1): void {
-    const input = this._alphaInputRef.value;
-    const percent = clamp(this._alphaPercent + increment, 0, 100);
-
-    if (!input || percent === this._alphaPercent) return;
-
-    this._writeAlphaText(input, `${percent}%`);
-    this._setAlpha(percent);
-  }
-
-  /**
-   * Holds the caret at the `%`. Without this handler the caret steps past the
-   * `%`, and `keyup` pulls it back. This is the frame-late jump that
-   * {@link _handleAlphaInputSpin} describes.
-   */
-  private _handleAlphaInputCaretForward(event: KeyboardEvent): void {
-    const native = getElementFromPath<HTMLInputElement>('input', event);
-    if (!native) return;
-
-    const limit = caretLimit(native.value);
-
-    if (isKey(event, endKey) || (native.selectionEnd ?? 0) >= limit) {
-      event.preventDefault();
-      native.setSelectionRange(limit, limit);
-    }
-  }
-
-  private _handleAlphaInputChange(event: CustomEvent<string>): void {
-    stopPropagation(event);
-
-    const input = event.target as IgcInputComponent;
-
-    if (!input.value) {
-      input.value = `${this._alphaPercent}%`;
-    }
-  }
-
-  private _handleFormatChange(
-    event: CustomEvent<IgcSelectItemComponent>
-  ): void {
-    stopPropagation(event);
-    this.format = event.detail.value as ColorFormat;
-  }
-
   private _handleColorInputChange(event: CustomEvent<string>): void {
     stopPropagation(event);
 
-    const input = event.target as IgcInputComponent;
-    const cleared = !event.detail?.trim();
-    const color = ColorModel.parse(event.detail);
+    const color = parseTypedColor(event.detail);
 
-    // An invalid and non-empty value reverts the input to the current color.
-    // An empty value clears the color.
-    if (!cleared && color.isEmpty) {
-      input.value = this._color.asString(this.format);
+    if (!color) {
+      (event.target as IgcInputComponent).value = this._color.asString(
+        this.format
+      );
       return;
     }
 
-    this._color = color;
+    this._setColor(color);
     // A commit of the text input, so no `igcInput`.
     this._writeFrom('user', () => this._updateColor());
-    this._syncCanvasPosition();
   }
 
-  private _handleEyeDropperClick(): void {
-    const EyeDropper = getEyeDropper();
+  private _handlePanelInput(event: CustomEvent<string>): void {
+    stopPropagation(event);
 
-    if (!EyeDropper) return;
-
-    new EyeDropper()
-      .open()
-      .then((result) => {
-        // The pick can end after the picker is disabled.
-        if (!this.disabled) {
-          this._commitValue(result.sRGBHex, 'igcInput');
-        }
-      })
-      .catch(() => {});
-  }
-
-  private _handleCopy(): void {
-    navigator.clipboard?.writeText(this.value).catch(() => {});
-  }
-
-  private _handleSwatchClick(event: Event): void {
-    const swatch = getElementFromPath<HTMLButtonElement>(
-      'button[part="swatch"]',
-      event
-    );
-    const color = swatch?.dataset.color;
-
-    if (color && !this.disabled) {
-      this._commitValue(color, 'igcInput');
+    if (this._takePanelColor()) {
+      this._emitInputEvent();
     }
+  }
+
+  /** The end of a change in the panel. The picker reports it when the focus leaves. */
+  private _handlePanelChange(event: CustomEvent<string>): void {
+    stopPropagation(event);
+    this._takePanelColor();
+  }
+
+  /** A clear by the user: `igcInput` now, `igcChange` when the focus leaves. */
+  private _handleClearClick(): void {
+    if (this.disabled) {
+      return;
+    }
+
+    this._setColor(ColorModel.empty());
+    this._applyUserColor();
+  }
+
+  private _handleApply(): void {
+    this._writeFrom('user', () => {
+      if (this._draft) {
+        this._setColor(this._draft);
+        this._updateColor();
+      }
+
+      this._reportChange(this.value);
+    });
+    this._closeToAnchor();
+  }
+
+  private _handleRestoreClick(): void {
+    this._draft = undefined;
   }
 
   //#endregion
 
   //#region Internal methods
-
-  /** The current color with its alpha, independent of `format`. */
-  private get _alphaColor(): string {
-    return this._color.asString('rgb', true);
-  }
-
-  /**
-   * The current color with an opaque alpha. An empty color gives white, where
-   * the alpha ramp and the canvas marker start. The anchor still shows "no
-   * color", because {@link _previewStyle} uses {@link _alphaColor}.
-   */
-  private get _opaqueColor(): string {
-    return rgbString(this._color.toRGB());
-  }
-
-  /** The alpha channel as the whole percentage that both alpha controls use. */
-  private get _alphaPercent(): number {
-    return Math.round(this._color.alpha * 100);
-  }
-
-  /** The pure hue that the saturation/value plane and the hue thumb use. */
-  private get _currentColor(): string {
-    return `hsl(${this._color.h} 100% 50%)`;
-  }
-
-  /**
-   * Copies the colors that the stylesheet needs onto the host. `update()` calls
-   * it, so it also runs on a first render with no value.
-   */
-  private _applyColorProperties(): void {
-    this._setHostColor('--_current-color', this._currentColor);
-    this._setHostColor('--_selected-color', this._opaqueColor);
-  }
-
-  private _setHostColor(name: string, value: string): void {
-    if (this._appliedProperties.get(name) !== value) {
-      this._appliedProperties.set(name, value);
-      this.style.setProperty(name, value);
-    }
-  }
-
-  /** Replaces the alpha text. The caret goes in front of the `%` by default. */
-  private _writeAlphaText(
-    input: IgcInputComponent,
-    text: string,
-    caret = caretLimit(text)
-  ): void {
-    input.setRangeText(text, 0, input.value.length);
-    input.setSelectionRange(caret, caret);
-  }
-
-  private _setAlpha(percent: number): void {
-    const alpha = clamp(percent, 0, 100) / 100;
-
-    if (this._color.alpha === alpha) {
-      return;
-    }
-
-    this._color.alpha = alpha;
-    this._applyUserColor();
-  }
 
   private _updateColor(): void {
     this._formValue.setValueAndFormState(this._color.asString(this.format));
@@ -654,6 +583,12 @@ export default class IgcColorPickerComponent extends I18nMixin(
   private _applyUserColor(): void {
     this._writeFrom('user', () => this._updateColor());
     this._emitInputEvent();
+  }
+
+  /** A new color ends the draft. */
+  private _setColor(color: ColorModel): void {
+    this._color = color;
+    this._draft = undefined;
   }
 
   /**
@@ -672,19 +607,36 @@ export default class IgcColorPickerComponent extends I18nMixin(
     }
   }
 
-  private _syncCanvasPosition(): void {
-    if (!this._canvasRef.value || !this.open) return;
+  /**
+   * Writes the color of the panel as a change of the user, or into the draft
+   * in the confirm mode. A disabled picker, or a closed one in the confirm
+   * mode, renders its own color into the panel again, for an eye dropper pick
+   * that ends after that. Returns whether the value changed.
+   */
+  private _takePanelColor(): boolean {
+    const panel = this._panelRef.value;
 
-    const rect = this._canvasRef.value.getBoundingClientRect();
-    const { width: markerWidth, height: markerHeight } =
-      this._canvasRef.value.getMarkerDimensions();
+    if (!panel) {
+      return false;
+    }
 
-    const [, s, v] = this._color.toHSV();
-    const x = (s / 100) * rect.width - markerWidth;
-    const y = ((100 - v) / 100) * rect.height - markerHeight;
+    if (this.disabled || (this._isConfirmMode && !this.open)) {
+      this.requestUpdate();
+      return false;
+    }
 
-    this._canvasRef.value.x = x;
-    this._canvasRef.value.y = y;
+    // The model of the panel keeps the hue of a gray.
+    const color = panel[panelColor]();
+
+    if (this._isConfirmMode) {
+      this._draft = color;
+      return false;
+    }
+
+    this._setColor(color);
+    this._writeFrom('user', () => this._updateColor());
+
+    return true;
   }
 
   private _emitInputEvent(): void {
@@ -709,210 +661,12 @@ export default class IgcColorPickerComponent extends I18nMixin(
     super.blur();
   }
 
-  //#endregion
-
-  //#region Canvas area rendering
-
-  private _renderCanvasGradient(): TemplateResult {
-    const [, saturation, brightness] = this._color.toHSV();
-
-    return html`
-      <igc-picker-canvas
-        exportparts="marker, dragging"
-        part="picker-canvas"
-        ${ref(this._canvasRef)}
-        @igcColorPicked=${this._handleCanvasColorPicked}
-        currentColor=${this._currentColor}
-        markerColor=${this._opaqueColor}
-        .saturation=${saturation}
-        .brightness=${brightness}
-        .markerLabel=${this.resourceStrings.color_picker_canvas_label}
-        .markerValueFormat=${this.resourceStrings.color_picker_canvas_value}
-      >
-      </igc-picker-canvas>
-    `;
-  }
-
-  //#endregion
-
-  //#region Hue row and buttons rendering
-
-  private _renderHueSlider(): TemplateResult {
-    return html`
-      <input
-        aria-label=${this.resourceStrings.color_picker_hue}
-        type="range"
-        part="hue"
-        min="0"
-        max="360"
-        .value=${String(Math.round(this._color.h))}
-        @input=${this._handleHueValueChange}
-        @change=${stopPropagation}
-      />
-    `;
-  }
-
-  private _renderIconButton(
-    part: string,
-    icon: string,
-    label: string,
-    handler: () => void,
-    disabled = false
-  ): TemplateResult {
-    return html`
-      <igc-icon-button
-        part=${part}
-        variant="flat"
-        name=${icon}
-        ?disabled=${disabled}
-        @click=${handler}
-      >
-        <igc-visually-hidden>${label}</igc-visually-hidden>
-      </igc-icon-button>
-    `;
-  }
-
-  private _renderPickerButtons(): TemplateResult {
-    const strings = this.resourceStrings;
-
-    return html`
-      <div part="buttons">
-        ${this._renderIconButton(
-          'copy',
-          'copy_content',
-          strings.color_picker_copy,
-          this._handleCopy
-        )}
-        ${this._renderIconButton(
-          'eye-dropper',
-          'eye_dropper',
-          strings.color_picker_eye_dropper,
-          this._handleEyeDropperClick,
-          !this._supportsEyeDropper
-        )}
-      </div>
-    `;
-  }
-
-  //#endregion
-
-  //#region Alpha row rendering
-
-  private _renderAlphaRow(): TemplateResult {
-    const strings = this.resourceStrings;
-
-    return html`
-      <input
-        aria-label=${strings.color_picker_alpha}
-        type="range"
-        part="alpha"
-        min="0"
-        max="100"
-        .value=${String(this._alphaPercent)}
-        @input=${this._handleAlphaSliderValueChange}
-        @change=${stopPropagation}
-      />
-
-      <igc-visually-hidden>
-        <label for="alpha">${strings.color_picker_alpha_value}</label>
-      </igc-visually-hidden>
-
-      <igc-input
-        ${ref(this._alphaInputRef)}
-        id="alpha"
-        name="alpha"
-        placeholder=${strings.color_picker_alpha_value}
-        inputmode="numeric"
-        part="alpha-input"
-        outlined
-        type="text"
-        .value=${live(`${this._alphaPercent}%`)}
-        @input=${this._handleAlphaInputEdit}
-        @focusin=${this._handleAlphaInputCaret}
-        @click=${this._handleAlphaInputCaret}
-        @keyup=${this._handleAlphaInputCaret}
-        @igcInput=${stopPropagation}
-        @igcChange=${this._handleAlphaInputChange}
-      ></igc-input>
-    `;
-  }
-
-  //#endregion
-
-  //#region Color formats and input row rendering
-
-  private _renderSelect(): TemplateResult {
-    const label = this.resourceStrings.color_picker_format;
-
-    return html`
-      <igc-visually-hidden>
-        <label for="format-select">${label}</label>
-      </igc-visually-hidden>
-
-      <igc-select
-        id="format-select"
-        part="format-select"
-        placeholder=${label}
-        name="format"
-        outlined
-        .value=${this.format}
-        @igcChange=${this._handleFormatChange}
-        @igcOpening=${stopPropagation}
-        @igcOpened=${stopPropagation}
-        @igcClosing=${stopPropagation}
-        @igcClosed=${stopPropagation}
-      >
-        <igc-select-item value="hex">Hex</igc-select-item>
-        <igc-select-item value="rgb">RGB</igc-select-item>
-        <igc-select-item value="hsl">HSL</igc-select-item>
-      </igc-select>
-    `;
-  }
-
-  private _renderInputsRow(): TemplateResult {
-    const label = this.resourceStrings.color_picker_value;
-
-    return html`
-      ${cache(this.hideFormats ? nothing : this._renderSelect())}
-      <igc-visually-hidden>
-        <label for="color-input">${label}</label>
-      </igc-visually-hidden>
-
-      <igc-input
-        id="color-input"
-        name="color-input"
-        placeholder=${formatPlaceholders[this.format]}
-        outlined
-        .value=${live(this._color.asString(this.format))}
-        @igcInput=${stopPropagation}
-        @igcChange=${this._handleColorInputChange}
-      ></igc-input>
-    `;
-  }
-
-  //#endregion
-
-  //#region Swatches rendering
-
-  private _renderSwatches(): TemplateResult | typeof nothing {
-    return !isEmpty(this.swatches)
-      ? html`
-          <igc-divider></igc-divider>
-          <div part="swatches" @click=${this._handleSwatchClick}>
-            ${this.swatches.map(
-              (color) => html`
-                <button
-                  type="button"
-                  part="swatch"
-                  data-color=${color}
-                  aria-label=${color}
-                  style="background-color: ${color}"
-                ></button>
-              `
-            )}
-          </div>
-        `
-      : nothing;
+  /**
+   * Clears the value and the text of the input. As for a value set from code,
+   * the component emits no events.
+   */
+  public clear(): void {
+    this.value = '';
   }
 
   //#endregion
@@ -933,14 +687,14 @@ export default class IgcColorPickerComponent extends I18nMixin(
    * `--_alpha-preview` paints the color with its real alpha over the whole
    * surface. Do not transpose the two. See the `swatch-preview` mixin.
    */
-  private _previewStyle(): ReturnType<typeof styleMap> {
-    const color = this._alphaColor;
+  private _previewStyle(model = this._color): ReturnType<typeof styleMap> {
+    const color = colorKey(model);
 
     return bindIf(
       color,
       styleMap({
         '--_alpha-preview': color,
-        '--_color-preview': this._opaqueColor,
+        '--_color-preview': opaqueColor(model),
       })
     );
   }
@@ -974,11 +728,23 @@ export default class IgcColorPickerComponent extends I18nMixin(
     `;
   }
 
+  private _renderClearIcon(): TemplateResult | typeof nothing {
+    return this._color.isEmpty
+      ? nothing
+      : renderClearIcon(
+          'clear-icon',
+          this._handleClearClick,
+          this.resourceStrings.color_picker_clear
+        );
+  }
+
   private _renderInputAnchor(): TemplateResult {
     return html`
       <igc-input
         ${ref(this._anchorRef)}
         slot="anchor"
+        part="field"
+        exportparts="container: input, input: native-input, label, prefix, suffix"
         outlined
         placeholder=${formatPlaceholders[this.format]}
         label=${ifDefined(this.label)}
@@ -1001,6 +767,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
             @click=${this._handleAnchorClick}
           ></button>
         </div>
+        ${this._renderClearIcon()}
       </igc-input>
     `;
   }
@@ -1017,19 +784,78 @@ export default class IgcColorPickerComponent extends I18nMixin(
           aria-label=${this.resourceStrings.color_picker_dialog_label}
           aria-modal="false"
         >
-          ${this._renderCanvasGradient()}
-          <div part="main-row">
-            ${this._renderHueSlider()}${this._renderPickerButtons()}
-          </div>
-          ${
-            this.showAlpha
-              ? html`<div part="alpha-row">${this._renderAlphaRow()}</div>`
-              : nothing
-          }
-          <div part="inputs-row">${this._renderInputsRow()}</div>
-          ${guard([this.swatches], () => this._renderSwatches())}
+          <igc-color-panel
+            ${ref(this._panelRef)}
+            exportparts=${exportedPanelParts}
+            .format=${this.format}
+            .value=${live(this._draft?.asString(this.format) ?? this.value)}
+            .showAlpha=${this.showAlpha}
+            .hideFormats=${this.hideFormats}
+            .swatches=${this.swatches}
+            .views=${this.views}
+            .activeView=${this.activeView}
+            .contrastAgainst=${this.contrastAgainst}
+            .resourceStrings=${this.resourceStrings}
+            @igcInput=${this._handlePanelInput}
+            @igcChange=${this._handlePanelChange}
+          >
+            <slot></slot>
+          </igc-color-panel>
+          ${this._renderFooter()}
         </div>
       </igc-focus-trap>
+    `;
+  }
+
+  private _renderFooter(): TemplateResult {
+    const confirm = this._isConfirmMode;
+
+    return html`
+      <div
+        part="footer"
+        ?hidden=${!(confirm || this._slots.hasAssignedElements('footer'))}
+      >
+        <slot name="footer"></slot>
+        ${confirm ? this._renderActions() : nothing}
+      </div>
+    `;
+  }
+
+  private _renderActions(): TemplateResult {
+    const strings = this.resourceStrings;
+    const draft = this._draft ?? this._color;
+
+    return html`
+      <div part="actions">
+        <div part="preview">
+          <button
+            type="button"
+            part="preview-initial"
+            aria-label=${strings.color_picker_initial_color}
+            ?data-empty=${this._color.isEmpty}
+            style=${this._previewStyle()}
+            @click=${this._handleRestoreClick}
+          ></button>
+          <span
+            part="preview-current"
+            ?data-empty=${draft.isEmpty}
+            style=${this._previewStyle(draft)}
+          ></span>
+        </div>
+        ${renderConfirmButtons({
+          theme: this._themes.theme,
+          cancel: {
+            part: 'cancel-button',
+            label: strings.color_picker_cancel,
+            onClick: this._closeToAnchor,
+          },
+          confirm: {
+            part: 'apply-button',
+            label: strings.color_picker_apply,
+            onClick: this._handleApply,
+          },
+        })}
+      </div>
     `;
   }
 

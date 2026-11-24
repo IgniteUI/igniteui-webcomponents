@@ -25,7 +25,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     docs: {
       description: {
         component:
-          'Color input component.\n\nThe user picks a color with the HSV saturation/value canvas, the hue slider\nand the optional alpha slider. The user can also type a color string: hex,\nrgb(a), hsl(a) or a named CSS color.\n\nThe component supports pre-defined swatches and the native EyeDropper API,\nwhere the browser provides one. The anchor is a trigger button\n(`mode="default"`) or an editable text field (`mode="input"`).',
+          'Color input component.\n\nThe user picks a color with the color area, the hue slider and the optional\nalpha slider. The area is saturation by value, or lightness by chroma at the\nOKLCH hue in the `oklch` format. The user can also type any CSS color string,\nsuch as hex, `rgb()`, `hsl()`, `oklch()` or a named color.\n\nThe component supports pre-defined swatches and the native EyeDropper API,\nwhere the browser provides one. The anchor is a trigger button\n(`mode="default"`) or an editable text field (`mode="input"`).',
       },
     },
     actions: {
@@ -49,15 +49,15 @@ const metadata: Meta<IgcColorPickerComponent> = {
     value: {
       type: 'string',
       description:
-        'The value of the component as a CSS color string. Accepts hex, rgb(a),\nhsl(a) and named colors.\n\nAn empty, whitespace-only or invalid string clears the value.',
+        'The value of the component as a CSS color string. Accepts any CSS color,\nsuch as hex, `rgb()`, `hsl()`, `oklch()`, `color()` or a named color. A\ncolor outside the sRGB gamut is clipped to it.\n\nAn empty, whitespace-only or invalid string clears the value. So does a\ncolor that depends on its context: `currentcolor`, `var()`, `light-dark()`\nor a system color.',
       control: 'text',
     },
     format: {
-      type: { name: 'enum', value: ['hex', 'rgb', 'hsl'] },
+      type: { name: 'enum', value: ['hex', 'rgb', 'hsl', 'oklch'] },
       description:
         'The color format of the string value.\n\nA format change renders `value` in the new notation. The color does not\nchange, so the component emits no `igcInput` or `igcChange`.',
-      options: ['hex', 'rgb', 'hsl'],
-      control: { type: 'inline-radio' },
+      options: ['hex', 'rgb', 'hsl', 'oklch'],
+      control: { type: 'select' },
       table: { defaultValue: { summary: 'hex' } },
     },
     hideFormats: {
@@ -79,6 +79,36 @@ const metadata: Meta<IgcColorPickerComponent> = {
       options: ['default', 'input'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'default' } },
+    },
+    selectionCommit: {
+      type: { name: 'enum', value: ['immediate', 'confirm'] },
+      description:
+        'When the changes of the user in the popup apply. With `confirm`, they\nchange a draft: `value` keeps its color, and the popup shows the initial\ncolor beside the draft. Apply, or Enter on the canvas marker, a slider or\na swatch, applies the draft with one `igcChange`. Cancel and every other\nclose drop it.',
+      options: ['immediate', 'confirm'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'immediate' } },
+    },
+    views: {
+      type: 'string',
+      description:
+        'The views of the popup, as a space-separated list of `gradient` and\n`swatches`. With both views, a view switcher shows at the top.\n\nWith only the gradient view, the swatch list shows below the gradient\ncontrols. With the swatch view, the swatch list shows only in that view.',
+      control: 'text',
+      table: { defaultValue: { summary: 'gradient' } },
+    },
+    activeView: {
+      type: { name: 'enum', value: ['gradient', 'swatches'] },
+      description:
+        'The view on screen in the popup: `gradient` or `swatches`. The view\nswitcher sets it and emits no event. A view that `views` does not have\ngives the first view of `views`.',
+      options: ['gradient', 'swatches'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'gradient' } },
+    },
+    contrastAgainst: {
+      type: 'string',
+      description:
+        'The background color of the contrast readout in the popup, as any CSS\ncolor. A color that depends on its context, such as a `var()`, resolves\nfrom the popup. The readout shows the WCAG 2 contrast ratio of the value\nover this color, with the AA and AAA levels for normal text. An empty or\ninvalid color hides it.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
     },
     locale: {
       type: 'string',
@@ -133,6 +163,10 @@ const metadata: Meta<IgcColorPickerComponent> = {
     hideFormats: false,
     showAlpha: false,
     mode: 'default',
+    selectionCommit: 'immediate',
+    views: 'gradient',
+    activeView: 'gradient',
+    contrastAgainst: '',
     required: false,
     disabled: false,
     invalid: false,
@@ -152,10 +186,13 @@ interface IgcColorPickerArgs {
    */
   label: string;
   /**
-   * The value of the component as a CSS color string. Accepts hex, rgb(a),
-   * hsl(a) and named colors.
+   * The value of the component as a CSS color string. Accepts any CSS color,
+   * such as hex, `rgb()`, `hsl()`, `oklch()`, `color()` or a named color. A
+   * color outside the sRGB gamut is clipped to it.
    *
-   * An empty, whitespace-only or invalid string clears the value.
+   * An empty, whitespace-only or invalid string clears the value. So does a
+   * color that depends on its context: `currentcolor`, `var()`, `light-dark()`
+   * or a system color.
    */
   value: string;
   /**
@@ -164,7 +201,7 @@ interface IgcColorPickerArgs {
    * A format change renders `value` in the new notation. The color does not
    * change, so the component emits no `igcInput` or `igcChange`.
    */
-  format: 'hex' | 'rgb' | 'hsl';
+  format: 'hex' | 'rgb' | 'hsl' | 'oklch';
   /** Whether the format select is hidden. */
   hideFormats: boolean;
   /** Whether to show the alpha slider and input. */
@@ -177,6 +214,36 @@ interface IgcColorPickerArgs {
    * also opens the picker.
    */
   mode: 'default' | 'input';
+  /**
+   * When the changes of the user in the popup apply. With `confirm`, they
+   * change a draft: `value` keeps its color, and the popup shows the initial
+   * color beside the draft. Apply, or Enter on the canvas marker, a slider or
+   * a swatch, applies the draft with one `igcChange`. Cancel and every other
+   * close drop it.
+   */
+  selectionCommit: 'immediate' | 'confirm';
+  /**
+   * The views of the popup, as a space-separated list of `gradient` and
+   * `swatches`. With both views, a view switcher shows at the top.
+   *
+   * With only the gradient view, the swatch list shows below the gradient
+   * controls. With the swatch view, the swatch list shows only in that view.
+   */
+  views: string;
+  /**
+   * The view on screen in the popup: `gradient` or `swatches`. The view
+   * switcher sets it and emits no event. A view that `views` does not have
+   * gives the first view of `views`.
+   */
+  activeView: 'gradient' | 'swatches';
+  /**
+   * The background color of the contrast readout in the popup, as any CSS
+   * color. A color that depends on its context, such as a `var()`, resolves
+   * from the popup. The readout shows the WCAG 2 contrast ratio of the value
+   * over this color, with the AA and AAA levels for normal text. An empty or
+   * invalid color hides it.
+   */
+  contrastAgainst: string;
   /**
    * The locale of the component. Without it, the component takes its own
    * `lang`, else the locale of the nearest ancestor that has a `locale` (a
@@ -294,9 +361,10 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'A fully interactive color picker. Use the controls panel to explore `mode`, `format`, `showAlpha`, `hideFormats`, `scrollStrategy` and the validation properties.',
+          'A fully interactive color picker. Use the controls panel to explore `mode`, `format`, `showAlpha`, `hideFormats`, `selectionCommit`, `scrollStrategy` and the validation properties.',
       },
     },
+    actions: { handles: [] },
   },
   args: {
     label: 'Pick a color',
@@ -311,7 +379,11 @@ export const Default: Story = {
         .name=${args.name}
         .format=${args.format}
         .mode=${args.mode}
+        .selectionCommit=${args.selectionCommit}
         .scrollStrategy=${args.scrollStrategy}
+        .views=${args.views}
+        .activeView=${args.activeView}
+        .contrastAgainst=${args.contrastAgainst}
         locale=${ifDefined(args.locale)}
         ?hide-formats=${args.hideFormats}
         ?show-alpha=${args.showAlpha}
@@ -321,6 +393,12 @@ export const Default: Story = {
         ?open=${args.open}
       >
         <p slot="helper-text">Opens on click or with Alt + Arrow Down.</p>
+        <igc-color-swatch></igc-color-swatch>
+        <igc-color-swatch color="rebeccapurple"></igc-color-swatch>
+        <igc-color-swatch color="#e63946"></igc-color-swatch>
+        <igc-color-swatch color="#f4a261"></igc-color-swatch>
+        <igc-color-swatch color="#2a9d8f"></igc-color-swatch>
+        <igc-color-swatch color="#264653"></igc-color-swatch>
       </igc-color-picker>
     </div>
   `,
@@ -332,7 +410,7 @@ export const Formats: Story = {
     docs: {
       description: {
         story:
-          '`format` sets the notation of `value`. The first three pickers hold the same translucent color, and the text under each one shows the `value` string that the component reports. The format switcher in the picker changes the notation, not the color, so it emits no `igcInput` or `igcChange`. `hide-formats` removes the switcher and locks the notation, as in the last picker. `show-alpha` adds the alpha slider and input in whole percent. The anchor then shows the opaque color over its left half and the real opacity over the full surface.',
+          '`format` sets the notation of `value`. The first four pickers hold the same translucent color, and the text under each one shows the `value` string that the component reports. The format switcher in the picker changes the notation, not the color, so it emits no `igcInput` or `igcChange`. `hide-formats` removes the switcher and locks the notation, as in the last picker. `show-alpha` adds the alpha slider and input in whole percent. The anchor then shows the opaque color over its left half and the real opacity over the full surface.',
       },
     },
     actions: { handles: [] },
@@ -357,6 +435,7 @@ export const Formats: Story = {
             ['Hex', 'hex', false],
             ['RGB', 'rgb', false],
             ['HSL', 'hsl', false],
+            ['OKLCH', 'oklch', false],
             ['HSL only', 'hsl', true],
           ] as const
         ).map(
@@ -509,13 +588,121 @@ export const Swatches: Story = {
   },
 };
 
+export const RecentColors: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Recent colors that the app keeps. The `igcChange` handler adds each committed color to the start of the "Recent" swatch group, and keeps at most 8. The component has no API for recent colors: the swatch groups are light DOM children, so the app owns the list, its order and its storage. The "Palette" group stays the same, and its first swatch has no color.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: () => {
+    const limit = 8;
+
+    const addRecent = (event: CustomEvent<string>) => {
+      const picker = event.currentTarget as IgcColorPickerComponent;
+      const group = picker.querySelector('#recent-colors');
+      const color = event.detail;
+
+      if (!(color && group)) {
+        return;
+      }
+
+      // The same color moves to the start.
+      for (const swatch of group.querySelectorAll('igc-color-swatch')) {
+        if (swatch.color === color) {
+          swatch.remove();
+        }
+      }
+
+      const swatch = document.createElement('igc-color-swatch');
+      swatch.color = color;
+      group.querySelector('[slot="label"]')?.after(swatch);
+
+      for (const extra of Array.from(
+        group.querySelectorAll('igc-color-swatch')
+      ).slice(limit)) {
+        extra.remove();
+      }
+    };
+
+    return html`
+      ${samples}
+      <div class="samples">
+        <igc-color-picker
+          label="Text color"
+          value="#264653"
+          @igcChange=${addRecent}
+        >
+          <p slot="helper-text">Commit a color to add it to "Recent".</p>
+          <igc-color-swatch-group id="recent-colors">
+            <span slot="label">Recent</span>
+          </igc-color-swatch-group>
+          <igc-color-swatch-group>
+            <span slot="label">Palette</span>
+            <igc-color-swatch></igc-color-swatch>
+            <igc-color-swatch
+              color="#264653"
+              label="Charcoal"
+            ></igc-color-swatch>
+            <igc-color-swatch color="#2a9d8f" label="Teal"></igc-color-swatch>
+            <igc-color-swatch
+              color="#e9c46a"
+              label="Saffron"
+            ></igc-color-swatch>
+            <igc-color-swatch color="#f4a261" label="Sandy"></igc-color-swatch>
+            <igc-color-swatch color="#e76f51" label="Coral"></igc-color-swatch>
+            <igc-color-swatch color="#ffffff" label="White"></igc-color-swatch>
+            <igc-color-swatch color="#000000" label="Black"></igc-color-swatch>
+          </igc-color-swatch-group>
+        </igc-color-picker>
+      </div>
+    `;
+  },
+};
+
+export const ConfirmMode: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With `selection-commit="confirm"`, the changes in the popup are a draft. `value`, shown under the picker, keeps its color, and the picker emits no `igcInput`. Apply, or <kbd>Enter</kbd> on the canvas marker, a slider or a swatch, applies the draft with one `igcChange`. Cancel, <kbd>Escape</kbd> and an outside click drop it. The preview shows the initial color first and the draft second; a click on the initial color restores it. The text in the popup comes from the `footer` slot.',
+      },
+    },
+    actions: { handles: [] },
+  },
+  render: () => html`
+    ${samples}
+    <div class="samples">
+      <div>
+        <igc-color-picker
+          label="Brand color"
+          value="#2a9d8f"
+          selection-commit="confirm"
+          show-alpha
+          .swatches=${palette}
+          @igcChange=${(event: Event) =>
+            showValue(event.currentTarget as IgcColorPickerComponent)}
+        >
+          <small slot="footer">Enter applies. Escape cancels.</small>
+        </igc-color-picker>
+        <output>#2a9d8f</output>
+      </div>
+    </div>
+  `,
+};
+
 export const ThemeEditor: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'A theme editor with a live preview. Each picker writes its value to a CSS custom property on `igcInput`, so the preview follows every drag. The editor also checks the WCAG contrast ratio of the text on the surface and of the white button label on the primary color. If a ratio is less than 4.5:1, it calls `setCustomValidity()` and the `custom-error` slot shows the ratio. The message shows when focus leaves the changed picker.',
+          'A theme editor with a live preview. Each picker writes its value to a CSS custom property on `igcInput`, so the preview follows every drag. The editor also checks the WCAG contrast ratio of the text on the surface and of the white button label on the primary color. If a ratio is less than 4.5:1, it calls `setCustomValidity()` and the `custom-error` slot shows the ratio. The message shows when focus leaves the changed picker. The popups of the Primary and Text pickers show the same ratios: `contrast-against` is white for the primary color and `var(--surface)` for the text.',
       },
     },
     actions: { handles: [] },
@@ -612,6 +799,7 @@ export const ThemeEditor: Story = {
             name="primary"
             label="Primary"
             value="#3f51b5"
+            contrast-against="white"
             .swatches=${palette}
             @igcInput=${update}
           >
@@ -633,6 +821,7 @@ export const ThemeEditor: Story = {
             name="text"
             label="Text"
             value="#212121"
+            contrast-against="var(--surface)"
             .swatches=${['#000000', '#212121', '#424242', '#757575', '#ffffff']}
             @igcInput=${update}
           >

@@ -70,6 +70,70 @@ describe('parseColor', () => {
       expect(result.value).to.deep.equal([0, 0, 0]);
       expect(result.alpha).to.equal(1);
     });
+
+    it('clips a `color(srgb)` serialization and reads `none` as 0', () => {
+      const result = parseColor(
+        'oklch(1 0.4 30)',
+        serializingContext('color(srgb 1.2 none -0.1 / 0.25)')
+      );
+
+      expect(result).to.deep.equal({ value: [255, 0, 0], alpha: 0.25 });
+    });
+
+    it('rejects a serialization in an unknown notation', () => {
+      const ctx = serializingContext('oklch(0.7 0.1 200)');
+
+      expect(tryParseColor('oklch(70% 0.1 200)', ctx)).to.be.null;
+      expect(isValidColor('oklch(70% 0.1 200)', ctx)).to.be.false;
+    });
+  });
+
+  describe('notations outside the legacy syntax', () => {
+    // The same sRGB result in Chromium, Firefox and WebKit.
+    const cases: [string, ParsedColor][] = [
+      ['oklch(70% 0.1 200)', { value: [64, 177, 183], alpha: 1 }],
+      ['oklab(0.7 -0.05 0.1)', { value: [154, 167, 82], alpha: 1 }],
+      ['lab(50% 40 30 / 0.3)', { value: [187, 88, 70], alpha: 0.3 }],
+      ['lch(50% 40 30)', { value: [178, 93, 87], alpha: 1 }],
+      ['color(srgb 1 0 0 / 0.5)', { value: [255, 0, 0], alpha: 0.5 }],
+      ['color(srgb none 0.5 0)', { value: [0, 128, 0], alpha: 1 }],
+      ['color(xyz 0.5 0.5 0.5)', { value: [204, 183, 180], alpha: 1 }],
+      ['rgb(from red r g 100)', { value: [255, 0, 100], alpha: 1 }],
+      ['color-mix(in oklch, red, blue)', { value: [186, 0, 194], alpha: 1 }],
+    ];
+
+    for (const [color, expected] of cases) {
+      it(`parses ${color} into sRGB`, () => {
+        expect(parseColor(color, ctx)).to.deep.equal(expected);
+      });
+    }
+
+    it('clips a color outside the sRGB gamut', () => {
+      expect(parseColor('color(display-p3 1 0 0)', ctx).value).to.deep.equal([
+        255, 0, 0,
+      ]);
+    });
+  });
+
+  describe('colors that depend on their context', () => {
+    const contextColors = [
+      'currentcolor',
+      'CurrentColor',
+      'var(--brand)',
+      'light-dark(red, blue)',
+      'Canvas',
+      'ButtonFace',
+      'AccentColor',
+      'color-mix(in srgb, currentcolor, red)',
+      'rgb(from currentcolor r g b)',
+    ];
+
+    for (const color of contextColors) {
+      it(`rejects ${color}`, () => {
+        expect(tryParseColor(color, ctx)).to.be.null;
+        expect(isValidColor(color, ctx)).to.be.false;
+      });
+    }
   });
 
   describe('hex color parsing', () => {
@@ -264,5 +328,13 @@ describe('tryParseColor', () => {
     expect(tryParseColor('not-a-color', ctx)).to.be.null;
     expect(tryParseColor('', ctx)).to.be.null;
     expect(tryParseColor('#ff0000', null)).to.be.null;
+  });
+
+  it('cannot turn invalid text into a color through the relative conversion', () => {
+    const ctx = makeTestContext();
+
+    // Inside `color(from ...)`, the open comment would hide the rest.
+    expect(tryParseColor('red srgb r g b) /*', ctx)).to.be.null;
+    expect(tryParseColor('oklch(0.7 0.1 200) srgb r g b) /*', ctx)).to.be.null;
   });
 });

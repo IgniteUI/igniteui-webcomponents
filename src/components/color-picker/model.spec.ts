@@ -1,6 +1,7 @@
 import { expect } from '@open-wc/testing';
 
 import { ColorModel } from './model.js';
+import { cuspHsvHue, gamutChroma, pureHueOklch } from './oklch.js';
 
 describe('ColorModel', () => {
   describe('constructor and factory methods', () => {
@@ -128,6 +129,32 @@ describe('ColorModel', () => {
       const color = ColorModel.parse('   ');
 
       expect(color.isEmpty).to.be.true;
+    });
+
+    it('parses a color outside the legacy syntax into sRGB', () => {
+      const color = ColorModel.parse('oklch(70% 0.1 200 / 0.5)');
+
+      expect(color.toRGB()).to.deep.equal([64, 177, 183]);
+      expect(color.alpha).to.equal(0.5);
+      expect(color.asString('hex')).to.equal('#40b1b780');
+    });
+
+    it('clips a color outside the sRGB gamut', () => {
+      expect(ColorModel.parse('color(display-p3 1 0 0)').toRGB()).to.deep.equal(
+        [255, 0, 0]
+      );
+    });
+
+    it('returns an empty color for a color that depends on its context', () => {
+      for (const value of [
+        'currentcolor',
+        'var(--brand)',
+        'light-dark(red, blue)',
+        'Canvas',
+        'color-mix(in srgb, currentcolor, red)',
+      ]) {
+        expect(ColorModel.parse(value).isEmpty, value).to.be.true;
+      }
     });
   });
 
@@ -403,6 +430,36 @@ describe('ColorModel', () => {
         expect(hslString).to.match(/^hsl\(\d+ \d+% \d+%\)$/);
       });
     });
+
+    describe('oklch format', () => {
+      it('writes the lightness in percent, the chroma and the hue', () => {
+        for (const [rgb, oklch] of [
+          [[255, 0, 0], 'oklch(62.8% 0.25768 29.23)'],
+          [[63, 81, 181], 'oklch(47.82% 0.15892 271.4)'],
+          // A gray has no hue.
+          [[0, 0, 0], 'oklch(0% 0 0)'],
+          [[128, 128, 128], 'oklch(59.99% 0 0)'],
+          [[255, 255, 255], 'oklch(100% 0 0)'],
+          // A hue of 359.9992 rounds to 360.
+          [[48, 1, 21], 'oklch(20.21% 0.07918 0)'],
+        ] as const) {
+          expect(new ColorModel([...rgb]).asString('oklch')).to.equal(oklch);
+        }
+      });
+
+      it('writes the alpha when it is below 1 or forced', () => {
+        const color = new ColorModel([255, 0, 0], 0.5);
+
+        expect(color.asString('oklch')).to.equal(
+          'oklch(62.8% 0.25768 29.23 / 0.5)'
+        );
+
+        color.alpha = 1;
+        expect(color.asString('oklch', true)).to.equal(
+          'oklch(62.8% 0.25768 29.23 / 1)'
+        );
+      });
+    });
   });
 
   describe('color space conversions', () => {
@@ -615,6 +672,87 @@ describe('ColorModel', () => {
       originalRGB[0] = 0;
 
       expect(color.r).to.equal(128);
+    });
+  });
+
+  describe('OKLCH space', () => {
+    it('keeps the OKLCH lightness, chroma and hue of a color', () => {
+      const [l, c, h] = ColorModel.parse('#0000ff').toOKLCH();
+
+      expect(l).to.be.closeTo(45.2, 0.05);
+      expect(c).to.be.closeTo(0.3132, 1e-4);
+      expect(h).to.be.closeTo(264.05, 0.01);
+    });
+
+    it('sets the lightness and chroma and keeps the hue', () => {
+      const color = ColorModel.parse('#808080');
+
+      color.setOklchHue(140);
+      color.setLightnessAndChroma(70, 0.05);
+
+      expect(color.toOKLCH()).to.eql([70, 0.05, 140]);
+      expect(color.asString('oklch')).to.equal('oklch(70% 0.05 140)');
+    });
+
+    it('keeps the lightness and cuts a chroma beyond the gamut back to the edge', () => {
+      const color = ColorModel.parse('#808080');
+
+      color.setOklchHue(110);
+      color.setLightnessAndChroma(99, 0.25);
+
+      const [l, c] = color.toOKLCH();
+
+      expect(l).to.equal(99);
+      expect(c).to.equal(gamutChroma([99, 0.25, 110]));
+      expect(c).to.be.below(0.25);
+    });
+
+    it('cuts the chroma for a hue with less gamut', () => {
+      const color = ColorModel.parse('#ff00ff');
+      const [l, c] = color.toOKLCH();
+
+      color.setOklchHue(110);
+
+      expect(color.toOKLCH()).to.eql([l, gamutChroma([l, c, 110]), 110]);
+    });
+
+    it('keeps the OKLCH hue of a gray, and gives HSV the hue of its cusp', () => {
+      const color = ColorModel.parse('#808080');
+
+      color.setOklchHue(264);
+      color.setLightnessAndChroma(50, 0);
+
+      expect(color.toOKLCH()[2]).to.equal(264);
+      expect(color.toHSV()[0]).to.be.closeTo(cuspHsvHue(264), 1e-6);
+      expect(color.toHSV()[1]).to.equal(0);
+      expect(color.h).to.be.closeTo(cuspHsvHue(264), 1e-6);
+    });
+
+    it('gives a gray from HSV the OKLCH hue of the cusp of its HSV hue', () => {
+      const color = ColorModel.fromHSV(210, 50, 50);
+
+      color.setSaturationAndValue(0, 50);
+
+      expect(color.toOKLCH()[1]).to.equal(0);
+      expect(color.toOKLCH()[2]).to.be.closeTo(pureHueOklch(210)[2], 1e-9);
+    });
+
+    it('starts an empty color at white with the OKLCH hue of red', () => {
+      const [l, c, h] = ColorModel.empty().toOKLCH();
+
+      expect(l).to.be.closeTo(100, 1e-6);
+      expect(c).to.equal(0);
+      expect(h).to.be.closeTo(pureHueOklch(0)[2], 1e-9);
+    });
+
+    it('keeps the hues of a gray in a clone', () => {
+      const color = ColorModel.fromHSV(210, 50, 50);
+      color.setSaturationAndValue(0, 50);
+
+      const clone = color.clone();
+
+      expect(clone.toHSV()).to.eql(color.toHSV());
+      expect(clone.toOKLCH()).to.eql(color.toOKLCH());
     });
   });
 });

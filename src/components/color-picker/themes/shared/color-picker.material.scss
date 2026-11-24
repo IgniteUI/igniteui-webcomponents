@@ -5,14 +5,9 @@ $theme: $material;
 
 :host {
     --_label-spacing: #{rem(12px)};
-    --_swatches-spacing: #{sizable(rem(16px), rem(16px), rem(24px)) rem(16px) rem(16px) rem(16px)};
 
     ::part(helper-text) {
         grid-auto-rows: minmax(rem(18px), auto);
-    }
-    
-    [part='inputs-row'] {
-        grid-template-columns: max(sizable(rem(96px), rem(104px), rem(112px))) 1fr;
     }
 }
 

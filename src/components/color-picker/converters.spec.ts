@@ -1,7 +1,13 @@
 import { expect } from '@open-wc/testing';
 
 import { expectCloseTo } from '#internals/testing/helpers.spec.js';
-import { converter, type HSL, type HSV, type RGB } from './converters.js';
+import {
+  converter,
+  type HSL,
+  type HSV,
+  type OKLCH,
+  type RGB,
+} from './converters.js';
 
 /** Tolerance for the accumulated float error of a conversion round-trip. */
 const EPSILON = 0.5;
@@ -62,6 +68,43 @@ describe('Color converters', () => {
       expectTupleCloseTo(converter.rgb.hsv([0, 0, 0]), [0, 0, 0]);
       expectTupleCloseTo(converter.rgb.hsv([255, 255, 255]), [0, 0, 100]);
       expectTupleCloseTo(converter.rgb.hsv([128, 128, 128]), [0, 0, 50.2]);
+    });
+  });
+
+  describe('rgb -> oklch', () => {
+    const tolerance = 1e-4;
+
+    // The values of the CSS Color 4 sample code.
+    it('converts known colors', () => {
+      for (const [rgb, oklch] of [
+        [
+          [255, 0, 0],
+          [62.7955, 0.25768, 29.2339],
+        ],
+        [
+          [0, 255, 0],
+          [86.644, 0.29483, 142.4953],
+        ],
+        [
+          [0, 0, 255],
+          [45.2014, 0.31321, 264.052],
+        ],
+      ] as [RGB, OKLCH][]) {
+        expectTupleCloseTo(converter.rgb.oklch(rgb), oklch, tolerance);
+      }
+    });
+
+    it('reports no chroma for achromatic colors', () => {
+      for (const [gray, lightness] of [
+        [0, 0],
+        [128, 59.9871],
+        [255, 100],
+      ]) {
+        const [l, c] = converter.rgb.oklch([gray, gray, gray]);
+
+        expect(l, `${gray}`).to.be.closeTo(lightness, tolerance);
+        expect(c, `${gray}`).to.be.below(1e-6);
+      }
     });
   });
 

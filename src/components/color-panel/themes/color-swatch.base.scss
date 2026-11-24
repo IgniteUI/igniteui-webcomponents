@@ -1,0 +1,53 @@
+@use 'styles/utilities' as *;
+@use 'components/color-picker/themes/swatch' as *;
+
+// A swatch takes the color picker theme variables from the color panel that
+// shows it, so it has no theme of its own.
+:host {
+    display: inline-block;
+    inline-size: var(--swatch-size);
+    block-size: var(--swatch-size);
+    border-radius: var(--swatch-border-radius);
+    cursor: pointer;
+    outline-offset: rem(1px);
+}
+
+:host(:focus-visible) {
+    outline: rem(2px) solid var(--_swatch-focus-color);
+}
+
+// The color fills the border box, under the border, as the swatch button did.
+// The background color also holds the color that a `var()` resolves to.
+[part~='base'] {
+    display: block;
+    block-size: 100%;
+    border: rem(1px) solid var(--swatch-border-color);
+    border-radius: inherit;
+    background-color: var(--_color);
+}
+
+[part~='base'][data-empty] {
+    background-color: contrast-color('gray', 900);
+    background-image: empty-swatch-image(var(--invalid-color));
+}
+
+// TODO: a provisional mark until the design team gives one.
+:host(:state(ig-selected)) [part~='base'] {
+    box-shadow:
+        inset 0 0 0 rem(2px) var(--picker-background),
+        inset 0 0 0 rem(3px) var(--swatch-border-color);
+}
+
+@media (forced-colors: active) {
+    [part~='base'] {
+        forced-color-adjust: none;
+    }
+
+    :host(:state(ig-selected)) {
+        outline: rem(2px) solid Highlight;
+    }
+
+    :host(:focus-visible) {
+        outline-color: CanvasText;
+    }
+}
