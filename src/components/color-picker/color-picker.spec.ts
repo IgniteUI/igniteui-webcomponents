@@ -2027,6 +2027,24 @@ describe('Color picker', () => {
         expect(getClearIcon()).to.be.null;
       });
 
+      it('fills its container, so the clear icon does not change its width', async () => {
+        const container = await fixture<HTMLDivElement>(
+          html`<div style="inline-size: 400px">
+            <igc-color-picker mode="input"></igc-color-picker>
+          </div>`
+        );
+        picker = container.querySelector('igc-color-picker')!;
+        const field = getInputAnchor();
+
+        expect(field.getBoundingClientRect().width).to.equal(400);
+
+        picker.value = '#ff0000';
+        await elementUpdated(picker);
+
+        expect(getClearIcon()).to.exist;
+        expect(field.getBoundingClientRect().width).to.equal(400);
+      });
+
       it('clears with igcInput, and reports igcChange when the focus leaves', async () => {
         picker.value = '#ff0000';
         await elementUpdated(picker);

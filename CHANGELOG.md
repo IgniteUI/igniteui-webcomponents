@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The names of the formats in the format select come from the resource strings. Before, they were fixed English text.
   - A value from code with the same color keeps the hue of a gray, as the user set it.
   - An arrow key moves the saturation and value marker 1 % of the area, at any area size, and <kbd>Shift</kbd> + Arrow, <kbd>Page Up</kbd>, <kbd>Page Down</kbd>, <kbd>Home</kbd> and <kbd>End</kbd> move it 10 %. Before, an arrow key moved it 1 pixel, and there was no large step.
+  - In input mode, the picker is a block and the text field fills its container, as in the date picker. The clear icon takes its space from the text, so the field keeps its width when the value clears. Before, the field had the width of its content. To keep a narrow field, set the width of the picker. [#2647](https://github.com/IgniteUI/igniteui-webcomponents/issues/2647)
 - #### Combo
   - A change of `showSelectAll` or `groupSelection` keeps the active item. Before, no option was active after the change. When the change removes the active select-all option, or an active group header is no longer an option, no option is active.
 - #### Date picker

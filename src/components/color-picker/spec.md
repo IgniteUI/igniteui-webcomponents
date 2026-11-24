@@ -79,6 +79,7 @@
 |      25 | 2026-11-23 | The `oklch` format |
 |      26 | 2026-11-23 | The confirm mode of `selection-commit`: the draft, the preview, Cancel and Apply, and the `footer` slot |
 |      27 | 2026-11-23 | The value text of the sliders, color names, swatch names from the color name, and the copy feedback |
+|      28 | 2026-11-24 | In input mode, the picker is a block and the text field fills its container, so the clear icon does not change its width |
 
 ## Overview
 
@@ -229,6 +230,10 @@ click on it clears the value and emits `igcInput`, and `igcChange` follows when 
 any change of the user. The focus stays in the text field. The `clear-icon` slot replaces the icon; to hide it, style
 `::part(clear-icon)` with `display: none`. Keyboard users clear the value by deleting the text. `default` mode has no
 clear icon.
+
+In `input` mode, the picker is a block and the text field fills its container, as in the date picker. The clear icon
+takes its space from the text, so the field keeps its width when the value clears. To keep a narrow field, set the
+width of the picker. In `default` mode, the picker is inline.
 
 The text field of `input` mode is the `field` part. A `--ig-input-group-*` variable set on `::part(field)` styles the
 field and not the inputs inside the picker. The field also forwards the parts of the select and the combo: `input`
@@ -664,8 +669,9 @@ The component suite reuses `createFormAssociatedTestBed`, `runValidationContaine
 13. Open and close - the pointer, keyboard and outside-click paths. A closed picker does not cancel <kbd>Escape</kbd>. An
     <kbd>Escape</kbd> that an IME handles keeps the picker open.
 14. Input mode - the anchor input, its label and its prefix. The clear icon shows only while a color is set and only
-    in input mode; a click clears with `igcInput`, `igcChange` follows on focus leave, and the focus stays in the text
-    field (a real mouse click); the `clear-icon` slot; no change while disabled; `clear()` clears with no events. The
+    in input mode; the field fills its container, so the clear icon does not change its width; a click clears with
+    `igcInput`, `igcChange` follows on focus leave, and the focus stays in the text field (a real mouse click); the
+    `clear-icon` slot; no change while disabled; `clear()` clears with no events. The
     `field` part and the forwarded parts style the text field and not the inputs of the picker.
 15. Rendering of the picker surface rows, and the direction of the slider tracks in LTR and RTL.
 16. Form association, the touched state, `defaultValue`, the initial format, and validation. In input mode, the text

@@ -105,6 +105,17 @@
     }
 }
 
+// As in the date picker, the text field fills its container, so the clear
+// icon takes its space from the text.
+:host([mode='input']) {
+    display: block;
+
+    [part='color-picker'] {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+}
+
 :host([required]) [part='label']::after {
     @include required-asterisk();
 }
