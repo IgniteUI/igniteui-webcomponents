@@ -4,7 +4,7 @@ import { ColorModel } from '../color-picker/model.js';
 import type { ColorPanelView } from '../types.js';
 
 /**
- * Moves the canvas marker to the saturation and value of the color.
+ * Moves the canvas marker to the position of the color on the area.
  *
  * @internal
  */

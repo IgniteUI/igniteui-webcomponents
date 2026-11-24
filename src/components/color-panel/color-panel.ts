@@ -55,6 +55,7 @@ import IgcIconButtonComponent from '../button/icon-button.js';
 import {
   formatColorName,
   formatHueValue,
+  formatOklchAreaValue,
   formatPercent,
   formatSwatchName,
   formatValueWithName,
@@ -73,6 +74,12 @@ import {
   parseTypedColor,
   opaqueColor,
 } from '../color-picker/model.js';
+import {
+  type AreaSpace,
+  cuspColor,
+  OKLCH_AREA_CHROMA,
+  oklchHueTrack,
+} from '../color-picker/oklch.js';
 import IgcPickerCanvasComponent, {
   type PickerCanvasEventDetail,
 } from '../color-picker/picker-canvas.js';
@@ -146,8 +153,9 @@ const valueControls = `${IgcColorSwatchComponent.tagName}, ${IgcPickerCanvasComp
 /**
  * A color selection surface that stays in the page.
  *
- * The user picks a color with the HSV saturation/value canvas, the hue slider
- * and the optional alpha slider. The user can also type any CSS color string,
+ * The user picks a color with the color area, the hue slider and the optional
+ * alpha slider. The area is saturation by value, or lightness by chroma at the
+ * OKLCH hue in the `oklch` format. The user can also type any CSS color string,
  * such as hex, `rgb()`, `hsl()`, `oklch()` or a named color, pick a swatch, or
  * pick a color from the screen with the native EyeDropper API, where the
  * browser provides one.
@@ -162,8 +170,8 @@ const valueControls = `${IgcColorSwatchComponent.tagName}, ${IgcPickerCanvasComp
  * @fires igcChange - Emitted when the user ends a change of the color: on the release of the canvas or a slider, on each key that moves them, on a commit of the color text or the alpha input, and on a swatch or an eye dropper pick.
  *
  * @csspart base - The wrapper of the panel.
- * @csspart picker-canvas - The saturation and value canvas.
- * @csspart marker - The marker on the canvas that shows the saturation and value.
+ * @csspart picker-canvas - The area: saturation by value, or lightness by chroma in the `oklch` format.
+ * @csspart marker - The marker on the area that shows the picked color.
  * @csspart dragging - Added to the marker part while the user drags it.
  * @csspart main-row - The row containing the hue slider and the copy/eyedropper buttons.
  * @csspart alpha-row - The row containing the alpha slider and input, rendered when `show-alpha` is set.
@@ -467,8 +475,9 @@ export default class IgcColorPanelComponent extends HydrationMixin(
   }
 
   protected override willUpdate(props: PropertyValues<this>): void {
-    // A switch to the gradient view renders the canvas again.
-    if (props.has('activeView') || props.has('views')) {
+    // A switch to the gradient view renders the canvas again, and the area
+    // of the OKLCH format has other axes.
+    if (props.has('activeView') || props.has('views') || props.has('format')) {
       this._markerStale = true;
     }
 
@@ -504,14 +513,31 @@ export default class IgcColorPanelComponent extends HydrationMixin(
   ): void {
     stopPropagation(event);
 
-    this._color.setSaturationAndValue(event.detail.x, 100 - event.detail.y);
+    const { x, y } = event.detail;
+
+    if (this._areaSpace === 'oklch') {
+      this._pickLightnessAndChroma(100 - y, (x / 100) * OKLCH_AREA_CHROMA);
+      return;
+    }
+
+    this._color.setSaturationAndValue(x, 100 - y);
     this._applyUserColor();
   }
 
   private _handleHueValueChange(event: Event): void {
     stopPropagation(event);
 
-    this._color.h = asNumber((event.target as HTMLInputElement).value);
+    const hue = asNumber((event.target as HTMLInputElement).value);
+
+    if (this._areaSpace === 'oklch') {
+      // The gamut of the new hue can cut the chroma, which moves the marker.
+      if (this._color.setOklchHue(hue)) {
+        this[syncMarker]();
+      }
+    } else {
+      this._color.h = hue;
+    }
+
     this._applyUserColor();
   }
 
@@ -694,14 +720,54 @@ export default class IgcColorPanelComponent extends HydrationMixin(
 
   //#region Color changes
 
+  private get _areaSpace(): AreaSpace {
+    return this.format === 'oklch' ? 'oklch' : 'hsv';
+  }
+
+  /**
+   * The marker position in percent of the area: across, and up from the
+   * bottom. In the OKLCH format, the chroma and the lightness.
+   */
+  private get _areaPosition(): [across: number, up: number] {
+    if (this._areaSpace === 'oklch') {
+      const [lightness, chroma] = this._color.toOKLCH();
+      return [(chroma / OKLCH_AREA_CHROMA) * 100, lightness];
+    }
+
+    const [, saturation, value] = this._color.toHSV();
+    return [saturation, value];
+  }
+
+  /**
+   * Takes a pick on the OKLCH area. Beyond the gamut edge the chroma stops at
+   * the edge, and so does the marker. A pick of the same color reports
+   * nothing.
+   */
+  private _pickLightnessAndChroma(lightness: number, chroma: number): void {
+    const previous = this.value;
+
+    if (this._color.setLightnessAndChroma(lightness, chroma)) {
+      this[syncMarker]();
+    }
+
+    if (this.value !== previous) {
+      this._applyUserColor();
+    }
+  }
+
   /** The alpha channel as the whole percentage that both alpha controls use. */
   private get _alphaPercent(): number {
     return Math.round(this._color.alpha * 100);
   }
 
-  /** The pure hue that the saturation/value plane and the hue thumb use. */
+  /**
+   * The pure hue that the HSV area and the hue thumb use. In the OKLCH format,
+   * the cusp of the hue.
+   */
   private get _currentColor(): string {
-    return `hsl(${this._color.h} 100% 50%)`;
+    return this._areaSpace === 'oklch'
+      ? cuspColor(this._color.toOKLCH()[2])
+      : `hsl(${this._color.h} 100% 50%)`;
   }
 
   /**
@@ -711,6 +777,10 @@ export default class IgcColorPanelComponent extends HydrationMixin(
   private _applyColorProperties(): void {
     this._setHostColor('--_current-color', this._currentColor);
     this._setHostColor('--_selected-color', opaqueColor(this._color));
+    this._setHostColor(
+      '--_hue-slider-track',
+      this._areaSpace === 'oklch' ? oklchHueTrack() : ''
+    );
   }
 
   private _setHostColor(name: string, value: string): void {
@@ -962,22 +1032,27 @@ export default class IgcColorPanelComponent extends HydrationMixin(
     const { width: markerWidth, height: markerHeight } =
       canvas.getMarkerDimensions();
 
-    const [, s, v] = this._color.toHSV();
+    const [across, up] = this._areaPosition;
 
-    canvas.x = (s / 100) * rect.width - markerWidth;
-    canvas.y = ((100 - v) / 100) * rect.height - markerHeight;
+    canvas.x = (across / 100) * rect.width - markerWidth;
+    canvas.y = ((100 - up) / 100) * rect.height - markerHeight;
   }
 
   //#endregion
 
   private _renderCanvasGradient(): TemplateResult {
     const strings = this.resourceStrings;
-    const [, saturation, brightness] = this._color.toHSV();
-    const axes = formatString(
-      strings.color_picker_canvas_value,
-      Math.round(saturation),
-      Math.round(brightness)
-    );
+    const space = this._areaSpace;
+    const oklch = space === 'oklch';
+    const [across, up] = this._areaPosition;
+    const [, chroma, hue] = this._color.toOKLCH();
+    const axes = oklch
+      ? formatOklchAreaValue(up, chroma, this)
+      : formatString(
+          strings.color_picker_canvas_value,
+          Math.round(across),
+          Math.round(up)
+        );
     // An empty value has no color name.
     const valueText = this._color.isEmpty
       ? axes
@@ -996,9 +1071,15 @@ export default class IgcColorPanelComponent extends HydrationMixin(
         @igcColorPicked=${this._handleCanvasColorPicked}
         currentColor=${this._currentColor}
         markerColor=${opaqueColor(this._color)}
-        .saturation=${saturation}
-        .brightness=${brightness}
-        .markerLabel=${strings.color_picker_canvas_label}
+        .space=${space}
+        .hue=${hue}
+        .saturation=${across}
+        .brightness=${up}
+        .markerLabel=${
+          oklch
+            ? strings.color_picker_canvas_oklch_label
+            : strings.color_picker_canvas_label
+        }
         .markerValueText=${valueText}
       >
       </igc-picker-canvas>
@@ -1006,12 +1087,15 @@ export default class IgcColorPanelComponent extends HydrationMixin(
   }
 
   private _renderHueSlider(): TemplateResult {
-    const hue = Math.round(this._color.h);
+    const space = this._areaSpace;
+    const hue = Math.round(
+      space === 'oklch' ? this._color.toOKLCH()[2] : this._color.h
+    );
 
     return html`
       <input
         aria-label=${this.resourceStrings.color_picker_hue}
-        aria-valuetext=${formatHueValue(hue, this)}
+        aria-valuetext=${formatHueValue(hue, this, space)}
         type="range"
         part="hue"
         min="0"

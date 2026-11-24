@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+} from '@open-wc/testing';
 import { spy } from 'sinon';
 
 import {
@@ -305,6 +311,64 @@ describe('Picker canvas', () => {
         expect(press(arrowRight)).to.be.undefined;
         expect(press(endKey)).to.be.undefined;
       });
+    });
+  });
+
+  describe('OKLCH area', () => {
+    /** The alpha of the area at a share (0-1) across and down its canvas. */
+    function alphaAt(across: number, down: number): number {
+      const plane = canvas.renderRoot.querySelector('canvas')!;
+      const x = Math.round(across * (plane.width - 1));
+      const y = Math.round(down * (plane.height - 1));
+
+      return plane.getContext('2d')!.getImageData(x, y, 1, 1).data[3];
+    }
+
+    beforeEach(async () => {
+      canvas.space = 'oklch';
+      canvas.hue = 140;
+      await elementUpdated(canvas);
+      await nextFrame();
+    });
+
+    it('paints the gamut of the hue on a canvas, in CSS pixels', () => {
+      const plane = canvas.renderRoot.querySelector('canvas')!;
+
+      expect(canvas.getAttribute('space')).to.equal('oklch');
+      expect(plane.getAttribute('aria-hidden')).to.equal('true');
+      expect([plane.width, plane.height]).to.eql([
+        canvas.clientWidth,
+        canvas.clientHeight,
+      ]);
+      // Green at lightness 50 % reaches chroma 0.161 of 0.33.
+      expect(alphaAt(0.2, 0.5)).to.equal(255);
+      expect(alphaAt(0.9, 0.5)).to.equal(0);
+    });
+
+    it('paints again for a new hue', async () => {
+      canvas.hue = 328;
+      await elementUpdated(canvas);
+      await nextFrame();
+
+      // Magenta at lightness 70 % reaches chroma 0.32.
+      expect(alphaAt(0.9, 0.3)).to.equal(255);
+    });
+
+    it('has no canvas in the HSV space', async () => {
+      canvas.space = 'hsv';
+      await elementUpdated(canvas);
+
+      expect(canvas.renderRoot.querySelector('canvas')).to.be.null;
+    });
+
+    it('lets a listener move the marker again', () => {
+      canvas.addEventListener('igcColorPicked', () => {
+        canvas.x = 10;
+      });
+
+      simulateKeyboard(canvas, arrowRight);
+
+      expect(canvas.x).to.equal(10);
     });
   });
 

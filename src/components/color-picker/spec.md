@@ -44,6 +44,7 @@
     - [Confirm mode](#confirm-mode-1)
     - [Color names](#color-names)
     - [Contrast ratio](#contrast-ratio)
+    - [OKLCH gamut](#oklch-gamut)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -83,6 +84,7 @@
 |      27 | 2026-11-23 | The value text of the sliders, color names, swatch names from the color name, and the copy feedback |
 |      28 | 2026-11-24 | In input mode, the picker is a block and the text field fills its container, so the clear icon does not change its width |
 |      29 | 2026-11-24 | The contrast readout: `contrast-against` passes to the panel, and the popup shows the WCAG 2 ratio and the AA and AAA levels |
+|      30 | 2026-11-24 | The OKLCH area: in the `oklch` format, the area is lightness by chroma at the OKLCH hue, and the hue slider is the OKLCH hue |
 
 ## Overview
 
@@ -91,8 +93,8 @@ interactive dropdown. It supports two anchor presentations: `mode="default"` ren
 the current color - a checkered pattern when no value is set - while `mode="input"` renders an editable text field
 with a color swatch prefix.
 
-Activating the anchor opens a picker surface, an [`igc-color-panel`](../color-panel/spec.md), containing an HSV
-saturation and value gradient canvas, a hue slider,
+Activating the anchor opens a picker surface, an [`igc-color-panel`](../color-panel/spec.md), containing an area
+(HSV saturation by value, or OKLCH lightness by chroma in the `oklch` format), a hue slider,
 an optional alpha slider, a format-aware color string input, an optional eye dropper, a copy-to-clipboard action and
 an optional grid of predefined swatches. The selected color is exposed as a string in one of four formats (`hex`,
 `rgb`, `hsl` or `oklch`), can be cleared to an empty value, and participates in standard HTML form submission, `required`
@@ -101,7 +103,8 @@ validation and validation message projection.
 ### Key features
 
 - **Two anchor modes**: a preview trigger button, or an editable text field with a swatch prefix.
-- **HSV canvas, hue and alpha sliders**, kept synchronized with the current color at all times.
+- **An area, a hue slider and an alpha slider**, kept synchronized with the current color at all times. In the
+  `oklch` format the area is OKLCH lightness by chroma, so its position matches the color text.
 - **Any CSS color string**: hex, `rgb()`, `hsl()`, named colors and the other notations, such as `oklch()`, `lab()`,
   `color()` and `color-mix()`, are parsed into sRGB and normalized.
 - **Four serialization formats**, switchable at run time without altering the represented color.
@@ -129,7 +132,8 @@ The `igc-color-picker` must:
 - render a checkered anchor background while the value is empty.
 - serialize its `value` consistently in the currently selected `format`.
 - keep the gradient canvas marker, the hue slider, the alpha slider and the color value input synchronized with the
-  current color, deriving the canvas position from the HSV saturation and value.
+  current color, deriving the canvas position from the HSV saturation and value, or from the OKLCH lightness and
+  chroma in the `oklch` format.
 - allow switching between `hex`, `rgb`, `hsl` and `oklch` without losing the represented color.
 - optionally hide the format switcher through `hide-formats`, and show the alpha slider through `show-alpha`.
 - render an eye dropper action only when the platform `EyeDropper` API is available.
@@ -258,7 +262,7 @@ igc-color-picker::part(field) {
 
 The `value` property accepts any valid CSS color string: hex, `rgb()`, `hsl()`, named colors and the other
 notations, such as `oklch()`, `lab()`, `lch()`, `color()`, relative colors and `color-mix()`. On assignment the string
-is parsed and validated into an internal color model that maintains synchronized RGB, HSL and HSV representations
+is parsed and validated into an internal color model that maintains synchronized RGB, HSL, HSV and OKLCH representations
 plus an alpha channel. An empty, whitespace-only or invalid string produces an empty model rather than a stale color;
 while empty, the anchor renders a checkered background and the serialized value is `''`.
 
@@ -297,14 +301,16 @@ state of the control.
 The surface holds, in order: the gradient canvas, a row with the hue slider and the copy and eye dropper buttons, an
 optional alpha row, a row with the format switcher and the color value input, and an optional swatch grid.
 
-- Dragging the canvas sets the HSV saturation and value.
+- Dragging the canvas sets the HSV saturation and value. In the `oklch` format it sets the OKLCH lightness and
+  chroma at the OKLCH hue of the hue slider, and a drag beyond the gamut edge keeps the lightness and cuts the chroma
+  back to the edge. See [the OKLCH area](../color-panel/spec.md#the-oklch-area).
 - The hue and alpha sliders are native range inputs.
 - The color value input accepts a full color string and re-serializes it in the active format. A non-empty but
   invalid string reverts the input to the last valid color; an empty string clears the value.
 - `hide-formats` removes the format switcher; `show-alpha` adds the alpha row.
 
-After each change, and on open, the canvas marker is re-synchronized with the saturation and value of the current
-color on the next animation frame.
+After each change, and on open, the canvas marker is re-synchronized with the current color on the next animation
+frame: its saturation and value, or its lightness and chroma in the `oklch` format.
 
 The surface is an [`igc-color-panel`](../color-panel/spec.md). The picker passes `format`, `show-alpha`,
 `hide-formats`, `swatches`, `views`, `active-view`, `contrast-against` and its resource strings to the panel, and takes each change of the
@@ -462,6 +468,8 @@ Cancel and Apply in the confirm mode.
 | `color_picker_eye_dropper`   | Pick a color from the screen      | The name of the eye dropper button.                            |
 | `color_picker_canvas_label`  | Saturation and value              | The name of the canvas marker.                                 |
 | `color_picker_canvas_value`  | Saturation {0}%, brightness {1}%  | The `aria-valuetext` of the canvas marker. `{0}` is the saturation and `{1}` the brightness. |
+| `color_picker_canvas_oklch_label` | Lightness and chroma         | The name of the canvas marker in the `oklch` format.           |
+| `color_picker_canvas_oklch_value` | Lightness {0}%, chroma {1}   | The `aria-valuetext` of the canvas marker in the `oklch` format. `{0}` is the lightness in whole percent and `{1}` the chroma with 3 decimals, both in the number format of the locale. |
 | `color_picker_value`         | Color value                       | The label of the color value input.                            |
 | `color_picker_no_color`      | No color                          | The name of a no-color swatch without a label.                 |
 | `color_picker_swatches`      | Color swatches                    | The name of the swatch list.                                   |
@@ -500,10 +508,10 @@ describes the color names.
 | <kbd>Alt</kbd> + <kbd>Arrow Down</kbd>     | Opens the picker dropdown.                                                             |
 | <kbd>Escape</kbd>                          | Closes the dropdown and returns focus to the anchor. While the dropdown is closed, it does not cancel the key. |
 | <kbd>Alt</kbd> + <kbd>Arrow Up</kbd>       | Closes the dropdown and returns focus to the anchor.                                   |
-| <kbd>Arrow</kbd> keys                      | With the canvas marker focused, moves it 1 % of the canvas in the direction of the arrow, also in RTL, updating the saturation and value. |
+| <kbd>Arrow</kbd> keys                      | With the canvas marker focused, moves it 1 % of the canvas in the direction of the arrow, also in RTL, updating the saturation and value (the chroma and lightness in the `oklch` format). |
 | <kbd>Shift</kbd> + <kbd>Arrow</kbd> keys   | With the canvas marker focused, moves it 10 % of the canvas in the direction of the arrow. |
-| <kbd>Page Up</kbd> / <kbd>Page Down</kbd>  | With the canvas marker focused, moves it 10 % up or down, raising or lowering the value. |
-| <kbd>Home</kbd> / <kbd>End</kbd>           | With the canvas marker focused, moves it 10 % left or right, lowering or raising the saturation. |
+| <kbd>Page Up</kbd> / <kbd>Page Down</kbd>  | With the canvas marker focused, moves it 10 % up or down, raising or lowering the value (the lightness in the `oklch` format). |
+| <kbd>Home</kbd> / <kbd>End</kbd>           | With the canvas marker focused, moves it 10 % left or right, lowering or raising the saturation (the chroma in the `oklch` format). |
 | <kbd>Arrow</kbd> keys                      | In the swatch list, moves the focus to the previous or next swatch, or to the nearest swatch in the row above or below. |
 | <kbd>Home</kbd> / <kbd>End</kbd>           | In the swatch list, moves the focus to the first or last swatch.                       |
 | <kbd>Enter</kbd> / <kbd>Space</kbd>        | In the swatch list, picks the focused swatch.                                          |
@@ -599,8 +607,8 @@ reach the listeners on the picker.
 | `suffix`        | The suffix wrapper of the text field in input mode. It holds the clear icon.             |
 | `clear-icon`    | The clear icon wrapper in input mode. It shows while a color is set.                     |
 | `picker`        | The popover container holding the canvas, sliders, inputs and swatches.                  |
-| `picker-canvas` | The saturation and value canvas.                                                         |
-| `marker`        | The marker on the canvas that shows the saturation and value.                            |
+| `picker-canvas` | The area: saturation by value, or lightness by chroma in the `oklch` format.             |
+| `marker`        | The marker on the area that shows the picked color.                                      |
 | `dragging`      | Added to the marker part while the user drags it.                                        |
 | `main-row`      | The row containing the hue slider and the copy and eye dropper buttons.                  |
 | `alpha-row`     | The row containing the alpha slider and input, rendered when `show-alpha` is set.        |
@@ -653,7 +661,7 @@ The `--_` variables in its styles, for example `--_current-color`, are internal.
 
 ## Test scenarios
 
-The component is covered by ten suites in this directory, all running in a real browser through
+The component is covered by twelve suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
@@ -667,6 +675,8 @@ The component is covered by ten suites in this directory, all running in a real 
 | [`color-name.property.spec.ts`](./color-name.property.spec.ts) | Property-based tests for the color names. |
 | [`contrast.spec.ts`](./contrast.spec.ts) | The contrast ratio and its text. |
 | [`contrast.property.spec.ts`](./contrast.property.spec.ts) | Property-based tests for the contrast ratio. |
+| [`oklch.spec.ts`](./oklch.spec.ts) | The OKLCH gamut, the cusps and the area paint. |
+| [`oklch.property.spec.ts`](./oklch.property.spec.ts) | Property-based tests for the OKLCH gamut and conversion. |
 | [`color.property.spec.ts`](./color.property.spec.ts) | Property-based (fuzz) tests for the converters, the parser and the model. |
 
 The component suite reuses `createFormAssociatedTestBed`, `runValidationContainerTests`,
@@ -714,52 +724,63 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Picker canvas
 
-18. Rendering of the gradient and the marker, with the marker label, its default value text and the value text that
+19. Rendering of the gradient and the marker, with the marker label, its default value text and the value text that
     the panel gives it.
-19. Keyboard interaction - the arrow keys move the marker and update the saturation and value. The marker steps in
+20. Keyboard interaction - the arrow keys move the marker and update the saturation and value. The marker steps in
     whole percents of the canvas, at any canvas size: 1 % with an arrow, 10 % with <kbd>Shift</kbd> + Arrow, Page Up,
     Page Down, Home and End. Only the axis that moves snaps. The steps stop at the edges, keep the arrow direction in
     RTL, and do nothing while the canvas has no size.
-20. Pointer interaction - dragging sets the saturation and value.
+21. Pointer interaction - dragging sets the saturation and value.
+
+### OKLCH area
+
+22. The canvas paints the OKLCH area on a canvas in CSS pixels, paints again for a new hue, has no canvas in HSV, and
+    lets a listener of `igcColorPicked` move the marker again.
 
 ### Color model and parsing
 
-21. `ColorModel` - construction and factory methods, `parse`, the RGB, HSL and HSV setters, the alpha channel,
+23. `ColorModel` - construction and factory methods, `parse`, the RGB, HSL and HSV setters, the alpha channel,
     `asString` in each format (`oklch` with its decimals, the hue of a gray and a hue that rounds to 360), the color
     space conversions, the utility methods and the edge cases.
-22. `parseColor` - hex, rgb/rgba, hsl/hsla and named color parsing, a null context, and the edge cases. The notations
+24. `parseColor` - hex, rgb/rgba, hsl/hsla and named color parsing, a null context, and the edge cases. The notations
     outside the legacy syntax give the same sRGB channels in Chromium, Firefox and WebKit, and a color outside the
     gamut clips. A `color(srgb)` serialization clips and reads `none` as 0, and an unknown serialization is invalid.
     The colors that depend on their context are invalid, and text that is not a color cannot become one through the
     relative color conversion.
-23. `isValidColor` - accepting valid strings and rejecting invalid ones and context colors.
+25. `isValidColor` - accepting valid strings and rejecting invalid ones and context colors.
+
+### OKLCH space
+
+26. The model keeps the OKLCH values, sets the lightness and chroma, cuts a chroma beyond the gamut, cuts the chroma
+    for a hue with less gamut, keeps the OKLCH hue of a gray with the HSV hue of its cusp and the other way, starts an
+    empty color at white with the hue of red, and keeps the hues of a gray in a clone.
 
 ### Converters
 
-24. The conversions between RGB, HSL, HSV and hex, in both directions, including round-trips. The saturation stays
+27. The conversions between RGB, HSL, HSV and hex, in both directions, including round-trips. The saturation stays
     finite for a tiny saturation at full value. RGB to OKLCH gives the values of the CSS Color 4 sample code, and no
     chroma for a gray.
 
 ### Color properties
 
-25. Converters - the exact hex round-trip, the HSL and HSV round-trips, HSL to RGB directly and through HSV, and
+28. Converters - the exact hex round-trip, the HSL and HSV round-trips, HSL to RGB directly and through HSV, and
     every converted channel in range, OKLCH included.
-26. Parsing - `parseColor` never throws and returns channels in range. A string that is not a color gives opaque black
+29. Parsing - `parseColor` never throws and returns channels in range. A string that is not a color gives opaque black
     and an empty model. A `color(srgb)` color reads as whole channels in range, and as the same channels inside the
     gamut. Any `oklch()`, `lab()` or `color()` color parses into sRGB. A model string in each format parses back to
     the same color. Any 8-bit color comes back from its `oklch` string, exactly in Firefox and WebKit and within one
     step in Chromium.
-27. Model - every color space stays in range for any sequence of channel writes, and a clone equals its source.
-28. Color names - every 8-bit color gets a name made of the words of the word set in the order of the pattern, for the
+30. Model - every color space stays in range for any sequence of channel writes, and a clone equals its source.
+31. Color names - every 8-bit color gets a name made of the words of the word set in the order of the pattern, for the
     word orders of English, French and Japanese, and a color with equal channels is black, white or a gray.
 
 ### Host ARIA
 
-29. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+32. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
-30. In button mode, the anchor lists the helper text before the host description, also after the first
+33. In button mode, the anchor lists the helper text before the host description, also after the first
     render.
-31. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+34. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -767,54 +788,76 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Disabled popup
 
-32. The shared runner `runDisabledPopupTests`, with the anchor as the `aria-expanded` target.
+35. The shared runner `runDisabledPopupTests`, with the anchor as the `aria-expanded` target.
 
 ### Value state motion
 
 In input mode.
 
-33. A typed color marks the anchor input as a user change.
-34. A value from code right after it ends the user change, so the input shows it at once.
+36. A typed color marks the anchor input as a user change.
+37. A value from code right after it ends the user change, so the input shows it at once.
 
 ### Color panel
 
-35. The popup shows the color panel, and the picker forwards the parts of the panel; a `::part(hue)` rule reaches the
+38. The popup shows the color panel, and the picker forwards the parts of the panel; a `::part(hue)` rule reaches the
     hue slider of the panel. The picker passes its options, `contrast-against` and strings to the panel, and the value of the panel equals
-    the value of the picker, also after a format change. The events of the panel stay inside the picker.
-36. The picker shows its swatch children in the swatch list of the panel, the swatch list is a stop of the focus trap,
+    the value of the picker, also after a format change. The events of the panel stay inside the picker. In the
+    `oklch` format, the popup shows the OKLCH area.
+39. The picker shows its swatch children in the swatch list of the panel, the swatch list is a stop of the focus trap,
     and a click on a child swatch sets the value. The picker passes `views` and `active-view`, and a click on the view
     switcher sets the `activeView` of the picker.
 
 ### Confirm mode
 
-37. The a11y audit. The footer shows the preview, Cancel and Apply only in the confirm mode, and the `footer` slot
+40. The a11y audit. The footer shows the preview, Cancel and Apply only in the confirm mode, and the `footer` slot
     content in both modes.
-38. A change in the popup is a draft: `value`, the anchor and the initial half of the preview keep the color, no value
+41. A change in the popup is a draft: `value`, the anchor and the initial half of the preview keep the color, no value
     event is emitted, and the contrast readout shows the draft. Apply writes the draft, emits one `igcChange`, closes
     and focuses the anchor; an Apply without a change emits nothing.
-39. Cancel, Escape, Alt + Arrow Up, an outside click, a scroll close, `hide()`, `open = false` and disabling drop
+42. Cancel, Escape, Alt + Arrow Up, an outside click, a scroll close, `hide()`, `open = false` and disabling drop
     the draft with no value events. A canceled `igcClosing` keeps the draft on Cancel, and Apply writes it.
-40. Enter on a swatch picks and applies, and Space only picks. Enter on the canvas marker and on a slider applies.
+43. Enter on a swatch picks and applies, and Space only picks. Enter on the canvas marker and on a slider applies.
     Enter in the color value input commits the text into the draft and does not apply. An alpha commit goes into the
     draft. In the immediate mode, Enter on a slider does not close.
-41. The initial half of the preview restores the initial color. The text field of the input mode shows the value
+44. The initial half of the preview restores the initial color. The text field of the input mode shows the value
     during a draft. A new value from code ends the draft, and the same color keeps it. A format change keeps the
     draft. The end of the confirm mode drops the draft. The clear icon drops the draft and clears as a user change,
     and a commit of the text field of the input mode drops the draft.
 
 ### Color names
 
-42. The grays by lightness, black and white; no lightness word for the pure colors; the lightness compared with the most
+45. The grays by lightness, black and white; no lightness word for the pure colors; the lightness compared with the most
     chromatic color of the hue (navy is "dark blue"); grayish colors; a dark orange as brown and a very light red as
     pink; and the hue word of the pure color of each HSV hue, for the hue slider.
 
+### OKLCH area value text
+
+46. The lightness and the chroma of the OKLCH area in the number format of the locale, also in a locale with other
+    digits.
+
 ### Contrast ratio
 
-43. The WCAG 2 ratio of known pairs (21:1, 1:1, `#767676` and `#595959` on white); the value over the background and
+47. The WCAG 2 ratio of known pairs (21:1, 1:1, `#767676` and `#595959` on white); the value over the background and
     the background over white, each with its alpha; and two decimals at most, cut and not rounded. The property test
     proves that the ratio is from 1 to 21 and the same for both orders of two opaque colors. The
     [color panel](../color-panel/spec.md#contrast-1) suite covers the readout, and the picker suite covers the readout
     of the draft in the confirm mode.
+
+### OKLCH gamut
+
+48. The in-gamut chroma ranges of a row: one range for most rows, the black-to-blue spike as a range of its own, and
+    only a gray at black and white. The cut-back to the nearest range below, every primary and secondary color kept,
+    and a gray by its chroma. The property tests prove that a cut-back never goes up and stays in sRGB, that every
+    8-bit color keeps its chroma, and that an 8-bit color converts to OKLCH and back.
+
+### OKLCH cusps
+
+49. The HSV hue of the cusp of an OKLCH hue and back, the cusp of a hue, and the hue slider track of 37 cusp colors.
+
+### OKLCH area paint
+
+50. The paint is transparent beyond the gamut edge, gives the pixels at the edge a share of the alpha, and paints the
+    blue spike as a line apart from the rest of its row.
 
 ## Assumptions and limitations
 
@@ -848,8 +891,8 @@ In input mode.
   `aria-expanded`. The text input of the input mode does not carry it.
 - The hue and alpha sliders are native range inputs labelled through `aria-label`. Their `aria-valuetext` gives the
   angle and the hue name, such as "120 degrees, green", and the alpha percentage.
-- While a color is set, the value text of the gradient canvas marker ends with the color name, such as "dark vibrant
-  blue". The gradient
+- The gradient canvas marker is named "Saturation and value", or "Lightness and chroma" in the `oklch` format. While
+  a color is set, its value text ends with the color name, such as "dark vibrant blue". The gradient
   canvas marker is focusable and operable with the arrow keys, <kbd>Shift</kbd> + Arrow, Page Up, Page
   Down, Home and End.
 - The format switcher is a select with a visually-hidden label, and the color value input carries one as well.
@@ -886,5 +929,4 @@ layout follow the document direction; color values are direction-independent.
 In RTL, the hue and alpha slider tracks go from right to left, as the sliders do. The tracks use the `dir` attribute
 through `:dir()`. A `direction: rtl` style without a `dir` attribute reverses the sliders but not the tracks.
 
-The saturation and value canvas does not mirror in RTL, so an arrow key moves its marker in the direction of the
-arrow.
+The area does not mirror in RTL, so an arrow key moves its marker in the direction of the arrow.

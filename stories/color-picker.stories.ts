@@ -25,7 +25,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     docs: {
       description: {
         component:
-          'Color input component.\n\nThe user picks a color with the HSV saturation/value canvas, the hue slider\nand the optional alpha slider. The user can also type any CSS color string,\nsuch as hex, `rgb()`, `hsl()`, `oklch()` or a named color.\n\nThe component supports pre-defined swatches and the native EyeDropper API,\nwhere the browser provides one. The anchor is a trigger button\n(`mode="default"`) or an editable text field (`mode="input"`).',
+          'Color input component.\n\nThe user picks a color with the color area, the hue slider and the optional\nalpha slider. The area is saturation by value, or lightness by chroma at the\nOKLCH hue in the `oklch` format. The user can also type any CSS color string,\nsuch as hex, `rgb()`, `hsl()`, `oklch()` or a named color.\n\nThe component supports pre-defined swatches and the native EyeDropper API,\nwhere the browser provides one. The anchor is a trigger button\n(`mode="default"`) or an editable text field (`mode="input"`).',
       },
     },
     actions: {
@@ -364,6 +364,7 @@ export const Default: Story = {
           'A fully interactive color picker. Use the controls panel to explore `mode`, `format`, `showAlpha`, `hideFormats`, `selectionCommit`, `scrollStrategy` and the validation properties.',
       },
     },
+    actions: { handles: [] },
   },
   args: {
     label: 'Pick a color',

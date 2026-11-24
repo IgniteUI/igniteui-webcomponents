@@ -2288,6 +2288,18 @@ describe('Color picker', () => {
       expect(panel.resourceStrings.color_picker_hue).to.equal('Tone');
     });
 
+    it('shows the OKLCH area in the popup for the oklch format', async () => {
+      picker.format = 'oklch';
+      picker.value = '#ff00ff';
+      picker.open = true;
+      await elementUpdated(picker);
+
+      const canvas = getPanelRoot(picker).querySelector('igc-picker-canvas')!;
+
+      expect(canvas.space).to.equal('oklch');
+      expect(getHueSlider(picker).value).to.equal('328');
+    });
+
     it('passes contrastAgainst to the panel', async () => {
       picker.value = '#000000';
       picker.contrastAgainst = 'white';

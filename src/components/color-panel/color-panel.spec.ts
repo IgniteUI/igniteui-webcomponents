@@ -40,13 +40,21 @@ import { configureTheme } from '#theming/config.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcColorPickerComponent from '../color-picker/color-picker.js';
+import { converter } from '../color-picker/converters.js';
+import {
+  cuspColor,
+  gamutChroma,
+  OKLCH_AREA_CHROMA,
+  oklchHueTrack,
+  pureHueOklch,
+} from '../color-picker/oklch.js';
 import type IgcPickerCanvasComponent from '../color-picker/picker-canvas.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcSelectComponent from '../select/select.js';
 import IgcColorPanelComponent from './color-panel.js';
 import type IgcColorSwatchGroupComponent from './color-swatch-group.js';
 import type IgcColorSwatchComponent from './color-swatch.js';
-import { swatchKey } from './common.js';
+import { panelColor, swatchKey } from './common.js';
 
 function query<T extends Element>(
   panel: IgcColorPanelComponent,
@@ -59,6 +67,8 @@ const getBase = (panel: IgcColorPanelComponent) =>
   query<HTMLElement>(panel, '[part="base"]');
 const getCanvas = (panel: IgcColorPanelComponent) =>
   query<IgcPickerCanvasComponent>(panel, 'igc-picker-canvas');
+const getMarker = (panel: IgcColorPanelComponent) =>
+  getCanvas(panel).renderRoot.querySelector<HTMLElement>('[part~="marker"]')!;
 const getHue = (panel: IgcColorPanelComponent) =>
   query<HTMLInputElement>(panel, '[part="hue"]');
 const getAlphaSlider = (panel: IgcColorPanelComponent) =>
@@ -155,8 +165,9 @@ function slide(slider: HTMLInputElement, value: string): void {
   simulateInput(slider, { value });
 }
 
-function release(slider: HTMLInputElement): void {
-  slider.dispatchEvent(new Event('change', { bubbles: true }));
+/** Ends a gesture on a slider or the canvas. */
+function release(target: Element): void {
+  target.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
 /** The marker offsets that put its center on `s`% and `100 - v`% of the canvas. */
@@ -594,10 +605,7 @@ describe('Color panel', () => {
       await elementUpdated(getCanvas(panel));
     });
 
-    const markerText = () =>
-      getCanvas(panel)
-        .renderRoot.querySelector('[part~="marker"]')!
-        .getAttribute('aria-valuetext');
+    const markerText = () => getMarker(panel).getAttribute('aria-valuetext');
 
     it('gives the hue slider the angle and the name of the hue', async () => {
       expect(getHue(panel).getAttribute('aria-valuetext')).to.equal(
@@ -1546,5 +1554,207 @@ describe('Color panel', () => {
         ],
       });
     });
+  });
+
+  describe('OKLCH area', () => {
+    /** Picks a point of the area, as a drag or a key does. */
+    function pickArea(x: number, y: number): void {
+      getCanvas(panel).dispatchEvent(
+        new CustomEvent('igcColorPicked', { detail: { x, y } })
+      );
+    }
+
+    /** The OKLCH values in the value text, as numbers. */
+    function valueOklch(): number[] {
+      return panel.value.match(/[\d.]+/g)!.map(Number);
+    }
+
+    beforeEach(async () => {
+      panel.format = 'oklch';
+      panel.value = '#ff00ff';
+      await elementUpdated(panel);
+      await nextFrame();
+    });
+
+    it('is accessible', async () => {
+      await expect(panel).shadowDom.to.be.accessible(axeHiddenLabelOptions);
+      await expect(panel).lightDom.to.be.accessible(axeHiddenLabelOptions);
+    });
+
+    it('shows lightness by chroma at the OKLCH hue, and puts the marker there', () => {
+      const [lightness, chroma, hue] = converter.rgb.oklch([255, 0, 255]);
+      const canvas = getCanvas(panel);
+      const across = (chroma / OKLCH_AREA_CHROMA) * 100;
+      const { x, y } = markerOffsets(canvas, across, lightness);
+
+      expect(canvas.space).to.equal('oklch');
+      expect(canvas.hue).to.be.closeTo(hue, 1e-9);
+      expect(canvas.saturation).to.be.closeTo(across, 1e-9);
+      expect(canvas.brightness).to.be.closeTo(lightness, 1e-9);
+      expect(canvas.x).to.be.closeTo(x, 0.5);
+      expect(canvas.y).to.be.closeTo(y, 0.5);
+    });
+
+    it('takes the OKLCH hue on the hue slider, with the cusps on its track', async () => {
+      const hue = getHue(panel);
+
+      expect(hue.value).to.equal('328');
+      expect(hue.getAttribute('aria-valuetext')).to.equal(
+        '328 degrees, magenta'
+      );
+      expect(panel.style.getPropertyValue('--_hue-slider-track')).to.equal(
+        oklchHueTrack()
+      );
+      expect(panel.style.getPropertyValue('--_current-color')).to.equal(
+        cuspColor(converter.rgb.oklch([255, 0, 255])[2])
+      );
+
+      panel.format = 'hex';
+      await elementUpdated(panel);
+
+      expect(hue.value).to.equal('300');
+      expect(panel.style.getPropertyValue('--_hue-slider-track')).to.equal('');
+    });
+
+    it('names the marker and gives the lightness and chroma as its value text', async () => {
+      const marker = getMarker(panel);
+
+      expect(marker.getAttribute('aria-label')).to.equal(
+        'Lightness and chroma'
+      );
+      expect(marker.getAttribute('aria-valuetext')).to.equal(
+        'Lightness 70%, chroma 0.322, vibrant magenta'
+      );
+
+      panel.locale = 'de';
+      panel.resourceStrings = {
+        color_picker_canvas_oklch_value: 'Helligkeit {0} %, Buntheit {1}',
+      };
+      await elementUpdated(panel);
+
+      expect(marker.getAttribute('aria-valuetext')).to.match(
+        /^Helligkeit 70 %, Buntheit 0,322, /
+      );
+    });
+
+    it('writes the lightness and chroma of a pick, at the OKLCH hue', () => {
+      const [, , hue] = converter.rgb.oklch([255, 0, 255]);
+      const eventSpy = spy(panel, 'emitEvent');
+
+      pickArea(25, 50);
+
+      const [lightness, chroma, valueHue] = valueOklch();
+
+      expect(lightness).to.equal(50);
+      expect(chroma).to.be.closeTo(0.0825, 1e-5);
+      expect(valueHue).to.be.closeTo(hue, 0.01);
+      expect(emitted(eventSpy)).to.eql([['igcInput', panel.value]]);
+    });
+
+    it('keeps the lightness and cuts the chroma at the gamut edge, and so does the marker', async () => {
+      const [, , hue] = converter.rgb.oklch([255, 0, 255]);
+      const canvas = getCanvas(panel);
+
+      pickArea(100, 10);
+
+      const [lightness, chroma] = valueOklch();
+      const edge = gamutChroma([90, OKLCH_AREA_CHROMA, hue]);
+      const { x } = markerOffsets(canvas, (edge / OKLCH_AREA_CHROMA) * 100, 90);
+
+      expect(lightness).to.equal(90);
+      expect(chroma).to.be.closeTo(edge, 1e-5);
+      expect(canvas.x).to.be.closeTo(x, 0.5);
+
+      // A second pick beyond the edge gives the same color, so no event.
+      const eventSpy = spy(panel, 'emitEvent');
+      pickArea(95, 10);
+
+      expect(eventSpy).not.called;
+    });
+
+    it('does nothing for Arrow Right at the gamut edge', async () => {
+      pickArea(100, 30);
+      release(getCanvas(panel));
+      await elementUpdated(panel);
+
+      const value = panel.value;
+      const eventSpy = spy(panel, 'emitEvent');
+      const marker = getMarker(panel);
+
+      marker.focus();
+      simulateKeyboard(marker, arrowRight);
+
+      expect(panel.value).to.equal(value);
+      expect(eventSpy).not.called;
+    });
+
+    it('moves the OKLCH hue with the slider and cuts the chroma to the new gamut', async () => {
+      const [lightness, chroma] = converter.rgb.oklch([255, 0, 255]);
+
+      slide(getHue(panel), '110');
+      await elementUpdated(panel);
+      await nextFrame();
+
+      const [l, c, h] = getPanelOklch();
+      const canvas = getCanvas(panel);
+      const { x } = markerOffsets(canvas, (c / OKLCH_AREA_CHROMA) * 100, l);
+
+      expect(l).to.be.closeTo(lightness, 1e-9);
+      expect(c).to.equal(gamutChroma([lightness, chroma, 110]));
+      expect(h).to.equal(110);
+      expect(canvas.x).to.be.closeTo(x, 0.5);
+    });
+
+    it('keeps the hue of a gray', async () => {
+      slide(getHue(panel), '264');
+      pickArea(0, 50);
+      await elementUpdated(panel);
+
+      expect(getHue(panel).value).to.equal('264');
+      expect(getCanvas(panel).hue).to.equal(264);
+
+      pickArea(30, 50);
+
+      expect(valueOklch()[2]).to.be.closeTo(264, 0.01);
+    });
+
+    it('takes the hue of a gray from HSV through the cusp on a format switch', async () => {
+      panel.format = 'hex';
+      panel.value = 'hsl(210 50% 50%)';
+      await elementUpdated(panel);
+
+      // A drag to the left edge of the HSV area makes a gray that keeps the
+      // HSV hue of the value, about 210.
+      pickArea(0, 50);
+      panel.format = 'oklch';
+      await elementUpdated(panel);
+
+      const hue = pureHueOklch(getPanelHsvHue())[2];
+
+      expect(getHue(panel).value).to.equal(String(Math.round(hue)));
+      expect(getCanvas(panel).hue).to.be.closeTo(hue, 1e-6);
+    });
+
+    it('starts an empty value at white, with the hue slider at the OKLCH hue of red', async () => {
+      panel.value = '';
+      await elementUpdated(panel);
+      await nextFrame();
+
+      const canvas = getCanvas(panel);
+      const { x, y } = markerOffsets(canvas, 0, 100);
+
+      expect(getHue(panel).value).to.equal('29');
+      expect(canvas.x).to.be.closeTo(x, 0.5);
+      expect(canvas.y).to.be.closeTo(y, 0.5);
+    });
+
+    /** The OKLCH values of the panel color, unrounded. */
+    function getPanelOklch(): number[] {
+      return panel[panelColor]().toOKLCH();
+    }
+
+    function getPanelHsvHue(): number {
+      return panel[panelColor]().toHSV()[0];
+    }
   });
 });

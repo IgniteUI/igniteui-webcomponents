@@ -37,7 +37,13 @@
     "stylelint",
     "webcomponents",
     "noopener",
-    "noreferrer"
+    "noreferrer",
+    "srgb",
+    "rgba",
+    "oklch",
+    "oklab",
+    "currentcolor",
+    "WCAG"
   ],
   "ignoreRegExpList": ["θ"]
 }

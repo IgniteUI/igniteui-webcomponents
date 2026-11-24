@@ -100,8 +100,9 @@ const exportedPanelParts = panelParts.join(', ');
 /**
  * Color input component.
  *
- * The user picks a color with the HSV saturation/value canvas, the hue slider
- * and the optional alpha slider. The user can also type any CSS color string,
+ * The user picks a color with the color area, the hue slider and the optional
+ * alpha slider. The area is saturation by value, or lightness by chroma at the
+ * OKLCH hue in the `oklch` format. The user can also type any CSS color string,
  * such as hex, `rgb()`, `hsl()`, `oklch()` or a named color.
  *
  * The component supports pre-defined swatches and the native EyeDropper API,
@@ -137,8 +138,8 @@ const exportedPanelParts = panelParts.join(', ');
  * @csspart suffix - The suffix wrapper of the text field in input mode. It holds the clear icon.
  * @csspart clear-icon - The clear icon wrapper in input mode. It shows while a color is set.
  * @csspart picker - The popover container holding the canvas, sliders, inputs and swatches.
- * @csspart picker-canvas - The saturation and value canvas.
- * @csspart marker - The marker on the canvas that shows the saturation and value.
+ * @csspart picker-canvas - The area: saturation by value, or lightness by chroma in the `oklch` format.
+ * @csspart marker - The marker on the area that shows the picked color.
  * @csspart dragging - Added to the marker part while the user drags it.
  * @csspart main-row - The row containing the hue slider and the copy/eyedropper buttons.
  * @csspart alpha-row - The row containing the alpha slider and input, rendered when `show-alpha` is set.

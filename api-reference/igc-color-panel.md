@@ -2,8 +2,9 @@
 
 A color selection surface that stays in the page.
 
-The user picks a color with the HSV saturation/value canvas, the hue slider
-and the optional alpha slider. The user can also type any CSS color string,
+The user picks a color with the color area, the hue slider and the optional
+alpha slider. The area is saturation by value, or lightness by chroma at the
+OKLCH hue in the `oklch` format. The user can also type any CSS color string,
 such as hex, `rgb()`, `hsl()`, `oklch()` or a named color, pick a swatch, or
 pick a color from the screen with the native EyeDropper API, where the
 browser provides one.
@@ -78,8 +79,8 @@ defineComponents(IgcColorPanelComponent);
 ## CSS parts
 
 - `base`: The wrapper of the panel.
-- `picker-canvas`: The saturation and value canvas.
-- `marker`: The marker on the canvas that shows the saturation and value.
+- `picker-canvas`: The area: saturation by value, or lightness by chroma in the `oklch` format.
+- `marker`: The marker on the area that shows the picked color.
 - `dragging`: Added to the marker part while the user drags it.
 - `main-row`: The row containing the hue slider and the copy/eyedropper buttons.
 - `alpha-row`: The row containing the alpha slider and input, rendered when `show-alpha` is set.

@@ -96,6 +96,10 @@ export interface IgcColorPickerPendingResourceStrings {
   color_picker_contrast_aa?: string;
   /** The name of the WCAG level AAA (contrast 7:1). */
   color_picker_contrast_aaa?: string;
+  /** The name of the area marker in the OKLCH format. */
+  color_picker_canvas_oklch_label?: string;
+  /** The value text of the area marker in the OKLCH format: `{0}` lightness, `{1}` chroma. */
+  color_picker_canvas_oklch_value?: string;
 }
 
 /** The resource strings of the color picker and the color panel. */
@@ -155,6 +159,8 @@ const PendingResourceStringsEN: Required<IgcColorPickerPendingResourceStrings> =
     color_picker_contrast_fail: '{0} fail',
     color_picker_contrast_aa: 'AA',
     color_picker_contrast_aaa: 'AAA',
+    color_picker_canvas_oklch_label: 'Lightness and chroma',
+    color_picker_canvas_oklch_value: 'Lightness {0}%, chroma {1}',
   };
 
 /** The resource string of the name of each format in the format select. */

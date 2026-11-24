@@ -24,7 +24,7 @@ const metadata: Meta<IgcColorPanelComponent> = {
     docs: {
       description: {
         component:
-          'A color selection surface that stays in the page.\n\nThe user picks a color with the HSV saturation/value canvas, the hue slider\nand the optional alpha slider. The user can also type any CSS color string,\nsuch as hex, `rgb()`, `hsl()`, `oklch()` or a named color, pick a swatch, or\npick a color from the screen with the native EyeDropper API, where the\nbrowser provides one.\n\nThe panel is not a form control. The color picker shows it in a popup.',
+          'A color selection surface that stays in the page.\n\nThe user picks a color with the color area, the hue slider and the optional\nalpha slider. The area is saturation by value, or lightness by chroma at the\nOKLCH hue in the `oklch` format. The user can also type any CSS color string,\nsuch as hex, `rgb()`, `hsl()`, `oklch()` or a named color, pick a swatch, or\npick a color from the screen with the native EyeDropper API, where the\nbrowser provides one.\n\nThe panel is not a form control. The color picker shows it in a popup.',
       },
     },
     actions: { handles: ['igcInput', 'igcChange'] },
@@ -160,6 +160,7 @@ export const Default: Story = {
           'The color panel stays in the page. Use the controls panel to explore `format`, `showAlpha`, `hideFormats` and `contrastAgainst`. The actions panel shows `igcInput` while a gesture runs and `igcChange` when it ends.',
       },
     },
+    actions: { handles: [] },
   },
   args: {
     value: 'rebeccapurple',
@@ -195,6 +196,7 @@ export const SwatchView: Story = {
           'A panel with both views. The swatch view opens first, and the switcher at the top changes the view. The swatches are light DOM children in labelled groups. The first swatch has no color: a pick clears the value. The brand swatches use `var()`, so they follow the custom properties of the page, and a pick writes the resolved color.',
       },
     },
+    actions: { handles: [] },
   },
   render: () => html`
     <style>

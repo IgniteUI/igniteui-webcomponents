@@ -3,9 +3,11 @@ import { expect } from '@open-wc/testing';
 import {
   type ColorNameParts,
   colorNameParts,
+  formatOklchAreaValue,
   pureHueWord,
 } from './color-name.js';
 import type { RGB } from './converters.js';
+import { type ColorPickerStrings, colorPickerI18nConfig } from './i18n.js';
 import { ColorModel } from './model.js';
 
 function hex(value: string): RGB {
@@ -98,5 +100,18 @@ describe('Color names', () => {
       'pink',
       'red',
     ]);
+  });
+});
+
+describe('OKLCH area value text', () => {
+  const resourceStrings = colorPickerI18nConfig.defaultEN as ColorPickerStrings;
+
+  it('gives the lightness and the chroma in the number format of the locale', () => {
+    expect(
+      formatOklchAreaValue(70.4, 0.32162, { resourceStrings, locale: 'en' })
+    ).to.equal('Lightness 70%, chroma 0.322');
+    expect(
+      formatOklchAreaValue(70.4, 0.32162, { resourceStrings, locale: 'ar-EG' })
+    ).to.equal('Lightness ٧٠%, chroma ٠٫٣٢٢');
   });
 });

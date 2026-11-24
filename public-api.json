@@ -2929,15 +2929,18 @@
         "currentColor": "string",
         "markerColor": "string",
         "markerLabel": "string",
-        "markerValueText": "string | undefined"
+        "markerValueText": "string | undefined",
+        "space": "AreaSpace ('hsv' | 'oklch')"
       },
       "properties": {
         "brightness": "number",
         "currentColor": "string",
+        "hue": "number",
         "markerColor": "string",
         "markerLabel": "string",
         "markerValueText": "string | undefined",
         "saturation": "number",
+        "space": "AreaSpace ('hsv' | 'oklch')",
         "static tagName": "readonly string",
         "x": "number",
         "y": "number"

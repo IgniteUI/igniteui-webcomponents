@@ -13,6 +13,7 @@
     - [Developer experience](#developer-experience)
       - [Basic initialization](#basic-initialization)
       - [Value and format](#value-and-format)
+      - [The OKLCH area](#the-oklch-area)
       - [Swatches](#swatches)
       - [Views](#views)
       - [Recent colors](#recent-colors)
@@ -45,6 +46,7 @@
     - [Swatch keyboard](#swatch-keyboard)
     - [Views](#views-1)
     - [Contrast](#contrast-1)
+    - [OKLCH area](#oklch-area)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -62,11 +64,13 @@
 |       5 | 2026-11-23 | Enter applies the draft of a color picker in the confirm mode |
 |       6 | 2026-11-23 | The value text of the sliders, color names and the copy feedback |
 |       7 | 2026-11-24 | The contrast readout: `contrast-against`, the WCAG 2 ratio and the AA and AAA levels |
+|       8 | 2026-11-24 | The OKLCH area: in the `oklch` format, the area is lightness by chroma and the hue slider is the OKLCH hue |
 
 ## Overview
 
 The `igc-color-panel` component is the color selection surface of the [color picker](../color-picker/spec.md),
-alone in the page. It holds an HSV saturation and value canvas, a hue slider, an optional alpha slider and alpha
+alone in the page. It holds an area (HSV saturation by value, or OKLCH lightness by chroma in the `oklch` format), a
+hue slider, an optional alpha slider and alpha
 input, a format select, a color value input, a copy action, an eye dropper action and an optional swatch list.
 
 The swatches are `igc-color-swatch` children, optionally in labelled `igc-color-swatch-group` children. The panel has
@@ -168,6 +172,32 @@ clears the value. Reading `value` gives the color in the current `format`.
 A write of the same color, in any notation, keeps the internal color. This keeps the hue of a gray, which a color
 string does not carry. A wrapper that writes every property on each render, such as `@lit/react`, does not reset the
 hue slider.
+
+#### The OKLCH area
+
+In the `oklch` format, the area shows the OKLCH lightness (0 % at the bottom to 100 % at the top) by the chroma (0 at
+the left to 0.33 at the right) at the OKLCH hue of the hue slider. The chroma axis has the same scale for every hue,
+just past the largest sRGB chroma (0.3225, at hue 328), so the marker position equals the L and C of the color text.
+The hue slider is the OKLCH hue, from 0 to 360, and its track shows the cusp of each hue: its most chromatic sRGB
+color. In the other formats, the area is HSV saturation by value and the hue slider is the HSV hue.
+
+The model is sRGB, so part of each OKLCH area is out of gamut. The area paints only the sRGB colors; beyond the gamut
+edge it is transparent, and the panel surface shows. A drag or a key beyond the gamut edge keeps the lightness and cuts
+the chroma back to the edge, as CSS gamut mapping does, and the marker stops at the edge. A pick that gives the same
+color reports nothing, so <kbd>Arrow Right</kbd> at the edge does nothing. A move of the hue slider to a hue with less
+gamut cuts the chroma back too.
+
+At the hue of blue (264.05), the black-to-blue edge of sRGB is a thin spike apart from the rest of the area, because
+every color from black to `#0000ff` has that hue. The area paints the spike as a line 1 px wide, so the marker of a
+pure blue sits on it.
+
+The color keeps its OKLCH lightness, chroma and hue, as it keeps HSV, so a gray keeps the hue that the user set. A
+gray takes the hue of the other space through the cusp: HSV hue 210 gives the OKLCH hue of `hsv(210 100% 100%)`, about
+256, and back the same way. An empty value starts at white with the hue slider at 29, the OKLCH hue of red.
+
+The OKLCH area is a canvas that the panel paints in CSS pixels, at most once per frame, when the hue or the size
+changes. The alpha of a pixel is the share of it inside the gamut, so the gamut edge is smooth and has no steps. A
+server render shows the area without colors until the client paints.
 
 #### Swatches
 
@@ -274,8 +304,10 @@ Assistive technology reads a value text for each slider:
 | Control       | Value text                                             | Example                                            |
 | ------------- | ------------------------------------------------------ | -------------------------------------------------- |
 | Hue slider    | The angle and the name of the hue at the slider position | 120 degrees, green                               |
+| Hue slider in `oklch` | The OKLCH angle and the name of that hue          | 328 degrees, magenta                               |
 | Alpha slider  | The alpha percentage                                   | 50%                                                |
 | Canvas marker | The saturation, the brightness and the color name      | Saturation 100%, brightness 67%, dark vibrant blue |
+| Canvas marker in `oklch` | The lightness, the chroma and the color name | Lightness 70%, chroma 0.322, vibrant magenta |
 
 The numbers use the number format of the locale. A color name has a hue word and can have a lightness word and a
 chroma word before it:
@@ -360,7 +392,8 @@ The panel uses strings that `igniteui-i18n-core` does not ship yet: `color_picke
 ("Copied") and `color_picker_copy_failed` ("Copy failed"), `color_picker_value_with_name` ("{0}, {1}") and the color
 name strings `color_picker_name_*`, and the contrast strings `color_picker_contrast_ratio` ("Contrast {0}:1"),
 `color_picker_contrast_pass` ("{0} pass"), `color_picker_contrast_fail` ("{0} fail"), `color_picker_contrast_aa` ("AA")
-and `color_picker_contrast_aaa` ("AAA"). Until it does, every locale shows the English text, and `resourceStrings` can
+and `color_picker_contrast_aaa` ("AAA"), and the OKLCH area strings `color_picker_canvas_oklch_label` ("Lightness and
+chroma") and `color_picker_canvas_oklch_value` ("Lightness {0}%, chroma {1}"). Until it does, every locale shows the English text, and `resourceStrings` can
 replace them.
 
 A color name takes the words of `color_picker_name_*` in the order of `color_picker_name_pattern` ("{0} {1} {2}"):
@@ -368,7 +401,9 @@ A color name takes the words of `color_picker_name_*` in the order of `color_pic
 extra space, so a language that puts the adjectives after the noun uses "{2} {0} {1}", and a language with no spaces
 uses "{0}{1}{2}". `color_picker_name_with_alpha` ("{0}, alpha {1}") adds the alpha to the name of a swatch.
 
-In the contrast strings, `{0}` is the ratio, in the number format of the locale, or the name of the level.
+In the contrast strings, `{0}` is the ratio, in the number format of the locale, or the name of the level. In
+`color_picker_canvas_oklch_value`, `{0}` is the lightness in whole percent and `{1}` the chroma with 3 decimals, in the
+number format of the locale.
 
 ### Keyboard interactions
 
@@ -433,8 +468,8 @@ The events of the inner inputs, the format select, the view switcher and the can
 | Part            | Description                                                                 |
 | --------------- | --------------------------------------------------------------------------- |
 | `base`          | The wrapper of the panel. Alone in the page, it paints the surface.        |
-| `picker-canvas` | The saturation and value canvas.                                            |
-| `marker`        | The marker on the canvas that shows the saturation and value.               |
+| `picker-canvas` | The area: saturation by value, or lightness by chroma in the `oklch` format. |
+| `marker`        | The marker on the area that shows the picked color.                         |
 | `dragging`      | Added to the marker part while the user drags it.                           |
 | `main-row`      | The row containing the hue slider and the copy and eye dropper buttons.    |
 | `alpha-row`     | The row containing the alpha slider and input, rendered when `show-alpha` is set. |
@@ -571,6 +606,17 @@ the end of the panel in both views, and the strings and the number format of the
 ratio of known pairs, the alpha of both colors and the cut decimals; `contrast.property.spec.ts` covers the range from
 1 to 21 and the same ratio for both orders of two opaque colors.
 
+### OKLCH area
+
+The a11y audit, the area and the marker at the lightness and chroma of the value, the OKLCH hue on the hue slider with
+its value text, the cusp track and the cusp thumb, and back to HSV in `hex`; the marker name and value text with the
+resource strings and the locale; a pick at the OKLCH hue with one `igcInput`; a pick beyond the gamut edge that keeps
+the lightness, cuts the chroma and stops the marker, and a second one with no event; no event for
+<kbd>Arrow Right</kbd> at the edge; a hue move that cuts the chroma and moves the marker; a gray that keeps its hue;
+the hue of an HSV gray through the cusp on a format switch; and an empty value at white with the hue at 29. The color
+picker suites cover the gamut runs, the blue spike, the cut-back, the cusps, the paint
+(`oklch.spec.ts`, `oklch.property.spec.ts`), the OKLCH space of the model and the canvas of the OKLCH area.
+
 ## Assumptions and limitations
 
 - The color model is sRGB. See the [color picker limitations](../color-picker/spec.md#assumptions-and-limitations).
@@ -583,6 +629,9 @@ ratio of known pairs, the alpha of both colors and the cut decimals; `contrast.p
 - The panel has no `disabled` property. To make it inactive, set `inert` on it.
 - A `var()` swatch reads its color again only at the times that [Swatches](#swatches) lists. A context color in
   `contrast-against` reads its color again only at the times that [Contrast](#contrast) lists.
+- The OKLCH area shows the sRGB gamut only; the model stays sRGB. At the hue of blue the black-to-blue edge is a thin
+  spike, a line 1 px wide. The out-of-gamut look is provisional until the design team gives one.
+- A paint of the OKLCH area takes a few milliseconds, once per frame at most during a hue drag.
 - The contrast readout gives the WCAG 2 ratio and the levels for normal text only. It has no levels for large text
   (3:1 and 4.5:1), no APCA value and no contrast lines on the canvas.
 - The selected mark of a swatch, the swatch focus ring, the group label, the view switcher and the contrast readout
@@ -598,7 +647,8 @@ ratio of known pairs, the alpha of both colors and the cut decimals; `contrast.p
 - The host has no role. The controls inside have their own names.
 - The hue and alpha sliders are native range inputs labelled through `aria-label`. Their `aria-valuetext` gives the
   angle and the hue name, and the alpha percentage.
-- The canvas marker is a `slider` with `aria-valuetext` for both axes and the color name.
+- The canvas marker is a `slider` with `aria-valuetext` for both axes and the color name. In the `oklch` format it is
+  named "Lightness and chroma". The painted OKLCH area is hidden from assistive technology.
 - The format select and the color value input have visually hidden labels.
 - The copy and eye dropper buttons expose visually hidden text. After a copy, the name of the copy button is "Copied"
   or "Copy failed" for one second.
@@ -617,6 +667,6 @@ Already covered by the [relevant section of the specification](#keyboard-interac
 
 ### Right to Left support
 
-The sliders and the layout follow the document direction. The saturation and value canvas does not mirror, so an
+The sliders and the layout follow the document direction. The area does not mirror, so an
 arrow key moves its marker in the direction of the arrow. In the swatch list, the order of the swatches follows the
 direction, and <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> swap.

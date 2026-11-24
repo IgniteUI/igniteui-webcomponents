@@ -1,9 +1,9 @@
 import { getNumberFormatter } from 'igniteui-i18n-core';
-import { getOrInsertComputed } from '#internals/utils/objects.js';
 import { formatString } from '#internals/utils/strings.js';
 import { converter, type RGB } from './converters.js';
 import type { ColorPickerI18n, ColorPickerStrings } from './i18n.js';
 import type { ColorModel } from './model.js';
+import { type AreaSpace, cusp, pureHueOklch } from './oklch.js';
 
 type ColorLightnessWord = 'very_dark' | 'dark' | 'light' | 'very_light';
 
@@ -56,40 +56,6 @@ const GRAY_LIMITS = [30, 55, 70, 85] as const;
 
 /** The lightness word limits of a color, from -1 (black) to 1 (white) around the cusp. */
 const SHADE_LIMITS = [-0.6, -0.25, 0.25, 0.6] as const;
-
-function pureHueOklch(hsvHue: number): number[] {
-  return converter.rgb.oklch(converter.hsv.rgb([hsvHue, 100, 100]));
-}
-
-const RED_HUE = pureHueOklch(0)[2];
-
-/** The cusps by OKLCH hue in half degrees. */
-const cusps = new Map<number, number[]>();
-
-/**
- * The OKLCH values of the most chromatic sRGB color of a hue: the pure hue
- * with that OKLCH hue, found by bisection.
- */
-function cusp(hue: number): number[] {
-  return getOrInsertComputed(cusps, Math.round(hue * 2), (key) => {
-    const unwrap = (h: number) => (h < RED_HUE ? h + 360 : h);
-    const target = unwrap(key / 2);
-    let low = 0;
-    let high = 360;
-
-    while (high - low > 0.01) {
-      const middle = (low + high) / 2;
-
-      if (unwrap(pureHueOklch(middle)[2]) < target) {
-        low = middle;
-      } else {
-        high = middle;
-      }
-    }
-
-    return pureHueOklch((low + high) / 2);
-  });
-}
 
 function hueWord(oklchHue: number): ColorHueWord {
   return HUE_WORDS.find(([end]) => oklchHue < end)?.[1] ?? 'pink';
@@ -209,20 +175,47 @@ export function formatValueWithName(
   return formatString(strings.color_picker_value_with_name, value, name);
 }
 
-/** The value text of the hue slider: the angle and the name of the hue. */
+/**
+ * The value text of the hue slider: the angle and the name of the hue. `hue`
+ * is an HSV or an OKLCH hue, as `space` says. An HSV hue takes the name of its
+ * pure color.
+ */
 export function formatHueValue(
   hue: number,
-  { resourceStrings, locale }: ColorPickerI18n
+  { resourceStrings, locale }: ColorPickerI18n,
+  space: AreaSpace
 ): string {
   const angle = getNumberFormatter().formatNumber(hue, locale, {
     style: 'unit',
     unit: 'degree',
     unitDisplay: 'long',
   });
+  const name = space === 'oklch' ? hueWord(hue) : pureHueWord(hue);
 
   return formatValueWithName(
     angle,
-    word(resourceStrings, pureHueWord(hue)),
+    word(resourceStrings, name),
     resourceStrings
+  );
+}
+
+/**
+ * The value text of the OKLCH area: the lightness in whole percent and the
+ * chroma with 3 decimals, in the number format of the locale.
+ */
+export function formatOklchAreaValue(
+  lightness: number,
+  chroma: number,
+  { resourceStrings, locale }: ColorPickerI18n
+): string {
+  const formatter = getNumberFormatter();
+
+  return formatString(
+    resourceStrings.color_picker_canvas_oklch_value,
+    formatter.formatNumber(Math.round(lightness), locale),
+    formatter.formatNumber(chroma, locale, {
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
+    })
   );
 }
