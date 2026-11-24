@@ -9,6 +9,7 @@ import {
   iterNodes,
   normalizedTextContent,
   pointToFraction,
+  readWithStyles,
   resolveCssLength,
   roundByDPR,
   setOrRemoveAttribute,
@@ -114,6 +115,35 @@ describe('DOM utilities', () => {
     it('should return an empty string for whitespace-only content', () => {
       const nodes = [document.createTextNode(' \n \t ')];
       expect(normalizedTextContent(nodes)).to.equal('');
+    });
+  });
+
+  describe('readWithStyles', () => {
+    it('reads the computed style with the styles, then restores the inline values', async () => {
+      const element = await fixture<HTMLDivElement>(
+        html`<div style="--probe: own !important"></div>`
+      );
+
+      const read = readWithStyles(element, { '--probe': 'set' }, (style) =>
+        style.getPropertyValue('--probe')
+      );
+
+      expect(read).to.equal('set');
+      expect(element.style.getPropertyValue('--probe')).to.equal('own');
+      expect(element.style.getPropertyPriority('--probe')).to.equal(
+        'important'
+      );
+    });
+
+    it('restores the inline values when the read throws', async () => {
+      const element = await fixture<HTMLDivElement>(html`<div></div>`);
+
+      expect(() =>
+        readWithStyles(element, { color: 'red' }, () => {
+          throw new Error('read');
+        })
+      ).to.throw('read');
+      expect(element.style.color).to.equal('');
     });
   });
 

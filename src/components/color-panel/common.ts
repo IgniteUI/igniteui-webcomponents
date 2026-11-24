@@ -1,3 +1,6 @@
+import { isServer } from 'lit';
+import { readWithStyles } from '#internals/utils/dom.js';
+import { ColorModel } from '../color-picker/model.js';
 import type { ColorPanelView } from '../types.js';
 
 /**
@@ -31,6 +34,41 @@ export const resolveSwatch = Symbol('resolveSwatch');
  */
 export const swatchKey = Symbol('swatchKey');
 
+/** A `var()` reference, the only context that a swatch color resolves. */
+export const VAR_REFERENCE = /\bvar\(/i;
+
+/** The custom property that resolves a context color. */
+const CONTEXT_PROPERTY = '--_context-color';
+
+/**
+ * Parses a color that depends on its context, such as `var()`,
+ * `currentcolor`, `light-dark()` or a system color, from the computed style of
+ * `element`. An invalid color, an undefined variable and a server render give
+ * an empty color.
+ */
+export function parseContextColor(
+  element: HTMLElement,
+  value: string
+): ColorModel {
+  if (isServer || !CSS.supports('color', value)) {
+    return ColorModel.empty();
+  }
+
+  const styles = {
+    [CONTEXT_PROPERTY]: value,
+    'outline-color': `var(${CONTEXT_PROPERTY})`,
+  };
+
+  return readWithStyles(element, styles, (style) => {
+    // An undefined variable, or one that is not a color, leaves no color.
+    const resolved = style.getPropertyValue(CONTEXT_PROPERTY).trim();
+
+    return resolved && CSS.supports('color', resolved)
+      ? ColorModel.parse(style.outlineColor)
+      : ColorModel.empty();
+  });
+}
+
 /** The custom state of the selected swatch. */
 export const SWATCH_SELECTED_STATE = 'ig-selected';
 
@@ -58,6 +96,11 @@ export const panelParts = [
   'view-switcher',
   'view-button',
   'active',
+  'contrast',
+  'contrast-ratio',
+  'contrast-mark',
+  'pass',
+  'fail',
 ] as const;
 
 /** The views of the panel, in the order of the view switcher. */

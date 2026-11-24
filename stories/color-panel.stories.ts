@@ -71,6 +71,13 @@ const metadata: Meta<IgcColorPanelComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'gradient' } },
     },
+    contrastAgainst: {
+      type: 'string',
+      description:
+        'The background color of the contrast readout, as any CSS color. A color\nthat depends on its context, such as a `var()`, resolves from the\ncomponent. The readout shows the WCAG 2 contrast ratio of the value over\nthis color, with the AA and AAA levels for normal text. An empty or\ninvalid color hides it.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
     locale: {
       type: 'string',
       description:
@@ -84,6 +91,7 @@ const metadata: Meta<IgcColorPanelComponent> = {
     showAlpha: false,
     views: 'gradient',
     activeView: 'gradient',
+    contrastAgainst: '',
   },
 };
 
@@ -126,6 +134,14 @@ interface IgcColorPanelArgs {
    */
   activeView: 'gradient' | 'swatches';
   /**
+   * The background color of the contrast readout, as any CSS color. A color
+   * that depends on its context, such as a `var()`, resolves from the
+   * component. The readout shows the WCAG 2 contrast ratio of the value over
+   * this color, with the AA and AAA levels for normal text. An empty or
+   * invalid color hides it.
+   */
+  contrastAgainst: string;
+  /**
    * The locale of the component. Without it, the component takes its own
    * `lang`, else the locale of the nearest ancestor that has a `locale` (a
    * component) or a `lang`, and then the global locale.
@@ -141,7 +157,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'The color panel stays in the page. Use the controls panel to explore `format`, `showAlpha` and `hideFormats`. The actions panel shows `igcInput` while a gesture runs and `igcChange` when it ends.',
+          'The color panel stays in the page. Use the controls panel to explore `format`, `showAlpha`, `hideFormats` and `contrastAgainst`. The actions panel shows `igcInput` while a gesture runs and `igcChange` when it ends.',
       },
     },
   },
@@ -154,6 +170,7 @@ export const Default: Story = {
       .format=${args.format}
       .views=${args.views}
       .activeView=${args.activeView}
+      .contrastAgainst=${args.contrastAgainst}
       locale=${ifDefined(args.locale)}
       ?show-alpha=${args.showAlpha}
       ?hide-formats=${args.hideFormats}

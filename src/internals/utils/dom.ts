@@ -73,12 +73,11 @@ export function resolveCssLength(
     return asNumber(length);
   }
 
-  // Restore, not remove: the element can have its own inline value.
-  const restore = replaceStyles(element, { [LENGTH_PROPERTY]: length });
-  const resolved = getComputedStyle(element).getPropertyValue(LENGTH_PROPERTY);
-  restore();
-
-  return asNumber(resolved);
+  return asNumber(
+    readWithStyles(element, { [LENGTH_PROPERTY]: length }, (style) =>
+      style.getPropertyValue(LENGTH_PROPERTY)
+    )
+  );
 }
 
 export type IterNodesOptions = {
@@ -404,6 +403,25 @@ export function replaceStyles(
       style.setProperty(name, value, priority);
     }
   };
+}
+
+/**
+ * Sets the inline `styles` on `element`, reads its computed style with `read`,
+ * and restores the previous inline values. The element can have its own
+ * inline values.
+ */
+export function readWithStyles<T>(
+  element: HTMLElement,
+  styles: Record<string, string>,
+  read: (style: CSSStyleDeclaration) => T
+): T {
+  const restore = replaceStyles(element, styles);
+
+  try {
+    return read(getComputedStyle(element));
+  } finally {
+    restore();
+  }
 }
 
 /** Sets an attribute, or removes it when `value` is `null` or `undefined`. */

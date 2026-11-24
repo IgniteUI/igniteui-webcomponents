@@ -36,6 +36,7 @@ import {
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
 import { getDeepActiveElement } from '#internals/utils/dom.js';
+import { configureTheme } from '#theming/config.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import type IgcIconButtonComponent from '../button/icon-button.js';
 import IgcColorPickerComponent from '../color-picker/color-picker.js';
@@ -82,6 +83,27 @@ const getViewButtons = (panel: IgcColorPanelComponent) =>
   Array.from(
     panel.renderRoot.querySelectorAll<HTMLElement>('[part~="view-button"]')
   );
+const getContrast = (panel: IgcColorPanelComponent) =>
+  panel.renderRoot.querySelector<HTMLElement>('[part="contrast"]');
+
+/** The texts of the contrast readout and the parts of its marks, or `null` without a readout. */
+function readout(
+  panel: IgcColorPanelComponent
+): { ratio: string; marks: [string, string][] } | null {
+  const contrast = getContrast(panel);
+
+  if (!contrast) {
+    return null;
+  }
+
+  return {
+    ratio: contrast.querySelector('[part="contrast-ratio"]')!.textContent!,
+    marks: Array.from(
+      contrast.querySelectorAll('[part~="contrast-mark"]'),
+      (mark) => [mark.getAttribute('part')!, mark.textContent!.trim()]
+    ),
+  };
+}
 
 /** Whether the swatch shows as the selected option. */
 function isSelected(swatch: IgcColorSwatchComponent): boolean {
@@ -726,6 +748,7 @@ describe('Color panel', () => {
         await copy();
         expect(copyButton()).to.eql(['error', 'Copy failed']);
         await expect(panel).shadowDom.to.be.accessible(axeHiddenLabelOptions);
+        await expect(panel).lightDom.to.be.accessible(axeHiddenLabelOptions);
       } finally {
         writeText.restore();
       }
@@ -774,6 +797,7 @@ describe('Color panel', () => {
         await copy();
         expect(copyButton()).to.eql(['copy_success', 'Copied']);
         await expect(panel).shadowDom.to.be.accessible(axeHiddenLabelOptions);
+        await expect(panel).lightDom.to.be.accessible(axeHiddenLabelOptions);
 
         // The first copy fails after the second one ends.
         first.reject(new DOMException('Denied', 'NotAllowedError'));
@@ -1229,10 +1253,12 @@ describe('Color panel', () => {
       panel.views = 'gradient swatches';
       await settled();
       await expect(panel).shadowDom.to.be.accessible(options);
+      await expect(panel).lightDom.to.be.accessible(options);
 
       panel.activeView = 'swatches';
       await settled();
       await expect(panel).shadowDom.to.be.accessible(options);
+      await expect(panel).lightDom.to.be.accessible(options);
     });
 
     it('shows a view switcher for both views', async () => {
@@ -1318,6 +1344,207 @@ describe('Color panel', () => {
       expect(
         getViewButtons(panel).map((button) => button.getAttribute('value'))
       ).to.eql(['gradient', 'swatches']);
+    });
+  });
+
+  describe('Contrast', () => {
+    beforeEach(async () => {
+      panel.value = '#767676';
+      panel.contrastAgainst = '#ffffff';
+      await elementUpdated(panel);
+    });
+
+    it('is accessible', async () => {
+      await expect(panel).shadowDom.to.be.accessible(axeHiddenLabelOptions);
+      await expect(panel).lightDom.to.be.accessible(axeHiddenLabelOptions);
+    });
+
+    it('hides the readout without a color to compare with', async () => {
+      panel = await fixture<IgcColorPanelComponent>(
+        html`<igc-color-panel value="#767676"></igc-color-panel>`
+      );
+
+      expect(panel.contrastAgainst).to.equal('');
+      expect(readout(panel)).to.be.null;
+    });
+
+    it('shows the ratio and the AA and AAA levels for normal text', async () => {
+      expect(readout(panel)).to.eql({
+        ratio: 'Contrast 4.54:1',
+        marks: [
+          ['contrast-mark pass', 'AA pass'],
+          ['contrast-mark fail', 'AAA fail'],
+        ],
+      });
+
+      panel.value = '#000000';
+      await elementUpdated(panel);
+
+      expect(readout(panel)).to.eql({
+        ratio: 'Contrast 21:1',
+        marks: [
+          ['contrast-mark pass', 'AA pass'],
+          ['contrast-mark pass', 'AAA pass'],
+        ],
+      });
+    });
+
+    it('takes the attribute', async () => {
+      panel = await fixture<IgcColorPanelComponent>(
+        html`<igc-color-panel
+          value="#777777"
+          contrast-against="white"
+        ></igc-color-panel>`
+      );
+
+      expect(readout(panel)?.ratio).to.equal('Contrast 4.47:1');
+      expect(readout(panel)?.marks[0]).to.eql([
+        'contrast-mark fail',
+        'AA fail',
+      ]);
+    });
+
+    it('follows the color that the user picks', async () => {
+      commitText(getColorInput(panel), '#595959');
+      await elementUpdated(panel);
+
+      expect(readout(panel)?.marks).to.eql([
+        ['contrast-mark pass', 'AA pass'],
+        ['contrast-mark pass', 'AAA pass'],
+      ]);
+    });
+
+    it('puts the value over the color and the color over white, with their alpha', async () => {
+      panel.value = 'rgb(0 0 0 / 0.5)';
+      await elementUpdated(panel);
+
+      expect(readout(panel)?.ratio).to.equal('Contrast 3.97:1');
+
+      panel.value = '#ffffff';
+      panel.contrastAgainst = 'rgb(0 0 0 / 0.5)';
+      await elementUpdated(panel);
+
+      expect(readout(panel)?.ratio).to.equal('Contrast 3.97:1');
+    });
+
+    it('hides the readout for an empty value', async () => {
+      panel.value = '';
+      await elementUpdated(panel);
+
+      expect(readout(panel)).to.be.null;
+    });
+
+    it('hides the readout for an invalid color and a var() that is not a color', async () => {
+      panel.style.setProperty('--not-a-color', '12px');
+
+      for (const color of [
+        'nope',
+        'var(--undefined)',
+        'var(--not-a-color)',
+        '',
+      ]) {
+        panel.contrastAgainst = color;
+        await elementUpdated(panel);
+
+        expect(readout(panel), color).to.be.null;
+      }
+    });
+
+    it('resolves a color that depends on its context from the panel', async () => {
+      panel.value = '#ffffff';
+      panel.style.color = '#000000';
+      panel.style.setProperty('--surface', 'light-dark(#000000, #ffffff)');
+
+      for (const color of [
+        'currentcolor',
+        'light-dark(#000000, #ffffff)',
+        'var(--surface)',
+      ]) {
+        panel.contrastAgainst = color;
+        await elementUpdated(panel);
+
+        expect(readout(panel)?.ratio, color).to.equal('Contrast 21:1');
+      }
+    });
+
+    it('resolves var() from the custom properties of the panel', async () => {
+      panel.style.setProperty('--surface', '#000000');
+      panel.value = '#ffffff';
+      panel.contrastAgainst = 'color-mix(in srgb, var(--surface) 100%, white)';
+      await elementUpdated(panel);
+
+      expect(readout(panel)?.ratio).to.equal('Contrast 21:1');
+      expect(panel.style.getPropertyValue('--_context-color')).to.equal('');
+      expect(panel.style.outlineColor).to.equal('');
+    });
+
+    it('resolves var() again when the panel shows', async () => {
+      panel.style.setProperty('--surface', '#ffffff');
+      panel.contrastAgainst = 'var(--surface)';
+      await elementUpdated(panel);
+
+      panel.style.display = 'none';
+      panel.style.setProperty('--surface', '#000000');
+      await nextFrame();
+
+      panel.style.display = '';
+      // The resize observer reports the new size after the layout.
+      await nextFrame();
+      await elementUpdated(panel);
+
+      expect(readout(panel)?.ratio).to.equal('Contrast 4.62:1');
+    });
+
+    it('resolves var() again when the theme changes', async () => {
+      panel.style.setProperty('--surface', '#ffffff');
+      panel.contrastAgainst = 'var(--surface)';
+      await elementUpdated(panel);
+
+      panel.style.setProperty('--surface', '#000000');
+      await elementUpdated(panel);
+      expect(readout(panel)?.ratio).to.equal('Contrast 4.54:1');
+
+      try {
+        configureTheme('material');
+        await elementUpdated(panel);
+
+        expect(readout(panel)?.ratio).to.equal('Contrast 4.62:1');
+      } finally {
+        configureTheme('bootstrap');
+      }
+    });
+
+    it('shows the readout at the end of the panel in both views', async () => {
+      panel.swatches = ['#00ff00'];
+      panel.views = 'gradient swatches';
+      await elementUpdated(panel);
+
+      expect(getBase(panel).lastElementChild).to.equal(getContrast(panel));
+
+      panel.activeView = 'swatches';
+      await elementUpdated(panel);
+
+      expect(getBase(panel).lastElementChild).to.equal(getContrast(panel));
+      expect(readout(panel)?.ratio).to.equal('Contrast 4.54:1');
+    });
+
+    it('takes the text from the resource strings and the number format from the locale', async () => {
+      panel.locale = 'de';
+      panel.resourceStrings = {
+        color_picker_contrast_ratio: 'Kontrast {0}:1',
+        color_picker_contrast_pass: '{0} bestanden',
+        color_picker_contrast_fail: '{0} nicht bestanden',
+        color_picker_contrast_aa: 'Stufe AA',
+      };
+      await elementUpdated(panel);
+
+      expect(readout(panel)).to.eql({
+        ratio: 'Kontrast 4,54:1',
+        marks: [
+          ['contrast-mark pass', 'Stufe AA bestanden'],
+          ['contrast-mark fail', 'AAA nicht bestanden'],
+        ],
+      });
     });
   });
 });

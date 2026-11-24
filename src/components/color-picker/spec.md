@@ -17,6 +17,7 @@
       - [The picker surface](#the-picker-surface)
       - [Swatches](#swatches)
       - [Copy and eye dropper](#copy-and-eye-dropper)
+      - [Contrast](#contrast)
       - [Confirm mode](#confirm-mode)
       - [Validation and form integration](#validation-and-form-integration)
       - [Labeling from the light DOM](#labeling-from-the-light-dom)
@@ -42,6 +43,7 @@
     - [Color panel](#color-panel)
     - [Confirm mode](#confirm-mode-1)
     - [Color names](#color-names)
+    - [Contrast ratio](#contrast-ratio)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -80,6 +82,7 @@
 |      26 | 2026-11-23 | The confirm mode of `selection-commit`: the draft, the preview, Cancel and Apply, and the `footer` slot |
 |      27 | 2026-11-23 | The value text of the sliders, color names, swatch names from the color name, and the copy feedback |
 |      28 | 2026-11-24 | In input mode, the picker is a block and the text field fills its container, so the clear icon does not change its width |
+|      29 | 2026-11-24 | The contrast readout: `contrast-against` passes to the panel, and the popup shows the WCAG 2 ratio and the AA and AAA levels |
 
 ## Overview
 
@@ -107,6 +110,8 @@ validation and validation message projection.
 - **Two popup views**, the gradient and the swatches, with a view switcher when both are available.
 - **Confirm mode**: with `selection-commit="confirm"`, the changes in the popup are a draft until Apply, beside a
   preview of the initial color.
+- **Contrast readout**: with `contrast-against`, the popup shows the WCAG 2 contrast ratio of the color over a
+  background, with the AA and AAA levels for normal text.
 - **Platform integrations**: the native `EyeDropper` API where available, and copy to clipboard.
 - **Form association**: submits under its name, supports reset, `required` and custom validation.
 - **Localization**: the accessible labels come from `igniteui-i18n-core` through `locale` and `resourceStrings`.
@@ -302,7 +307,7 @@ After each change, and on open, the canvas marker is re-synchronized with the sa
 color on the next animation frame.
 
 The surface is an [`igc-color-panel`](../color-panel/spec.md). The picker passes `format`, `show-alpha`,
-`hide-formats`, `swatches`, `views`, `active-view` and its resource strings to the panel, and takes each change of the
+`hide-formats`, `swatches`, `views`, `active-view`, `contrast-against` and its resource strings to the panel, and takes each change of the
 panel as a change of the user. The events of the panel stay inside the picker. A format or a view that the user picks
 in the panel becomes the `format` or the `activeView` of the picker. The picker forwards the parts of the panel as its own parts, so `::part(hue)` and the other
 surface parts style the panel. The `picker` part, the popup, paints the surface.
@@ -342,6 +347,19 @@ The copy button writes the current value to the clipboard. For one second after 
 name "Copied", or an error icon and "Copy failed" after a failure or without the clipboard API. See
 [Copy](../color-panel/spec.md#copy). The eye dropper button is rendered enabled only when the platform implements the `EyeDropper` API; support is captured
 once, at construction time. Picking a color through it sets the value and emits `igcInput`.
+
+#### Contrast
+
+```html
+<igc-color-picker label="Text" value="#212121" contrast-against="var(--surface)"></igc-color-picker>
+```
+
+With `contrast-against`, the popup shows the WCAG 2 contrast ratio of the color over that background, such as
+"Contrast 15.42:1", and "pass" or "fail" for the AA (4.5:1) and AAA (7:1) levels for normal text. The readout is at the
+bottom of the panel, above the footer, and shows the draft in the confirm mode. A `var()` resolves from the custom
+properties of the popup, and so do `currentcolor`, `light-dark()` and the system colors. An empty value, an empty or
+invalid `contrast-against`, and a `var()` that is not a color hide the readout. See
+[Contrast](../color-panel/spec.md#contrast).
 
 #### Confirm mode
 
@@ -466,6 +484,9 @@ Cancel and Apply in the confirm mode.
 | `color_picker_name_grayish`, `color_picker_name_vibrant` | grayish, vibrant | The chroma words of a color name. |
 | `color_picker_name_red`, `color_picker_name_orange`, `color_picker_name_brown`, `color_picker_name_yellow`, `color_picker_name_yellow_green`, `color_picker_name_green`, `color_picker_name_cyan`, `color_picker_name_blue`, `color_picker_name_purple`, `color_picker_name_magenta`, `color_picker_name_pink` | red, orange, brown, yellow, yellow green, green, cyan, blue, purple, magenta, pink | The hue words of a color name. |
 | `color_picker_name_black`, `color_picker_name_white`, `color_picker_name_gray` | black, white, gray | The names of the colors with almost no chroma. |
+| `color_picker_contrast_ratio` | Contrast {0}:1                   | The contrast ratio of the readout. `{0}` is the ratio in the number format of the locale. |
+| `color_picker_contrast_pass`, `color_picker_contrast_fail` | {0} pass, {0} fail | A level of the contrast readout. `{0}` is the name of the level. |
+| `color_picker_contrast_aa`, `color_picker_contrast_aaa` | AA, AAA                       | The names of the WCAG levels of the contrast readout. |
 
 The keys after `color_picker_value` are not in `igniteui-i18n-core` yet. Until they are, every locale shows the English
 text, and `resourceStrings` can replace them. Color values are locale-independent CSS strings. The value text of the
@@ -505,6 +526,7 @@ All of the above are skipped while the component is `disabled`. A key that an IM
 | swatches          | -               | No        | `string[]`                | `[]`      | Pre-defined color strings, rendered as swatches in front of the swatch children. An empty string gives the no-color swatch. |
 | views             | views           | No        | `string`                  | `gradient` | The views of the popup, a space-separated list of `gradient` and `swatches`. Both show a view switcher. |
 | activeView        | active-view     | No        | `ColorPanelView`          | `gradient` | The view on screen in the popup. The switcher sets it. A view that `views` does not have gives the first view of `views`. |
+| contrastAgainst   | contrast-against | No       | `string`                  | `''`    | The background color of the contrast readout in the popup, as any CSS color. A color that depends on its context, such as a `var()`, resolves from the popup. The readout shows the WCAG 2 contrast ratio of the value over this color, with the AA and AAA levels for normal text. An empty or invalid color hides it. |
 | showAlpha         | show-alpha      | Yes       | `boolean`                 | false     | Whether to show the alpha slider and input.                              |
 | hideFormats       | hide-formats    | Yes       | `boolean`                 | false     | Whether the format select is hidden.                                     |
 | locale            | locale          | No        | `string`                  | -         | The locale for the resource strings. Falls back to the inherited locale, then the global one.    |
@@ -596,6 +618,11 @@ reach the listeners on the picker.
 | `view-switcher` | The view switcher, rendered when `views` has both views.                                 |
 | `view-button`   | A button of the view switcher.                                                           |
 | `active`        | Added to the view-button part of the view on screen.                                     |
+| `contrast`      | The contrast readout, rendered when `contrast-against` has a color and the value is not empty. |
+| `contrast-ratio` | The contrast ratio of the value over `contrast-against`.                                |
+| `contrast-mark` | A WCAG level of the contrast readout, AA or AAA.                                         |
+| `pass`          | Added to the contrast-mark part of a level that the ratio passes.                        |
+| `fail`          | Added to the contrast-mark part of a level that the ratio fails.                         |
 | `footer`        | The container below the color panel in the popup. It holds the `footer` slot and, in the confirm mode, the actions. |
 | `actions`       | The container of the preview, Cancel and Apply in the confirm mode.                      |
 | `preview`       | The preview of the initial color and the draft in the confirm mode.                      |
@@ -626,7 +653,7 @@ The `--_` variables in its styles, for example `--_current-color`, are internal.
 
 ## Test scenarios
 
-The component is covered by eight suites in this directory, all running in a real browser through
+The component is covered by ten suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
@@ -638,6 +665,8 @@ The component is covered by eight suites in this directory, all running in a rea
 | [`converters.spec.ts`](./converters.spec.ts) | The color space converters. |
 | [`color-name.spec.ts`](./color-name.spec.ts) | The color name rule. |
 | [`color-name.property.spec.ts`](./color-name.property.spec.ts) | Property-based tests for the color names. |
+| [`contrast.spec.ts`](./contrast.spec.ts) | The contrast ratio and its text. |
+| [`contrast.property.spec.ts`](./contrast.property.spec.ts) | Property-based tests for the contrast ratio. |
 | [`color.property.spec.ts`](./color.property.spec.ts) | Property-based (fuzz) tests for the converters, the parser and the model. |
 
 The component suite reuses `createFormAssociatedTestBed`, `runValidationContainerTests`,
@@ -750,7 +779,7 @@ In input mode.
 ### Color panel
 
 35. The popup shows the color panel, and the picker forwards the parts of the panel; a `::part(hue)` rule reaches the
-    hue slider of the panel. The picker passes its options and strings to the panel, and the value of the panel equals
+    hue slider of the panel. The picker passes its options, `contrast-against` and strings to the panel, and the value of the panel equals
     the value of the picker, also after a format change. The events of the panel stay inside the picker.
 36. The picker shows its swatch children in the swatch list of the panel, the swatch list is a stop of the focus trap,
     and a click on a child swatch sets the value. The picker passes `views` and `active-view`, and a click on the view
@@ -760,9 +789,9 @@ In input mode.
 
 37. The a11y audit. The footer shows the preview, Cancel and Apply only in the confirm mode, and the `footer` slot
     content in both modes.
-38. A change in the popup is a draft: `value`, the anchor and the initial half of the preview keep the color, and no
-    value event is emitted. Apply writes the draft, emits one `igcChange`, closes and focuses the anchor; an Apply
-    without a change emits nothing.
+38. A change in the popup is a draft: `value`, the anchor and the initial half of the preview keep the color, no value
+    event is emitted, and the contrast readout shows the draft. Apply writes the draft, emits one `igcChange`, closes
+    and focuses the anchor; an Apply without a change emits nothing.
 39. Cancel, Escape, Alt + Arrow Up, an outside click, a scroll close, `hide()`, `open = false` and disabling drop
     the draft with no value events. A canceled `igcClosing` keeps the draft on Cancel, and Apply writes it.
 40. Enter on a swatch picks and applies, and Space only picks. Enter on the canvas marker and on a slider applies.
@@ -778,6 +807,14 @@ In input mode.
 42. The grays by lightness, black and white; no lightness word for the pure colors; the lightness compared with the most
     chromatic color of the hue (navy is "dark blue"); grayish colors; a dark orange as brown and a very light red as
     pink; and the hue word of the pure color of each HSV hue, for the hue slider.
+
+### Contrast ratio
+
+43. The WCAG 2 ratio of known pairs (21:1, 1:1, `#767676` and `#595959` on white); the value over the background and
+    the background over white, each with its alpha; and two decimals at most, cut and not rounded. The property test
+    proves that the ratio is from 1 to 21 and the same for both orders of two opaque colors. The
+    [color panel](../color-panel/spec.md#contrast-1) suite covers the readout, and the picker suite covers the readout
+    of the draft in the confirm mode.
 
 ## Assumptions and limitations
 

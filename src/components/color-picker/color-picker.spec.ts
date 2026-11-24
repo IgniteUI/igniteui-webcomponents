@@ -1674,6 +1674,18 @@ describe('Color picker', () => {
       expect(getAnchorPreview(picker).alpha).to.equal('rgb(255 0 0 / 1)');
     });
 
+    it('shows the contrast of the draft', async () => {
+      picker.contrastAgainst = 'white';
+      await pickSwatch(picker, '#000000');
+
+      const ratio = getPanelRoot(picker).querySelector(
+        '[part="contrast-ratio"]'
+      );
+
+      expect(picker.value).to.equal('#ff0000');
+      expect(ratio?.textContent).to.equal('Contrast 21:1');
+    });
+
     it('takes an alpha commit into the draft', async () => {
       picker.showAlpha = true;
       picker.format = 'rgb';
@@ -2217,6 +2229,11 @@ describe('Color picker', () => {
       'view-switcher',
       'view-button',
       'active',
+      'contrast',
+      'contrast-ratio',
+      'contrast-mark',
+      'pass',
+      'fail',
     ];
 
     beforeEach(async () => {
@@ -2269,6 +2286,18 @@ describe('Color picker', () => {
       expect(panel.hideFormats).to.be.true;
       expect(panel.swatches).to.eql(['#ff0000']);
       expect(panel.resourceStrings.color_picker_hue).to.equal('Tone');
+    });
+
+    it('passes contrastAgainst to the panel', async () => {
+      picker.value = '#000000';
+      picker.contrastAgainst = 'white';
+      await elementUpdated(picker);
+
+      const panel = getPanel(picker);
+      const ratio = panel.renderRoot.querySelector('[part="contrast-ratio"]');
+
+      expect(panel.contrastAgainst).to.equal('white');
+      expect(ratio?.textContent).to.equal('Contrast 21:1');
     });
 
     it('keeps the value of the panel equal to its own', async () => {

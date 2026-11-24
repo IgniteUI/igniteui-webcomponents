@@ -29,7 +29,7 @@ function multiply3x3(matrix: number[][], [x, y, z]: number[]): number[] {
 }
 
 /** An sRGB channel (0-255) in linear light (0-1). */
-function linearize(channel: number): number {
+export function linearize(channel: number): number {
   const c = channel / 255;
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 }

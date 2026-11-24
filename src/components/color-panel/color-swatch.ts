@@ -1,6 +1,5 @@
 import { html, LitElement, type PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
-import { createRef, ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { colorPanelContext } from '#internals/context.js';
 import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
@@ -8,11 +7,13 @@ import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import { ColorModel, type ColorKey, colorKey } from '../color-picker/model.js';
-import { resolveSwatch, swatchKey } from './common.js';
+import {
+  parseContextColor,
+  resolveSwatch,
+  swatchKey,
+  VAR_REFERENCE,
+} from './common.js';
 import { styles } from './themes/color-swatch.base.css.js';
-
-/** A `var()` reference, the only context that a swatch color resolves. */
-const VAR_REFERENCE = /\bvar\(/i;
 
 /**
  * A color option of a color panel. A color panel and a color picker show
@@ -54,8 +55,6 @@ export default class IgcColorSwatchComponent extends LitElement {
     reflectRole: true,
     reflectLabel: true,
   });
-
-  private readonly _fillRef = createRef<HTMLElement>();
 
   /** The `color` that {@link _key} comes from. */
   private _resolvedColor?: string;
@@ -154,33 +153,16 @@ export default class IgcColorSwatchComponent extends LitElement {
 
     let model = ColorModel.parse(color);
 
-    // The parser rejects `var()`. The fill of the swatch resolves it, after
-    // the first render.
-    if (
-      model.isEmpty &&
-      VAR_REFERENCE.test(color) &&
-      CSS.supports('color', color)
-    ) {
-      const fill = this._fillRef.value;
-
+    // The parser rejects `var()`. It resolves from the swatch.
+    if (model.isEmpty && VAR_REFERENCE.test(color)) {
       this._contextual = true;
-
-      if (fill) {
-        const style = getComputedStyle(fill);
-        // An undefined variable or one that is not a color makes the fill
-        // transparent, which is not the color of the swatch.
-        const resolved = style.getPropertyValue('--_color').trim();
-
-        if (resolved && CSS.supports('color', resolved)) {
-          model = ColorModel.parse(style.backgroundColor);
-        }
-      }
+      model = parseContextColor(this, color);
     }
 
     this._setModel(model.isEmpty ? undefined : model);
   }
 
-  /** Names the swatch at once: a `var()` color resolves after the render. */
+  /** Names the swatch at once: the model changes after the render. */
   private _setModel(model?: ColorModel): void {
     this._model = model;
 
@@ -205,7 +187,6 @@ export default class IgcColorSwatchComponent extends LitElement {
 
     return html`
       <span
-        ${ref(this._fillRef)}
         part="base"
         ?data-empty=${!color}
         style=${styleMap({ '--_color': color || undefined })}

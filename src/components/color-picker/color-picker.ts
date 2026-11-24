@@ -156,6 +156,11 @@ const exportedPanelParts = panelParts.join(', ');
  * @csspart view-switcher - The view switcher, rendered when `views` has both views.
  * @csspart view-button - A button of the view switcher.
  * @csspart active - Added to the view-button part of the view on screen.
+ * @csspart contrast - The contrast readout, rendered when `contrast-against` has a color and the value is not empty.
+ * @csspart contrast-ratio - The contrast ratio of the value over `contrast-against`.
+ * @csspart contrast-mark - A WCAG level of the contrast readout, AA or AAA.
+ * @csspart pass - Added to the contrast-mark part of a level that the ratio passes.
+ * @csspart fail - Added to the contrast-mark part of a level that the ratio fails.
  * @csspart footer - The container below the color panel in the popup. It holds the `footer` slot and, in the confirm mode, the actions.
  * @csspart actions - The container of the preview, Cancel and Apply in the confirm mode.
  * @csspart preview - The preview of the initial color and the draft in the confirm mode.
@@ -397,6 +402,18 @@ export default class IgcColorPickerComponent extends I18nMixin(
   public get activeView(): ColorPanelView {
     return resolveView(this.views, this._activeView);
   }
+
+  /**
+   * The background color of the contrast readout in the popup, as any CSS
+   * color. A color that depends on its context, such as a `var()`, resolves
+   * from the popup. The readout shows the WCAG 2 contrast ratio of the value
+   * over this color, with the AA and AAA levels for normal text. An empty or
+   * invalid color hides it.
+   *
+   * @attr contrast-against
+   */
+  @property({ attribute: 'contrast-against' })
+  public contrastAgainst = '';
 
   //#endregion
 
@@ -776,6 +793,7 @@ export default class IgcColorPickerComponent extends I18nMixin(
             .swatches=${this.swatches}
             .views=${this.views}
             .activeView=${this.activeView}
+            .contrastAgainst=${this.contrastAgainst}
             .resourceStrings=${this.resourceStrings}
             @igcInput=${this._handlePanelInput}
             @igcChange=${this._handlePanelChange}

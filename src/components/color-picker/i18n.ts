@@ -86,6 +86,16 @@ export interface IgcColorPickerPendingResourceStrings {
   color_picker_name_white?: string;
   /** The hue word "gray" of a color with almost no chroma. */
   color_picker_name_gray?: string;
+  /** The contrast ratio of the value over `contrastAgainst`: `{0}` ratio. */
+  color_picker_contrast_ratio?: string;
+  /** A WCAG level that the contrast ratio passes: `{0}` level name. */
+  color_picker_contrast_pass?: string;
+  /** A WCAG level that the contrast ratio fails: `{0}` level name. */
+  color_picker_contrast_fail?: string;
+  /** The name of the WCAG level AA (contrast 4.5:1). */
+  color_picker_contrast_aa?: string;
+  /** The name of the WCAG level AAA (contrast 7:1). */
+  color_picker_contrast_aaa?: string;
 }
 
 /** The resource strings of the color picker and the color panel. */
@@ -140,6 +150,11 @@ const PendingResourceStringsEN: Required<IgcColorPickerPendingResourceStrings> =
     color_picker_name_black: 'black',
     color_picker_name_white: 'white',
     color_picker_name_gray: 'gray',
+    color_picker_contrast_ratio: 'Contrast {0}:1',
+    color_picker_contrast_pass: '{0} pass',
+    color_picker_contrast_fail: '{0} fail',
+    color_picker_contrast_aa: 'AA',
+    color_picker_contrast_aaa: 'AAA',
   };
 
 /** The resource string of the name of each format in the format select. */

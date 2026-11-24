@@ -66,6 +66,12 @@ defineComponents(IgcColorPickerComponent);
   The view on screen in the popup: `gradient` or `swatches`. The view
   switcher sets it and emits no event. A view that `views` does not have
   gives the first view of `views`.
+- `contrastAgainst`: `string`. Default: `''`. Attribute: `contrast-against`.
+  The background color of the contrast readout in the popup, as any CSS
+  color. A color that depends on its context, such as a `var()`, resolves
+  from the popup. The readout shows the WCAG 2 contrast ratio of the value
+  over this color, with the AA and AAA levels for normal text. An empty or
+  invalid color hides it.
 - `locale`: `string`. Attribute: `locale`.
   The locale of the component. Without it, the component takes its own
   `lang`, else the locale of the nearest ancestor that has a `locale` (a
@@ -200,6 +206,11 @@ defineComponents(IgcColorPickerComponent);
 - `view-switcher`: The view switcher, rendered when `views` has both views.
 - `view-button`: A button of the view switcher.
 - `active`: Added to the view-button part of the view on screen.
+- `contrast`: The contrast readout, rendered when `contrast-against` has a color and the value is not empty.
+- `contrast-ratio`: The contrast ratio of the value over `contrast-against`.
+- `contrast-mark`: A WCAG level of the contrast readout, AA or AAA.
+- `pass`: Added to the contrast-mark part of a level that the ratio passes.
+- `fail`: Added to the contrast-mark part of a level that the ratio fails.
 - `footer`: The container below the color panel in the popup. It holds the `footer` slot and, in the confirm mode, the actions.
 - `actions`: The container of the preview, Cancel and Apply in the confirm mode.
 - `preview`: The preview of the initial color and the draft in the confirm mode.

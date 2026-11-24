@@ -108,6 +108,27 @@
     [part~='view-switcher'] + [part~='swatches'] {
         padding-block-start: rem(16px);
     }
+
+    // TODO: provisional until the design team gives a contrast readout.
+    [part~='contrast'] {
+        @include type-style('body-2');
+
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: rem(8px);
+        padding: 0 var(--_picker-rows-inline-spacing) rem(16px);
+    }
+
+    [part~='contrast-ratio'] {
+        margin-inline-end: auto;
+    }
+
+    [part~='contrast-mark'] {
+        padding-inline: rem(6px);
+        border: rem(1px) solid;
+        border-radius: rem(4px);
+    }
 }
 
 @media (forced-colors: active) {

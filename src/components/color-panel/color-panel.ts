@@ -35,6 +35,7 @@ import {
 } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
+import { HydrationMixin } from '#internals/mixins/hydration.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { createTimer } from '#internals/timing.js';
@@ -58,6 +59,11 @@ import {
   formatSwatchName,
   formatValueWithName,
 } from '../color-picker/color-name.js';
+import {
+  CONTRAST_LEVELS,
+  contrastRatio,
+  formatContrastRatio,
+} from '../color-picker/contrast.js';
 import { colorPickerI18nConfig, formatNameKeys } from '../color-picker/i18n.js';
 import {
   ColorModel,
@@ -86,6 +92,7 @@ import {
   SWATCH_SELECTED_STATE,
   swatchKey,
   syncMarker,
+  parseContextColor,
   VIEWS,
 } from './common.js';
 import { styles } from './themes/color-panel.base.css.js';
@@ -174,10 +181,17 @@ const valueControls = `${IgcColorSwatchComponent.tagName}, ${IgcPickerCanvasComp
  * @csspart view-switcher - The view switcher, rendered when `views` has both views.
  * @csspart view-button - A button of the view switcher.
  * @csspart active - Added to the view-button part of the view on screen.
+ * @csspart contrast - The contrast readout, rendered when `contrast-against` has a color and the value is not empty.
+ * @csspart contrast-ratio - The contrast ratio of the value over `contrast-against`.
+ * @csspart contrast-mark - A WCAG level of the contrast readout, AA or AAA.
+ * @csspart pass - Added to the contrast-mark part of a level that the ratio passes.
+ * @csspart fail - Added to the contrast-mark part of a level that the ratio fails.
  */
-export default class IgcColorPanelComponent extends I18nMixin(
-  EventEmitterMixin<IgcColorPanelComponentEventMap>(LitElement),
-  colorPickerI18nConfig
+export default class IgcColorPanelComponent extends HydrationMixin(
+  I18nMixin(
+    EventEmitterMixin<IgcColorPanelComponentEventMap>(LitElement),
+    colorPickerI18nConfig
+  )
 ) {
   public static readonly tagName = 'igc-color-panel';
   public static override styles = [componentBase, styles, shared];
@@ -227,6 +241,12 @@ export default class IgcColorPanelComponent extends I18nMixin(
   private _selectedKey?: string;
 
   private _hasSlottedSwatches = false;
+
+  /** The color of `contrastAgainst`. It is empty when it does not resolve. */
+  private _contrastColor = ColorModel.empty();
+
+  /** Whether `contrastAgainst` depends on its context, such as a `var()`. */
+  private _contrastInContext = false;
 
   @state()
   private _copyStatus: CopyStatus = 'copy';
@@ -357,14 +377,26 @@ export default class IgcColorPanelComponent extends I18nMixin(
     return resolveView(this.views, this._activeView);
   }
 
+  /**
+   * The background color of the contrast readout, as any CSS color. A color
+   * that depends on its context, such as a `var()`, resolves from the
+   * component. The readout shows the WCAG 2 contrast ratio of the value over
+   * this color, with the AA and AAA levels for normal text. An empty or
+   * invalid color hides it.
+   *
+   * @attr contrast-against
+   */
+  @property({ attribute: 'contrast-against' })
+  public contrastAgainst = '';
+
   //#endregion
 
   constructor() {
     super();
 
-    // A theme can change the colors of `var()` swatches.
+    // A theme can change the `var()` colors.
     addThemingController(this, all, {
-      themeChange: this._panelContext.refreshSwatches,
+      themeChange: () => this._refreshContextColors(),
     });
 
     addContextProvider(this, {
@@ -380,7 +412,7 @@ export default class IgcColorPanelComponent extends I18nMixin(
     addResizeObserverController(this, {
       callback: () => {
         this[syncMarker]();
-        this._panelContext.refreshSwatches();
+        this._refreshContextColors();
       },
       requestUpdate: false,
     });
@@ -442,6 +474,10 @@ export default class IgcColorPanelComponent extends I18nMixin(
 
     if (this._swatchesStale) {
       this._hasSlottedSwatches = !isEmpty(this._slottedSwatches());
+    }
+
+    if (props.has('contrastAgainst')) {
+      this._resolveContrastColor();
     }
   }
 
@@ -725,6 +761,27 @@ export default class IgcColorPanelComponent extends I18nMixin(
       this._reportedKey = key;
       this.emitEvent('igcChange', { detail: this.value });
     }
+  }
+
+  /** Reads the colors that depend on the context again. */
+  private _refreshContextColors(): void {
+    if (this._contrastInContext) {
+      this._resolveContrastColor();
+    }
+
+    this._panelContext.refreshSwatches();
+  }
+
+  /** Reads the color of `contrastAgainst`, also from the context. */
+  private _resolveContrastColor(): void {
+    const value = this.contrastAgainst ?? '';
+    const color = ColorModel.parse(value);
+
+    // The parser rejects the colors that depend on the context.
+    this._contrastInContext = color.isEmpty && Boolean(value);
+    this._contrastColor = this._contrastInContext
+      ? parseContextColor(this, value)
+      : color;
   }
 
   //#endregion
@@ -1162,6 +1219,34 @@ export default class IgcColorPanelComponent extends I18nMixin(
     `;
   }
 
+  private _renderContrast(): TemplateResult | typeof nothing {
+    // The server parses no colors, so the readout waits for the hydration.
+    if (this._hydrating || this._color.isEmpty || this._contrastColor.isEmpty) {
+      return nothing;
+    }
+
+    const strings = this.resourceStrings;
+    const ratio = contrastRatio(this._color, this._contrastColor);
+
+    return html`
+      <div part="contrast">
+        <span part="contrast-ratio">${formatContrastRatio(ratio, this)}</span>
+        ${CONTRAST_LEVELS.map(({ nameKey, minimumRatio }) => {
+          const pass = ratio >= minimumRatio;
+          const text = pass
+            ? strings.color_picker_contrast_pass
+            : strings.color_picker_contrast_fail;
+
+          return html`
+            <span part=${partMap({ 'contrast-mark': true, pass, fail: !pass })}
+              >${formatString(text, strings[nameKey])}</span
+            >
+          `;
+        })}
+      </div>
+    `;
+  }
+
   private _renderGradientView(): TemplateResult {
     return html`
       ${this._renderCanvasGradient()}
@@ -1185,7 +1270,7 @@ export default class IgcColorPanelComponent extends I18nMixin(
       <div part="base">
         ${views.length > 1 ? this._renderViewSwitcher(view) : nothing}
         ${cache(view === 'gradient' ? this._renderGradientView() : nothing)}
-        ${this._renderSwatches(view, views)}
+        ${this._renderSwatches(view, views)} ${this._renderContrast()}
       </div>
     `;
   }

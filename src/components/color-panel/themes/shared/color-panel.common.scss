@@ -163,6 +163,19 @@ $theme: $material;
         grid-template-columns: repeat(8, var-get($theme, 'swatch-size'));
     }
 
+    // TODO: provisional until the design team gives a contrast readout.
+    [part~='contrast'] {
+        color: var-get($theme, 'label-color');
+    }
+
+    [part~='pass'] {
+        border-color: color('success', 500);
+    }
+
+    [part~='fail'] {
+        border-color: color('error', 500);
+    }
+
     [part='picker-canvas'] {
         border-color: var-get($theme, 'picker-canvas-border-color');
         border-radius: var-get($theme, 'picker-border-radius');

@@ -19,6 +19,7 @@
       - [Events](#events-1)
       - [Value text and color names](#value-text-and-color-names)
       - [Copy](#copy)
+      - [Contrast](#contrast)
       - [In the color picker](#in-the-color-picker)
       - [Styling](#styling)
     - [Localization](#localization)
@@ -43,6 +44,7 @@
     - [Swatches](#swatches-1)
     - [Swatch keyboard](#swatch-keyboard)
     - [Views](#views-1)
+    - [Contrast](#contrast-1)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -59,6 +61,7 @@
 |       4 | 2026-11-23 | The `oklch` format |
 |       5 | 2026-11-23 | Enter applies the draft of a color picker in the confirm mode |
 |       6 | 2026-11-23 | The value text of the sliders, color names and the copy feedback |
+|       7 | 2026-11-24 | The contrast readout: `contrast-against`, the WCAG 2 ratio and the AA and AAA levels |
 
 ## Overview
 
@@ -82,6 +85,8 @@ sidebars and other places where the controls stay visible. The color picker show
   `color()` and `color-mix()`, are parsed into sRGB and normalized.
 - **Four serialization formats**, `hex`, `rgb`, `hsl` and `oklch`, switchable at run time without altering the
   represented color.
+- **Contrast readout**: the WCAG 2 contrast ratio of the color over a background that the app sets, with the AA and
+  AAA levels for normal text.
 - **Change events per gesture**: `igcInput` while the user changes the color, `igcChange` when the change ends, as
   for a native range input.
 - **Themeable**: the themes of the color picker, and shadow parts for every region.
@@ -102,6 +107,8 @@ The `igc-color-panel` must:
 - show its swatches as the options of one listbox, with one tab stop, and mark the swatch that has the color of the
   value as selected.
 - show the swatch view, the gradient view or both, as `views` sets.
+- show the WCAG 2 contrast ratio of the value over `contrast-against`, and the AA and AAA levels for normal text,
+  while both colors are set.
 
 ## User stories
 
@@ -117,6 +124,7 @@ As an end-user, I expect to be able to:
 - see which swatch has the current color, and move between the swatches with the arrow keys.
 - clear the color with the no-color swatch.
 - switch between the gradient and the swatches when the panel offers both.
+- see whether the color has enough contrast with the background that it goes on.
 
 ### Developer stories
 
@@ -128,6 +136,7 @@ As a developer, I expect to be able to:
 - show the alpha controls, hide the format select, and provide swatches.
 - group the swatches under labels, use my design tokens as swatch colors, and keep a list of recent colors.
 - offer a swatch-only panel, or both views with a switcher.
+- show the contrast of the color with a background of my design, also a design token.
 - style each region through its shadow part.
 
 ## Functionality
@@ -192,7 +201,7 @@ The swatches of the panel are `igc-color-swatch` children. A swatch has a `color
 - **`var()` colors.** A swatch resolves `var()` from its own computed style. A pick writes the resolved color, and the
   selected state compares the resolved color. Other values that depend on the context, such as `currentcolor` or
   `light-dark()` without `var()`, are invalid. The panel reads the colors again when a swatch connects or changes its color, when the theme
-  changes and when the panel shows. A custom property that changes at another time takes effect at the next of these.
+  changes and when the size of the panel changes, as when a hidden panel shows. A custom property that changes at another time takes effect at the next of these.
   Before hydration, a server-rendered swatch shows its color but no selected state.
 - **Invalid colors.** A swatch with an invalid color, or a `var()` that does not resolve to a color, is never
   selected, and a pick of it does nothing.
@@ -295,10 +304,32 @@ for one second. After a failure, it shows an error icon and the name "Copy faile
 as outside a secure context, fails. Only the latest copy shows its result, and a copy that ends after the panel leaves
 the page shows nothing. The panel has no live region, so a screen reader can miss the new name.
 
+#### Contrast
+
+```html
+<igc-color-panel value="#767676" contrast-against="white"></igc-color-panel>
+```
+
+With `contrast-against`, the panel shows a contrast readout at its bottom, in both views. The readout gives the WCAG 2
+contrast ratio of the value over that color, such as "Contrast 4.54:1", and a mark for each level for normal text:
+"AA pass" or "AA fail" for 4.5:1, and "AAA pass" or "AAA fail" for 7:1. The ratio comes from the relative luminance of
+the two colors in linear sRGB. A value with alpha goes over the `contrast-against` color, and a `contrast-against`
+color with alpha goes over white, as the browser paints them. The ratio shows two decimals at most and drops the
+others, so a ratio below a level never reads as that level: 4.4999 reads "4.49".
+
+`contrast-against` takes any CSS color. A color that depends on its context, such as a `var()`, `currentcolor`,
+`light-dark()` or a system color, resolves from the computed style of the panel, as a `var()` swatch does. The panel
+reads it again when `contrast-against` changes, when the theme changes and when the size of the panel changes, as when
+a hidden panel shows. An empty value, an empty or invalid `contrast-against`, and a `var()` that is not a color hide the
+readout.
+
+The readout follows each change of the color. It has no live region. A server render has no readout; it shows after
+the hydration.
+
 #### In the color picker
 
 The color picker renders a panel in its popup. It passes `format`, `show-alpha`, `hide-formats`, `swatches`, `views`,
-`active-view` and its resource strings to the panel, and takes each change of the panel as a change of the user. It
+`active-view`, `contrast-against` and its resource strings to the panel, and takes each change of the panel as a change of the user. It
 forwards its swatch and group children to the panel through a nested slot. A format or a view that the user picks in
 the panel updates the `format` or the `activeView` of the picker. The events of the panel do
 not leave the picker; the picker emits its own `igcInput`, and its `igcChange` when the focus leaves it. The picker
@@ -327,13 +358,17 @@ The panel uses strings that `igniteui-i18n-core` does not ship yet: `color_picke
 ("Swatches"), the format names `color_picker_format_hex` ("Hex"), `color_picker_format_rgb` ("RGB"),
 `color_picker_format_hsl` ("HSL") and `color_picker_format_oklch` ("OKLCH"), the copy names `color_picker_copied`
 ("Copied") and `color_picker_copy_failed` ("Copy failed"), `color_picker_value_with_name` ("{0}, {1}") and the color
-name strings `color_picker_name_*`. Until it does, every locale shows the English text, and `resourceStrings` can
+name strings `color_picker_name_*`, and the contrast strings `color_picker_contrast_ratio` ("Contrast {0}:1"),
+`color_picker_contrast_pass` ("{0} pass"), `color_picker_contrast_fail` ("{0} fail"), `color_picker_contrast_aa` ("AA")
+and `color_picker_contrast_aaa` ("AAA"). Until it does, every locale shows the English text, and `resourceStrings` can
 replace them.
 
 A color name takes the words of `color_picker_name_*` in the order of `color_picker_name_pattern` ("{0} {1} {2}"):
 `{0}` is the lightness word, `{1}` the chroma word and `{2}` the hue word. A word that a color does not have leaves no
 extra space, so a language that puts the adjectives after the noun uses "{2} {0} {1}", and a language with no spaces
 uses "{0}{1}{2}". `color_picker_name_with_alpha` ("{0}, alpha {1}") adds the alpha to the name of a swatch.
+
+In the contrast strings, `{0}` is the ratio, in the number format of the locale, or the name of the level.
 
 ### Keyboard interactions
 
@@ -370,6 +405,7 @@ The hue and alpha sliders are native range inputs and keep their keys.
 | swatches        | Not set      | No        | `string[]`                    | `[]`    | Pre-defined color strings, rendered as swatches in front of the swatch children. An empty string gives the no-color swatch. |
 | views           | views        | No        | `string`                      | `gradient` | The views, a space-separated list of `gradient` and `swatches`. Both show a view switcher.          |
 | activeView      | active-view  | No        | `ColorPanelView`              | `gradient` | The view on screen. The switcher sets it. A view that `views` does not have gives the first view of `views`. |
+| contrastAgainst | contrast-against | No    | `string`                      | `''`    | The background color of the contrast readout, as any CSS color. A color that depends on its context, such as a `var()`, resolves from the component. The readout shows the WCAG 2 contrast ratio of the value over this color, with the AA and AAA levels for normal text. An empty or invalid color hides it. |
 | locale          | locale       | No        | `string`                      | Not set | The locale for the resource strings. Falls back to the inherited locale, then the global one.         |
 | resourceStrings | Not set      | No        | `ColorPickerResourceStrings`  | EN      | The texts of the component. The strings that you set replace the strings of the current locale.       |
 
@@ -416,6 +452,11 @@ The events of the inner inputs, the format select, the view switcher and the can
 | `view-switcher` | The view switcher, rendered when `views` has both views.                    |
 | `view-button`   | A button of the view switcher.                                              |
 | `active`        | Added to the view-button part of the view on screen.                        |
+| `contrast`      | The contrast readout, rendered when `contrast-against` has a color and the value is not empty. |
+| `contrast-ratio` | The contrast ratio of the value over `contrast-against`.                   |
+| `contrast-mark` | A WCAG level of the contrast readout, AA or AAA.                            |
+| `pass`          | Added to the contrast-mark part of a level that the ratio passes.           |
+| `fail`          | Added to the contrast-mark part of a level that the ratio fails.            |
 
 A swatch child is not a part of the panel. Style it with the `igc-color-swatch` selector, its `base` part and its
 `ig-selected` custom state.
@@ -460,7 +501,8 @@ A labelled group of swatches. It shares its base with `igc-select-group` and `ig
 The panel suite is [`color-panel.spec.ts`](./color-panel.spec.ts). The canvas, the color model, the parser, the
 converters and the property-based tests live with the color picker; see the
 [color picker test scenarios](../color-picker/spec.md#test-scenarios). The color picker suite also covers the panel in
-the popup through the picker. The color name rule has its own suite, `color-name.spec.ts`, with the color picker.
+the popup through the picker. The color name rule has its own suite, `color-name.spec.ts`, with the color picker, and
+so has the contrast ratio, `contrast.spec.ts` and `contrast.property.spec.ts`.
 
 ### Rendering
 
@@ -519,6 +561,16 @@ The a11y audit of both views, the gradient view with the list below it, the swit
 switch with no events, the marker after a switch back, the first view for a view that `views` does not have, and
 unknown tokens.
 
+### Contrast
+
+The a11y audit, no readout without `contrast-against`, the ratio and the AA and AAA marks with their parts, the
+attribute, a color that the user commits, the alpha of the value and of `contrast-against`, no readout for an empty
+value, an invalid color, an undefined `var()` or a `var()` that is not a color, `currentcolor`, `light-dark()` and a
+`var()` resolved from the panel, a `var()` read again when the panel shows and when the theme changes, the readout at
+the end of the panel in both views, and the strings and the number format of the locale. `contrast.spec.ts` covers the
+ratio of known pairs, the alpha of both colors and the cut decimals; `contrast.property.spec.ts` covers the range from
+1 to 21 and the same ratio for both orders of two opaque colors.
+
 ## Assumptions and limitations
 
 - The color model is sRGB. See the [color picker limitations](../color-picker/spec.md#assumptions-and-limitations).
@@ -529,9 +581,12 @@ unknown tokens.
 - Color names are approximate. The rule that picks the words is the same in all locales; only the words and their
   order change.
 - The panel has no `disabled` property. To make it inactive, set `inert` on it.
-- A `var()` swatch reads its color again only at the times that [Swatches](#swatches) lists.
-- The selected mark of a swatch, the swatch focus ring, the group label and the view switcher use provisional styles
-  until the design team gives them.
+- A `var()` swatch reads its color again only at the times that [Swatches](#swatches) lists. A context color in
+  `contrast-against` reads its color again only at the times that [Contrast](#contrast) lists.
+- The contrast readout gives the WCAG 2 ratio and the levels for normal text only. It has no levels for large text
+  (3:1 and 4.5:1), no APCA value and no contrast lines on the canvas.
+- The selected mark of a swatch, the swatch focus ring, the group label, the view switcher and the contrast readout
+  use provisional styles until the design team gives them.
 - In the Material, Fluent and Indigo themes the picker border color is transparent and the popup shows its edge with
   an elevation. Alone in the page, the panel has no elevation, so it has no visible edge on a background of the same
   color. Style `::part(base)` to add one. Bootstrap draws a border.
@@ -550,6 +605,9 @@ unknown tokens.
 - The swatch list is a `listbox` named "Color swatches". Each swatch is an `option` with `aria-selected`, named by its
   label or its color name. A swatch group is a `group` named by its label. The swatch mirrors its role and name onto
   content attributes, so that tools that read only attributes, such as axe, see them.
+- The contrast readout is plain text: the ratio and one mark for each level. Each mark says "pass" or "fail" in text,
+  so the result does not depend on the color of the mark. The readout has no live region, so a screen reader reads a
+  new ratio only when the user moves to it.
 - The view switcher is a button group in single selection: a `radiogroup` of two `radio` buttons with
   `aria-checked`. The texts of the buttons name the views.
 

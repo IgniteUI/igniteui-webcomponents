@@ -103,6 +103,13 @@ const metadata: Meta<IgcColorPickerComponent> = {
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'gradient' } },
     },
+    contrastAgainst: {
+      type: 'string',
+      description:
+        'The background color of the contrast readout in the popup, as any CSS\ncolor. A color that depends on its context, such as a `var()`, resolves\nfrom the popup. The readout shows the WCAG 2 contrast ratio of the value\nover this color, with the AA and AAA levels for normal text. An empty or\ninvalid color hides it.',
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
     locale: {
       type: 'string',
       description:
@@ -159,6 +166,7 @@ const metadata: Meta<IgcColorPickerComponent> = {
     selectionCommit: 'immediate',
     views: 'gradient',
     activeView: 'gradient',
+    contrastAgainst: '',
     required: false,
     disabled: false,
     invalid: false,
@@ -228,6 +236,14 @@ interface IgcColorPickerArgs {
    * gives the first view of `views`.
    */
   activeView: 'gradient' | 'swatches';
+  /**
+   * The background color of the contrast readout in the popup, as any CSS
+   * color. A color that depends on its context, such as a `var()`, resolves
+   * from the popup. The readout shows the WCAG 2 contrast ratio of the value
+   * over this color, with the AA and AAA levels for normal text. An empty or
+   * invalid color hides it.
+   */
+  contrastAgainst: string;
   /**
    * The locale of the component. Without it, the component takes its own
    * `lang`, else the locale of the nearest ancestor that has a `locale` (a
@@ -366,6 +382,7 @@ export const Default: Story = {
         .scrollStrategy=${args.scrollStrategy}
         .views=${args.views}
         .activeView=${args.activeView}
+        .contrastAgainst=${args.contrastAgainst}
         locale=${ifDefined(args.locale)}
         ?hide-formats=${args.hideFormats}
         ?show-alpha=${args.showAlpha}
@@ -684,7 +701,7 @@ export const ThemeEditor: Story = {
     docs: {
       description: {
         story:
-          'A theme editor with a live preview. Each picker writes its value to a CSS custom property on `igcInput`, so the preview follows every drag. The editor also checks the WCAG contrast ratio of the text on the surface and of the white button label on the primary color. If a ratio is less than 4.5:1, it calls `setCustomValidity()` and the `custom-error` slot shows the ratio. The message shows when focus leaves the changed picker.',
+          'A theme editor with a live preview. Each picker writes its value to a CSS custom property on `igcInput`, so the preview follows every drag. The editor also checks the WCAG contrast ratio of the text on the surface and of the white button label on the primary color. If a ratio is less than 4.5:1, it calls `setCustomValidity()` and the `custom-error` slot shows the ratio. The message shows when focus leaves the changed picker. The popups of the Primary and Text pickers show the same ratios: `contrast-against` is white for the primary color and `var(--surface)` for the text.',
       },
     },
     actions: { handles: [] },
@@ -781,6 +798,7 @@ export const ThemeEditor: Story = {
             name="primary"
             label="Primary"
             value="#3f51b5"
+            contrast-against="white"
             .swatches=${palette}
             @igcInput=${update}
           >
@@ -802,6 +820,7 @@ export const ThemeEditor: Story = {
             name="text"
             label="Text"
             value="#212121"
+            contrast-against="var(--surface)"
             .swatches=${['#000000', '#212121', '#424242', '#757575', '#ffffff']}
             @igcInput=${update}
           >
