@@ -52,9 +52,16 @@ function slotNameOf(slot: unknown): string {
   return slot === DefaultSlot ? '' : String(slot);
 }
 
+/**
+ * Whether `node` is a slot in a shadow tree. The checks do not use
+ * `instanceof`, so they also accept a slot adopted from an iframe.
+ */
 function isShadowSlot(node: Node): node is HTMLSlotElement {
+  // Only the root of a shadow tree is different from the composed root.
   return (
-    node instanceof HTMLSlotElement && node.getRootNode() instanceof ShadowRoot
+    node.nodeType === Node.ELEMENT_NODE &&
+    (node as Element).localName === 'slot' &&
+    node.getRootNode() !== node.getRootNode({ composed: true })
   );
 }
 
@@ -65,10 +72,16 @@ class SlotController<T> implements ReactiveController {
   private _initialized = false;
 
   /**
-   * Set from `hostUpdate` of the first update. While the render root is still
-   * empty, before the template commits, a query reads the host children.
+   * Set from `hostUpdate` of the first update. Until the template commits, a
+   * query reads the host children.
    */
   private _inFirstUpdate = false;
+
+  /**
+   * The child count of the render root before the first render. The root can
+   * have other nodes, such as a style from `createRenderRoot`.
+   */
+  private _rootChildCount = 0;
 
   /**
    * Set during the first update of a server-rendered host. The server render
@@ -170,7 +183,8 @@ class SlotController<T> implements ReactiveController {
 
     // Lit adds a marker node to the render root when it commits the first
     // template. After that, a missing slot is one that the template leaves out.
-    return this._inFirstUpdate && !this._host.renderRoot.hasChildNodes()
+    return this._inFirstUpdate &&
+      this._host.renderRoot.childNodes.length === this._rootChildCount
       ? this._lightDomNodes(slot, flatten)
       : [];
   }
@@ -269,7 +283,8 @@ class SlotController<T> implements ReactiveController {
     }
 
     this._inFirstUpdate = true;
-    // A render that throws leaves the root empty, so the flag must end too.
+    this._rootChildCount = this._host.renderRoot.childNodes.length;
+    // A render that throws commits nothing, so the flag must end too.
     queueMicrotask(() => {
       this._inFirstUpdate = false;
     });

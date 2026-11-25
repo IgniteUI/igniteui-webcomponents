@@ -393,6 +393,44 @@ describe('Slots controller', () => {
       ]);
     });
 
+    it('flattens a slot of an outer shadow tree, adopted from an iframe', async () => {
+      const iframe = await fixture<HTMLIFrameElement>(html`<iframe></iframe>`);
+      const forwarding = iframe.contentDocument!.createElement('slot');
+      forwarding.slot = 'end';
+
+      const inner = document.createElement(firstRenderTag) as FirstRenderHost;
+      inner.append(forwarding);
+      const outer = document.createElement('div');
+      outer.attachShadow({ mode: 'open' }).append(inner);
+      outer.innerHTML = '<span></span>';
+      await fixture(outer);
+      await elementUpdated(inner);
+
+      expect(firstOf(snapshots).end).to.eql(['span']);
+      expect(firstOf(snapshots).end).to.eql(
+        snapshotQueries(inner.slotController).end
+      );
+    });
+
+    it('reports the host children with other nodes in the render root', async () => {
+      const tagName = defineCE(
+        class extends (customElements.get(
+          firstRenderTag
+        ) as typeof LitElement) {
+          protected override createRenderRoot() {
+            const root = super.createRenderRoot();
+            root.append(document.createElement('style'));
+            return root;
+          }
+        }
+      );
+      const host = document.createElement(tagName) as FirstRenderHost;
+      host.innerHTML = '<span slot="start"></span>';
+      await fixture(host);
+
+      expect(firstOf(snapshots).start).to.eql(['span']);
+    });
+
     it('reports no content to a query before the first update, such as from a setter', async () => {
       const host = document.createElement(firstRenderTag) as FirstRenderHost;
       host.innerHTML = '<span slot="start"></span>';
