@@ -37,12 +37,14 @@ import {
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
+  simulateBackspaceOver,
   simulateCancelableKeydown,
   simulateClick,
   simulateComposingKeys,
   simulateInput,
   simulateKeyboard,
   simulateScroll,
+  simulateTypingOver,
 } from '#internals/testing/simulate.spec.js';
 import { isUserChange } from '#internals/user-change.js';
 import { formatString } from '#internals/utils/strings.js';
@@ -1062,6 +1064,158 @@ describe('Date picker', () => {
     });
   });
 
+  describe('Calendar selection while typing', () => {
+    const march3 = new Date(2020, 2, 3);
+    const october10 = new Date(2020, 9, 10);
+    let input: HTMLInputElement;
+
+    const typeOver = async (text: string) => {
+      await simulateTypingOver(dateTimeInput, text);
+      await elementUpdated(picker);
+    };
+
+    const deleteText = async (start: number, end: number) => {
+      await simulateBackspaceOver(dateTimeInput, start, end);
+      await elementUpdated(picker);
+    };
+
+    beforeEach(async () => {
+      input = dateTimeInput.renderRoot.querySelector('input')!;
+      picker.inputFormat = 'MM/dd/yyyy';
+      picker.value = march3;
+      await picker.show();
+    });
+
+    it('selects a complete typed date and keeps the value', async () => {
+      await typeOver('10102020');
+
+      expect(input.value).to.equal('10/10/2020');
+      checkDatesEqual(calendar.value!, october10);
+      checkDatesEqual(picker.value!, march3);
+    });
+
+    it('keeps the last selection while the date is incomplete', async () => {
+      const eventSpy = spy(picker, 'emitEvent');
+
+      await typeOver('1010');
+
+      expect(input.value).to.equal('10/10/____');
+      checkDatesEqual(calendar.value!, march3);
+      expect(eventSpy).calledWith('igcInput', { detail: null });
+
+      await typeOver('10102020');
+      await deleteText(6, 10);
+
+      expect(input.value).to.equal('10/10/____');
+      checkDatesEqual(calendar.value!, october10);
+    });
+
+    it('keeps the last selection for an invalid date', async () => {
+      await typeOver('02302020');
+
+      expect(input.value).to.equal('02/30/2020');
+      checkDatesEqual(calendar.value!, march3);
+    });
+
+    it('clears the selection when the input is emptied', async () => {
+      dateTimeInput.focus();
+      await elementUpdated(picker);
+
+      await deleteText(0, input.value.length);
+
+      expect(input.value).to.equal('__/__/____');
+      expect(calendar.value).to.be.null;
+      checkDatesEqual(picker.value!, march3);
+    });
+
+    it('keeps the typed selection when code sets the same value', async () => {
+      await typeOver('10102020');
+
+      picker.value = new Date(march3.getTime());
+      await elementUpdated(picker);
+
+      expect(input.value).to.equal('10/10/2020');
+      checkDatesEqual(calendar.value!, october10);
+    });
+
+    it('selects a new value set from code', async () => {
+      const january1 = new Date(2021, 0, 1);
+      await typeOver('10102020');
+
+      picker.value = january1;
+      await elementUpdated(picker);
+
+      checkDatesEqual(calendar.value!, january1);
+    });
+
+    it('drops the typed selection on clear()', async () => {
+      picker.value = null;
+      await typeOver('10102020');
+      checkDatesEqual(calendar.value!, october10);
+
+      picker.clear();
+      await elementUpdated(picker);
+
+      expect(calendar.value).to.be.null;
+    });
+
+    it('selects the value after a blur that commits the same value', async () => {
+      const january1 = new Date(2020, 0, 1);
+      picker.value = january1;
+      await typeOver('10102020');
+
+      // The year stays, so the commit fills the month and the day: January 1.
+      await deleteText(0, 5);
+      expect(input.value).to.equal('__/__/2020');
+      checkDatesEqual(calendar.value!, october10);
+
+      const eventSpy = spy(picker, 'emitEvent');
+      dateTimeInput.blur();
+      await elementUpdated(picker);
+
+      expect(eventSpy).not.calledWith('igcChange');
+      checkDatesEqual(picker.value!, january1);
+      checkDatesEqual(calendar.value!, january1);
+    });
+
+    it('selects the value after stepUp and setRangeText', async () => {
+      const march2 = new Date(2020, 2, 2);
+
+      await typeOver('03022020');
+      checkDatesEqual(calendar.value!, march2);
+
+      picker.stepUp(DatePart.Date);
+      await elementUpdated(picker);
+
+      expect(input.value).to.equal('03/03/2020');
+      checkDatesEqual(picker.value!, march3);
+      checkDatesEqual(calendar.value!, march3);
+
+      await typeOver('03022020');
+      checkDatesEqual(calendar.value!, march2);
+
+      picker.setRangeText('03', 3, 5);
+      await elementUpdated(picker);
+
+      expect(input.value).to.equal('03/03/2020');
+      checkDatesEqual(calendar.value!, march3);
+    });
+
+    it('selects the value when the focus moves to the calendar', async () => {
+      const january1 = new Date(2020, 0, 1);
+      picker.value = january1;
+      await typeOver('10102020');
+      await deleteText(0, 5);
+      checkDatesEqual(calendar.value!, october10);
+
+      calendar[focusActiveDate]();
+      await elementUpdated(picker);
+
+      checkDatesEqual(picker.value!, january1);
+      checkDatesEqual(calendar.value!, january1);
+    });
+  });
+
   describe('Calendar view', () => {
     it('brings the month of a value set from code into view', async () => {
       const march1 = new Date(2025, 2, 1);
@@ -1529,6 +1683,32 @@ describe('Date picker', () => {
 
       expect(eventSpy.withArgs('igcChange')).calledOnce;
       checkDatesEqual(picker.value!, today);
+    });
+
+    it('leaves the input and change events of slotted content alone', async () => {
+      const value = new Date(2020, 2, 3);
+      const slotted = document.createElement('span');
+      slotted.slot = 'suffix';
+      picker.append(slotted);
+      picker.value = value;
+      await elementUpdated(picker);
+
+      const eventSpy = spy(picker, 'emitEvent');
+      const reached: string[] = [];
+      const record = ({ type }: Event) => reached.push(type);
+      picker.addEventListener('igcInput', record);
+      picker.addEventListener('igcChange', record);
+
+      for (const type of ['igcInput', 'igcChange']) {
+        slotted.dispatchEvent(
+          new CustomEvent(type, { bubbles: true, composed: true, detail: '' })
+        );
+      }
+      await elementUpdated(picker);
+
+      expect(reached).to.eql(['igcInput', 'igcChange']);
+      expect(eventSpy).not.called;
+      checkDatesEqual(picker.value!, value);
     });
 
     it('should emit or not igcInput according to nonEditable property', async () => {

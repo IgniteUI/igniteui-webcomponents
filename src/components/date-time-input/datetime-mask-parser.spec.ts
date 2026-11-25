@@ -241,6 +241,48 @@ describe('DateTimeMaskParser', () => {
     });
   });
 
+  describe('Edit Parsing', () => {
+    const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
+    const previous = new Date(2020, 0, 1);
+
+    it('gives the date of a complete mask', () => {
+      const date = parser.parseEdit('12/25/2023', previous);
+
+      expect(date?.getTime()).to.equal(new Date(2023, 11, 25).getTime());
+    });
+
+    it('keeps the previous date while the date is incomplete', () => {
+      expect(parser.parseEdit('12/25/20__', previous)).to.equal(previous);
+      expect(parser.parseEdit('1_/__/____', previous)).to.equal(previous);
+      expect(parser.parseEdit('12/25/20__', null)).to.be.null;
+    });
+
+    it('keeps the previous date for an invalid date', () => {
+      expect(parser.parseEdit('02/30/2023', previous)).to.equal(previous);
+    });
+
+    it('gives null for a blank mask', () => {
+      expect(parser.parseEdit('__/__/____', previous)).to.be.null;
+      expect(parser.parseEdit('', previous)).to.be.null;
+    });
+
+    it('parses a complete mask when a literal is the prompt', () => {
+      const dashed = new DateTimeMaskParser({
+        format: 'yyyy-MM-dd',
+        promptCharacter: '-',
+      });
+      const date = new Date(2023, 11, 25);
+
+      expect(dashed.parseValue('2023-12-25', true)?.getTime()).to.equal(
+        date.getTime()
+      );
+      expect(dashed.parseEdit('2023-12-25', previous)?.getTime()).to.equal(
+        date.getTime()
+      );
+      expect(dashed.parseEdit('2023-12---', previous)).to.equal(previous);
+    });
+  });
+
   describe('Part Queries', () => {
     it('gets date part at cursor position', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });

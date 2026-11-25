@@ -11,6 +11,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import IgcCalendarComponent from '../calendar/calendar.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcDateRangeInputComponent from './date-range-input.js';
@@ -190,6 +191,41 @@ describe('Date range picker - Form integration', () => {
             startKey,
             defaultRange.start.toISOString()
           );
+        });
+
+        it('drops the typed calendar selection on a form reset that keeps the value', async () => {
+          const defaultRange = {
+            start: new Date(2024, 0, 15),
+            end: new Date(2024, 0, 20),
+          };
+          spec.setProperties({ defaultValue: defaultRange });
+          await elementUpdated(spec.element);
+
+          const [editor] = getEditors(spec.element);
+          const input = getInput(spec.element);
+          const calendar = spec.element.renderRoot.querySelector(
+            IgcCalendarComponent.tagName
+          )!;
+
+          editor.focus();
+          await elementUpdated(editor);
+
+          // January 17 as the start.
+          typeAt(input, '7', 4);
+          await elementUpdated(spec.element);
+          expect(calendar.values).to.eql([
+            new Date(2024, 0, 17),
+            defaultRange.end,
+          ]);
+
+          spec.reset();
+          await elementUpdated(spec.element);
+
+          expect(spec.element.value).to.eql(defaultRange);
+          expect(calendar.values).to.eql([
+            defaultRange.start,
+            defaultRange.end,
+          ]);
         });
 
         it('should not be in invalid state on reset for a required control which previously had value', async () => {

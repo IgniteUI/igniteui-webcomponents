@@ -136,6 +136,52 @@ describe('Date-time mask parser properties', () => {
     );
   });
 
+  it('reads the prompt only in the parts, also when a literal is the prompt', () => {
+    const prompts = ['-', '/', '.', ':'];
+    // Mostly digits, so most masks are complete. Only characters that fit a part, so
+    // both parsers place them the same.
+    const partInput = fc.string({
+      unit: fc.oneof(
+        { weight: 9, arbitrary: fc.constantFrom(...'0123456789') },
+        { weight: 1, arbitrary: fc.constantFrom(...'APMapm') }
+      ),
+      minLength: 8,
+      maxLength: 24,
+    });
+
+    fc.assert(
+      fc.property(
+        formatOf(ALL_PARTS, prompts),
+        partInput,
+        fc.constantFrom(...prompts),
+        fc.option(date, { nil: null }),
+        (format, input, prompt, previous) => {
+          // No format uses `_`, the default prompt.
+          const reference = new DateTimeMaskParser({ format });
+          const parser = new DateTimeMaskParser({
+            format,
+            promptCharacter: prompt,
+          });
+          const typed = reference.apply(input);
+          const masked = parser.apply(input);
+          const strict = reference.parseValue(typed, true);
+          const edit = reference.isBlank(typed) ? null : (strict ?? previous);
+
+          expect(parser.isComplete(masked), masked).to.equal(
+            !typed.includes(reference.prompt)
+          );
+          expect(parser.parseValue(masked, true)?.getTime(), masked).to.equal(
+            strict?.getTime()
+          );
+          expect(
+            parser.parseEdit(masked, previous)?.getTime(),
+            masked
+          ).to.equal(edit?.getTime());
+        }
+      )
+    );
+  });
+
   it('round-trips a date through formatValue and parseDate', () => {
     fc.assert(
       fc.property(paddedFormat, date, (format, value) => {

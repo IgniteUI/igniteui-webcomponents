@@ -4,7 +4,11 @@
  */
 
 import { daysInMonth } from '#internals/date/model.js';
-import { clamp, modulo } from '#internals/utils/math.js';
+import {
+  clamp,
+  modulo,
+  numberInRangeInclusive,
+} from '#internals/utils/math.js';
 
 //#region Types and Enums
 
@@ -18,17 +22,8 @@ export enum DatePart {
   AmPm = 'amPm',
 }
 
-/** Types of date/time parts that can appear in a format string */
-export const DatePartType = {
-  Month: 'month',
-  Year: 'year',
-  Date: 'date',
-  Hours: 'hours',
-  Minutes: 'minutes',
-  Seconds: 'seconds',
-  AmPm: 'amPm',
-  Literal: 'literal',
-} as const;
+/** The part types of a format string: the date parts and the literals between them. */
+export const DatePartType = { ...DatePart, Literal: 'literal' } as const;
 
 export type DatePartType = (typeof DatePartType)[keyof typeof DatePartType];
 
@@ -65,7 +60,6 @@ export interface DatePartDeltas {
   seconds?: number;
 }
 
-/** Options for creating a date part */
 export interface DatePartOptions {
   /** Start position in the masked string */
   start: number;
@@ -75,13 +69,12 @@ export interface DatePartOptions {
   format: string;
 }
 /* blazorSuppress */
-/** Options for spin operations */
 export interface SpinOptions {
   /** The current date value */
   date: Date;
   /** Whether to loop values at boundaries */
   spinLoop: boolean;
-  /** For AM/PM: the current masked value to determine AM or PM */
+  /** For AM/PM: `AM` or `PM`, the side of the value. */
   amPmValue?: string;
   /** For AM/PM: the original date (for rollover prevention) */
   originalDate?: Date;
@@ -93,22 +86,14 @@ export interface SpinOptions {
  */
 export interface IDatePart {
   readonly type: DatePartType;
-  /** Start position in the masked string */
   readonly start: number;
-  /** End position in the masked string */
   readonly end: number;
   readonly format: string;
 
-  /**
-   * Validates a numeric value for this part.
-   * @param context - Optional context (year, month) for date-dependent validation
-   */
+  /** Whether `value` is valid; `context` gives the month length. */
   validate(value: number, context?: DateValidationContext): boolean;
 
-  /**
-   * Spins (increments/decrements) this part's value on the given date.
-   * @param delta - The amount to spin (positive = up, negative = down)
-   */
+  /** Spins this part of `options.date` by `delta`. */
   spin(delta: number, options: SpinOptions): void;
 
   /** Returns the formatted value of this part for `date`. */
@@ -272,7 +257,11 @@ class YearPart extends DatePartBase {
 class MonthPart extends DatePartBase {
   override validate(value: number): boolean {
     // Month is 0-based internally, but 1-12 in display
-    return value >= DATE_BOUNDS.month.min && value <= DATE_BOUNDS.month.max;
+    return numberInRangeInclusive(
+      value,
+      DATE_BOUNDS.month.min,
+      DATE_BOUNDS.month.max
+    );
   }
 
   override spin(delta: number, options: SpinOptions): void {
@@ -333,7 +322,7 @@ class TimePart extends DatePartBase {
   }
 
   override validate(value: number): boolean {
-    return value >= this._config.min && value <= this._config.max;
+    return numberInRangeInclusive(value, this._config.min, this._config.max);
   }
 
   override spin(delta: number, options: SpinOptions): void {

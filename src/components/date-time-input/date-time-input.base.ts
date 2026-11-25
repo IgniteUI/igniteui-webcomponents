@@ -116,13 +116,24 @@ export abstract class IgcDateTimeInputBaseComponent<
   protected _isEditing = false;
 
   /**
-   * The parsed draft during an edit, else the committed value.
+   * The strict parse of the edit, else the committed value.
    *
    * @hidden @internal
    */
   public get _uncommittedValue(): T | null {
     return this._isEditing
       ? this._parser.parseValue(this._maskedValue, true)
+      : this.value;
+  }
+
+  /**
+   * The calendar selection of a picker during an edit (see `parseEdit`), else the committed value.
+   *
+   * @hidden @internal
+   */
+  public _parseEdit(previous: T | null): T | null {
+    return this._isEditing
+      ? this._parser.parseEdit(this._maskedValue, previous)
       : this.value;
   }
 
@@ -327,7 +338,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   protected _setCurrentDateTime(): void {
-    this._setDraftValue(this._parser.seeded(this._seedDate()));
+    this._editTo(this._parser.seeded(this._seedDate()));
     this._emitInputEvent();
   }
 
@@ -376,14 +387,14 @@ export abstract class IgcDateTimeInputBaseComponent<
     return true;
   }
 
-  /** Keeps the selection. With `commit`, a focused editor also updates `value`, not only the draft. */
+  /** Keeps the selection. With `commit`, a focused editor also updates `value`, not only the edit. */
   protected _applyStep(value: T, commit: boolean, masked?: string): void {
     const { start, end } = this._inputSelection;
-    this._setDraftValue(value, masked);
+    this._editTo(value, masked);
 
-    // A focused editor holds the step as a draft. Commit the exact value: the mask can lack the stepped part.
+    // A focused editor holds the step as an edit. Commit the exact value: the mask can lack the stepped part.
     if (commit && this._focused) {
-      this._applyDraft(value);
+      this._applyEdit(value);
 
       // The value cannot hold a partial range end, so its typed text stays as an edit.
       if (masked !== undefined && masked !== this._maskedValue) {
@@ -416,10 +427,10 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /**
-   * Applies a value from a spin or `Ctrl + ;`. A focused editor moves only the draft.
+   * Applies a value from a spin or `Ctrl + ;`. A focused editor moves only the edit.
    * An unfocused one commits at once, because no blur follows.
    */
-  protected _setDraftValue(value: T, masked?: string): void {
+  protected _editTo(value: T, masked?: string): void {
     if (!this._focused) {
       this.value = value;
       return;
@@ -438,10 +449,6 @@ export abstract class IgcDateTimeInputBaseComponent<
     return new Date();
   }
 
-  /**
-   * Whether the committed value is empty. Focus then starts the edit from the
-   * empty mask, not from the formatted value.
-   */
   protected override _isValueEmpty(): boolean {
     return !this.value;
   }
@@ -468,7 +475,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   /** Applies the masked text, or `value`, to the public value without emitting anything. */
-  protected _applyDraft(
+  protected _applyEdit(
     value: T | null = this._parser.parseValue(this._maskedValue, true)
   ): void {
     this._isEditing = false;
@@ -477,7 +484,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     this._updateMaskDisplay();
   }
 
-  /** Commits the draft to the public value. Emits `igcChange` if the value differs from the reported value. */
+  /** Commits the edit to the public value. Emits `igcChange` if the value differs from the reported value. */
   protected _commitEdit(): void {
     // Only a real edit is parsed again. A display-formatted mask parses wrong
     // under the input format.
@@ -512,7 +519,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     }
 
     // A change outside an edit, such as a drop on an unfocused input, gets no blur.
-    this._applyDraft();
+    this._applyEdit();
   }
 
   /** Drops the typed text, which `_buildMaskedValue` keeps for an empty value. */
@@ -528,9 +535,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     super._resetValidationState();
   }
 
-  /**
-   * Applies a mask pattern to the input, parsing the format string into date parts.
-   */
+  /** Sets the input format. A placeholder that showed the old format follows it. */
   protected _applyMask(formatString: string): void {
     const previous = this._parser.mask;
     this._parser.mask = formatString;
@@ -613,7 +618,7 @@ export abstract class IgcDateTimeInputBaseComponent<
     selectMode?: RangeTextSelectMode
   ): void {
     super.setRangeText(replacement, start, end, selectMode);
-    this._applyDraft();
+    this._applyEdit();
   }
 
   /** Clears the value and the text of the input. */

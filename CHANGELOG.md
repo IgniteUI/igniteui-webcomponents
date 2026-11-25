@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Without `activeDate`, a value set from code brings its month into view in the calendar, also while the calendar is open. Before, the calendar stayed on its month until the next open from the calendar icon or the keyboard.
   - With `visibleMonths` above 1, an open by the user, from the calendar icon, <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> or a click on the input or the label in dialog mode, shows the value in the first month. Before, the value could open in another month.
 - #### Date picker, Date range picker
+  - While you type, the calendar selects a complete typed date. While the date is incomplete or not valid, the calendar keeps its last selection, and an empty input clears it. In the date range picker, each end follows its own text. The value still changes only when the edit is committed. Before, the date picker calendar showed the committed date until the blur. The date range picker calendar dropped an end while its text was incomplete, and the whole range in single input mode.
   - In editable dropdown mode, a clear through the clear icon is reported with `igcChange` when the focus leaves the picker. Before, the input reported it when the focus left the input, also on a move to the calendar or to the other input of a date range picker.
 - #### Date picker, Date time input
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` move the time 12 hours also when the input format has no AM/PM part, as a step does for the other parts that the format does not show. Before, they did nothing.
@@ -82,6 +83,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - In multiple selection, a change of `name` moves the submitted values to the new name at once. Before, the form submitted them under the old name.
 - #### Date picker
   - The first render no longer logs a Lit development warning that a cached field was read before the first update.
+  - The `igcInput` and `igcChange` events of slotted content, such as an input in the `suffix` slot, go on to the application and do not change the value. Before, the picker stopped them, and an `igcChange` from slotted content could change the value.
 - #### Date picker, Date range picker
   - An editor no longer shows the invalid styles when the focus moves from it to other content of the picker, such as the other editor of a date range picker. The editors show the invalid state of the picker, together with its validation message.
   - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
@@ -92,6 +94,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A form reset discards the text that you typed and did not commit yet, as for a native date input. Before, a partly typed date stayed in the focused input, and in a picker the next blur committed it as a date, also over the restored default value.
   - An empty value that code or a form reset sets while the input has focus replaces the date that the input shows. Before, the input kept showing the old date, and a spin started from it.
   - A year spin stops at year 9999 and at year 1, and a year outside them, such as one set from code, only moves toward them. Before, a spin past year 9999 gave a five digit year that did not fit the input.
+  - A `prompt` that is also a separator of the input format no longer makes a typed date incomplete. Examples are `-` with `yyyy-MM-dd`, and `-` with the ` - ` of the date range picker. Before, the `igcInput` detail of a complete date was `null`, and an arrow key or a spin started again from today.
   - Ctrl + Arrow Left and Ctrl + Arrow Right stop at each date part in an input format without separators, such as `yyyyMMdd`, and do not stop inside a separator of more than one character, such as `, `. Before, the date time input went to the start or the end of the input, and the single input of the date range picker skipped a part.
 - #### Date picker, Date time input
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` read AM or PM from the value. Before, while the input did not have focus and the display format was different from the input format, they read the display text, so they did nothing or switched only from PM to AM.

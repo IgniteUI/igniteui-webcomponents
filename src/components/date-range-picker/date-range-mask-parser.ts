@@ -26,7 +26,7 @@ export interface DateRangePart {
 }
 
 /**
- * Position of a date part within the date range
+ * The end of the range that a date part belongs to.
  * @hidden
  */
 export enum DateRangePosition {
@@ -35,7 +35,6 @@ export enum DateRangePosition {
 }
 
 /**
- * Extended date part with range position information
  * @hidden
  */
 export interface IDateRangePart extends IDatePart {
@@ -76,17 +75,14 @@ function offsetParts(
   );
 }
 
-/**
- * A mask parser for date range inputs. A single date format (e.g. 'MM/dd/yyyy') creates
- * two internal DateTimeMaskParser instances, one for each end of the range.
- */
+/** A date range mask: one date format on each side of the separator. */
 export class DateRangeMaskParser extends DateFormatMaskParser<
   IDateRangePart,
   DateRangeValue,
   DateRangePart
 > {
-  private _startParser: DateTimeMaskParser;
-  private _endParser: DateTimeMaskParser;
+  /** Parses, formats and spins the text of either end. */
+  private readonly _dateParser: DateTimeMaskParser;
 
   private _separator: string;
 
@@ -94,7 +90,6 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
 
   private _separatorEnd!: number;
 
-  /** The separator between start and end dates. */
   public get separator(): string {
     return this._separator;
   }
@@ -102,16 +97,15 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
   constructor(options?: DateRangeMaskOptions) {
     const separator = options?.separator || DEFAULT_SEPARATOR;
     const promptCharacter = options?.promptCharacter;
-    const startParser = new DateTimeMaskParser({
+    const dateParser = new DateTimeMaskParser({
       format: options?.format,
       promptCharacter,
     });
-    const format = startParser.mask;
+    const format = dateParser.mask;
 
     super({ format: `${format}${separator}${format}`, promptCharacter });
 
-    this._startParser = startParser;
-    this._endParser = new DateTimeMaskParser({ format, promptCharacter });
+    this._dateParser = dateParser;
     this._separator = separator;
     this._setSeparatorBounds();
 
@@ -120,8 +114,15 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
   }
 
   private _setSeparatorBounds(): void {
-    this._separatorStart = this._startParser.mask.length;
+    this._separatorStart = this._dateParser.mask.length;
     this._separatorEnd = this._separatorStart + this._separator.length;
+  }
+
+  private _endTexts(masked: string): Record<DateRangePosition, string> {
+    return {
+      start: masked.substring(0, this._separatorStart),
+      end: masked.substring(this._separatorEnd),
+    };
   }
 
   /**
@@ -141,28 +142,20 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
   }
 
   protected override _buildParts(): IDateRangePart[] {
+    const parts = this._dateParser.parts;
+
     return [
-      ...offsetParts(this._startParser.parts, 0, DateRangePosition.Start),
-      ...offsetParts(
-        this._endParser.parts,
-        this._separatorEnd,
-        DateRangePosition.End
-      ),
+      ...offsetParts(parts, 0, DateRangePosition.Start),
+      ...offsetParts(parts, this._separatorEnd, DateRangePosition.End),
     ];
   }
 
-  /**
-   * Sets a new date format and updates both parsers.
-   *
-   * @remarks
-   * Takes the format of a *single* date; the getter returns the combined range format.
-   */
+  /** Takes the format of one date; the getter returns the range format. */
   public override set mask(value: string) {
-    this._startParser.mask = value;
-    this._endParser.mask = value;
+    this._dateParser.mask = value;
     this._setSeparatorBounds();
 
-    const format = this._startParser.mask;
+    const format = this._dateParser.mask;
     super.mask = `${format}${this._separator}${format}`;
   }
 
@@ -170,18 +163,10 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
     return super.mask;
   }
 
-  /**
-   * Sets the prompt character and updates both parsers.
-   *
-   * @remarks
-   * All three parsers must agree on the prompt. It is read back through `super`, because
-   * the base setter normalizes the value.
-   */
+  /** The date parser reads the prompt back through `super`, which normalizes it. */
   public override set prompt(value: string) {
     super.prompt = value;
-
-    this._startParser.prompt = this.prompt;
-    this._endParser.prompt = this.prompt;
+    this._dateParser.prompt = this.prompt;
   }
 
   public override get prompt(): string {
@@ -190,18 +175,18 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
 
   //#region Date Range Parsing
 
-  /** Parses a masked string into a DateRangeValue. Returns null if parsing fails. */
+  /** Parses each end leniently. Gives `null` only for an empty mask. */
   public parseDateRange(masked: string): DateRangeValue | null {
     if (!masked || masked === this.emptyMask) {
       return null;
     }
 
-    const start = this._startParser.parseDate(
-      masked.substring(0, this._separatorStart)
-    );
-    const end = this._endParser.parseDate(masked.substring(this._separatorEnd));
+    const text = this._endTexts(masked);
 
-    return { start, end };
+    return {
+      start: this._dateParser.parseDate(text.start),
+      end: this._dateParser.parseDate(text.end),
+    };
   }
 
   /**
@@ -212,7 +197,7 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
     masked: string,
     strict: boolean
   ): DateRangeValue | null {
-    if (strict && masked.includes(this.prompt)) {
+    if (strict && !this.isComplete(masked)) {
       return null;
     }
 
@@ -220,16 +205,31 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
     return parsed?.start || parsed?.end ? parsed : null;
   }
 
+  /** Parses each end alone, so an incomplete end keeps the end of `previous`. */
+  public override parseEdit(
+    masked: string,
+    previous: DateRangeValue | null
+  ): DateRangeValue | null {
+    const text = this._endTexts(masked);
+    const start = this._dateParser.parseEdit(
+      text.start,
+      previous?.start ?? null
+    );
+    const end = this._dateParser.parseEdit(text.end, previous?.end ?? null);
+
+    return start || end ? { start, end } : null;
+  }
+
   //#endregion
 
   //#region Date Range Formatting
 
-  /** Formats each end with its own parser. */
   public override formatValue(range: DateRangeValue | null): string {
-    const start = this._startParser.formatValue(range?.start ?? null);
-    const end = this._endParser.formatValue(range?.end ?? null);
-
-    return start + this._separator + end;
+    return (
+      this._dateParser.formatValue(range?.start ?? null) +
+      this._separator +
+      this._dateParser.formatValue(range?.end ?? null)
+    );
   }
 
   //#endregion
@@ -245,7 +245,7 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
   }
 
   public override defaultPart(): DateRangePart | undefined {
-    const part = this._startParser.defaultPart();
+    const part = this._dateParser.defaultPart();
     return part ? { part, position: DateRangePosition.Start } : undefined;
   }
 
@@ -261,7 +261,7 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
 
     return {
       ...value,
-      [position]: this._parserOf(position).spin(value[position], part, request),
+      [position]: this._dateParser.spin(value[position], part, request),
     };
   }
 
@@ -276,35 +276,25 @@ export class DateRangeMaskParser extends DateFormatMaskParser<
       return { masked: this.formatValue(value), value };
     }
 
-    const text = {
-      start: masked.substring(0, this._separatorStart),
-      end: masked.substring(this._separatorEnd),
-    };
-    const spun = this._parserOf(position).spinText(
-      text[position],
-      part,
-      request
-    );
+    const text = this._endTexts(masked);
+    const spun = this._dateParser.spinText(text[position], part, request);
     text[position] = spun.masked;
 
     return {
       masked: text.start + this._separator + text.end,
       value: {
-        start: this._startParser.parseValue(text.start, true),
-        end: this._endParser.parseValue(text.end, true),
+        start: this._dateParser.parseValue(text.start, true),
+        end: this._dateParser.parseValue(text.end, true),
         [position]: spun.value,
       },
     };
   }
 
   public override seeded(seed: Date): DateRangeValue {
-    return { start: new Date(seed.getTime()), end: new Date(seed.getTime()) };
-  }
-
-  private _parserOf(position: DateRangePosition): DateTimeMaskParser {
-    return position === DateRangePosition.Start
-      ? this._startParser
-      : this._endParser;
+    return {
+      start: this._dateParser.seeded(seed),
+      end: this._dateParser.seeded(seed),
+    };
   }
 
   //#endregion
