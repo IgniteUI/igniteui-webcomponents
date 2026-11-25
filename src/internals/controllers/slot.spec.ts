@@ -412,6 +412,26 @@ describe('Slots controller', () => {
       );
     });
 
+    it('does not flatten an SVG element named slot', async () => {
+      const svgSlot = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'slot'
+      );
+      svgSlot.setAttribute('slot', 'end');
+
+      const inner = document.createElement(firstRenderTag) as FirstRenderHost;
+      inner.append(svgSlot);
+      const outer = document.createElement('div');
+      outer.attachShadow({ mode: 'open' }).append(inner);
+      await fixture(outer);
+      await elementUpdated(inner);
+
+      expect(firstOf(snapshots).end).to.eql(['slot']);
+      expect(firstOf(snapshots).end).to.eql(
+        snapshotQueries(inner.slotController).end
+      );
+    });
+
     it('reports the host children with other nodes in the render root', async () => {
       const tagName = defineCE(
         class extends (customElements.get(

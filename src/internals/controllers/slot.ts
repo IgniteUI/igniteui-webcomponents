@@ -53,14 +53,16 @@ function slotNameOf(slot: unknown): string {
 }
 
 /**
- * Whether `node` is a slot in a shadow tree. The checks do not use
- * `instanceof`, so they also accept a slot adopted from an iframe.
+ * Whether `node` is an HTML slot in a shadow tree. The checks do not use
+ * `instanceof`, so they also accept a slot adopted from an iframe. An SVG or
+ * MathML element named `slot` is not a slot.
  */
 function isShadowSlot(node: Node): node is HTMLSlotElement {
   // Only the root of a shadow tree is different from the composed root.
   return (
     node.nodeType === Node.ELEMENT_NODE &&
     (node as Element).localName === 'slot' &&
+    (node as Element).namespaceURI === 'http://www.w3.org/1999/xhtml' &&
     node.getRootNode() !== node.getRootNode({ composed: true })
   );
 }
