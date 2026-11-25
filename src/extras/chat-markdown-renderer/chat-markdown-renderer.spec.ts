@@ -1,7 +1,7 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import DOMPurify from 'dompurify';
 import { spy, stub } from 'sinon';
-import type { IgcChatMessage } from '../components/chat/types.js';
+import type { IgcChatMessage } from '../../components/chat/types.js';
 import {
   createMarkdownRenderer,
   type MarkdownRenderer,

@@ -1,5 +1,7 @@
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { createAbortHandle } from '#internals/abort-handler.js';
 import {
   ariaBindings,
@@ -31,13 +33,18 @@ import {
   MIME_TYPES,
   rasterizeSvg,
   serializeSvg,
+  snapSvg,
 } from './renderer/export.js';
+import { type CodeGrid, resolveCornerDotStyle } from './renderer/helpers.js';
 import { fitLogo, type LogoLayout } from './renderer/logo.js';
+import { snapToPixels } from './renderer/snap.js';
 import {
   DEFAULT_SIZE_RATIO,
   MAX_SAFE_AREA,
+  renderQrAlignment,
   renderQrDots,
   renderQrFinders,
+  renderQrGradient,
   renderQrMaskAndImage,
   SAFE_AREAS,
 } from './renderer/templates.js';
@@ -51,9 +58,11 @@ import type {
   QrCornerSquareStyle,
   QrDotStyle,
   QrErrorCorrectionLevel,
+  QrGradient,
+  QrLogoShape,
 } from './types.js';
 
-const nextMaskId = createIdGenerator('igc-qr-code-mask');
+const nextId = createIdGenerator('igc-qr-code');
 
 /** The logo layout, and the version to request for it: unset keeps the automatic version. */
 type LogoFit = { version?: number; layout: LogoLayout };
@@ -71,14 +80,17 @@ const BLOCKED_LOGO_SOURCE = /^\s*(?:javascript:|vbscript:|data:(?!image\/))/i;
  * @element igc-qr-code
  *
  * @cssproperty --ig-qr-code-background - The background color of the QR code. Default is `white`.
- * @cssproperty --ig-qr-code-dark-color - The color of the data modules (dots), and the corner square/dot colors unless overridden below. Default is `black`.
+ * @cssproperty --ig-qr-code-dark-color - The color of the data modules (dots) and the alignment patterns, and the corner square/dot colors unless overridden below. Default is `black`.
  * @cssproperty --ig-qr-code-corner-square-color - The color of the outer finder-pattern corner squares. Defaults to `--ig-qr-code-dark-color`.
  * @cssproperty --ig-qr-code-corner-dot-color - The color of the inner finder-pattern corner dots. Defaults to `--ig-qr-code-dark-color`.
+ * @cssproperty --ig-qr-code-gradient-start - The start color of the `gradient`. Defaults to `--ig-qr-code-dark-color`.
+ * @cssproperty --ig-qr-code-gradient-end - The end color of the `gradient`. Defaults to `--ig-qr-code-dark-color`.
  *
  * @csspart background - The background rect of the QR code.
  * @csspart dots - The data modules (dots) of the QR code.
  * @csspart corner-square - The outer corner (finder-pattern) squares of the QR code.
  * @csspart corner-dot - The inner corner (finder-pattern) dots of the QR code.
+ * @csspart alignment - The alignment patterns of the QR code, from version 2.
  */
 export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = 'igc-qr-code';
@@ -91,8 +103,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   }
 
   private readonly _abortHandle = createAbortHandle();
-  private readonly _maskId = nextMaskId();
-  private readonly _maskUrl = `url(#${this._maskId})`;
+  private readonly _id = nextId();
   private _logoReady: Promise<void> = Promise.resolve();
   private _matrixCache?: {
     value: string;
@@ -166,6 +177,10 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   /**
    * The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.
    *
+   * Each module covers a whole number of pixels, so the edges stay sharp. The pixels that are
+   * left over widen the quiet zone, and the code can be smaller than `size`. An exported image
+   * gets whole pixels at its own size.
+   *
    * @attr size
    * @default 128
    */
@@ -175,7 +190,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   /**
    * The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather
    * than pixels. This is the blank border area surrounding the code, which helps ensure that it
-   * can be properly scanned.
+   * can be properly scanned. It is a minimum: spare pixels make the quiet zone wider.
    *
    * @attr margin
    * @default 4
@@ -224,9 +239,25 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   public logoMargin?: number;
 
   /**
+   * The shape of the logo: 'square', 'circle', 'rounded' or 'squircle'. The shape fills the logo
+   * box, so a 'circle' logo with a wide image is an ellipse. The image is clipped to the shape,
+   * and the cutout holds only the modules that the shape covers, in part or in full.
+   *
+   * @attr logo-shape
+   * @default 'square'
+   */
+  @property({ attribute: 'logo-shape' })
+  public logoShape: QrLogoShape = 'square';
+
+  /**
    * The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
-   * 'rounded', or 'squircle'. The inner dot of each finder-pattern corner uses the same style
-   * unless `cornerDotStyle` is set.
+   * 'rounded', 'squircle', 'diamond', 'plus', 'liquid', 'horizontal-bars' or 'vertical-bars'.
+   * 'liquid' is 'rounded' with a smooth fill in the inside corners where modules join. The bar
+   * styles draw each run of dark modules in a row or a column as one bar with round ends.
+   *
+   * The inner dot of each finder-pattern corner uses the same style unless `cornerDotStyle` is
+   * set. It draws 'diamond' and 'plus' as 'square', and 'liquid' and the bar styles as
+   * 'rounded'.
    *
    * @attr dot-style
    * @default 'square'
@@ -237,8 +268,10 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   /**
    * The size of each data module, as a ratio of its cell in the module grid. The value is a
    * number from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the
-   * modules, so 'rounded' modules do not join their neighbors. The finder-pattern corners keep
-   * their full size. A smaller value can make the code harder to scan with a camera.
+   * modules, so 'rounded' modules do not join their neighbors, and 'liquid' draws as 'rounded'.
+   * For the bar styles, it sets the thickness of the bars and shortens their ends. The
+   * finder-pattern corners keep their full size. A smaller value can make the code harder to
+   * scan with a camera.
    *
    * @attr dot-scale
    * @default 1
@@ -248,7 +281,9 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
 
   /**
    * The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',
-   * or 'squircle'.
+   * 'squircle' or 'leaf'. A 'leaf' has two opposite round corners on the diagonal toward the
+   * center of the code. The rings of the alignment patterns use the same style, and a 'leaf'
+   * ring there has the shape of the top-left corner square.
    *
    * @attr square-style
    * @default 'square'
@@ -258,12 +293,40 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
 
   /**
    * The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',
-   * 'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`.
+   * 'rounded', 'squircle' or 'leaf'. When it is not set, the inner dot uses `dotStyle`. The
+   * centers of the alignment patterns use the same style.
+   *
+   * In a 'circle' corner square, a 'square' or 'leaf' dot draws as 'circle', because scanners
+   * do not find the pattern reliably with corners in a round ring.
    *
    * @attr corner-dot-style
    */
   @property({ attribute: 'corner-dot-style' })
   public cornerDotStyle?: QrCornerDotStyle;
+
+  /**
+   * The gradient of the dark modules: 'linear' or 'radial'. When it is not set, or has another
+   * value, the modules have one color. The gradient goes from `--ig-qr-code-gradient-start` to
+   * `--ig-qr-code-gradient-end` over the code without its quiet zone. It also paints the corners,
+   * unless `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` is set.
+   *
+   * Keep both colors much darker than the background.
+   *
+   * @attr gradient
+   */
+  @property()
+  public gradient?: QrGradient;
+
+  /**
+   * The angle of a 'linear' gradient in degrees, clockwise. At 0 the gradient goes from left to
+   * right, and at 90 from top to bottom.
+   *
+   * @attr gradient-angle
+   * @default 0
+   */
+  @property({ type: Number, attribute: 'gradient-angle' })
+  @coercedProperty<number>({ transform: ({ value }) => asNumber(value, 0) })
+  public gradientAngle = 0;
 
   /** @internal */
   protected override update(props: PropertyValues<this>): void {
@@ -367,12 +430,14 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
   ): LogoFit | null {
     const version = this.version;
     const aspectRatio = this._logoAspectRatio;
+    const shape = this.logoShape;
     const settings = JSON.stringify([
       value,
       errorLevel,
       version,
       area,
       aspectRatio,
+      shape,
     ]);
 
     if (this._logoFitCache?.settings === settings) {
@@ -387,6 +452,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
         errorLevel,
         area,
         aspectRatio,
+        shape,
       });
       fit = {
         version: fitted.version === smallest ? version : fitted.version,
@@ -470,7 +536,10 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     return dimension;
   }
 
-  /** Serializes a snapshot resized to `scale`, measured from its rendered width. */
+  /**
+   * Serializes a snapshot resized to `scale`, measured from its rendered width, with the
+   * modules on whole pixels of the new size.
+   */
   private async _serializeSnapshot(
     scale: number
   ): Promise<{ blob: Blob; dimension: number }> {
@@ -481,6 +550,7 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
     );
     svg.setAttribute('width', `${dimension}`);
     svg.setAttribute('height', `${dimension}`);
+    snapSvg(svg, dimension, this.margin);
     return { blob: serializeSvg(svg), dimension };
   }
 
@@ -609,19 +679,50 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
 
     const totalModules = size + this.margin * 2;
     const moduleSize = size / totalModules;
-    const marginPx = this.margin * moduleSize;
     const svgSize = moduleSize * totalModules;
+    const grid: CodeGrid = {
+      size,
+      moduleSize,
+      marginPx: this.margin * moduleSize,
+      svgSize,
+    };
+    const snap = snapToPixels(this.size, size, this.margin);
 
+    const patternOptions = {
+      grid,
+      squareStyle: this.squareStyle,
+      dotStyle: resolveCornerDotStyle(
+        this.squareStyle,
+        this.cornerDotStyle,
+        this.dotStyle
+      ),
+    };
+
+    const maskId = `${this._id}-mask`;
     const { mask, image, shouldApplyMask } = renderQrMaskAndImage({
       src: this.logoSrc!,
       layout: fit?.layout,
-      size: this.size,
+      unitSize: (this.size / svgSize) * (snap?.scale ?? 1),
       margin: this.logoMargin,
-      svgSize,
-      moduleSize,
-      marginPx,
-      maskId: this._maskId,
+      grid,
+      maskId,
+      clipId: `${this._id}-clip`,
+      transform: snap?.transform,
     });
+
+    const gradientId = `${this._id}-gradient`;
+    const gradientType =
+      this.gradient === 'linear' || this.gradient === 'radial'
+        ? this.gradient
+        : undefined;
+    const gradient = gradientType
+      ? renderQrGradient({
+          id: gradientId,
+          gradient: gradientType,
+          angle: this.gradientAngle,
+          grid,
+        })
+      : nothing;
 
     return html`
       <svg
@@ -635,22 +736,23 @@ export default class IgcQrCodeComponent extends HostAriaMixin(LitElement) {
         <title>${this.ariaLabel ?? `QR code: ${this.value}`}</title>
 
         <rect part="background" width=${svgSize} height=${svgSize} />
-        ${mask}
-        <g mask=${bindIf(shouldApplyMask, this._maskUrl)}>
+        ${mask} ${gradient}
+        <g
+          mask=${bindIf(shouldApplyMask, `url(#${maskId})`)}
+          transform=${ifDefined(snap?.transform)}
+          style=${styleMap({
+            '--_paint': gradientType && `url(#${gradientId})`,
+          })}
+        >
           ${renderQrDots({
             matrix,
-            moduleSize,
-            marginPx,
+            grid,
             dotStyle: this.dotStyle,
             dotScale: this._getDotScale(),
+            cutout: shouldApplyMask ? fit?.layout.cutout : undefined,
           })}
-          ${renderQrFinders({
-            size,
-            moduleSize,
-            marginPx,
-            dotStyle: this.cornerDotStyle || this.dotStyle,
-            squareStyle: this.squareStyle,
-          })}
+          ${renderQrAlignment(patternOptions)}
+          ${renderQrFinders(patternOptions)}
         </g>
         ${image}
       </svg>

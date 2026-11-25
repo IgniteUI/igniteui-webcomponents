@@ -31,10 +31,14 @@ defineComponents(IgcQrCodeComponent);
   `undefined` or remove the attribute.
 - `size`: `number`. Default: `128`. Attribute: `size`.
   The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.
+
+  Each module covers a whole number of pixels, so the edges stay sharp. The pixels that are
+  left over widen the quiet zone, and the code can be smaller than `size`. An exported image
+  gets whole pixels at its own size.
 - `margin`: `number`. Default: `4`. Attribute: `margin`.
   The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather
   than pixels. This is the blank border area surrounding the code, which helps ensure that it
-  can be properly scanned.
+  can be properly scanned. It is a minimum: spare pixels make the quiet zone wider.
 - `logoSrc`: `string | undefined`. Attribute: `logo-src`.
   The source URL of an optional logo image at the center of the QR code.
   The component does not render a logo that fails to load, a `javascript:` or `vbscript:` URL,
@@ -56,21 +60,48 @@ defineComponents(IgcQrCodeComponent);
 - `logoMargin`: `number | undefined`. Attribute: `logo-margin`.
   The margin around the logo in pixels. This is the whitespace area surrounding the logo within the QR code,
   which helps ensure that the logo does not interfere with the QR code's scannability.
-- `dotStyle`: `'square' | 'circle' | 'rounded' | 'squircle'`. Default: `'square'`. Attribute: `dot-style`.
+- `logoShape`: `'square' | 'circle' | 'rounded' | 'squircle'`. Default: `'square'`. Attribute: `logo-shape`.
+  The shape of the logo: 'square', 'circle', 'rounded' or 'squircle'. The shape fills the logo
+  box, so a 'circle' logo with a wide image is an ellipse. The image is clipped to the shape,
+  and the cutout holds only the modules that the shape covers, in part or in full.
+- `dotStyle`: `'square' | 'circle' | 'rounded' | 'squircle' | 'diamond' | 'plus' | 'liquid' | 'horizontal-bars' | 'vertical-bars'`. Default: `'square'`. Attribute: `dot-style`.
   The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
-  'rounded', or 'squircle'. The inner dot of each finder-pattern corner uses the same style
-  unless `cornerDotStyle` is set.
+  'rounded', 'squircle', 'diamond', 'plus', 'liquid', 'horizontal-bars' or 'vertical-bars'.
+  'liquid' is 'rounded' with a smooth fill in the inside corners where modules join. The bar
+  styles draw each run of dark modules in a row or a column as one bar with round ends.
+
+  The inner dot of each finder-pattern corner uses the same style unless `cornerDotStyle` is
+  set. It draws 'diamond' and 'plus' as 'square', and 'liquid' and the bar styles as
+  'rounded'.
 - `dotScale`: `number`. Default: `1`. Attribute: `dot-scale`.
   The size of each data module, as a ratio of its cell in the module grid. The value is a
   number from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the
-  modules, so 'rounded' modules do not join their neighbors. The finder-pattern corners keep
-  their full size. A smaller value can make the code harder to scan with a camera.
-- `squareStyle`: `'square' | 'circle' | 'rounded' | 'squircle'`. Default: `'square'`. Attribute: `square-style`.
+  modules, so 'rounded' modules do not join their neighbors, and 'liquid' draws as 'rounded'.
+  For the bar styles, it sets the thickness of the bars and shortens their ends. The
+  finder-pattern corners keep their full size. A smaller value can make the code harder to
+  scan with a camera.
+- `squareStyle`: `'square' | 'circle' | 'rounded' | 'squircle' | 'leaf'`. Default: `'square'`. Attribute: `square-style`.
   The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',
-  or 'squircle'.
-- `cornerDotStyle`: `'square' | 'circle' | 'rounded' | 'squircle' | undefined`. Attribute: `corner-dot-style`.
+  'squircle' or 'leaf'. A 'leaf' has two opposite round corners on the diagonal toward the
+  center of the code. The rings of the alignment patterns use the same style, and a 'leaf'
+  ring there has the shape of the top-left corner square.
+- `cornerDotStyle`: `'square' | 'circle' | 'rounded' | 'squircle' | 'leaf' | undefined`. Attribute: `corner-dot-style`.
   The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',
-  'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`.
+  'rounded', 'squircle' or 'leaf'. When it is not set, the inner dot uses `dotStyle`. The
+  centers of the alignment patterns use the same style.
+
+  In a 'circle' corner square, a 'square' or 'leaf' dot draws as 'circle', because scanners
+  do not find the pattern reliably with corners in a round ring.
+- `gradient`: `'linear' | 'radial' | undefined`. Attribute: `gradient`.
+  The gradient of the dark modules: 'linear' or 'radial'. When it is not set, or has another
+  value, the modules have one color. The gradient goes from `--ig-qr-code-gradient-start` to
+  `--ig-qr-code-gradient-end` over the code without its quiet zone. It also paints the corners,
+  unless `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` is set.
+
+  Keep both colors much darker than the background.
+- `gradientAngle`: `number`. Default: `0`. Attribute: `gradient-angle`.
+  The angle of a 'linear' gradient in degrees, clockwise. At 0 the gradient goes from left to
+  right, and at 90 from top to bottom.
 
 ## Methods
 
@@ -109,10 +140,13 @@ defineComponents(IgcQrCodeComponent);
 - `dots`: The data modules (dots) of the QR code.
 - `corner-square`: The outer corner (finder-pattern) squares of the QR code.
 - `corner-dot`: The inner corner (finder-pattern) dots of the QR code.
+- `alignment`: The alignment patterns of the QR code, from version 2.
 
 ## CSS custom properties
 
 - `--ig-qr-code-background`: The background color of the QR code. Default is `white`.
-- `--ig-qr-code-dark-color`: The color of the data modules (dots), and the corner square/dot colors unless overridden below. Default is `black`.
+- `--ig-qr-code-dark-color`: The color of the data modules (dots) and the alignment patterns, and the corner square/dot colors unless overridden below. Default is `black`.
 - `--ig-qr-code-corner-square-color`: The color of the outer finder-pattern corner squares. Defaults to `--ig-qr-code-dark-color`.
 - `--ig-qr-code-corner-dot-color`: The color of the inner finder-pattern corner dots. Defaults to `--ig-qr-code-dark-color`.
+- `--ig-qr-code-gradient-start`: The start color of the `gradient`. Defaults to `--ig-qr-code-dark-color`.
+- `--ig-qr-code-gradient-end`: The end color of the `gradient`. Defaults to `--ig-qr-code-dark-color`.

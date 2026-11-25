@@ -3,15 +3,9 @@ import { resetMouse, sendMouse } from '@web/test-runner-commands';
 import type { TemplateResult } from 'lit';
 import { configureTheme } from '#theming/config.js';
 import { THEMES } from '#theming/types.js';
-import { allowMotion } from './helpers.spec.js';
+import { allowMotion, shadowRootsIn } from './helpers.spec.js';
 
 const STATES = ['idle', 'focused', 'hovered'] as const;
-
-function shadowRootsIn(root: ParentNode): ShadowRoot[] {
-  return Array.from(root.querySelectorAll('*')).flatMap(({ shadowRoot }) =>
-    shadowRoot ? [shadowRoot, ...shadowRootsIn(shadowRoot)] : []
-  );
-}
 
 function label(element: Element | null, pseudoElement?: string | null): string {
   return `${element?.localName}[part="${element?.getAttribute('part')}"]${pseudoElement ?? ''}`;

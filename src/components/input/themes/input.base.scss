@@ -5,6 +5,8 @@
     align-items: center;
 }
 
+@include value-state-transitions($on-host: true);
+
 :host {
     position: relative;
     display: block;

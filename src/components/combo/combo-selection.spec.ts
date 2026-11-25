@@ -18,22 +18,29 @@ import {
   cities,
   comboStable,
   expectActiveOption,
+  getComboDOM,
   openComboPopover,
   items,
 } from '#internals/testing/combo.spec.js';
 import {
+  allowMotion,
   axeReflectedRelationsOptions,
+  finishAnimationsFor,
   isFocused,
+  painted,
   suppressResizeObserverLoopError,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
+import { transitionsIn, withTheme } from '#internals/testing/motion.spec.js';
 import {
   simulateClick,
   simulateComposingKeys,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
+import { isUserChange } from '#internals/user-change.js';
 import { configureTheme } from '#theming/config.js';
 import type IgcButtonComponent from '../button/button.js';
+import type IgcCheckboxComponent from '../checkbox/checkbox.js';
 import type IgcInputComponent from '../input/input.js';
 import type IgcVirtualScrollComponent from '../virtualization/virtualization.js';
 import type IgcComboItemComponent from './combo-item.js';
@@ -1375,6 +1382,147 @@ describe('Combo', () => {
       expect(combo.pendingValue).to.eql(['BG02']);
       expect(changes().map(({ type }) => type)).to.eql(['selection']);
       expect(actions()).to.be.empty;
+    });
+  });
+
+  describe('Value state motion', () => {
+    allowMotion();
+
+    const option = () =>
+      list.querySelector<IgcComboItemComponent>(
+        '[part~="item"]:not([part~="select-all"])'
+      )!;
+    const checkboxOf = (item: IgcComboItemComponent) =>
+      item.renderRoot.querySelector<IgcCheckboxComponent>('igc-checkbox')!;
+
+    async function openCombo(singleSelect = false): Promise<void> {
+      combo = await fixture<IgcComboComponent<City>>(
+        html`<igc-combo
+          .data=${cities}
+          value-key="id"
+          display-key="name"
+          ?single-select=${singleSelect}
+        ></igc-combo>`
+      );
+      list = getComboDOM(() => combo).list;
+      await openComboPopover(combo);
+      await painted();
+    }
+
+    it('animates the checkbox of an option that the user selects', async () => {
+      await withTheme('material', async () => {
+        await openCombo();
+        const item = option();
+
+        simulateClick(item);
+        await painted();
+
+        expect(item.selected).to.be.true;
+        expect(transitionsIn(checkboxOf(item))).to.not.be.empty;
+      });
+    });
+
+    it('animates the checkboxes of the options that the clear icon clears', async () => {
+      await withTheme('material', async () => {
+        await openCombo();
+        const item = option();
+        simulateClick(item);
+        await painted();
+        // The clear must not join the transitions of the selection.
+        finishAnimationsFor(checkboxOf(item).shadowRoot!);
+        await painted();
+
+        simulateClick(getComboDOM(() => combo).clearIcon);
+        await painted();
+
+        expect(item.selected).to.be.false;
+        expect(transitionsIn(checkboxOf(item))).to.not.be.empty;
+      });
+    });
+
+    it('shows a value from code at once in the options', async () => {
+      await withTheme('material', async () => {
+        await openCombo();
+
+        combo.value = [cities[0].id];
+        await comboStable(combo);
+        await painted();
+
+        const item = list.querySelector<IgcComboItemComponent>(
+          '[part~="item"][selected]'
+        )!;
+        expect(transitionsIn(checkboxOf(item))).to.eql([]);
+      });
+    });
+
+    for (const singleSelect of [false, true]) {
+      const mode = singleSelect ? 'single' : 'multiple';
+      const input = () => getComboDOM(() => combo).input;
+
+      it(`marks the input as a user change for a selection by the user (${mode})`, async () => {
+        await openCombo(singleSelect);
+
+        simulateClick(option());
+
+        expect(combo.value).to.have.lengthOf(1);
+        expect(isUserChange(input())).to.be.true;
+      });
+
+      it(`shows a value that a canceling igcChange handler sets at once (${mode})`, async () => {
+        await openCombo(singleSelect);
+        const other = cities.at(-1)!.id;
+        combo.addEventListener('igcChange', (event) => {
+          event.preventDefault();
+          combo.value = [other];
+        });
+
+        simulateClick(option());
+
+        expect(combo.value).to.eql([other]);
+        expect(isUserChange(input())).to.be.false;
+      });
+    }
+
+    // A key and the clear icon are not in `_writeFrom('user')`, so the combo
+    // checks that the list still shows the selection of the user.
+    it('ends the user change of Space when code sets another value', async () => {
+      await openCombo();
+      simulateKeyboard(list, homeKey);
+      simulateKeyboard(list, spaceBar);
+
+      expect(isUserChange(getComboDOM(() => combo).input)).to.be.true;
+
+      combo.value = [cities.at(-1)!.id];
+      expect(isUserChange(getComboDOM(() => combo).input)).to.be.false;
+    });
+
+    it('ends the user change of the clear icon when code sets another value', async () => {
+      await openCombo();
+      combo.value = [cities[0].id];
+      await comboStable(combo);
+
+      simulateClick(getComboDOM(() => combo).clearIcon);
+
+      expect(combo.value).to.be.empty;
+      expect(isUserChange(getComboDOM(() => combo).input)).to.be.true;
+
+      combo.value = [cities.at(-1)!.id];
+      expect(isUserChange(getComboDOM(() => combo).input)).to.be.false;
+    });
+
+    // The handler runs before the change applies. In single selection, the
+    // change then replaces the value of the handler, so the user change stays.
+    it('shows a value that an igcChange handler sets at once (multiple)', async () => {
+      await openCombo();
+      const other = cities.at(-1)!.id;
+      combo.addEventListener('igcChange', () => {
+        combo.value = [other];
+      });
+
+      simulateClick(option());
+
+      expect(combo.value).to.include(other).and.have.lengthOf(2);
+      expect(isUserChange(getComboDOM(() => combo).input)).to.be.false;
     });
   });
 });

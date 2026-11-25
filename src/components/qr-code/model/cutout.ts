@@ -13,6 +13,19 @@ export type ModuleRange = {
   right: number;
 };
 
+/** Calls `visit` for each module of `range` in a matrix of `size` modules. */
+export function forEachModule(
+  { top, left, bottom, right }: ModuleRange,
+  size: number,
+  visit: (row: number, col: number) => void
+): void {
+  for (let row = Math.max(top, 0); row <= Math.min(bottom, size - 1); row++) {
+    for (let col = Math.max(left, 0); col <= Math.min(right, size - 1); col++) {
+      visit(row, col);
+    }
+  }
+}
+
 /** The module map value of a locator module, which a scanner needs to read the code. */
 export const LOCATOR_MODULE = -2;
 
@@ -70,26 +83,30 @@ function getCodewordBlocks(version: number, level: number): Uint8Array {
 
 /**
  * Whether a scanner reads a code of `version` and `level` (0 for L to 3 for H) with the modules
- * of `range` hidden: no hidden module is a locator module, and no block loses more codewords
- * than it corrects. A codeword with one hidden module counts as lost.
+ * of the `cutout` ranges hidden: no hidden module is a locator module, and no block loses more
+ * codewords than it corrects. A codeword with one hidden module counts as lost.
  */
 export function canHideModules(
   version: number,
   level: number,
-  { top, left, bottom, right }: ModuleRange
+  ...cutout: ModuleRange[]
 ): boolean {
   const size = version * 4 + 17;
   const map = getModuleMap(version);
   const hidden = new Set<number>();
 
-  for (let row = Math.max(top, 0); row <= Math.min(bottom, size - 1); row++) {
-    for (let col = Math.max(left, 0); col <= Math.min(right, size - 1); col++) {
+  let hidesLocator = false;
+
+  for (const range of cutout) {
+    forEachModule(range, size, (row, col) => {
       const codeword = map[row * size + col];
 
-      if (codeword === LOCATOR_MODULE) return false;
+      if (codeword === LOCATOR_MODULE) hidesLocator = true;
       if (codeword >= 0) hidden.add(codeword);
-    }
+    });
   }
+
+  if (hidesLocator) return false;
 
   const protection = MISDECODE_PROTECTION[version - 1]?.[level] ?? 0;
   const correctable =

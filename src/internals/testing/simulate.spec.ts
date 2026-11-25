@@ -160,6 +160,23 @@ export async function simulateTypingOver(
   await elementUpdated(editor);
 }
 
+/** Selects the text from `start` to `end` in the focused `editor` and deletes it with Backspace. */
+export async function simulateBackspaceOver(
+  editor: MaskedEditor,
+  start: number,
+  end: number
+): Promise<void> {
+  const input = editor.renderRoot.querySelector('input')!;
+
+  editor.setSelectionRange(start, end);
+  simulateKeyboard(input, 'Backspace');
+  simulateInput(input, {
+    inputType: 'deleteContentBackward',
+    skipValueProperty: true,
+  });
+  await elementUpdated(editor);
+}
+
 /**
  * Simulates keyboard interaction on a given element node.
  *

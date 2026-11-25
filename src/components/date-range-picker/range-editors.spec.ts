@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import { isFocused } from '#internals/testing/helpers.spec.js';
+import { simulateBackspaceOver } from '#internals/testing/simulate.spec.js';
 import type { PickerEditor } from '../date-picker/date-picker.base.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import type { DateRangeValue } from '../types.js';
@@ -108,6 +109,35 @@ describe('Range picker editors', () => {
           expect(subject().typed()).to.eql({ start: june10, end });
           expect(subject().typedDate(editors[0])).to.eql(june10);
           expect(subject().committed()).to.eql({ start, end });
+        });
+
+        it('gives the range of the editors as the edit without an edit', () => {
+          expect(subject().edit({ start: june10, end: june10 })).to.eql({
+            start,
+            end,
+          });
+        });
+
+        it('gives an edit that keeps the typed order, the previous end while incomplete and no end while blank', async () => {
+          const august1 = new Date(2025, 7, 1);
+          const previous = { start: august1, end: august1 };
+          const input = nativeInput(editors[0]);
+
+          editors[0].focus();
+          await elementUpdated(editors[0]);
+
+          // June 10 is after the end.
+          typeAt(input, '6', 1);
+          await elementUpdated(editors[0]);
+          expect(subject().edit(null)).to.eql({ start: june10, end });
+
+          // The year of the start.
+          await simulateBackspaceOver(editors[0], 6, 10);
+          expect(subject().edit(previous)).to.eql({ start: august1, end });
+          expect(subject().edit(null)).to.eql({ start: null, end });
+
+          await simulateBackspaceOver(editors[0], 0, 10);
+          expect(subject().edit(previous)).to.eql({ start: null, end });
         });
 
         it('gives the focus to the start editor after a pick', () => {

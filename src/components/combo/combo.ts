@@ -20,7 +20,17 @@ import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
 import { partMap } from '#internals/part-map.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
-import { asArray, firstOf, isEmpty } from '#internals/utils/arrays.js';
+import {
+  keepUserChangeWhile,
+  markUserChange,
+  unmarkUserChange,
+} from '#internals/user-change.js';
+import {
+  asArray,
+  firstOf,
+  isEmpty,
+  sameItems,
+} from '#internals/utils/arrays.js';
 import {
   addSafeEventListener,
   getElementFromPath,
@@ -939,6 +949,9 @@ export default class IgcComboComponent<
       return false;
     }
 
+    // Each caller is a user action, so the checkboxes and the label animate.
+    markUserChange(this);
+
     const change = this._selection.proposeRecords(
       items,
       toggle ? 'toggle' : 'selection'
@@ -947,29 +960,46 @@ export default class IgcComboComponent<
     // First, as a change listener can build new records.
     this._activeOption.set(index);
     this._applyChange(change, true);
+    this._keepUserChangeFor(change.newValue);
     return true;
   }
 
+  /** Clears the selection for the clear icon and its key, as a user change. */
   private _clearSelection(): void {
+    markUserChange(this);
+
     if (this.singleSelect) {
       this._clearSearchTerm(true);
 
       if (!this._clearSingleSelection(false)) {
         this._resync();
       }
-
-      return;
-    }
-
-    // Clears `value`, the pending selection and the unresolved values.
-    if (
+    } else if (
       this._emitSelectionChange({
         newValue: [],
         items: this.selection,
         type: 'deselection',
       })
     ) {
+      // Clears `value`, the pending selection and the unresolved values.
       this._applyValue([]);
+    }
+
+    this._keepUserChangeFor([]);
+  }
+
+  /**
+   * Keeps the user change only while the list shows `newValue`. The `igcChange`
+   * handler runs inside the user write, so its cancel or its value ends it here,
+   * and a later value from code ends it on the next check.
+   */
+  private _keepUserChangeFor(newValue: ComboValue<T>[]): void {
+    const shown = () => sameItems(this.pendingValue, newValue);
+
+    if (shown()) {
+      keepUserChangeWhile(this, shown);
+    } else {
+      unmarkUserChange(this);
     }
   }
 

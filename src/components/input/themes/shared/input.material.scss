@@ -81,11 +81,15 @@ $fs: rem(16px) !default;
     @include type-style('subtitle-1');
 
     color: var-get($theme, 'idle-secondary-color');
-    transition:
-        transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
-        translate 150ms cubic-bezier(0.4, 0, 0.2, 1),
-        color 150ms cubic-bezier(0.4, 0, 0.2, 1),
-        font-size 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    @include with-motion() {
+        transition:
+            transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+            translate 150ms cubic-bezier(0.4, 0, 0.2, 1),
+            color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+            font-size 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     text-overflow: ellipsis;
     overflow: hidden;
     will-change: font-size, color, transform, translate;
@@ -214,7 +218,9 @@ $fs: rem(16px) !default;
             }
         }
 
-        transition: border-bottom-width 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        @include with-motion() {
+            transition: border-bottom-width 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
         &::after {
             position: absolute;
@@ -226,9 +232,12 @@ $fs: rem(16px) !default;
             bottom: -1px;
             background: var-get($theme, 'idle-bottom-line-color');
             transform: scaleX(0);
-            transition:
-                transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 180ms cubic-bezier(0.4, 0, 0.2, 1);
+
+            @include with-motion() {
+                transition:
+                    transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 180ms cubic-bezier(0.4, 0, 0.2, 1);
+            }
         }
     }
 

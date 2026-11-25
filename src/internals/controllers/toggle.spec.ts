@@ -283,6 +283,25 @@ describe('Toggle controller', () => {
       expect(opening.firstCall.firstArg.detail).to.equal(instance);
     });
 
+    it('should report the request in flight as opening or closing', async () => {
+      const { toggleController } = instance;
+      const state = () => [
+        toggleController.busy,
+        toggleController.opening,
+        toggleController.closing,
+      ];
+
+      const opening = toggleController.show();
+      expect(state()).to.eql([true, true, false]);
+      await opening;
+
+      const closing = toggleController.hide();
+      expect(state()).to.eql([true, false, true]);
+      await closing;
+
+      expect(state()).to.eql([false, false, false]);
+    });
+
     it('should send the "-ed" event as the default transition does for a synchronous result', async () => {
       const host = await createInstance<ToggleHostElement>(syncResultTag);
       const opened = spy();

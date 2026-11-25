@@ -8,7 +8,14 @@ import {
   IgcSwitchComponent,
   type QrCodeCopyFormat,
   type QrCodeExportFormat,
+  type QrErrorCorrectionLevel,
 } from 'igniteui-webcomponents';
+import {
+  createEpcPayload,
+  createEventPayload,
+  createVCardPayload,
+  createWifiPayload,
+} from 'igniteui-webcomponents/extras/qr-payloads';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { disableStoryControls } from './story.js';
@@ -57,14 +64,14 @@ const metadata: Meta<IgcQrCodeComponent> = {
     size: {
       type: 'number',
       description:
-        'The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.',
+        'The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.\n\nEach module covers a whole number of pixels, so the edges stay sharp. The pixels that are\nleft over widen the quiet zone, and the code can be smaller than `size`. An exported image\ngets whole pixels at its own size.',
       control: 'number',
       table: { defaultValue: { summary: '128' } },
     },
     margin: {
       type: 'number',
       description:
-        'The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather\nthan pixels. This is the blank border area surrounding the code, which helps ensure that it\ncan be properly scanned.',
+        'The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather\nthan pixels. This is the blank border area surrounding the code, which helps ensure that it\ncan be properly scanned. It is a minimum: spare pixels make the quiet zone wider.',
       control: 'number',
       table: { defaultValue: { summary: '4' } },
     },
@@ -87,44 +94,89 @@ const metadata: Meta<IgcQrCodeComponent> = {
         "The margin around the logo in pixels. This is the whitespace area surrounding the logo within the QR code,\nwhich helps ensure that the logo does not interfere with the QR code's scannability.",
       control: 'number',
     },
-    dotStyle: {
+    logoShape: {
       type: {
         name: 'enum',
         value: ['square', 'circle', 'rounded', 'squircle'],
       },
       description:
-        "The style of the data modules (dots) in the QR code. This can be 'square', 'circle',\n'rounded', or 'squircle'. The inner dot of each finder-pattern corner uses the same style\nunless `cornerDotStyle` is set.",
+        "The shape of the logo: 'square', 'circle', 'rounded' or 'squircle'. The shape fills the logo\nbox, so a 'circle' logo with a wide image is an ellipse. The image is clipped to the shape,\nand the cutout holds only the modules that the shape covers, in part or in full.",
       options: ['square', 'circle', 'rounded', 'squircle'],
+      control: { type: 'select' },
+      table: { defaultValue: { summary: 'square' } },
+    },
+    dotStyle: {
+      type: {
+        name: 'enum',
+        value: [
+          'square',
+          'circle',
+          'rounded',
+          'squircle',
+          'diamond',
+          'plus',
+          'liquid',
+          'horizontal-bars',
+          'vertical-bars',
+        ],
+      },
+      description:
+        "The style of the data modules (dots) in the QR code. This can be 'square', 'circle',\n'rounded', 'squircle', 'diamond', 'plus', 'liquid', 'horizontal-bars' or 'vertical-bars'.\n'liquid' is 'rounded' with a smooth fill in the inside corners where modules join. The bar\nstyles draw each run of dark modules in a row or a column as one bar with round ends.\n\nThe inner dot of each finder-pattern corner uses the same style unless `cornerDotStyle` is\nset. It draws 'diamond' and 'plus' as 'square', and 'liquid' and the bar styles as\n'rounded'.",
+      options: [
+        'square',
+        'circle',
+        'rounded',
+        'squircle',
+        'diamond',
+        'plus',
+        'liquid',
+        'horizontal-bars',
+        'vertical-bars',
+      ],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'square' } },
     },
     dotScale: {
       type: 'number',
       description:
-        "The size of each data module, as a ratio of its cell in the module grid. The value is a\nnumber from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the\nmodules, so 'rounded' modules do not join their neighbors. The finder-pattern corners keep\ntheir full size. A smaller value can make the code harder to scan with a camera.",
+        "The size of each data module, as a ratio of its cell in the module grid. The value is a\nnumber from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the\nmodules, so 'rounded' modules do not join their neighbors, and 'liquid' draws as 'rounded'.\nFor the bar styles, it sets the thickness of the bars and shortens their ends. The\nfinder-pattern corners keep their full size. A smaller value can make the code harder to\nscan with a camera.",
       control: 'number',
       table: { defaultValue: { summary: '1' } },
     },
     squareStyle: {
       type: {
         name: 'enum',
-        value: ['square', 'circle', 'rounded', 'squircle'],
+        value: ['square', 'circle', 'rounded', 'squircle', 'leaf'],
       },
       description:
-        "The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',\nor 'squircle'.",
-      options: ['square', 'circle', 'rounded', 'squircle'],
+        "The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',\n'squircle' or 'leaf'. A 'leaf' has two opposite round corners on the diagonal toward the\ncenter of the code. The rings of the alignment patterns use the same style, and a 'leaf'\nring there has the shape of the top-left corner square.",
+      options: ['square', 'circle', 'rounded', 'squircle', 'leaf'],
       control: { type: 'select' },
       table: { defaultValue: { summary: 'square' } },
     },
     cornerDotStyle: {
       type: {
         name: 'enum',
-        value: ['square', 'circle', 'rounded', 'squircle'],
+        value: ['square', 'circle', 'rounded', 'squircle', 'leaf'],
       },
       description:
-        "The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',\n'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`.",
-      options: ['square', 'circle', 'rounded', 'squircle'],
+        "The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',\n'rounded', 'squircle' or 'leaf'. When it is not set, the inner dot uses `dotStyle`. The\ncenters of the alignment patterns use the same style.\n\nIn a 'circle' corner square, a 'square' or 'leaf' dot draws as 'circle', because scanners\ndo not find the pattern reliably with corners in a round ring.",
+      options: ['square', 'circle', 'rounded', 'squircle', 'leaf'],
       control: { type: 'select' },
+    },
+    gradient: {
+      type: { name: 'enum', value: ['linear', 'radial'] },
+      description:
+        "The gradient of the dark modules: 'linear' or 'radial'. When it is not set, or has another\nvalue, the modules have one color. The gradient goes from `--ig-qr-code-gradient-start` to\n`--ig-qr-code-gradient-end` over the code without its quiet zone. It also paints the corners,\nunless `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` is set.\n\nKeep both colors much darker than the background.",
+      options: ['linear', 'radial'],
+      control: { type: 'inline-radio' },
+    },
+    gradientAngle: {
+      type: 'number',
+      description:
+        "The angle of a 'linear' gradient in degrees, clockwise. At 0 the gradient goes from left to\nright, and at 90 from top to bottom.",
+      control: 'number',
+      table: { defaultValue: { summary: '0' } },
     },
   },
   args: {
@@ -132,9 +184,11 @@ const metadata: Meta<IgcQrCodeComponent> = {
     size: 128,
     margin: 4,
     logoSize: 0.4,
+    logoShape: 'square',
     dotStyle: 'square',
     dotScale: 1,
     squareStyle: 'square',
+    gradientAngle: 0,
   },
 };
 
@@ -165,12 +219,18 @@ interface IgcQrCodeArgs {
    * `undefined` or remove the attribute.
    */
   errorLevel: 'L' | 'M' | 'Q' | 'H';
-  /** The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels. */
+  /**
+   * The size of the QR code in pixels. This determines the width and height of the generated QR code. The default value is 128 pixels.
+   *
+   * Each module covers a whole number of pixels, so the edges stay sharp. The pixels that are
+   * left over widen the quiet zone, and the code can be smaller than `size`. An exported image
+   * gets whole pixels at its own size.
+   */
   size: number;
   /**
    * The margin (quiet zone) around the QR code, expressed as a number of QR code modules rather
    * than pixels. This is the blank border area surrounding the code, which helps ensure that it
-   * can be properly scanned.
+   * can be properly scanned. It is a minimum: spare pixels make the quiet zone wider.
    */
   margin: number;
   /**
@@ -201,28 +261,70 @@ interface IgcQrCodeArgs {
    */
   logoMargin: number;
   /**
-   * The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
-   * 'rounded', or 'squircle'. The inner dot of each finder-pattern corner uses the same style
-   * unless `cornerDotStyle` is set.
+   * The shape of the logo: 'square', 'circle', 'rounded' or 'squircle'. The shape fills the logo
+   * box, so a 'circle' logo with a wide image is an ellipse. The image is clipped to the shape,
+   * and the cutout holds only the modules that the shape covers, in part or in full.
    */
-  dotStyle: 'square' | 'circle' | 'rounded' | 'squircle';
+  logoShape: 'square' | 'circle' | 'rounded' | 'squircle';
+  /**
+   * The style of the data modules (dots) in the QR code. This can be 'square', 'circle',
+   * 'rounded', 'squircle', 'diamond', 'plus', 'liquid', 'horizontal-bars' or 'vertical-bars'.
+   * 'liquid' is 'rounded' with a smooth fill in the inside corners where modules join. The bar
+   * styles draw each run of dark modules in a row or a column as one bar with round ends.
+   *
+   * The inner dot of each finder-pattern corner uses the same style unless `cornerDotStyle` is
+   * set. It draws 'diamond' and 'plus' as 'square', and 'liquid' and the bar styles as
+   * 'rounded'.
+   */
+  dotStyle:
+    | 'square'
+    | 'circle'
+    | 'rounded'
+    | 'squircle'
+    | 'diamond'
+    | 'plus'
+    | 'liquid'
+    | 'horizontal-bars'
+    | 'vertical-bars';
   /**
    * The size of each data module, as a ratio of its cell in the module grid. The value is a
    * number from 0.7 to 1. Other values are clamped. A value below 1 leaves a gap between the
-   * modules, so 'rounded' modules do not join their neighbors. The finder-pattern corners keep
-   * their full size. A smaller value can make the code harder to scan with a camera.
+   * modules, so 'rounded' modules do not join their neighbors, and 'liquid' draws as 'rounded'.
+   * For the bar styles, it sets the thickness of the bars and shortens their ends. The
+   * finder-pattern corners keep their full size. A smaller value can make the code harder to
+   * scan with a camera.
    */
   dotScale: number;
   /**
    * The style of the corner squares in the QR code. This can be 'square', 'circle', 'rounded',
-   * or 'squircle'.
+   * 'squircle' or 'leaf'. A 'leaf' has two opposite round corners on the diagonal toward the
+   * center of the code. The rings of the alignment patterns use the same style, and a 'leaf'
+   * ring there has the shape of the top-left corner square.
    */
-  squareStyle: 'square' | 'circle' | 'rounded' | 'squircle';
+  squareStyle: 'square' | 'circle' | 'rounded' | 'squircle' | 'leaf';
   /**
    * The style of the inner dot of each finder-pattern corner. This can be 'square', 'circle',
-   * 'rounded', or 'squircle'. When it is not set, the inner dot uses `dotStyle`.
+   * 'rounded', 'squircle' or 'leaf'. When it is not set, the inner dot uses `dotStyle`. The
+   * centers of the alignment patterns use the same style.
+   *
+   * In a 'circle' corner square, a 'square' or 'leaf' dot draws as 'circle', because scanners
+   * do not find the pattern reliably with corners in a round ring.
    */
-  cornerDotStyle: 'square' | 'circle' | 'rounded' | 'squircle';
+  cornerDotStyle: 'square' | 'circle' | 'rounded' | 'squircle' | 'leaf';
+  /**
+   * The gradient of the dark modules: 'linear' or 'radial'. When it is not set, or has another
+   * value, the modules have one color. The gradient goes from `--ig-qr-code-gradient-start` to
+   * `--ig-qr-code-gradient-end` over the code without its quiet zone. It also paints the corners,
+   * unless `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` is set.
+   *
+   * Keep both colors much darker than the background.
+   */
+  gradient: 'linear' | 'radial';
+  /**
+   * The angle of a 'linear' gradient in degrees, clockwise. At 0 the gradient goes from left to
+   * right, and at 90 from top to bottom.
+   */
+  gradientAngle: number;
 }
 type Story = StoryObj<IgcQrCodeArgs>;
 
@@ -230,6 +332,9 @@ type Story = StoryObj<IgcQrCodeArgs>;
 
 const productUrl =
   'https://www.infragistics.com/products/ignite-ui-web-components';
+
+/** A short value: a code of 25 modules, so the modules are large enough to compare shapes. */
+const shortUrl = 'https://infragistics.com';
 
 const samples = html`
   <style>
@@ -249,16 +354,47 @@ const samples = html`
     }
 
     .qr-samples figcaption {
-      max-width: 12rem;
+      max-width: 15rem;
       text-align: center;
+    }
+
+    .qr-samples code {
+      overflow-wrap: anywhere;
+    }
+
+    .qr-section {
+      margin-block: 2rem 1rem;
+    }
+
+    .qr-section:first-of-type {
+      margin-block-start: 0;
     }
   </style>
 `;
 
 /** Makes a square logo with a short text as an SVG data URI. */
-function logo(background: string, color: string, text: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${background}"/><text x="32" y="43" fill="${color}" font-family="sans-serif" font-size="28" font-weight="700" text-anchor="middle">${text}</text></svg>`;
+function logo(
+  background: string,
+  color: string,
+  text: string,
+  radius = 14
+): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="${radius}" fill="${background}"/><text x="32" y="43" fill="${color}" font-family="sans-serif" font-size="28" font-weight="700" text-anchor="middle">${text}</text></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+/** Makes a logo twice as wide as it is high, with a short text, as an SVG data URI. */
+function wideLogo(background: string, color: string, text: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="64" viewBox="0 0 128 64"><rect width="128" height="64" fill="${background}"/><text x="64" y="43" fill="${color}" font-family="sans-serif" font-size="28" font-weight="700" text-anchor="middle">${text}</text></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+/** A code with a caption. */
+function sample(caption: unknown, code: unknown) {
+  return html`<figure>
+    ${code}
+    <figcaption>${caption}</figcaption>
+  </figure>`;
 }
 
 export const Default: Story = {
@@ -272,6 +408,7 @@ export const Default: Story = {
   },
   args: {
     value: productUrl,
+    size: 256,
   },
 };
 
@@ -281,93 +418,144 @@ export const Shapes: Story = {
     docs: {
       description: {
         story:
-          '`dot-style` sets the shape of the data modules and of the inner dot of each corner. `square-style` sets the shape of the outer corner squares. The table shows all 16 combinations for the same value. Below it, `corner-dot-style` gives the inner corner dots a shape of their own, and `dot-scale` shrinks the data modules to leave a gap between them.',
+          '`dot-style` sets the shape of the data modules. Without `corner-dot-style`, the inner corner dots follow it: `diamond` and `plus` give square dots, and `liquid` and the bars give rounded dots. `square-style` sets the shape of the outer corner squares and of the alignment rings. `corner-dot-style` sets the shape of the inner corner dots and of the alignment centers. In a `circle` corner square, a `square` or `leaf` corner dot draws as a circle, so that scanners find the corner. `dot-scale` makes the data modules smaller, with a gap between them. The samples encode a short value, so the modules are large.',
       },
     },
   },
   render: () => {
-    const shapes = ['square', 'circle', 'rounded', 'squircle'] as const;
-    const variants = [
+    const dotStyles = [
+      'square',
+      'circle',
+      'rounded',
+      'squircle',
+      'diamond',
+      'plus',
+      'liquid',
+      'horizontal-bars',
+      'vertical-bars',
+    ] as const;
+    const cornerStyles = [
+      'square',
+      'circle',
+      'rounded',
+      'squircle',
+      'leaf',
+    ] as const;
+    const scales = [
+      { dot: 'circle', scale: 1 },
+      { dot: 'circle', scale: 0.85 },
+      { dot: 'circle', scale: 0.7 },
+      { dot: 'rounded', scale: 0.85 },
+      { dot: 'horizontal-bars', scale: 0.7 },
+    ] as const;
+    const combinations = [
       {
-        caption: 'Squircle modules with circle corner dots',
+        caption: 'Squircle modules and corners with circle corner dots',
         dot: 'squircle',
         square: 'squircle',
         cornerDot: 'circle',
-        scale: 1,
       },
       {
-        caption: 'Square modules at dot-scale 0.8',
-        dot: 'square',
-        square: 'square',
-        cornerDot: undefined,
-        scale: 0.8,
-      },
-      {
-        caption: 'Circle modules at dot-scale 0.7',
-        dot: 'circle',
-        square: 'circle',
-        cornerDot: undefined,
-        scale: 0.7,
-      },
-      {
-        caption: 'Rounded modules at dot-scale 0.85, which do not join',
-        dot: 'rounded',
+        caption: 'Liquid modules with rounded corners',
+        dot: 'liquid',
         square: 'rounded',
-        cornerDot: undefined,
-        scale: 0.85,
+      },
+      {
+        caption: 'Horizontal bars with leaf corners',
+        dot: 'horizontal-bars',
+        square: 'leaf',
+        cornerDot: 'leaf',
+      },
+      {
+        caption: 'Plus modules with circle corners',
+        dot: 'plus',
+        square: 'circle',
+      },
+      {
+        caption: 'Diamond modules with squircle corners and square dots',
+        dot: 'diamond',
+        square: 'squircle',
+        cornerDot: 'square',
       },
     ] as const;
 
     return html`
       ${samples}
-      <div style="overflow-x: auto">
-        <table style="border-spacing: 1.5rem 1rem; text-align: center">
-          <thead>
-            <tr>
-              <td></td>
-              ${shapes.map(
-                (shape) => html`<th scope="col">dot-style="${shape}"</th>`
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            ${shapes.map(
-              (square) => html`
-                <tr>
-                  <th scope="row">square-style="${square}"</th>
-                  ${shapes.map(
-                    (dot) => html`
-                      <td>
-                        <igc-qr-code
-                          value=${productUrl}
-                          size="112"
-                          dot-style=${dot}
-                          square-style=${square}
-                        ></igc-qr-code>
-                      </td>
-                    `
-                  )}
-                </tr>
-              `
-            )}
-          </tbody>
-        </table>
-      </div>
+      <h3 class="qr-section">dot-style</h3>
       <div class="qr-samples">
-        ${variants.map(
-          (variant) => html`
-            <figure>
-              <igc-qr-code
-                value=${productUrl}
-                size="160"
-                dot-style=${variant.dot}
-                square-style=${variant.square}
-                corner-dot-style=${ifDefined(variant.cornerDot)}
-                dot-scale=${variant.scale}
-              ></igc-qr-code>
-              <figcaption>${variant.caption}</figcaption>
-            </figure>
-          `
+        ${dotStyles.map((dot) =>
+          sample(
+            html`<code>dot-style="${dot}"</code>`,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              dot-style=${dot}
+            ></igc-qr-code>`
+          )
+        )}
+      </div>
+
+      <h3 class="qr-section">square-style</h3>
+      <div class="qr-samples">
+        ${cornerStyles.map((square) =>
+          sample(
+            html`<code>square-style="${square}"</code>`,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              square-style=${square}
+            ></igc-qr-code>`
+          )
+        )}
+      </div>
+
+      <h3 class="qr-section">corner-dot-style</h3>
+      <div class="qr-samples">
+        ${cornerStyles.map((cornerDot) =>
+          sample(
+            html`<code>corner-dot-style="${cornerDot}"</code>`,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              square-style="rounded"
+              corner-dot-style=${cornerDot}
+            ></igc-qr-code>`
+          )
+        )}
+      </div>
+
+      <h3 class="qr-section">dot-scale</h3>
+      <div class="qr-samples">
+        ${scales.map(({ dot, scale }) =>
+          sample(
+            html`<code>dot-style="${dot}"</code><br /><code
+                >dot-scale="${scale}"</code
+              >`,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              dot-style=${dot}
+              dot-scale=${scale}
+            ></igc-qr-code>`
+          )
+        )}
+      </div>
+
+      <h3 class="qr-section">Combinations</h3>
+      <div class="qr-samples">
+        ${combinations.map((variant) =>
+          sample(
+            variant.caption,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              dot-style=${variant.dot}
+              square-style=${variant.square}
+              corner-dot-style=${ifDefined(
+                'cornerDot' in variant ? variant.cornerDot : undefined
+              )}
+            ></igc-qr-code>`
+          )
         )}
       </div>
     `;
@@ -380,12 +568,17 @@ export const Colors: Story = {
     docs: {
       description: {
         story:
-          'CSS custom properties set the colors. `--ig-qr-code-dark-color` colors the data modules and, by default, the corners. `--ig-qr-code-corner-square-color` and `--ig-qr-code-corner-dot-color` override the two parts of the corners. The colors do not follow the light and dark theme variants, because a code that inverts itself can stop to scan. Keep a strong contrast between the modules and the background: some older readers cannot scan an inverted code, and most readers cannot scan a code with low contrast.',
+          'CSS custom properties set the colors. `--ig-qr-code-dark-color` colors the data modules and, by default, the corners. `--ig-qr-code-corner-square-color` and `--ig-qr-code-corner-dot-color` override the two parts of the corners. `gradient` paints the modules with a `linear` or `radial` gradient from `--ig-qr-code-gradient-start` to `--ig-qr-code-gradient-end`. `gradient-angle` turns a linear gradient. The colors do not follow the light and dark theme variants, because some readers cannot scan an inverted code. Keep the dark colors and both gradient colors much darker than the background. Most readers cannot scan a code with low contrast. Test the colors with the phones and the apps of your users.',
       },
     },
   },
   render: () => {
-    const variants = [
+    const variants: {
+      caption: string;
+      style: string;
+      gradient?: 'linear' | 'radial';
+      angle?: number;
+    }[] = [
       {
         caption: 'Brand colors',
         style:
@@ -395,6 +588,38 @@ export const Colors: Story = {
         caption: 'Accent corners',
         style:
           '--ig-qr-code-dark-color: #1f2937; --ig-qr-code-corner-square-color: #e63946; --ig-qr-code-corner-dot-color: #457b9d;',
+      },
+      {
+        caption: 'Linear gradient, left to right (gradient-angle 0)',
+        style:
+          '--ig-qr-code-gradient-start: #1a237e; --ig-qr-code-gradient-end: #880e4f;',
+        gradient: 'linear',
+      },
+      {
+        caption: 'Linear gradient, corner to corner (gradient-angle 45)',
+        style:
+          '--ig-qr-code-gradient-start: #0b3d91; --ig-qr-code-gradient-end: #2a7f62;',
+        gradient: 'linear',
+        angle: 45,
+      },
+      {
+        caption: 'Linear gradient, top to bottom (gradient-angle 90)',
+        style:
+          '--ig-qr-code-gradient-start: #4a148c; --ig-qr-code-gradient-end: #b71c1c;',
+        gradient: 'linear',
+        angle: 90,
+      },
+      {
+        caption: 'Radial gradient, center to corners',
+        style:
+          '--ig-qr-code-gradient-start: #6a1b9a; --ig-qr-code-gradient-end: #0d47a1;',
+        gradient: 'radial',
+      },
+      {
+        caption: 'Radial gradient with accent corner dots',
+        style:
+          '--ig-qr-code-gradient-start: #0b3d91; --ig-qr-code-gradient-end: #1d6f65; --ig-qr-code-corner-dot-color: #e63946;',
+        gradient: 'radial',
       },
       {
         caption: 'Inverted, for a dark print',
@@ -411,22 +636,83 @@ export const Colors: Story = {
     return html`
       ${samples}
       <div class="qr-samples">
-        ${variants.map(
-          ({ caption, style }) => html`
-            <figure>
-              <igc-qr-code
-                value=${productUrl}
-                size="160"
-                dot-style="rounded"
-                style=${style}
-              ></igc-qr-code>
-              <figcaption>${caption}</figcaption>
-            </figure>
-          `
+        ${variants.map(({ caption, style, gradient, angle }) =>
+          sample(
+            caption,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="220"
+              dot-style="rounded"
+              square-style="rounded"
+              gradient=${ifDefined(gradient)}
+              gradient-angle=${ifDefined(angle)}
+              style=${style}
+            ></igc-qr-code>`
+          )
         )}
       </div>
     `;
   },
+};
+
+/** The gradient colors are CSS custom properties, not attributes, so they are not in the generated args. */
+type GradientStory = StoryObj<
+  IgcQrCodeArgs & { gradientStart: string; gradientEnd: string }
+>;
+
+export const Gradient: GradientStory = {
+  argTypes: {
+    ...disableStoryControls(metadata),
+    gradient: metadata.argTypes!.gradient,
+    gradientAngle: {
+      ...metadata.argTypes!.gradientAngle,
+      control: { type: 'range', min: 0, max: 360, step: 15 },
+    },
+    gradientStart: {
+      control: 'color',
+      description: 'The value of `--ig-qr-code-gradient-start`.',
+    },
+    gradientEnd: {
+      control: 'color',
+      description: 'The value of `--ig-qr-code-gradient-end`.',
+    },
+    dotStyle: metadata.argTypes!.dotStyle,
+    squareStyle: metadata.argTypes!.squareStyle,
+  },
+  args: {
+    gradient: 'linear',
+    gradientAngle: 45,
+    gradientStart: '#1a237e',
+    gradientEnd: '#880e4f',
+    dotStyle: 'liquid',
+    squareStyle: 'rounded',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the controls to change the gradient. `gradient` sets the type, `gradient-angle` turns a linear gradient clockwise, and the color pickers set `--ig-qr-code-gradient-start` and `--ig-qr-code-gradient-end`. The gradient spans the modules, not the quiet zone. Keep both colors much darker than the background.',
+      },
+    },
+  },
+  render: ({
+    gradient,
+    gradientAngle,
+    gradientStart,
+    gradientEnd,
+    dotStyle,
+    squareStyle,
+  }) => html`
+    <igc-qr-code
+      value=${productUrl}
+      size="320"
+      gradient=${ifDefined(gradient)}
+      gradient-angle=${gradientAngle}
+      dot-style=${dotStyle}
+      square-style=${squareStyle}
+      style="--ig-qr-code-gradient-start: ${gradientStart}; --ig-qr-code-gradient-end: ${gradientEnd};"
+    ></igc-qr-code>
+  `,
 };
 
 export const ErrorCorrection: Story = {
@@ -507,12 +793,12 @@ export const WithLogo: Story = {
     docs: {
       description: {
         story:
-          '`logo-src` puts an image at the center of the code and removes the modules under it. `logo-size` is a ratio of the area that the error correction level can restore, not of the full code: `1` covers 9% of the code at level `H`. `logo-margin` adds whitespace around the logo, in pixels. Without `error-level`, the code uses level `M`, and a logo larger than the safe area of `M` raises the level to the smallest one that holds it, as in the first two codes. An explicit level caps the logo to the area of that level, so the logo in the last code shrinks. A logo source must be an image: a `javascript:` URL or a data URI of another type is ignored.',
+          '`logo-src` puts an image at the center of the code and removes the modules under it. `logo-size` is a ratio of the area that the error correction level can restore, not of the full code: `1` covers 9% of the code at level `H`. `logo-margin` adds whitespace around the logo, in pixels. Without `error-level`, the code uses level `M`, and a logo larger than the safe area of `M` raises the level to the smallest one that holds it, as in the first two codes. An explicit level caps the logo to the area of that level, so the logo in the fourth code shrinks. `logo-shape` clips the logo to a `circle`, `rounded` or `squircle` shape that fills the logo box, and the code removes only the modules under the shape. A wide image in a `circle` gives an ellipse. A `rounded` or `liquid` module and a bar end round at the edge of the removed area. A logo source must be an image: a `javascript:` URL or a data URI of another type is ignored.',
       },
     },
   },
   render: () => {
-    const variants: {
+    const sizes: {
       caption: string;
       logo: string;
       size: number;
@@ -551,67 +837,144 @@ export const WithLogo: Story = {
         style: '--ig-qr-code-dark-color: #1d6f65;',
       },
     ];
+    const shapes: {
+      caption: unknown;
+      logo: string;
+      shape: 'square' | 'circle' | 'rounded' | 'squircle';
+      dot: 'square' | 'rounded' | 'liquid' | 'horizontal-bars';
+    }[] = [
+      {
+        caption: html`<code>logo-shape="square"</code>`,
+        logo: logo('#e63946', '#ffffff', 'GO', 0),
+        shape: 'square',
+        dot: 'square',
+      },
+      {
+        caption: html`<code>logo-shape="circle"</code>`,
+        logo: logo('#e63946', '#ffffff', 'GO', 0),
+        shape: 'circle',
+        dot: 'square',
+      },
+      {
+        caption: html`<code>logo-shape="rounded"</code>`,
+        logo: logo('#e63946', '#ffffff', 'GO', 0),
+        shape: 'rounded',
+        dot: 'square',
+      },
+      {
+        caption: html`<code>logo-shape="squircle"</code>`,
+        logo: logo('#e63946', '#ffffff', 'GO', 0),
+        shape: 'squircle',
+        dot: 'square',
+      },
+      {
+        caption: 'A wide image in a circle: an ellipse',
+        logo: wideLogo('#0b3d91', '#ffffff', 'IGNITE'),
+        shape: 'circle',
+        dot: 'square',
+      },
+      {
+        caption: 'Liquid modules end round at a circle logo',
+        logo: logo('#0b3d91', '#ffffff', 'UI', 0),
+        shape: 'circle',
+        dot: 'liquid',
+      },
+      {
+        caption: 'Bars end round at a squircle logo',
+        logo: logo('#2a9d8f', '#ffffff', 'ECO', 0),
+        shape: 'squircle',
+        dot: 'horizontal-bars',
+      },
+    ];
 
     return html`
       ${samples}
+      <h3 class="qr-section">logo-size and error-level</h3>
       <div class="qr-samples">
-        ${variants.map(
-          (variant) => html`
-            <figure>
-              <igc-qr-code
-                value=${productUrl}
-                size="200"
-                dot-style="circle"
-                square-style="rounded"
-                error-level=${ifDefined(variant.level)}
-                logo-src=${variant.logo}
-                logo-size=${variant.size}
-                .logoMargin=${variant.margin}
-                style=${variant.style}
-              ></igc-qr-code>
-              <figcaption>${variant.caption}</figcaption>
-            </figure>
-          `
+        ${sizes.map((variant) =>
+          sample(
+            variant.caption,
+            html`<igc-qr-code
+              value=${productUrl}
+              size="240"
+              dot-style="circle"
+              square-style="rounded"
+              error-level=${ifDefined(variant.level)}
+              logo-src=${variant.logo}
+              logo-size=${variant.size}
+              .logoMargin=${variant.margin}
+              style=${variant.style}
+            ></igc-qr-code>`
+          )
+        )}
+      </div>
+
+      <h3 class="qr-section">logo-shape</h3>
+      <div class="qr-samples">
+        ${shapes.map((variant) =>
+          sample(
+            variant.caption,
+            html`<igc-qr-code
+              value=${shortUrl}
+              size="240"
+              dot-style=${variant.dot}
+              square-style="rounded"
+              logo-src=${variant.logo}
+              logo-size="1"
+              logo-shape=${variant.shape}
+            ></igc-qr-code>`
+          )
         )}
       </div>
     `;
   },
 };
 
-type Payload = 'url' | 'wifi' | 'contact' | 'text';
-
-/** Escapes the special characters of a `WIFI:` string field. */
-function escapeWifi(value: string): string {
-  return value.replace(/([\\;,:"])/g, '\\$1');
-}
-
-/** Escapes the special characters of a vCard text value. */
-function escapeVCard(value: string): string {
-  return value.replace(/([\\;,])/g, '\\$1').replace(/\n/g, '\\n');
-}
+type Payload = 'url' | 'wifi' | 'contact' | 'payment' | 'event' | 'text';
 
 const payloads: Record<
   Payload,
-  { label: string; encode: (fields: Record<string, string>) => string }
+  {
+    label: string;
+    encode: (fields: Record<string, string>) => string;
+    errorLevel?: QrErrorCorrectionLevel;
+  }
 > = {
   url: { label: 'Website link', encode: (f) => f.url },
   wifi: {
     label: 'Wi-Fi network',
-    encode: (f) =>
-      `WIFI:T:WPA;S:${escapeWifi(f.ssid)};P:${escapeWifi(f.password)};;`,
+    encode: (f) => createWifiPayload({ ssid: f.ssid, password: f.password }),
   },
   contact: {
     label: 'Contact card',
     encode: (f) =>
-      [
-        'BEGIN:VCARD',
-        'VERSION:3.0',
-        `N:${escapeVCard(f.last)};${escapeVCard(f.first)}`,
-        `FN:${escapeVCard(`${f.first} ${f.last}`.trim())}`,
-        `TEL:${escapeVCard(f.phone)}`,
-        `EMAIL:${escapeVCard(f.email)}`,
-        'END:VCARD',
-      ].join('\n'),
+      createVCardPayload({
+        name: { given: f.first, family: f.last },
+        organization: f.organization,
+        phones: f.phone ? [{ value: f.phone, type: 'cell' }] : [],
+        emails: f.email ? [{ value: f.email, type: 'work' }] : [],
+      }),
+  },
+  payment: {
+    label: 'SEPA payment',
+    errorLevel: 'M',
+    encode: (f) =>
+      createEpcPayload({
+        name: f.beneficiary,
+        iban: f.iban,
+        amount: f.amount ? Number(f.amount) : undefined,
+        text: f.remittance,
+      }),
+  },
+  event: {
+    label: 'Calendar event',
+    encode: (f) =>
+      createEventPayload({
+        summary: f.summary,
+        start: new Date(`${f.date}T${f.start}`),
+        end: new Date(`${f.date}T${f.end}`),
+        location: f.location,
+      }),
   },
   text: { label: 'Plain text', encode: (f) => f.text },
 };
@@ -622,7 +985,7 @@ export const Generator: Story = {
     docs: {
       description: {
         story:
-          'A QR code generator. The content type decides how the fields are encoded: a URL, a `WIFI:` string that a phone uses to join the network, a vCard that a phone saves as a contact, or plain text. The code updates on each keystroke, and `aria-label` gives the code a name that describes its content. The encoded payload shows under the code.',
+          'A QR code generator. The content type decides how the fields are encoded: a URL, a Wi-Fi login, a contact card, a SEPA payment, a calendar event or plain text. The helpers of `igniteui-webcomponents/extras/qr-payloads` build the formats and escape the text. A helper throws a `RangeError` for input that its format does not allow, such as an amount with 3 decimals, and the message shows under the fields. The SEPA payment keeps the default error correction level M, as the EPC guideline asks. The code updates on each keystroke, and `aria-label` gives the code a name that describes its content. The encoded payload shows under the code.',
       },
     },
   },
@@ -632,6 +995,7 @@ export const Generator: Story = {
         '.qr-generator'
       )!;
       const type = root.querySelector('igc-select')!.value as Payload;
+      const status = root.querySelector('[role="status"]')!;
       const qr = root.querySelector('igc-qr-code')!;
       const fields = Object.fromEntries(
         Array.from(root.querySelectorAll('igc-input'), (input) => [
@@ -644,9 +1008,15 @@ export const Generator: Story = {
         group.hidden = group.dataset.type !== type;
       }
 
-      qr.value = payloads[type].encode(fields);
-      qr.ariaLabel = `${payloads[type].label} QR code`;
-      root.querySelector('pre')!.textContent = qr.value;
+      try {
+        qr.value = payloads[type].encode(fields);
+        qr.errorLevel = payloads[type].errorLevel ?? 'Q';
+        qr.ariaLabel = `${payloads[type].label} QR code`;
+        status.textContent = '';
+      } catch (error) {
+        status.textContent = (error as Error).message;
+      }
+      root.querySelector('pre')!.textContent = qr.value ?? '';
     };
 
     const download = async (event: Event) => {
@@ -747,6 +1117,12 @@ export const Generator: Story = {
               @igcInput=${update}
             ></igc-input>
             <igc-input
+              name="organization"
+              label="Company"
+              value="Example Ltd."
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
               name="phone"
               type="tel"
               label="Phone"
@@ -758,6 +1134,67 @@ export const Generator: Story = {
               type="email"
               label="Email"
               value="maria@example.com"
+              @igcInput=${update}
+            ></igc-input>
+          </div>
+
+          <div data-type="payment" hidden>
+            <igc-input
+              name="beneficiary"
+              label="Beneficiary"
+              value="Example Charity e.V."
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="iban"
+              label="IBAN"
+              value="DE89 3704 0044 0532 0130 00"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="amount"
+              type="number"
+              label="Amount in euros"
+              value="25.00"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="remittance"
+              label="Remittance text"
+              value="Donation 2026"
+              @igcInput=${update}
+            ></igc-input>
+          </div>
+
+          <div data-type="event" hidden>
+            <igc-input
+              name="summary"
+              label="Title"
+              value="Team meetup"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="date"
+              label="Date (YYYY-MM-DD)"
+              value="2026-12-04"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="start"
+              label="Start time (HH:MM)"
+              value="18:00"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="end"
+              label="End time (HH:MM)"
+              value="21:00"
+              @igcInput=${update}
+            ></igc-input>
+            <igc-input
+              name="location"
+              label="Location"
+              value="Main hall"
               @igcInput=${update}
             ></igc-input>
           </div>
@@ -786,6 +1223,47 @@ export const Generator: Story = {
           ></igc-qr-code>
           <figcaption><pre>${productUrl}</pre></figcaption>
         </figure>
+      </div>
+    `;
+  },
+};
+
+export const PhoneActions: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Codes that open an app on the phone: an email draft, a call, a text message and a place on a map. They are plain URLs, so they need no helper. Encode the text parts with `encodeURIComponent()`. The text message uses the `SMSTO:` form with one number. Readers differ in how they fill in a message, so test the code on the phones of your users.',
+      },
+    },
+  },
+  render: () => {
+    const actions = [
+      {
+        caption: 'Email draft',
+        value: `mailto:support@example.com?subject=${encodeURIComponent('Order 1042')}&body=${encodeURIComponent('Hello, I have a question about my order.')}`,
+      },
+      { caption: 'Phone call', value: 'tel:+15550100' },
+      { caption: 'Text message', value: 'SMSTO:+15550100:Table 12 is ready' },
+      { caption: 'Place on a map', value: 'geo:42.6977,23.3219' },
+    ];
+
+    return html`
+      ${samples}
+      <div class="qr-samples">
+        ${actions.map(
+          ({ caption, value }) => html`
+            <figure>
+              <igc-qr-code
+                value=${value}
+                size="160"
+                aria-label="${caption} QR code"
+              ></igc-qr-code>
+              <figcaption>${caption}<br /><code>${value}</code></figcaption>
+            </figure>
+          `
+        )}
       </div>
     `;
   },
@@ -886,6 +1364,55 @@ export const Tickets: Story = {
       </div>
     `;
   },
+};
+
+export const TableCard: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A table card in a café, with a "Scan me" frame around the code. The frame is plain HTML and CSS: a `figure` with a border, a title and a caption. The component draws only the code, so `toImage()` and `copyToClipboard()` export the code without the frame. To print the card, print the page. Keep the quiet zone of the code between the frame and the modules.',
+      },
+    },
+  },
+  render: () => html`
+    <style>
+      .table-card {
+        display: grid;
+        justify-items: center;
+        gap: 0.75rem;
+        inline-size: max-content;
+        margin: 0;
+        padding: 1.5rem 2rem;
+        border: 4px solid var(--ig-gray-900);
+        border-radius: 1.5rem;
+        text-align: center;
+      }
+
+      .table-card .title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+    </style>
+
+    <figure class="table-card">
+      <p class="title">Scan me</p>
+      <igc-qr-code
+        value="https://example.com/menu?table=12"
+        aria-label="Menu QR code"
+        size="200"
+        dot-style="rounded"
+        square-style="rounded"
+      ></igc-qr-code>
+      <figcaption>
+        See the menu and order from table 12.<br />example.com/menu
+      </figcaption>
+    </figure>
+  `,
 };
 
 export const Export: Story = {

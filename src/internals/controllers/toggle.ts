@@ -175,6 +175,16 @@ class ToggleController {
    * hops, which shift the timing of caller code against `updateComplete`.
    */
 
+  /** Whether a `show()` or a `hide()` is in flight. */
+  public get busy(): boolean {
+    return this._pending !== undefined;
+  }
+
+  /** Whether a `show()` is in flight. */
+  public get opening(): boolean {
+    return this._pending === true;
+  }
+
   /** Whether a `hide()` is in flight. */
   public get closing(): boolean {
     return this._pending === false;

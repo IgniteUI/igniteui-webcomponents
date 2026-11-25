@@ -26,6 +26,28 @@ export function getAlignmentPatternPositions(version: number): number[] {
   return positions;
 }
 
+/**
+ * Returns the row and column of each alignment pattern center of a version, without the three
+ * that would overlap a finder pattern.
+ */
+export function getAlignmentPatternCenters(
+  version: number
+): [number, number][] {
+  const positions = getAlignmentPatternPositions(version);
+  const first = positions[0];
+  const last = positions.at(-1);
+
+  return positions.flatMap((r) =>
+    positions
+      .filter(
+        (c) =>
+          !(r === first && (c === first || c === last)) &&
+          !(r === last && c === first)
+      )
+      .map((c): [number, number] => [r, c])
+  );
+}
+
 /** The format information bits of the error correction levels L, M, Q and H. */
 const FORMAT_LEVEL_BITS = [0b01, 0b00, 0b11, 0b10];
 
@@ -252,19 +274,8 @@ export function createFunctionPatterns(version: number): {
   matrix[darkRow][8] = true;
   functionModules[darkRow][8] = true;
 
-  const alignmentPositions = getAlignmentPatternPositions(version);
-  for (const r of alignmentPositions) {
-    for (const c of alignmentPositions) {
-      // Skip if this position overlaps with a finder pattern
-      if (
-        (r <= 8 && c <= 8) ||
-        (r <= 8 && c >= size - 8) ||
-        (r >= size - 8 && c <= 8)
-      ) {
-        continue;
-      }
-      placeAlignmentPattern(matrix, functionModules, r, c);
-    }
+  for (const [r, c] of getAlignmentPatternCenters(version)) {
+    placeAlignmentPattern(matrix, functionModules, r, c);
   }
 
   return { matrix, functionModules, locatorModules };

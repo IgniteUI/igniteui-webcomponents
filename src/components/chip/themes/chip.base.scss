@@ -171,7 +171,7 @@ $indicator-delay: .06s;
     }
 }
 
-@media (prefers-reduced-motion: no-preference) {
+@include with-motion() {
     :host [part~='base'] {
         transition-property: color, background-color, border-color, box-shadow;
         transition-duration: .2s;
@@ -195,12 +195,7 @@ $indicator-delay: .06s;
     opacity: 0;
 }
 
-:host [part~='base'][data-instant] {
-    &,
-    [data-indicator] {
-        transition: none;
-    }
-}
+@include value-state-transitions();
 
 ::slotted(*) {
     @include ellipsis();

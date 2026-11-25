@@ -2,6 +2,7 @@ import { DialogResourceStringsEN } from 'igniteui-i18n-core';
 import { html, LitElement, nothing, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { finishCSSTransitions } from '#animations/css-transitions.js';
 import { addAnimationController } from '#animations/player.js';
 import { fadeIn, fadeOut } from '#animations/presets/fade/index.js';
 import {
@@ -300,6 +301,11 @@ export default class IgcDialogComponent extends I18nMixin(
     dialog.close();
     if (this.open && this.isConnected) {
       dialog.showModal();
+
+      // Only `show()` fades the backdrop in.
+      if (!this._toggleController.opening) {
+        finishCSSTransitions(dialog, { subtree: true });
+      }
     }
   }
 

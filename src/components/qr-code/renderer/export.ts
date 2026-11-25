@@ -1,4 +1,6 @@
+import { setOrRemoveAttribute } from '#internals/utils/dom.js';
 import type { QrCodeExportFormat } from '../types.js';
+import { snapToPixels } from './snap.js';
 
 type QrRasterFormat = Exclude<QrCodeExportFormat, 'svg'>;
 
@@ -61,20 +63,24 @@ async function fetchImageAsDataUrl(url: string): Promise<string | null> {
 }
 
 /**
- * Copies the computed `fill` of each `part` element onto the clone and strips `part`,
- * so the clone renders the same outside the shadow root. The theme sets only `fill`;
- * extend this when `themes/shared/qr-code.common.scss` styles more.
+ * Copies the computed `fill` of each part and `stop-color` of each gradient stop onto the clone
+ * and strips `part`, so the clone renders the same outside the shadow root. Extend this when
+ * `themes/shared/qr-code.common.scss` styles more.
  */
 function resolveStyles(source: SVGSVGElement, clone: SVGSVGElement): void {
-  const liveParts = source.querySelectorAll<SVGElement>('[part]');
-  const cloneParts = clone.querySelectorAll<SVGElement>('[part]');
+  const selector = '[part], stop';
+  const liveElements = source.querySelectorAll<SVGElement>(selector);
+  const cloneElements = clone.querySelectorAll<SVGElement>(selector);
 
-  for (const [index, element] of liveParts.entries()) {
-    const target = cloneParts[index];
-    const { fill } = getComputedStyle(element);
+  for (const [index, element] of liveElements.entries()) {
+    const target = cloneElements[index];
+    const { fill, stopColor } = getComputedStyle(element);
 
-    if (fill) {
-      target.setAttribute('fill', fill);
+    if (element.localName === 'stop') {
+      target.setAttribute('stop-color', stopColor);
+    } else if (fill) {
+      // SVG 1.1 readers take `url(#id)` without quotes.
+      target.setAttribute('fill', fill.replace(/^url\("(.*)"\)$/, 'url($1)'));
     }
     target.removeAttribute('part');
   }
@@ -99,7 +105,9 @@ async function inlineLogo(clone: SVGSVGElement): Promise<void> {
   } else {
     image.remove();
     clone.querySelector('[mask]')?.removeAttribute('mask');
-    clone.querySelector('defs')?.remove();
+    for (const element of clone.querySelectorAll('mask, clipPath')) {
+      element.remove();
+    }
   }
 }
 
@@ -132,6 +140,23 @@ export async function createSvgSnapshot(
   await inlineLogo(clone);
   addLegacyLogoHref(clone);
   return clone;
+}
+
+/**
+ * Puts the modules of a snapshot on whole pixels of an image of `pixels`: rewrites the transform
+ * of the code group and of the logo, which the component renders for its own size.
+ */
+export function snapSvg(
+  svg: SVGSVGElement,
+  pixels: number,
+  margin: number
+): void {
+  const side = Math.round(svg.viewBox.baseVal.width);
+  const transform = snapToPixels(pixels, side, margin)?.transform;
+
+  for (const element of svg.querySelectorAll(':scope > g, :scope > image')) {
+    setOrRemoveAttribute(element, 'transform', transform);
+  }
 }
 
 /** Serializes an SVG element into an `image/svg+xml` blob. */

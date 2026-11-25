@@ -6,17 +6,19 @@ import IgcDateRangeInputComponent, {
   typedPosition,
 } from './date-range-input.js';
 
-/**
- * The editors of one layout of the range picker in its render root, which holds the editors of the active layout
- * only: a single range input, or a start and an end input.
- */
+/** The editors of the active range picker layout. Each instance reads its render root once. */
 export interface RangeEditors {
   /** The editors, the start editor first. */
   editors(): PickerEditor[];
-  /** The range as the user types it. */
+  /** The range as the user types it. A single input gives `null` until both ends are complete. */
   typed(): DateRangeValue | null;
   /** The date that the user types in `target`; in a range input, the end at the caret. */
   typedDate(target: PickerEditor): Date | null;
+  /**
+   * The range that the calendar selects while the user types. An incomplete end keeps the end of `previous`, a blank
+   * end is `null`. The ends keep the typed order.
+   */
+  edit(previous: DateRangeValue | null): DateRangeValue | null;
   /** The range that the editors hold. */
   committed(): DateRangeValue | null;
   /** Gives the focus back to the start editor after a calendar pick. */
@@ -24,14 +26,10 @@ export interface RangeEditors {
 }
 
 class SingleInputEditors implements RangeEditors {
-  private readonly _root: ParentNode;
+  private readonly _input: IgcDateRangeInputComponent | null;
 
   constructor(root: ParentNode) {
-    this._root = root;
-  }
-
-  private get _input(): IgcDateRangeInputComponent | null {
-    return this._root.querySelector(IgcDateRangeInputComponent.tagName);
+    this._input = root.querySelector(IgcDateRangeInputComponent.tagName);
   }
 
   public editors(): PickerEditor[] {
@@ -51,6 +49,10 @@ class SingleInputEditors implements RangeEditors {
     return position ? (input._uncommittedValue?.[position] ?? null) : null;
   }
 
+  public edit(previous: DateRangeValue | null): DateRangeValue | null {
+    return this._input?._parseEdit(previous) ?? null;
+  }
+
   public committed(): DateRangeValue | null {
     return this._input?.value ?? null;
   }
@@ -61,25 +63,24 @@ class SingleInputEditors implements RangeEditors {
 }
 
 class TwoInputEditors implements RangeEditors {
-  private readonly _root: ParentNode;
+  private readonly _inputs: IgcDateTimeInputComponent[];
 
   constructor(root: ParentNode) {
-    this._root = root;
-  }
-
-  private get _inputs(): IgcDateTimeInputComponent[] {
-    return Array.from(
-      this._root.querySelectorAll(IgcDateTimeInputComponent.tagName)
+    this._inputs = Array.from(
+      root.querySelectorAll(IgcDateTimeInputComponent.tagName)
     );
   }
 
   private _readEnds(
-    read: (input: IgcDateTimeInputComponent) => Date | null
+    read: (
+      input: IgcDateTimeInputComponent,
+      end: keyof DateRangeValue
+    ) => Date | null
   ): DateRangeValue {
     const [start, end] = this._inputs;
     return {
-      start: start ? read(start) : null,
-      end: end ? read(end) : null,
+      start: start ? read(start, 'start') : null,
+      end: end ? read(end, 'end') : null,
     };
   }
 
@@ -87,13 +88,20 @@ class TwoInputEditors implements RangeEditors {
     return this._inputs;
   }
 
+  /** Without a previous range, the edit of a date-time input is its strict parse. */
   public typed(): DateRangeValue {
-    return this._readEnds((input) => input._uncommittedValue);
+    return this.edit(null);
   }
 
   public typedDate(target: PickerEditor): Date | null {
     return (
       this._inputs.find((input) => input === target)?._uncommittedValue ?? null
+    );
+  }
+
+  public edit(previous: DateRangeValue | null): DateRangeValue {
+    return this._readEnds((input, end) =>
+      input._parseEdit(previous?.[end] ?? null)
     );
   }
 
