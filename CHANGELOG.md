@@ -136,6 +136,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### QR code
   - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
   - A code with `square-style="circle"` no longer fails to scan at some sizes, about 1 time in 10. For this fix, a `square` corner dot in a `circle` corner square draws as a circle.
+  - A value that leaves fewer than 4 bits of a version for the terminator at the end of the data gets that version. The terminator gets shorter or goes, as ISO/IEC 18004 allows. Before, such a value got the next version, for example 41 digits at level `L` got version 2, not 1. On a pinned `version`, and for 7089 digits at level `L`, the code rendered nothing. A value that the code writes as bytes only, such as lowercase text, keeps its version.
 - #### Radio
   - The validity of a group changes at once when a radio joins or leaves the group, and on a form reset. A radio joins or leaves by `name`, by form owner or by a DOM change. A removed radio has the validity of a group of its own, as a native radio does. Before, the other radios kept the old validity. A group stayed invalid after its required radio left. After a form reset, the validity was correct only after the next render.
   - A checked radio that joins a group, by connect, `name` or form owner, unchecks the other radios of the group, as a native radio does. Before, two radios of the group could stay checked.

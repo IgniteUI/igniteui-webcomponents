@@ -1,5 +1,6 @@
 import { expect } from '@open-wc/testing';
 
+import type { QrErrorCorrectionLevel } from '../types.js';
 import { canHideModules, getModuleMap, LOCATOR_MODULE } from './cutout.js';
 import { encodeQR } from './encode.js';
 import {
@@ -108,6 +109,36 @@ describe('QR model - encodeQR', () => {
     it('selects version 1 for a single alphanumeric character', () => {
       const result = encodeQR('A', 'H');
       expect(result.version).to.equal(1);
+    });
+
+    it('holds the capacities of versions 1 and 40 that ISO/IEC 18004 lists', () => {
+      // The most characters of each mode at each level.
+      const capacities: [
+        number,
+        string,
+        Record<QrErrorCorrectionLevel, number>,
+      ][] = [
+        [1, '1', { L: 41, M: 34, Q: 27, H: 17 }],
+        [1, 'A', { L: 25, M: 20, Q: 16, H: 10 }],
+        [1, 'a', { L: 17, M: 14, Q: 11, H: 7 }],
+        [40, '1', { L: 7089, M: 5596, Q: 3993, H: 3057 }],
+        [40, 'A', { L: 4296, M: 3391, Q: 2420, H: 1852 }],
+        [40, 'a', { L: 2953, M: 2331, Q: 1663, H: 1273 }],
+      ];
+
+      for (const [version, char, counts] of capacities) {
+        for (const level of Object.keys(counts) as QrErrorCorrectionLevel[]) {
+          const value = char.repeat(counts[level]);
+
+          expect(
+            encodeQR(value, level).version,
+            `${counts[level]} x '${char}' at ${level}`
+          ).to.equal(version);
+          expect(() => encodeQR(`${value}${char}`, level, version)).to.throw(
+            /Data too long/
+          );
+        }
+      }
     });
   });
 
