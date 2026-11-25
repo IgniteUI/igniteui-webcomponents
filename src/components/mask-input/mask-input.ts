@@ -105,6 +105,9 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   /** The last value written. A `mask` or `prompt` change before the first update reads it again. */
   private _setupValue = '';
 
+  /** The last text written or edited, and its prompt. A prompt change draws the text from it again. */
+  private _source = { text: '', prompt: this._parser.prompt };
+
   //#endregion
 
   //#region Public attributes and properties
@@ -193,9 +196,6 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   @property()
   public override set prompt(value: string) {
     const previous = this._parser.prompt;
-    // Read with the old prompt.
-    const showsValue =
-      this._parser.parse(this._maskedValue) === this._formValue.value;
     this._parser.prompt = value;
 
     if (this._parser.prompt === previous) {
@@ -207,11 +207,12 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
       return;
     }
 
-    // A text that lost a character to an old prompt shows the raw value again.
-    if (showsValue) {
-      this._maskedValue = this._parser.swapPrompt(this._maskedValue, previous);
-    } else {
-      this._reapplyMask();
+    // The source keeps the positions, also of a character that matches the new prompt.
+    const { text, prompt } = this._source;
+    this._maskedValue = this._parser.apply(text, prompt);
+
+    if (!this._focused) {
+      this._updateMaskDisplay();
     }
   }
 
@@ -246,6 +247,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   /** Not through the `value` setter, which also empties a focused empty mask. */
   protected override _commitMaskedValue(value: string): void {
     this._maskedValue = value;
+    this._source = { text: value, prompt: this._parser.prompt };
     this._formValue.setValueAndFormState(this._parser.parse(value));
     this._setupValue = this._formValue.value;
 
@@ -262,6 +264,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   /** Shows a value in the current mask. An empty mask shows the placeholder. */
   private _showText(value: string): void {
     this._maskedValue = this._parser.apply(value);
+    this._source = { text: value, prompt: this._parser.prompt };
     this._updateMaskDisplay();
   }
 
@@ -288,6 +291,8 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     if (this._formValue.value || this._maskedValue) {
       this._maskedValue = this._parser.apply(this._formValue.value);
     }
+
+    this._source = { text: this._maskedValue, prompt: this._parser.prompt };
 
     if (!this._focused) {
       this._updateMaskDisplay();

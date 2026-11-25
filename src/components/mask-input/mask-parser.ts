@@ -385,19 +385,6 @@ export class MaskParser {
     return this.isMaskedText(input) ? this.parse(input) : input;
   }
 
-  /** Puts the prompt in the empty positions of a masked text that shows `previous` there. */
-  public swapPrompt(masked: string, previous: string): string {
-    const literals = this._literals;
-    const prompt = this.prompt;
-
-    return masked
-      .split('')
-      .map((char, position) =>
-        char === previous && !literals.has(position) ? prompt : char
-      )
-      .join('');
-  }
-
   /** Unmasks the string: removes the prompts and the literals. */
   public parse(masked = ''): string {
     const literalPositions = this.literalPositions;
@@ -440,8 +427,11 @@ export class MaskParser {
     return true;
   }
 
-  /** Fits the input into the mask from left to right and skips invalid characters. A masked text keeps its positions. */
-  public apply(input = ''): string {
+  /**
+   * Fits the input into the mask from left to right and skips invalid characters. A masked text keeps its
+   * positions. `empty`, the prompt of the input, marks an empty position.
+   */
+  public apply(input = '', empty = this.prompt): string {
     const literals = this._literals;
     const prompt = this.prompt;
     const escapedMask = this._escapedMask;
@@ -470,11 +460,10 @@ export class MaskParser {
         continue;
       }
 
-      // A prompt is an empty position, as in `parse`. Normalize after the check, so that a
-      // digit prompt stays a prompt.
+      // Normalize after the check, so that a digit prompt stays a prompt.
       const char = chars[inputIndex];
 
-      if (char !== prompt) {
+      if (char !== empty) {
         const normalized = toAsciiDigit(char);
 
         if (validate(normalized, escapedMask[i])) {

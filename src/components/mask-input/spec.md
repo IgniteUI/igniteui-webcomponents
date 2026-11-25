@@ -452,8 +452,8 @@ The groups below mirror the `describe` blocks of the suite.
 ### Generic properties
 
 1. Sensible default values.
-2. Changing the prompt character, with and without a value. A character of the value that the new prompt matches
-   comes back after a change back.
+2. Changing the prompt character, with and without a value. A change and a change back keep the positions of the
+   value, also of a character that the new prompt matches.
 3. Changing the mask, with and without a value. A focused empty control shows the empty mask of a new mask or
    prompt, and keeps it on a write of the same empty value.
 4. The placeholder is updated correctly.
@@ -480,7 +480,7 @@ Grouped as `Undo / redo` in the suite.
 18. Collapses a run of typed characters into a single step, and redoes the restored run.
 19. Supports the alternate shortcuts.
 20. Preserves interior holes in the mask, also on a write of the same value, mask or prompt, and on a change of
-    prompt.
+    prompt, also after a change of mask.
 21. Starts a new step when the caret moves.
 22. Collapses a run of backspaces into a single step, and keeps typing and deleting as separate steps.
 23. Records a paste as its own step.

@@ -114,12 +114,14 @@ describe('Mask parser', () => {
     expect(parser.rawValue('12345')).to.equal('12345');
   });
 
-  it('swaps the prompt in the empty positions only', () => {
+  it('reads a masked text with the prompt that it was written with', () => {
     parser.mask = 'CC_CC';
     parser.prompt = '*';
 
-    // The literal `_` stays.
-    expect(parser.swapPrompt('1___4', '_')).to.equal('1*_*4');
+    // The literal `_` stays, and a `*` of the input is a character.
+    expect(parser.apply('1___4', '_')).to.equal('1*_*4');
+    expect(parser.apply('**_*4', '_')).to.equal('**_*4');
+    expect(parser.apply('**_*4')).to.equal('**_*4');
   });
 
   it('validates mask pattern rules', () => {

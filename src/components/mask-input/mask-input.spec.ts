@@ -106,18 +106,27 @@ describe('Masked input', () => {
       expect(input.value).to.equal(parser.apply(element.value));
     });
 
-    it('keeps a character that a new prompt matches, after a change back', async () => {
-      element.mask = 'CCC';
-      element.value = 'a*b';
-      await elementUpdated(element);
+    for (const [mask, value, changed, back] of [
+      ['CCC', 'a*b', 'a*b', 'a*b'],
+      ['CCCC', '_a*b', '*a*b', '_a*b'],
+      ['00-00', '_١-٣٤', '*1-34', '_1-34'],
+    ]) {
+      it(`keeps the positions of ${value} on a change of prompt and back`, async () => {
+        element.mask = mask;
+        element.value = value;
+        const raw = element.value;
+        await elementUpdated(element);
 
-      element.prompt = '*';
-      element.prompt = '_';
-      await elementUpdated(element);
+        element.prompt = '*';
+        await elementUpdated(element);
+        expect(input.value).to.equal(changed);
 
-      expect(input.value).to.equal('a*b');
-      expect(element.value).to.equal('a*b');
-    });
+        element.prompt = '_';
+        await elementUpdated(element);
+        expect(input.value).to.equal(back);
+        expect(element.value).to.equal(raw);
+      });
+    }
 
     it('mask change (no value)', async () => {
       element.mask = 'CCCC';
@@ -907,6 +916,17 @@ describe('Masked input', () => {
 
       expect(input.value).to.equal('_23_______');
       expect(element.value).to.equal('23');
+    });
+
+    it('draws a change of prompt from the text of a new mask', async () => {
+      await type('123');
+      await simulateBackspaceOver(element, 0, 1);
+
+      element.mask = 'CC-CC';
+      element.prompt = '*';
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('23-**');
     });
 
     it('keeps interior holes on a change of prompt', async () => {
