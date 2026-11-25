@@ -5,7 +5,7 @@ import {
   type ReactiveControllerHost,
 } from 'lit';
 import { isEmpty } from '../utils/arrays.js';
-import { normalizedTextContent } from '../utils/dom.js';
+import { isAssignedTo, normalizedTextContent } from '../utils/dom.js';
 
 type InferSlotNames<T> = T extends readonly (infer U)[] ? U : never;
 
@@ -47,11 +47,43 @@ type SlotControllerOptions<T> = {
 
 const DefaultSlot = '[default]';
 
+/** Returns the `name` of the slot element for a controller slot key. */
+function slotNameOf(slot: unknown): string {
+  return slot === DefaultSlot ? '' : String(slot);
+}
+
+/**
+ * Whether `node` is an HTML slot in a shadow tree. The checks do not use
+ * `instanceof`, so they also accept a slot adopted from an iframe. An SVG or
+ * MathML element named `slot` is not a slot.
+ */
+function isShadowSlot(node: Node): node is HTMLSlotElement {
+  // Only the root of a shadow tree is different from the composed root.
+  return (
+    node.nodeType === Node.ELEMENT_NODE &&
+    (node as Element).localName === 'slot' &&
+    (node as Element).namespaceURI === 'http://www.w3.org/1999/xhtml' &&
+    node.getRootNode() !== node.getRootNode({ composed: true })
+  );
+}
+
 class SlotController<T> implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private readonly _options: SlotControllerOptions<T>;
   private readonly _slotCache = new Map<T | undefined, HTMLSlotElement>();
   private _initialized = false;
+
+  /**
+   * Set from `hostUpdate` of the first update. Until the template commits, a
+   * query reads the host children.
+   */
+  private _inFirstUpdate = false;
+
+  /**
+   * The child count of the render root before the first render. The root can
+   * have other nodes, such as a style from `createRenderRoot`.
+   */
+  private _rootChildCount = 0;
 
   /**
    * Set during the first update of a server-rendered host. The server render
@@ -102,10 +134,8 @@ class SlotController<T> implements ReactiveController {
       return cached;
     }
 
-    const selector =
-      slotName === DefaultSlot
-        ? 'slot:not([name])'
-        : `slot[name="${slotName}"]`;
+    const name = slotNameOf(slotName);
+    const selector = name ? `slot[name="${name}"]` : 'slot:not([name])';
     const slot =
       this._host.renderRoot?.querySelector<HTMLSlotElement>(selector) ?? null;
 
@@ -118,12 +148,47 @@ class SlotController<T> implements ReactiveController {
     return slot;
   }
 
+  /** Returns the host children that `slot` gets once it renders. */
+  private _lightDomNodes(slot: T, flatten: boolean): Node[] {
+    const name = slotNameOf(slot);
+    const nodes: Node[] = [];
+
+    for (const node of this._host.childNodes) {
+      if (!isAssignedTo(node, name)) continue;
+
+      if (flatten && isShadowSlot(node)) {
+        nodes.push(...node.assignedNodes({ flatten: true }));
+      } else {
+        nodes.push(node);
+      }
+    }
+
+    return nodes;
+  }
+
   /**
    * Returns the nodes assigned to `slot`. See
    * {@link SlotQueryOptions.flatten}.
+   *
+   * @remarks
+   * The slots do not exist before the first template commits, so a query from
+   * the first render reads the host children. It also reports content for a
+   * slot that the template does not render, and a flattened query returns no
+   * fallback content. An earlier query, such as from a setter, reports none.
    */
   public getAssignedNodes(slot: T, flatten = false): Node[] {
-    return this._getSlot(slot)?.assignedNodes({ flatten }) ?? [];
+    const slotElement = this._getSlot(slot);
+
+    if (slotElement) {
+      return slotElement.assignedNodes({ flatten });
+    }
+
+    // Lit adds a marker node to the render root when it commits the first
+    // template. After that, a missing slot is one that the template leaves out.
+    return this._inFirstUpdate &&
+      this._host.renderRoot.childNodes.length === this._rootChildCount
+      ? this._lightDomNodes(slot, flatten)
+      : [];
   }
 
   /** Returns the elements assigned to `slot`, as `options` selects them. */
@@ -131,10 +196,10 @@ class SlotController<T> implements ReactiveController {
     slot: T,
     options?: SlotQueryOptions
   ): U[] {
-    const elements =
-      (this._getSlot(slot)?.assignedElements({
-        flatten: options?.flatten,
-      }) as U[]) ?? [];
+    // An element adopted from an iframe fails `isElement`, as `instanceof Node`.
+    const elements = this.getAssignedNodes(slot, options?.flatten).filter(
+      (node) => node.nodeType === Node.ELEMENT_NODE
+    ) as U[];
 
     return options?.selector
       ? elements.filter((e) => e.matches(options.selector!))
@@ -150,8 +215,7 @@ class SlotController<T> implements ReactiveController {
   }
 
   /**
-   * Whether `slot` has assigned nodes. A flattened query counts fallback
-   * content, so a slot with fallback always reports nodes.
+   * Whether `slot` has assigned nodes. See {@link SlotQueryOptions.flatten}.
    */
   public hasAssignedNodes(slot: T, flatten = false): boolean {
     return !isEmpty(this.getAssignedNodes(slot, flatten));
@@ -205,6 +269,27 @@ class SlotController<T> implements ReactiveController {
     if (this._queryWithheld) {
       this._host.requestUpdate();
     }
+  }
+
+  /** @internal */
+  public hostUpdate(): void {
+    // The server and the hydrating render have no slotted content. A manual
+    // slot assignment does not follow the `slot` attributes.
+    if (
+      isServer ||
+      this._hydrating ||
+      this._host.hasUpdated ||
+      this._host.shadowRoot?.slotAssignment === 'manual'
+    ) {
+      return;
+    }
+
+    this._inFirstUpdate = true;
+    this._rootChildCount = this._host.renderRoot.childNodes.length;
+    // A render that throws commits nothing, so the flag must end too.
+    queueMicrotask(() => {
+      this._inFirstUpdate = false;
+    });
   }
 
   /** @internal */

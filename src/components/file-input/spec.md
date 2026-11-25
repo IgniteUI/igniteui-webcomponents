@@ -62,6 +62,7 @@
 |      12 | 2026-11-20 | A value from code and the first render show at once; no transitions with reduced motion |
 |      13 | 2026-11-25 | `name` updates its attribute at once |
 |      14 | 2026-11-25 | `defaultValue` is always `null`; a file list or a string written to it no longer survives a form reset |
+|      15 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 

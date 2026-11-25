@@ -56,6 +56,7 @@
 |       8 | 2026-11-04 | A `hide()` in the task of `show()` closes the dialog at once |
 |       9 | 2026-11-05 | A dialog out of the document closes when `open` changes to `false`; an append makes an open dialog modal again |
 |      10 | 2026-11-20 | `open = true`, also on the first render and after an append, shows the backdrop at once; only `show()` fades it in |
+|      11 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 
