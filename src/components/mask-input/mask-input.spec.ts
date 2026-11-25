@@ -1258,6 +1258,36 @@ describe('Masked input', () => {
         expect(spec.element.value).to.equal('ac');
       });
 
+      for (const [attributes, value, text] of [
+        ['value="12-34" mask="00-00"', '1234', '12-34'],
+        ['mask="00-00" value="12-34"', '1234', '12-34'],
+        ['value="a_b" mask="CCC" prompt="*"', 'a_b', 'a_b'],
+        ['prompt="*" mask="CCC" value="a_b"', 'a_b', 'a_b'],
+      ]) {
+        it(`reads ${attributes} in any order`, async () => {
+          const form = await fixture<HTMLFormElement>(
+            `<form><igc-mask-input name="setup" ${attributes}></igc-mask-input></form>`
+          );
+          const element = form.querySelector(IgcMaskInputComponent.tagName)!;
+
+          expect(element.value).to.equal(value);
+          expect(new FormData(form).get('setup')).to.equal(value);
+          expect(element.renderRoot.querySelector('input')!.value).to.equal(
+            text
+          );
+        });
+      }
+
+      it('reads a setRangeText edit of the setup with the final mask', () => {
+        const element = document.createElement(IgcMaskInputComponent.tagName);
+
+        element.value = '99';
+        element.setRangeText('1234', 0, 2);
+        element.mask = '00-00';
+
+        expect(element.value).to.equal('1234');
+      });
+
       it('keeps its positions on a change of prompt', () => {
         spec.setProperties({ value: '1_-34' });
         spec.setProperties({ prompt: '*' });
@@ -1273,6 +1303,21 @@ describe('Masked input', () => {
         expect(spec.element.value).to.equal('12/34');
         spec.assertSubmitHasValue('12/34');
       });
+    });
+
+    it('shows the default again on a reset to the same raw value', async () => {
+      await spec.setAttributes({ mask: '0C', value: '1' }, true);
+
+      // `_1` keeps the raw value `1`.
+      await spec.setProperties({ value: '_1' }, true);
+      expect(shown()).to.equal('_1');
+      expect(spec.element.validity.badInput).to.be.true;
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      expect(shown()).to.equal('1_');
+      expect(spec.element.validity.badInput).to.be.false;
     });
 
     it('updates badInput after a change of mask', () => {

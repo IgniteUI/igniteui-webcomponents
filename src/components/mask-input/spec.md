@@ -233,8 +233,8 @@ empty position, and a masked text drops it from the raw value. A write of the cu
 A change of `mask` after the first render fits the value to the new mask. `value` becomes the raw value of the text
 that the new mask shows. Value `1234` with the mask `00-00` becomes `12` after a change to `00`, and stays `12` after a
 change back. The change emits no events and keeps the control pristine. The attributes and properties that you set
-before the first render keep the value, in any order. A change of `prompt` keeps the raw value and the positions of
-the text. Ignite UI for Angular changes only the text.
+before the first render do not fit the value. They read it with the final `mask` and `prompt`, in any order. A change
+of `prompt` keeps the raw value and the positions of the text. Ignite UI for Angular changes only the text.
 
 #### Prompt character
 
@@ -497,7 +497,7 @@ Driven by `createFormAssociatedTestBed`.
 30. Is associated on submit, including with value formatting enabled. `badInput` follows a change of `mask`. A
     formatted value that the user empties submits nothing.
 31. Is correctly reset on form reset, with and without value formatting, after a `setAttribute` call, and refreshes
-    the rendered masked value and placeholder afterwards.
+    the rendered masked value and placeholder afterwards. A reset to the same raw value shows the default text again.
 32. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>
     submits once.
 33. Reflects the disabled state of an ancestor `fieldset`.
@@ -524,7 +524,7 @@ The focus after the form checks and the `invalid` event rules come from the form
 #### a masked text as the value
 
 40. A masked text keeps its positions and its empty positions, and stores its raw value, also for a mask without
-    literals.
+    literals and from attributes in any order. A `setRangeText` edit before the first render reads with the final mask.
 41. A change of `prompt` keeps its positions, and a change of `mask` fits it.
 
 ### defaultValue

@@ -102,6 +102,9 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     transformers: IgcMaskInputComponent._transformers,
   });
 
+  /** The last value written. A `mask` or `prompt` change before the first update reads it again. */
+  private _setupValue = '';
+
   //#endregion
 
   //#region Public attributes and properties
@@ -131,11 +134,11 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   public set value(string: string) {
     const value = string ?? '';
     const raw = this._parser.rawValue(value);
+    this._setupValue = value;
 
     // A write of the current value, as a React wrapper does on each render, keeps the text.
     if (value !== this.value || raw !== this._formValue.value) {
-      this._maskedValue = this._parser.apply(value);
-      this._updateMaskDisplay();
+      this._showText(value);
     }
 
     this._formValue.setValueAndFormState(raw);
@@ -161,17 +164,20 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     const previous = this._parser.mask;
     this._parser.mask = value;
 
-    if (this._parser.mask !== previous) {
-      this._reapplyMask();
-
-      // The attributes set up the control in any order. A later change stores the raw
-      // value of the new text, and the `mask` change submits it.
-      if (this.hasUpdated) {
-        this._writeFrom('normalize', () => {
-          this._formValue.value = this._parser.parse(this._maskedValue);
-        });
-      }
+    if (this._parser.mask === previous) {
+      return;
     }
+
+    if (!this.hasUpdated) {
+      this._applySetupValue();
+      return;
+    }
+
+    // A bare write of the new raw value. The `reads` hook submits it.
+    this._reapplyMask();
+    this._writeFrom('normalize', () => {
+      this._formValue.value = this._parser.parse(this._maskedValue);
+    });
   }
 
   public override get mask(): string {
@@ -189,9 +195,16 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     const previous = this._parser.prompt;
     this._parser.prompt = value;
 
-    if (this._parser.prompt !== previous) {
-      this._maskedValue = this._parser.swapPrompt(this._maskedValue, previous);
+    if (this._parser.prompt === previous) {
+      return;
     }
+
+    if (!this.hasUpdated) {
+      this._applySetupValue();
+      return;
+    }
+
+    this._maskedValue = this._parser.swapPrompt(this._maskedValue, previous);
   }
 
   public override get prompt(): string {
@@ -226,6 +239,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   protected override _commitMaskedValue(value: string): void {
     this._maskedValue = value;
     this._formValue.setValueAndFormState(this._parser.parse(value));
+    this._setupValue = this._formValue.value;
 
     // Only `setRangeText` gets here unfocused. An emptied mask then reads as empty, as after a blur.
     if (!this._focused) {
@@ -235,6 +249,30 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
 
   protected override _emitInputEvent(): void {
     this._emitTouchedEvent('igcInput', { detail: this.value });
+  }
+
+  /** Shows a value in the current mask. An empty mask shows the placeholder. */
+  private _showText(value: string): void {
+    this._maskedValue = this._parser.apply(value);
+    this._updateMaskDisplay();
+  }
+
+  /** Reads the setup value again with the current mask and prompt. The `reads` hook submits it. */
+  private _applySetupValue(): void {
+    const value = this._setupValue;
+
+    if (value) {
+      this._showText(value);
+      this._writeFrom('normalize', () => {
+        this._formValue.value = this._parser.rawValue(value);
+      });
+    }
+  }
+
+  /** Shows the default first: the setter keeps the text of the same raw value, and validation reads it. */
+  protected override _restoreDefaultValue(): void {
+    this._showText(this._formValue.defaultValue);
+    super._restoreDefaultValue();
   }
 
   /** Shows the value, or the empty mask of a focused control, in a new mask. */
