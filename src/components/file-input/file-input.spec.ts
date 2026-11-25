@@ -13,7 +13,10 @@ import {
   createFormAssociatedTestBed,
   runExternalLabelAssociationTests,
 } from '#internals/testing/form-testbed.spec.js';
-import { simulateFileUpload } from '#internals/testing/simulate.spec.js';
+import {
+  createDataTransfer,
+  simulateFileUpload,
+} from '#internals/testing/simulate.spec.js';
 import {
   runValidationContainerTests,
   type ValidationContainerTestsParams,
@@ -388,6 +391,42 @@ describe('Form Integration', () => {
     await elementUpdated(spec.element);
 
     spec.assertSubmitPasses();
+  });
+
+  describe('defaultValue from code', () => {
+    /** An untyped write, as from JavaScript. */
+    function setDefaultValue(value: unknown): void {
+      (spec.element as { defaultValue: unknown }).defaultValue = value;
+    }
+
+    it('keeps no default file list', async () => {
+      setDefaultValue(createDataTransfer(files).files);
+      await elementUpdated(spec.element);
+
+      // A failed assertion on a FileList stalls the test runner.
+      expect(spec.element.defaultValue === null).to.be.true;
+
+      simulateFileUpload(input, files);
+      await elementUpdated(spec.element);
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      expect(spec.element.value).to.be.empty;
+      expect(spec.formData.getAll(spec.element.name)).to.eql([]);
+    });
+
+    it('keeps no default string', async () => {
+      // Regression: a reset submitted the string per character.
+      setDefaultValue('abc');
+      await elementUpdated(spec.element);
+
+      expect(spec.element.defaultValue).to.be.null;
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      expect(spec.formData.getAll(spec.element.name)).to.eql([]);
+    });
   });
 });
 

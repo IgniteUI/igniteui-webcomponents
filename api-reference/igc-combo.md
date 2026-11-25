@@ -80,6 +80,10 @@ defineComponents(IgcComboComponent);
 - `value`: `ComboValue<T>[]`. Attribute: `value`.
   The values of the selected items. With a `valueKey`, each value is that
   field of an item. Without it, each value is the item itself.
+- `defaultValue`: `ComboValue<T>[]`. No attribute.
+  The default value of the control. A form reset restores the value to it.
+  While the value is unchanged since the start or the last form reset, a
+  new default also sets the value. The `value` attribute also sets it.
 - `selection`: `T[]`. Read-only. No attribute.
   Returns the current selection as an array of objects as provided in the `data` source.
 - `pendingValue`: `ComboValue<T>[]`. Read-only. No attribute.
@@ -97,10 +101,6 @@ defineComponents(IgcComboComponent);
 - `required`: `boolean`. Default: `false`. Attribute: `required`, reflected.
   Whether the control is required. A required control that has no value,
   or is not checked, fails validation.
-- `defaultValue`: `unknown`. No attribute.
-  The default value of the control. A form reset restores the value to it.
-  While the value is unchanged since the start or the last form reset, a
-  new default also sets the value. The `value` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
 - `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.

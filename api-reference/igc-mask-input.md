@@ -21,6 +21,10 @@ defineComponents(IgcMaskInputComponent);
   The value of the control. Its format depends on `valueMode`.
 
   An empty value is always an empty string, regardless of the value mode.
+- `defaultValue`: `string`. No attribute.
+  The default value of the control. A form reset restores the value to it.
+  While the value is unchanged since the start or the last form reset, a
+  new default also sets the value. The `value` attribute also sets it.
 - `mask`: `string`. Default: `'CCCCCCCCCC'`. Attribute: `mask`.
   The mask pattern of the control.
 - `prompt`: `string`. Default: `'_'`. Attribute: `prompt`.
@@ -35,10 +39,6 @@ defineComponents(IgcMaskInputComponent);
 - `required`: `boolean`. Default: `false`. Attribute: `required`, reflected.
   Whether the control is required. A required control that has no value,
   or is not checked, fails validation.
-- `defaultValue`: `unknown`. No attribute.
-  The default value of the control. A form reset restores the value to it.
-  While the value is unchanged since the start or the last form reset, a
-  new default also sets the value. The `value` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
 - `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.

@@ -94,7 +94,8 @@ export const FormValueFileListTransformers: FormValueTransformers<FileList | nul
   {
     setValue: (value) => value || null,
     getValue: (value) => value,
-    setDefaultValue: (value) => value || null,
+    // No default selection: a form reset always clears the files.
+    setDefaultValue: () => null,
     getDefaultValue: (value) => value,
     setFormValue: (files, host) => {
       if (!(host.name && files)) {
