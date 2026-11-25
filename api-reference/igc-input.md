@@ -15,7 +15,7 @@ defineComponents(IgcInputComponent);
   The value of the control.
 - `type`: `'number' | 'text' | 'email' | 'password' | 'search' | 'tel' | 'url'`. Default: `'text'`. Attribute: `type`, reflected.
   The type of the control.
-- `readOnly`: `boolean`. Default: `false`. Attribute: `readOnly`, reflected.
+- `readOnly`: `boolean`. Default: `false`. Attribute: `readonly`, reflected.
   Whether the control is read-only.
 - `inputMode`: `string`. Attribute: `inputmode`.
   A hint to the browser for which virtual keyboard layout to display.
@@ -55,7 +55,7 @@ defineComponents(IgcInputComponent);
   new default also sets the value. The `value` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
-- `disabled`: `boolean`. Default: `false`. Attribute: `disabled`.
+- `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.
   Whether the control is disabled. A disabled control is not validated,
   and the form does not submit its value.
 - `invalid`: `boolean`. Default: `false`. Attribute: `invalid`.

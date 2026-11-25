@@ -64,6 +64,8 @@ public items: Array<Item> = [];
 - Objects and arrays get `attribute: false` and are never reflected.
 - Spell out the attribute for multi-word properties and HTML look-alikes
   (`readOnly` → `readonly`).
+- A property that writes its own attribute, without `reflect: true`, gets `@reflect` after
+  `@attr`. Then the manifest shows it as reflected.
 - A read-only value is a getter, not a `readonly @property`.
 
 ### 2. Write the description
@@ -105,6 +107,11 @@ In a form-associated control, a property that is part of constraint validation (
 `pattern`, `maxLength`, …) must re-validate on change. Reuse the static
 `_revalidate` config (`onChange: ({ host }) => host._validate()`) as
 `src/components/input/input.ts` does.
+
+The browser reads the `readonly` attribute of a form-associated control at once: a control
+with it is not validated. Declare `readOnly` with
+`@property({ type: Boolean, attribute: 'readonly' })` and `@coercedProperty(reflectReadOnly)`
+from `#internals/mixins/forms/associated.js`, not with `reflect: true`, and add `@reflect`.
 
 ### 4. Add tests
 

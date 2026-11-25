@@ -5,7 +5,8 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { LitElement } from 'lit';
+import { LitElement, type PropertyDeclarations } from 'lit';
+import { attributeWrites } from '../testing/helpers.spec.js';
 import type { Validator } from '../validators.js';
 import { EventEmitterMixin } from './event-emitter.js';
 import { FormAssociatedMixin } from './forms/associated.js';
@@ -26,11 +27,33 @@ const modeValidator: Validator<SubmissionHost> = {
   },
 };
 
-class SubmissionHost extends FormAssociatedMixin(
+/** A control whose string value the form submits under the `name` attribute. */
+class ValueHost extends FormAssociatedMixin(
   EventEmitterMixin<{ igcChange: CustomEvent<unknown> }>(LitElement)
 ) {
-  public static override properties = {
+  public static override properties: PropertyDeclarations = {
     value: { type: String },
+  };
+
+  protected override readonly _formValue = createFormValueState(this, {
+    initialValue: '',
+  });
+
+  public set value(value: string) {
+    this._formValue.setValueAndFormState(value);
+  }
+
+  public get value(): string {
+    return this._formValue.value;
+  }
+
+  protected override render() {
+    return html``;
+  }
+}
+
+class SubmissionHost extends ValueHost {
+  public static override properties: PropertyDeclarations = {
     mode: { type: String },
     label: { type: String },
   };
@@ -76,14 +99,6 @@ class SubmissionHost extends FormAssociatedMixin(
     return [modeValidator];
   }
 
-  public set value(value: string) {
-    this._formValue.setValueAndFormState(value);
-  }
-
-  public get value(): string {
-    return this._formValue.value;
-  }
-
   public get pristine(): boolean {
     return this._isPristine;
   }
@@ -102,10 +117,10 @@ class SubmissionHost extends FormAssociatedMixin(
     this.submissions++;
     super._setFormValue(value, state);
   }
+}
 
-  protected override render() {
-    return html``;
-  }
+function submitted(form: HTMLFormElement): [string, FormDataEntryValue][] {
+  return Array.from(new FormData(form));
 }
 
 describe('Form submission reads', () => {
@@ -116,10 +131,6 @@ describe('Form submission reads', () => {
   before(() => {
     tag = defineCE(class extends SubmissionHost {});
   });
-
-  function submitted(): [string, FormDataEntryValue][] {
-    return Array.from(new FormData(form));
-  }
 
   async function createHost(attributes: string): Promise<SubmissionHost> {
     form = await fixture<HTMLFormElement>(
@@ -142,10 +153,10 @@ describe('Form submission reads', () => {
 
   it('submits again at once when a property that it reads changes', () => {
     host.name = 'renamed';
-    expect(submitted()).to.eql([['renamed', 'a']]);
+    expect(submitted(form)).to.eql([['renamed', 'a']]);
 
     host.mode = 'upper';
-    expect(submitted()).to.eql([['renamed', 'A']]);
+    expect(submitted(form)).to.eql([['renamed', 'A']]);
   });
 
   it('does not submit again for a property that it does not read', () => {
@@ -194,7 +205,7 @@ describe('Form submission reads', () => {
   it('submits the attributes of an upgrade in any order', async () => {
     await createHost('value="a" mode="upper" name="field"');
 
-    expect(submitted()).to.eql([['field', 'A']]);
+    expect(submitted(form)).to.eql([['field', 'A']]);
   });
 
   it('submits at the first connect what was set before it', () => {
@@ -205,7 +216,7 @@ describe('Form submission reads', () => {
 
     form.replaceChildren(element);
 
-    expect(submitted()).to.eql([['field', 'A']]);
+    expect(submitted(form)).to.eql([['field', 'A']]);
   });
 
   it('does not submit again before the first connect', () => {
@@ -227,10 +238,98 @@ describe('Form submission reads', () => {
     expect(host.submissions).to.equal(count + 1);
 
     form.append(host);
-    expect(submitted()).to.eql([['renamed', 'a']]);
+    expect(submitted(form)).to.eql([['renamed', 'a']]);
   });
 
   it('runs no validator in the constructor', () => {
     expect(createElement).not.to.throw();
+  });
+});
+
+describe('Form submission name', () => {
+  let tag: string;
+  let host: ValueHost;
+  let form: HTMLFormElement;
+
+  before(() => {
+    tag = defineCE(class extends ValueHost {});
+  });
+
+  beforeEach(async () => {
+    form = await fixture<HTMLFormElement>(
+      html`<form>
+        <${unsafeStatic(tag)} name="field"></${unsafeStatic(tag)}>
+      </form>`
+    );
+    host = form.querySelector<ValueHost>(tag)!;
+    host.value = 'a';
+  });
+
+  it('keys a string submission by a new name at once', () => {
+    host.name = 'renamed';
+
+    expect(host.getAttribute('name')).to.equal('renamed');
+    expect(submitted(form)).to.eql([['renamed', 'a']]);
+  });
+
+  /** Sets `name` from code and returns the number of attribute writes. */
+  function setName(value: unknown): number {
+    return attributeWrites(host, 'name', () => {
+      host.name = value as string;
+    });
+  }
+
+  it('removes the attribute at once for null and undefined', () => {
+    for (const empty of [null, undefined]) {
+      host.name = 'field';
+
+      expect(setName(empty)).to.equal(1);
+      expect(host.name).to.equal(empty);
+      expect(setName(empty)).to.equal(0);
+      expect(host.hasAttribute('name')).to.be.false;
+      expect(submitted(form)).to.eql([]);
+    }
+  });
+
+  it('keeps an empty name as an empty attribute', () => {
+    host.name = '';
+
+    expect(host.getAttribute('name')).to.equal('');
+    expect(submitted(form)).to.eql([]);
+  });
+
+  it('writes the attribute only for a different name', () => {
+    expect(setName('field')).to.equal(0);
+    expect(setName('renamed')).to.equal(1);
+  });
+
+  it('writes a number name once and keeps the number', () => {
+    expect(setName(5)).to.equal(1);
+    expect(host.name).to.equal(5);
+    expect(setName(5)).to.equal(0);
+    expect(host.getAttribute('name')).to.equal('5');
+  });
+
+  it('follows a change of the attribute', () => {
+    expect(
+      attributeWrites(host, 'name', () => host.setAttribute('name', 'renamed'))
+    ).to.equal(1);
+    expect(host.name).to.equal('renamed');
+
+    expect(
+      attributeWrites(host, 'name', () => host.removeAttribute('name'))
+    ).to.equal(1);
+    expect(host.name).to.be.null;
+  });
+
+  it('writes the attribute before the first connect', () => {
+    const element = document.createElement(tag) as ValueHost;
+    element.name = 'other';
+    element.value = 'b';
+
+    expect(element.getAttribute('name')).to.equal('other');
+
+    form.replaceChildren(element);
+    expect(submitted(form)).to.eql([['other', 'b']]);
   });
 });

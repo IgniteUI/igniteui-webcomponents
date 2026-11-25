@@ -25,7 +25,7 @@ defineComponents(IgcMaskInputComponent);
   The mask pattern of the control.
 - `prompt`: `string`. Default: `'_'`. Attribute: `prompt`.
   The prompt symbol to use for unfilled parts of the mask pattern.
-- `readOnly`: `boolean`. Default: `false`. Attribute: `readOnly`, reflected.
+- `readOnly`: `boolean`. Default: `false`. Attribute: `readonly`, reflected.
   Whether the control is read-only. The user cannot change its value.
 - `selectionStart`: `number`. Read-only. No attribute.
   The offset of the start of the text selection, in UTF-16 code units.
@@ -41,7 +41,7 @@ defineComponents(IgcMaskInputComponent);
   new default also sets the value. The `value` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
-- `disabled`: `boolean`. Default: `false`. Attribute: `disabled`.
+- `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.
   Whether the control is disabled. A disabled control is not validated,
   and the form does not submit its value.
 - `invalid`: `boolean`. Default: `false`. Attribute: `invalid`.

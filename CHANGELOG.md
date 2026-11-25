@@ -98,6 +98,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A year spin stops at year 9999 and at year 1, and a year outside them, such as one set from code, only moves toward them. Before, a spin past year 9999 gave a five digit year that did not fit the input.
   - A `prompt` that is also a separator of the input format no longer makes a typed date incomplete. Examples are `-` with `yyyy-MM-dd`, and `-` with the ` - ` of the date range picker. Before, the `igcInput` detail of a complete date was `null`, and an arrow key or a spin started again from today.
   - Ctrl + Arrow Left and Ctrl + Arrow Right stop at each date part in an input format without separators, such as `yyyyMMdd`, and do not stop inside a separator of more than one character, such as `, `. Before, the date time input went to the start or the end of the input, and the single input of the date range picker skipped a part.
+- #### Date picker, Date range picker, Date time input, Input, Mask input, Rating, Textarea
+  - A change of `readOnly` updates the `readonly` attribute at once, as for a native control, so constraint validation follows it at once. Before, the attribute changed in the next render. Until then, a required empty control that became read-only still blocked a form submission.
 - #### Date picker, Date time input
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` read AM or PM from the value. Before, while the input did not have focus and the display format was different from the input format, they read the display text, so they did nothing or switched only from PM to AM.
 - #### Date range picker
@@ -111,6 +113,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The selected files are submitted under the current `name`. Before, a change of `name` kept them under the old name, and a `name` set after the selection submitted no files.
 - #### Form controls
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
+  - A change of `name` updates the `name` attribute at once, as for a native control, so the form data takes the new name. Before, a control that submits a string kept the old name until the next render. Such controls include the input, the select and a single selection combo. A `null` or `undefined` name also removes the attribute at once.
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
 - #### Mask input

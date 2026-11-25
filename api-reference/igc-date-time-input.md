@@ -17,7 +17,7 @@ defineComponents(IgcDateTimeInputComponent);
   state lives in the masked text and is committed - together with an `igcChange`
   event - when the edit is committed on blur. Use the `igcInput` event to observe
   the value as it is being typed.
-- `readOnly`: `boolean`. Default: `false`. Attribute: `readOnly`, reflected.
+- `readOnly`: `boolean`. Default: `false`. Attribute: `readonly`, reflected.
   Whether the control is read-only. The user cannot change its value.
 - `mask`: `string`. Attribute: `mask`.
   The mask pattern of the component.
@@ -37,7 +37,7 @@ defineComponents(IgcDateTimeInputComponent);
   new default also sets the value. The `value` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
-- `disabled`: `boolean`. Default: `false`. Attribute: `disabled`.
+- `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.
   Whether the control is disabled. A disabled control is not validated,
   and the form does not submit its value.
 - `invalid`: `boolean`. Default: `false`. Attribute: `invalid`.

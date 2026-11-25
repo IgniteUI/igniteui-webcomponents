@@ -73,6 +73,7 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 |      12 | 2026-11-18 | <kbd>Tab</kbd> keeps an unmatched value; <kbd>Tab</kbd> and <kbd>Escape</kbd> ignore `defaultPrevented` on the select; the shared popup rules suite |
 |      13 | 2026-11-23 | A disabled select stays closed; the shared disabled popup suite |
 |      14 | 2026-11-20 | A selection by the user animates the input; a value that an `igcChange` handler or other code sets shows at once |
+|      15 | 2026-11-25 | `name` updates its attribute at once |
 
 ## Overview
 

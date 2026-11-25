@@ -1763,7 +1763,6 @@
         "placeholder": "string",
         "prompt": "string",
         "readonly": "boolean",
-        "readOnly": "boolean",
         "required": "boolean",
         "spin-loop": "boolean",
         "value": "Date | null"
@@ -2362,7 +2361,6 @@
         "pattern": "string | undefined",
         "placeholder": "string",
         "readonly": "boolean",
-        "readOnly": "boolean",
         "required": "boolean",
         "step": "number | undefined",
         "type": "InputType ('email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url')",
@@ -2577,7 +2575,6 @@
         "placeholder": "string",
         "prompt": "string",
         "readonly": "boolean",
-        "readOnly": "boolean",
         "required": "boolean",
         "value": "string",
         "value-mode": "MaskInputValueMode ('raw' | 'withFormatting')"

@@ -9,6 +9,7 @@ import {
   type CoercedPropertyConfig,
 } from '#internals/decorators/coerced-property.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { reflectReadOnly } from '#internals/mixins/forms/associated.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
 import { hasNegativeTabIndex } from '#internals/utils/dom.js';
@@ -146,9 +147,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * Whether the control is read-only.
    *
    * @attr readonly
+   * @reflect
    * @default false
    */
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, attribute: 'readonly' })
+  @coercedProperty(reflectReadOnly)
   public readOnly = false;
 
   /**

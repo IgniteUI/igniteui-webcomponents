@@ -89,6 +89,7 @@
 |      29 | 2026-11-23 | A disabled picker stays closed and disabling discards a draft; the shared disabled popup suite |
 |      30 | 2026-11-20 | A range that the user picks animates the inputs; a value from code, also from an `igcChange` handler, shows at once |
 |      31 | 2026-11-25 | While the user types, an incomplete or invalid end keeps the end that the calendar selects, and a blank end drops out, in both layouts; the calendar shows the value again when the edit ends, and with two inputs a new range from code keeps the edit of an end whose date stays; a complete range parses strictly when the separator holds the prompt |
+|      32 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
 
 ## Overview
 

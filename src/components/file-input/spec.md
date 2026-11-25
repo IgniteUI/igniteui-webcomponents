@@ -60,6 +60,7 @@
 |      10 | 2026-11-02 | A `focus()` call before the first render applies after the render |
 |      11 | 2026-11-19 | The files are submitted under the current `name`, also a `name` set after the selection |
 |      12 | 2026-11-20 | A value from code and the first render show at once; no transitions with reduced motion |
+|      13 | 2026-11-25 | `name` updates its attribute at once |
 
 ## Overview
 
