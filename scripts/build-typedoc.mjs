@@ -122,6 +122,7 @@ async function main() {
       '@cssproperty',
       '@cssstate',
       '@attr',
+      '@reflect',
     ],
     suppressCommentWarningsInDeclarationFiles: true,
     name: 'Ignite UI for Web Components',

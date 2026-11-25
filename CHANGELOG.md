@@ -49,8 +49,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `open = true` and a first render with `open` show the backdrop at once, as they do the dialog. So do an append of an open dialog and a reopen after a close that the dialog cannot cancel. Before, the backdrop faded in. `show()` still fades both in.
 - #### Dropdown
   - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
+- #### Form controls
+  - `defaultValue` has the type of the default that the control keeps. Before, its type was `unknown`. The type is `string` for the input, textarea, mask input and color picker, `number` for the rating and slider, `string | undefined` for the select, `ComboValue<T>[]` for the combo, `Date | null` for the date time input and date picker, `DateRangeValue | null` for the date range picker, and `null` for the file input. As for `value`, the date controls also accept a string. In TypeScript, a write of another type is now an error.
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
+- #### Mask input
+  - A change of `mask` after the first render fits the value to the new mask. `value` becomes the raw value of the text that the new mask shows. For example, value `1234` with the mask `00-00` becomes `12` after a change to `00`, and stays `12` after a change back. The change emits no events and keeps the control pristine. The attributes and properties that you set before the first render do not fit the value. They read it with the final `mask` and `prompt`, in any order. A change of `prompt` keeps the raw value and the positions of the text. Before, `value` kept the characters that the mask cut, so the `raw` and `withFormatting` modes submitted different text. Ignite UI for Angular changes only the text.
 - #### Navigation drawer
   - A drawer that is `open` on its first render shows at once, with no slide and no backdrop fade. This also applies when a framework renders the drawer open after a user action. To slide it in, call `show()`, or set `open` after the first render.
 - #### QR code
@@ -101,6 +105,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A year spin stops at year 9999 and at year 1, and a year outside them, such as one set from code, only moves toward them. Before, a spin past year 9999 gave a five digit year that did not fit the input.
   - A `prompt` that is also a separator of the input format no longer makes a typed date incomplete. Examples are `-` with `yyyy-MM-dd`, and `-` with the ` - ` of the date range picker. Before, the `igcInput` detail of a complete date was `null`, and an arrow key or a spin started again from today.
   - Ctrl + Arrow Left and Ctrl + Arrow Right stop at each date part in an input format without separators, such as `yyyyMMdd`, and do not stop inside a separator of more than one character, such as `, `. Before, the date time input went to the start or the end of the input, and the single input of the date range picker skipped a part.
+- #### Date picker, Date range picker, Date time input, Input, Mask input, Rating, Textarea
+  - A change of `readOnly` updates the `readonly` attribute at once, as for a native control, so constraint validation follows it at once. Before, the attribute changed in the next render. Until then, a required empty control that became read-only still blocked a form submission.
 - #### Date picker, Date time input
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` read AM or PM from the value. Before, while the input did not have focus and the display format was different from the input format, they read the display text, so they did nothing or switched only from PM to AM.
 - #### Date range picker
@@ -110,15 +116,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - In single input mode, the calendar shows the month of the end that you type or spin, as it does with two inputs. Before, it showed only the month of the start.
   - The `igcInput` and `igcChange` events of content in the prefix and suffix slots of the inputs reach your handlers, and they no longer change the value of the picker. Before, the picker stopped them, and an `igcChange` from that content cleared the value, or its end date with two inputs.
   - A change of `name` renames the submitted `-start` and `-end` entries at once. Before, the form submitted the range under the old name.
+- #### Date time input
+  - The API reference and the custom elements manifest give `value` the type `Date | null`. Before, they gave `T | null`. The TypeScript type does not change.
 - #### File input
+  - A form reset always clears the selection and submits no files, also after code writes `defaultValue`. Before, the form submitted a file list written to `defaultValue` while the control showed no files, and a string one character per entry.
   - The selected files are submitted under the current `name`. Before, a change of `name` kept them under the old name, and a `name` set after the selection submitted no files.
 - #### Form controls
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
+  - A change of `name` updates the `name` attribute at once, as for a native control, so the form data takes the new name. Before, a control that submits a string kept the old name until the next render. Such controls include the input, the select and a single selection combo. A `null` or `undefined` name also removes the attribute at once.
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
 - #### Mask input
   - The submitted value is `value`. A change of `valueMode`, `mask` or `prompt` updates it and the validity at once, also when the `value` attribute comes before `value-mode` or `mask`. Before, the form kept the old text, `badInput` could stay set for a valid value, and the attribute order could submit the raw text in `withFormatting` mode.
   - A formatted value that you empty submits nothing. Before, the form submitted the empty mask, such as `__-__`.
+  - A focused empty control shows the empty mask of a new `mask` or `prompt`. Before, it kept the old empty mask, and a typed character could put its old prompts or literals into the value.
+  - A write of the same `value`, `mask` or `prompt`, as a React wrapper does on each render, keeps the text that you typed. Before, it moved the characters after an empty position to the left. A write of the same empty value also removed the empty mask from a focused control.
+  - A change of `prompt` keeps the empty positions of the text. Before, it moved the characters after an empty position to the left.
+  - A change of `mask` or `prompt` keeps the placeholder on an unfocused control whose value fills no position, as a value write does. Before, it showed the empty mask.
+  - A value with the mask length and each literal in its place, such as the `igcChange` detail in `withFormatting` mode, keeps its positions. For example, `12-34` with the mask `00-00` shows `12-34`, and `value` in `raw` mode reads `1234`. Before, the input read the literals as typed characters and showed `12-_3`, so a two-way binding in `withFormatting` mode broke the text. A prompt character in the value shows as an empty position.
 - #### QR code
   - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
   - A code with `square-style="circle"` no longer fails to scan at some sizes, about 1 time in 10. For this fix, a `square` corner dot in a `circle` corner square draws as a circle.

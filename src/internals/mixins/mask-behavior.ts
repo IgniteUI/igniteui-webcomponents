@@ -12,6 +12,7 @@ import {
   metaKey,
   shiftKey,
 } from '../controllers/key-bindings.js';
+import { coercedProperty } from '../decorators/coerced-property.js';
 import {
   createMaskHistory,
   type MaskEditKind,
@@ -19,6 +20,7 @@ import {
 } from '../mask-history.js';
 import type { MaskedInputOptions } from '../templates/masked-input.js';
 import type { AbstractConstructor } from './constructor.js';
+import { reflectReadOnly } from './forms/associated.js';
 import type { BaseFormAssociatedElement } from './forms/types.js';
 
 export type MaskSelection = {
@@ -98,6 +100,7 @@ export declare class MaskBehaviorElementInterface {
   /**
    * Whether the control is read-only. The user cannot change its value.
    * @attr readonly
+   * @reflect
    * @default false
    */
   public readOnly: boolean;
@@ -271,9 +274,11 @@ export function MaskBehaviorMixin<
      * Whether the control is read-only. The user cannot change its value.
      *
      * @attr readonly
+     * @reflect
      * @default false
      */
-    @property({ type: Boolean, reflect: true })
+    @property({ type: Boolean, attribute: 'readonly' })
+    @coercedProperty(reflectReadOnly)
     public readOnly = false;
 
     /**

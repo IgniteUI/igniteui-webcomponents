@@ -26,7 +26,10 @@ import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
-import { FormAssociatedMixin } from '#internals/mixins/forms/associated.js';
+import {
+  FormAssociatedMixin,
+  reflectReadOnly,
+} from '#internals/mixins/forms/associated.js';
 import { FormValueNumberTransformers } from '#internals/mixins/forms/form-transformers.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { isLTR, pointToFraction } from '#internals/utils/dom.js';
@@ -244,6 +247,20 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     return this._formValue.value;
   }
 
+  /* blazorCSSuppress */
+  /**
+   * The default value of the control. A form reset restores the value to it.
+   * While the value is unchanged since the start or the last form reset, a
+   * new default also sets the value. The `value` attribute also sets it.
+   */
+  public override set defaultValue(value: number) {
+    super.defaultValue = value;
+  }
+
+  public override get defaultValue(): number {
+    return this._formValue.defaultValue;
+  }
+
   /**
    * Whether to show a preview of the value when hovering over the symbols.
    *
@@ -258,9 +275,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
    * ignores user input.
    *
    * @attr readonly
+   * @reflect
    * @default false
    */
-  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
+  @property({ type: Boolean, attribute: 'readonly' })
+  @coercedProperty(reflectReadOnly)
   public readOnly = false;
 
   /**

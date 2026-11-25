@@ -43,6 +43,12 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
+    value: {
+      type: 'date',
+      description:
+        'The value of the input.\n\nOnly ever holds a committed value. While the user is typing, the intermediate\nstate lives in the masked text and is committed - together with an `igcChange`\nevent - when the edit is committed on blur. Use the `igcInput` event to observe\nthe value as it is being typed.',
+      control: 'date',
+    },
     readOnly: {
       type: 'boolean',
       description:
@@ -154,6 +160,15 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
 export default metadata;
 
 interface IgcDateTimeInputArgs {
+  /**
+   * The value of the input.
+   *
+   * Only ever holds a committed value. While the user is typing, the intermediate
+   * state lives in the masked text and is committed - together with an `igcChange`
+   * event - when the edit is committed on blur. Use the `igcInput` event to observe
+   * the value as it is being typed.
+   */
+  value: Date;
   /** Whether the control is read-only. The user cannot change its value. */
   readOnly: boolean;
   /** The mask pattern of the component. */
@@ -212,12 +227,6 @@ interface IgcDateTimeInputArgs {
 type Story = StoryObj<IgcDateTimeInputArgs>;
 
 // endregion
-
-/**
- * `value` comes from a generic base component, and the analyzer records its type as
- * the bare type parameter `T`, so it is left out of the generated args.
- */
-type DateTimeInputStory = StoryObj<IgcDateTimeInputArgs & { value: Date }>;
 
 const MINUTE = 60 * 1000;
 
@@ -300,7 +309,7 @@ const styles = html`
   </style>
 `;
 
-export const Default: DateTimeInputStory = {
+export const Default: Story = {
   parameters: {
     docs: {
       description: {

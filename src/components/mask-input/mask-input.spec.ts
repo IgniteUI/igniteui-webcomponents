@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import { spy } from 'sinon';
+import { internalsOf } from '#internals/controllers/internals.js';
 import {
   ctrlKey,
   metaKey,
@@ -14,6 +15,7 @@ import {
   runHostComboboxTests,
 } from '#internals/testing/form-testbed.spec.js';
 import {
+  simulateBackspaceOver,
   simulateBlur,
   simulateFocus,
   simulateInput,
@@ -104,6 +106,28 @@ describe('Masked input', () => {
       expect(input.value).to.equal(parser.apply(element.value));
     });
 
+    for (const [mask, value, changed, back] of [
+      ['CCC', 'a*b', 'a*b', 'a*b'],
+      ['CCCC', '_a*b', '*a*b', '_a*b'],
+      ['00-00', '_١-٣٤', '*1-34', '_1-34'],
+    ]) {
+      it(`keeps the positions of ${value} on a change of prompt and back`, async () => {
+        element.mask = mask;
+        element.value = value;
+        const raw = element.value;
+        await elementUpdated(element);
+
+        element.prompt = '*';
+        await elementUpdated(element);
+        expect(input.value).to.equal(changed);
+
+        element.prompt = '_';
+        await elementUpdated(element);
+        expect(input.value).to.equal(back);
+        expect(element.value).to.equal(raw);
+      });
+    }
+
     it('mask change (no value)', async () => {
       element.mask = 'CCCC';
       syncParser();
@@ -121,6 +145,33 @@ describe('Masked input', () => {
 
       await elementUpdated(element);
       expect(input.value).to.equal(parser.apply(element.value));
+    });
+
+    it('shows the empty mask of a new mask or prompt while focused', async () => {
+      element.focus();
+      element.mask = '00-00';
+      await elementUpdated(element);
+      expect(input.value).to.equal('__-__');
+
+      element.prompt = '*';
+      await elementUpdated(element);
+      expect(input.value).to.equal('**-**');
+
+      // A write of the same empty value keeps the empty mask.
+      element.value = '';
+      await elementUpdated(element);
+      expect(input.value).to.equal('**-**');
+
+      element.setSelectionRange(0, 0);
+      input.value = '1**-**';
+      input.setSelectionRange(1, 1);
+      simulateInput(input, {
+        inputType: 'insertText',
+        skipValueProperty: true,
+      });
+      await elementUpdated(element);
+
+      expect(element.value).to.equal('1');
     });
 
     it('placeholder is updated correctly', async () => {
@@ -852,6 +903,43 @@ describe('Masked input', () => {
       expect(input.value).to.equal('1_2-___');
     });
 
+    it('keeps interior holes on a write of the same value, mask or prompt', async () => {
+      await type('123');
+      await simulateBackspaceOver(element, 0, 1);
+      expect(input.value).to.equal('_23_______');
+
+      const { value, mask, prompt } = element;
+      element.value = value;
+      element.mask = mask;
+      element.prompt = prompt;
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('_23_______');
+      expect(element.value).to.equal('23');
+    });
+
+    it('draws a change of prompt from the text of a new mask', async () => {
+      await type('123');
+      await simulateBackspaceOver(element, 0, 1);
+
+      element.mask = 'CC-CC';
+      element.prompt = '*';
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('23-**');
+    });
+
+    it('keeps interior holes on a change of prompt', async () => {
+      await type('123');
+      await simulateBackspaceOver(element, 0, 1);
+
+      element.prompt = '*';
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('*23*******');
+      expect(element.value).to.equal('23');
+    });
+
     it('starts a new step when the caret moves', async () => {
       await type('12');
 
@@ -1094,6 +1182,175 @@ describe('Masked input', () => {
         expect(bed.element.value).to.equal('12-34');
         bed.assertSubmitHasValue('12-34');
       });
+    });
+
+    const shown = () => spec.element.renderRoot.querySelector('input')!.value;
+
+    describe('a change of mask fits the value', () => {
+      beforeEach(async () => {
+        await spec.setAttributes({ mask: '00-00', value: '1234' }, true);
+      });
+
+      it('to the raw value of the new text', async () => {
+        spec.setProperties({ mask: '00' });
+
+        expect(spec.element.value).to.equal('12');
+        spec.assertSubmitHasValue('12');
+
+        spec.setProperties({ valueMode: 'withFormatting' });
+        expect(spec.element.value).to.equal('12');
+        spec.assertSubmitHasValue('12');
+
+        await elementUpdated(spec.element);
+        expect(shown()).to.equal('12');
+      });
+
+      it('in one submission, with no events, and the control stays pristine', () => {
+        const setFormValue = spy(internalsOf(spec.element)!, 'setFormValue');
+        const emitEvent = spy(spec.element, 'emitEvent');
+
+        spec.setProperties({ mask: '00' });
+
+        expect(setFormValue).calledOnceWith('12');
+        expect(emitEvent).not.called;
+        spec.assertIsPristine();
+      });
+
+      it('and a switch back does not restore the cut characters', () => {
+        spec.setProperties({ mask: '00' });
+        spec.setProperties({ mask: '00-00' });
+
+        expect(spec.element.value).to.equal('12');
+        // `badInput` stops the submit, so read the form data.
+        expect(spec.formData.get(spec.element.name)).to.equal('12');
+        expect(spec.element.validity.badInput).to.be.true;
+      });
+
+      it('to an empty value when no character fits', async () => {
+        spec.setProperties({ mask: 'LL' });
+
+        expect(spec.element.value).to.equal('');
+        spec.assertSubmitHasValue(null);
+
+        await elementUpdated(spec.element);
+        expect(shown()).to.equal('');
+      });
+
+      it('but a change of prompt keeps the raw value', () => {
+        spec.setProperties({ mask: '00', value: '1234' });
+        spec.setProperties({ prompt: '*' });
+
+        expect(spec.element.value).to.equal('1234');
+        spec.assertSubmitHasValue('1234');
+      });
+
+      it('but not while the attributes set up the control', async () => {
+        const bed = createFormAssociatedTestBed<IgcMaskInputComponent>(
+          html`<igc-mask-input
+            name="setup"
+            value="1234"
+            mask="00"
+          ></igc-mask-input>`
+        );
+        await bed.setup(IgcMaskInputComponent.tagName);
+
+        expect(bed.element.value).to.equal('1234');
+      });
+    });
+
+    describe('a masked text as the value', () => {
+      beforeEach(async () => {
+        await spec.setProperties({
+          mask: '00-00',
+          valueMode: 'withFormatting',
+        });
+      });
+
+      for (const [value, text, raw] of [
+        ['12-34', '12-34', '1234'],
+        ['1_-34', '1_-34', '134'],
+        ['1a-34', '1_-34', '1a34'],
+      ]) {
+        it(`keeps the positions of ${value} and stores ${raw}`, async () => {
+          await spec.setProperties({ value }, true);
+
+          expect(spec.element.value).to.equal(text);
+          expect(shown()).to.equal(text);
+          expect(spec.formData.get(spec.element.name)).to.equal(text);
+
+          spec.setProperties({ valueMode: 'raw' });
+          expect(spec.element.value).to.equal(raw);
+        });
+      }
+
+      it('stores the raw value also for a mask without literals', () => {
+        spec.setProperties({ mask: 'CCC', value: 'a_c' });
+        expect(spec.element.value).to.equal('a_c');
+
+        spec.setProperties({ valueMode: 'raw' });
+        expect(spec.element.value).to.equal('ac');
+      });
+
+      for (const [attributes, value, text] of [
+        ['value="12-34" mask="00-00"', '1234', '12-34'],
+        ['mask="00-00" value="12-34"', '1234', '12-34'],
+        ['value="a_b" mask="CCC" prompt="*"', 'a_b', 'a_b'],
+        ['prompt="*" mask="CCC" value="a_b"', 'a_b', 'a_b'],
+      ]) {
+        it(`reads ${attributes} in any order`, async () => {
+          const form = await fixture<HTMLFormElement>(
+            `<form><igc-mask-input name="setup" ${attributes}></igc-mask-input></form>`
+          );
+          const element = form.querySelector(IgcMaskInputComponent.tagName)!;
+
+          expect(element.value).to.equal(value);
+          expect(new FormData(form).get('setup')).to.equal(value);
+          expect(element.renderRoot.querySelector('input')!.value).to.equal(
+            text
+          );
+        });
+      }
+
+      it('reads a setRangeText edit of the setup with the final mask', () => {
+        const element = document.createElement(IgcMaskInputComponent.tagName);
+
+        element.value = '99';
+        element.setRangeText('1234', 0, 2);
+        element.mask = '00-00';
+
+        expect(element.value).to.equal('1234');
+      });
+
+      it('keeps its positions on a change of prompt', () => {
+        spec.setProperties({ value: '1_-34' });
+        spec.setProperties({ prompt: '*' });
+        expect(spec.element.value).to.equal('1*-34');
+
+        spec.setProperties({ valueMode: 'raw' });
+        expect(spec.element.value).to.equal('134');
+      });
+
+      it('fits a new mask', () => {
+        spec.setProperties({ value: '12-34', mask: '00/00' });
+
+        expect(spec.element.value).to.equal('12/34');
+        spec.assertSubmitHasValue('12/34');
+      });
+    });
+
+    it('shows the default again on a reset to the same raw value', async () => {
+      await spec.setAttributes({ mask: '0C', value: '1' }, true);
+
+      // `_1` keeps the raw value `1`.
+      await spec.setProperties({ value: '_1' }, true);
+      expect(shown()).to.equal('_1');
+      expect(spec.element.validity.badInput).to.be.true;
+
+      spec.reset();
+      await elementUpdated(spec.element);
+
+      expect(shown()).to.equal('1_');
+      expect(spec.element.validity.badInput).to.be.false;
     });
 
     it('updates badInput after a change of mask', () => {

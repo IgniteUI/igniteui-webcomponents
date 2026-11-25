@@ -201,7 +201,8 @@ declare global {
   - Override `requestUpdate()` only when a reaction cannot wait for the next update, also for
     a property of a base class. Lit calls it from the setter with the name and the old value.
     Call `super.requestUpdate()` first, and compare the value with the old value. The form
-    mixin submits the form value again there, and the radio moves to the group of a new `name`.
+    mixin writes the `name` attribute there and submits the form value again. The radio
+    moves to the group of a new `name`.
 - Export a new component from `src/index.ts`, in alphabetical order:
 
   ```ts
@@ -730,8 +731,9 @@ A parser, converter or serializer that takes user or stored input also gets prop
 
   Keep the field initializer. It gives the default value, and `onChange` does not run for it.
   Use hand-written accessors only for a computed getter or for storage outside the instance.
-  To share a config between properties, put it in a static field, as
-  `IgcInputComponent._revalidate` does.
+  To share a config between the properties of one class, put it in a static field, as
+  `IgcInputComponent._revalidate` does. To share a config between classes, export it from
+  a module, as `reflectReadOnly` in `#internals/mixins/forms/associated.js` does.
 
 ## Custom Events
 
@@ -1042,6 +1044,9 @@ edits.
    */
   ```
 
+- Some properties write their own attribute and do not use the `reflect` option of
+  `@property`. Put `@reflect` after `@attr` on them, so the manifest shows them as reflected.
+  Examples are `name`, `disabled` and `readOnly` of the form controls.
 - A deprecated member uses this format:
   ``@deprecated since [SemVer]. Use the `[new API]` [type] instead.``
 

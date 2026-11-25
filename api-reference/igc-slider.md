@@ -12,7 +12,7 @@ defineComponents(IgcSliderComponent);
 
 - `value`: `number`. Attribute: `value`.
   The current value of the component.
-- `defaultValue`: `unknown`. No attribute.
+- `defaultValue`: `number`. No attribute.
   The default value of the control. A form reset restores the value to it.
   While the value is unchanged since the start or the last form reset, a
   new default also sets the value. The `value` attribute also sets it.

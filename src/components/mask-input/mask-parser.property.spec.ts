@@ -162,6 +162,17 @@ describe('Mask parser properties', () => {
     );
   });
 
+  it('keeps a masked text when it applies it again', () => {
+    fc.assert(
+      fc.property(tokens, anyPrompt, anyInput, (parts, prompt, input) => {
+        const { parser } = setup(parts, prompt);
+        const masked = parser.apply(input);
+
+        expect(parser.apply(masked)).to.equal(masked);
+      })
+    );
+  });
+
   it('places each valid character of a replace at the next input position', () => {
     fc.assert(
       fc.property(filledMask, ({ parts, prompt, input }) => {

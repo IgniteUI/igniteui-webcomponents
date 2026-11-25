@@ -69,6 +69,7 @@
 |      11 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                                                                              |
 |      12 | 2026-11-16 | `setRangeText` before the first render keeps the value                                                                                                                              |
 |      13 | 2026-11-20 | A value from code and the first render show at once, also the Material label that moves up; no transitions with reduced motion; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
+|      14 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
 
 ## Overview
 

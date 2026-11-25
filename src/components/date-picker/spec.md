@@ -87,6 +87,7 @@
 |      22 | 2026-11-23 | A disabled picker stays closed; the shared disabled popup suite |
 |      23 | 2026-11-20 | A date that the user picks animates the input; a value from code, also from an `igcChange` handler, shows at once |
 |      24 | 2026-11-25 | The calendar selects a complete typed date, keeps the last selection while the date is incomplete or invalid, and clears it for an empty input; the calendar shows the value again when the edit ends; the input and change events of slotted content go on to the application |
+|      25 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
 
 ## Overview
 

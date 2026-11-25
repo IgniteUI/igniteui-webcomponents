@@ -1138,7 +1138,7 @@
         "value": "string"
       },
       "properties": {
-        "defaultValue": "unknown",
+        "defaultValue": "string",
         "disabled": "boolean",
         "form": "readonly HTMLFormElement | null",
         "format": "ColorFormat ('hex' | 'hsl' | 'rgb')",
@@ -1250,7 +1250,7 @@
         "autofocusList": "boolean",
         "caseSensitiveIcon": "boolean",
         "data": "T[]",
-        "defaultValue": "unknown",
+        "defaultValue": "ComboValue<T>[]",
         "disableClear": "boolean",
         "disabled": "boolean",
         "disableFiltering": "boolean",
@@ -1402,7 +1402,7 @@
       },
       "properties": {
         "activeDate": "Date",
-        "defaultValue": "unknown",
+        "defaultValue": "Date | null",
         "disabled": "boolean",
         "disabledDates": "DateRangeDescriptor[]",
         "displayFormat": "string",
@@ -1586,7 +1586,7 @@
       "properties": {
         "activeDate": "Date",
         "customRanges": "CustomDateRange[]",
-        "defaultValue": "unknown",
+        "defaultValue": "DateRangeValue | null",
         "disabled": "boolean",
         "disabledDates": "DateRangeDescriptor[]",
         "displayFormat": "string",
@@ -1763,13 +1763,12 @@
         "placeholder": "string",
         "prompt": "string",
         "readonly": "boolean",
-        "readOnly": "boolean",
         "required": "boolean",
         "spin-loop": "boolean",
         "value": "Date | null"
       },
       "properties": {
-        "defaultValue": "unknown",
+        "defaultValue": "Date | null",
         "disabled": "boolean",
         "displayFormat": "string",
         "form": "readonly HTMLFormElement | null",
@@ -1794,7 +1793,7 @@
         "static tagName": "readonly string",
         "validationMessage": "readonly string",
         "validity": "readonly ValidityState",
-        "value": "T | null",
+        "value": "Date | null",
         "willValidate": "readonly boolean"
       },
       "methods": {
@@ -2151,7 +2150,7 @@
       "properties": {
         "accept": "string",
         "autofocus": "boolean",
-        "defaultValue": "unknown",
+        "defaultValue": "null",
         "directory": "boolean",
         "disabled": "boolean",
         "files": "readonly FileList",
@@ -2362,7 +2361,6 @@
         "pattern": "string | undefined",
         "placeholder": "string",
         "readonly": "boolean",
-        "readOnly": "boolean",
         "required": "boolean",
         "step": "number | undefined",
         "type": "InputType ('email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url')",
@@ -2372,7 +2370,7 @@
       "properties": {
         "autocomplete": "string",
         "autofocus": "boolean",
-        "defaultValue": "unknown",
+        "defaultValue": "string",
         "disabled": "boolean",
         "form": "readonly HTMLFormElement | null",
         "inputMode": "string",
@@ -2577,13 +2575,12 @@
         "placeholder": "string",
         "prompt": "string",
         "readonly": "boolean",
-        "readOnly": "boolean",
         "required": "boolean",
         "value": "string",
         "value-mode": "MaskInputValueMode ('raw' | 'withFormatting')"
       },
       "properties": {
-        "defaultValue": "unknown",
+        "defaultValue": "string",
         "disabled": "boolean",
         "form": "readonly HTMLFormElement | null",
         "invalid": "boolean",
@@ -3114,7 +3111,7 @@
       },
       "properties": {
         "allowReset": "boolean",
-        "defaultValue": "unknown",
+        "defaultValue": "number",
         "disabled": "boolean",
         "form": "readonly HTMLFormElement | null",
         "hoverPreview": "boolean",
@@ -3226,7 +3223,7 @@
       },
       "properties": {
         "autofocus": "boolean",
-        "defaultValue": "unknown",
+        "defaultValue": "string | undefined",
         "disabled": "boolean",
         "distance": "number",
         "form": "readonly HTMLFormElement | null",
@@ -3395,7 +3392,7 @@
         "value-format": "string | undefined"
       },
       "properties": {
-        "defaultValue": "unknown",
+        "defaultValue": "number",
         "disabled": "boolean",
         "discreteTrack": "boolean",
         "form": "readonly HTMLFormElement | null",
@@ -3822,7 +3819,7 @@
       "properties": {
         "autocapitalize": "string",
         "autocomplete": "string",
-        "defaultValue": "unknown",
+        "defaultValue": "string",
         "disabled": "boolean",
         "form": "readonly HTMLFormElement | null",
         "inputMode": "string",

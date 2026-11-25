@@ -84,11 +84,13 @@ function isSurrogate(char: string): boolean {
   return (char.charCodeAt(0) & 0xf800) === 0xd800;
 }
 
+/** Returns the ASCII digit of a Unicode digit. Any other character stays. */
+function toAsciiDigit(char: string): string {
+  return UNICODE_DIGIT_TO_ASCII.get(char.charCodeAt(0)) ?? char;
+}
+
 function replaceUnicodeNumbers(text: string): string {
-  return text.replace(
-    /\p{Nd}/gu,
-    (digit) => UNICODE_DIGIT_TO_ASCII.get(digit.charCodeAt(0)) ?? digit
-  );
+  return text.replace(/\p{Nd}/gu, toAsciiDigit);
 }
 
 const MASK_PATTERNS = new Map<string, RegExp>([
@@ -378,6 +380,11 @@ export class MaskParser {
     };
   }
 
+  /** The raw value of a value from code. A masked text loses its literals and prompts. Other input stays. */
+  public rawValue(input: string): string {
+    return this.isMaskedText(input) ? this.parse(input) : input;
+  }
+
   /** Unmasks the string: removes the prompts and the literals. */
   public parse(masked = ''): string {
     const literalPositions = this.literalPositions;
@@ -405,8 +412,26 @@ export class MaskParser {
     });
   }
 
-  /** Fits the input into the mask from left to right and skips invalid characters. */
-  public apply(input = ''): string {
+  /** Whether the input has the mask length and each literal in its place, as a text that `apply` returns. */
+  public isMaskedText(input: string): boolean {
+    if (input.length !== this._escapedMask.length) {
+      return false;
+    }
+
+    for (const [position, literal] of this._literals) {
+      if (input[position] !== literal) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Fits the input into the mask from left to right and skips invalid characters. A masked text keeps its
+   * positions. `empty`, the prompt of the input, marks an empty position.
+   */
+  public apply(input = '', empty = this.prompt): string {
     const literals = this._literals;
     const prompt = this.prompt;
     const escapedMask = this._escapedMask;
@@ -422,10 +447,12 @@ export class MaskParser {
       return result.join('');
     }
 
-    // Normalize Unicode digits to ASCII. Split by code point, so that an astral character
-    // is one invalid character.
-    const normalizedInput = Array.from(replaceUnicodeNumbers(input));
-    const inputLength = normalizedInput.length;
+    // A masked text splits by UTF-16 unit, as its positions do. Other input splits by
+    // code point, so that an astral character is one invalid character.
+    const chars = this.isMaskedText(input)
+      ? input.split('').filter((_, position) => !literals.has(position))
+      : Array.from(input);
+    const inputLength = chars.length;
     let inputIndex = 0;
 
     for (let i = 0; i < length && inputIndex < inputLength; i++) {
@@ -433,8 +460,15 @@ export class MaskParser {
         continue;
       }
 
-      if (validate(normalizedInput[inputIndex], escapedMask[i])) {
-        result[i] = normalizedInput[inputIndex];
+      // Normalize after the check, so that a digit prompt stays a prompt.
+      const char = chars[inputIndex];
+
+      if (char !== empty) {
+        const normalized = toAsciiDigit(char);
+
+        if (validate(normalized, escapedMask[i])) {
+          result[i] = normalized;
+        }
       }
 
       // An invalid character is consumed too.

@@ -63,6 +63,7 @@
 |      11 | 2026-11-18 | A change of `value` keeps the radio pristine, as for a native radio |
 |      12 | 2026-11-19 | The group owns its form state: the validity follows a join, a leave and a reset at once, a checked radio that joins clears the group, a removed radio is a group of its own, each radio keeps its default, and `invalid` comes in DOM order |
 |      13 | 2026-11-20 | Only a change by the user animates the radio, also the radio that a user check unchecks; a change from code and the first render show at once; no transitions with reduced motion; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
+|      14 | 2026-11-25 | `name` updates its attribute at once |
 
 ## Overview
 

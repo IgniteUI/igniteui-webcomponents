@@ -23,6 +23,7 @@ import {
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { reflectReadOnly } from '#internals/mixins/forms/associated.js';
 import type { FormValue } from '#internals/mixins/forms/form-value.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { asArray, firstOf } from '#internals/utils/arrays.js';
@@ -295,9 +296,11 @@ export abstract class IgcDatePickerBaseComponent<
   /**
    * Whether the control is read-only. The user cannot change the value or open the calendar.
    * @attr readonly
+   * @reflect
    * @default false
    */
-  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
+  @property({ type: Boolean, attribute: 'readonly' })
+  @coercedProperty(reflectReadOnly)
   public readOnly = false;
 
   /**

@@ -73,6 +73,8 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 |      12 | 2026-11-18 | <kbd>Tab</kbd> keeps an unmatched value; <kbd>Tab</kbd> and <kbd>Escape</kbd> ignore `defaultPrevented` on the select; the shared popup rules suite |
 |      13 | 2026-11-23 | A disabled select stays closed; the shared disabled popup suite |
 |      14 | 2026-11-20 | A selection by the user animates the input; a value that an `igcChange` handler or other code sets shows at once |
+|      15 | 2026-11-25 | `name` updates its attribute at once |
+|      16 | 2026-11-25 | `defaultValue` has the type of `value`, `string \| undefined` |
 
 ## Overview
 
@@ -325,7 +327,7 @@ code already called `preventDefault()` on the key.
 | items                  | -                          | No        | `IgcSelectItemComponent[]`          | -              | Read-only. The items of the select component.                   |
 | groups                 | -                          | No        | `IgcSelectGroupComponent[]`         | -              | Read-only. The groups of the select component.                  |
 | selectedItem           | -                          | No        | `IgcSelectItemComponent \| null`    | `null`         | Read-only. The selected item, or `null`.                        |
-| defaultValue           | -                          | No        | `string`                            | -              | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.     |
+| defaultValue           | -                          | No        | `string \| undefined`               | -              | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it.     |
 | form                   | -                          | No        | `HTMLFormElement \| null`           | -              | Read-only. The form that the control is associated with, or `null`.               |
 | validity               | -                          | No        | `ValidityState`                     | -              | Read-only. The validity state of the control.                   |
 | validationMessage      | -                          | No        | `string`                            | -              | Read-only. The validation message of the control. It is empty when the control is valid.               |

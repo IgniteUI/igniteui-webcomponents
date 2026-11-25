@@ -18,11 +18,13 @@ import {
   setSlots,
   type SlotChangeCallbackParameters,
 } from '#internals/controllers/slot.js';
+import { coercedProperty } from '#internals/decorators/coerced-property.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { reflectReadOnly } from '#internals/mixins/forms/associated.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import {
   renderInputShell,
@@ -251,8 +253,11 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * Whether the control is read-only.
    *
    * @attr readonly
+   * @reflect
+   * @default false
    */
-  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
+  @property({ type: Boolean, attribute: 'readonly' })
+  @coercedProperty(reflectReadOnly)
   public readOnly = false;
 
   /**
@@ -286,6 +291,20 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   public get value(): string {
     return this._formValue.value;
+  }
+
+  /* blazorCSSuppress */
+  /**
+   * The default value of the control. A form reset restores the value to it.
+   * While the value is unchanged since the start or the last form reset, a
+   * new default also sets the value. The `value` attribute also sets it.
+   */
+  public override set defaultValue(value: string) {
+    super.defaultValue = value;
+  }
+
+  public override get defaultValue(): string {
+    return this._formValue.defaultValue;
   }
 
   /**
