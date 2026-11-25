@@ -50,6 +50,7 @@ export declare class BaseFormAssociatedElement {
    * Whether the control is disabled. A disabled control is not validated, and
    * the form does not submit its value.
    * @attr
+   * @reflect
    * @default false
    */
   public disabled: boolean;
@@ -65,6 +66,7 @@ export declare class BaseFormAssociatedElement {
   /**
    * The name of the control, submitted with the form data.
    * @attr
+   * @reflect
    */
   public name: string;
 

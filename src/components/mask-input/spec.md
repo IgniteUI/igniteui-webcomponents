@@ -65,6 +65,7 @@
 |      14 | 2026-11-19 | The submitted value is `value`; it follows a change of `valueMode`, `mask` or `prompt`, and an emptied control submits nothing |
 |      15 | 2026-11-20 | A value from code and the first render show at once; no transitions with reduced motion |
 |      16 | 2026-11-25 | A change of `mask` fits the value; a masked text as the value keeps its positions; a same-value write and a `prompt` change keep the text |
+|      17 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
 
 ## Overview
 

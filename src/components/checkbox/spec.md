@@ -62,6 +62,7 @@ This directory hosts two form-associated components that share the same base imp
 |      11 | 2026-11-11 | <kbd>Enter</kbd> submits only through the first submit button of the form, as for a native checkbox, and not after a canceled `keypress` |
 |      12 | 2026-11-18 | A change of the `checked` attribute or of `value` keeps the control pristine, as for a native checkbox |
 |      13 | 2026-11-20 | Only a change by the user animates the checkbox and the switch; a change from code and the first render show at once; no transitions with reduced motion. The Material switch thumb moves with a transition, not with keyframes; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
+|      14 | 2026-11-25 | `name` updates its attribute at once |
 
 ## Overview
 

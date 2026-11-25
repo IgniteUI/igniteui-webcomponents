@@ -28,7 +28,7 @@ defineComponents(IgcRadioComponent);
   The `checked` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
-- `disabled`: `boolean`. Default: `false`. Attribute: `disabled`.
+- `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.
   Whether the control is disabled. A disabled control is not validated,
   and the form does not submit its value.
 - `invalid`: `boolean`. Default: `false`. Attribute: `invalid`.

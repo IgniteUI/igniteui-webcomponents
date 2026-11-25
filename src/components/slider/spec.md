@@ -60,6 +60,7 @@
 |       9 | 2026-10-29 | The base of the slider has no transition, so the slider hides at the same time as a hidden ancestor |
 |      10 | 2026-11-02 | A `focus()` call before the first render applies after the render                                   |
 |      11 | 2026-11-18 | A change of the user that fails validation shows the invalid styles at once |
+|      12 | 2026-11-25 | `name` updates its attribute at once |
 
 ## Overview
 

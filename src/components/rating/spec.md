@@ -56,6 +56,7 @@
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                             |
 |       8 | 2026-11-02 | A `focus()` call before the first render applies after the render                    |
 |       9 | 2026-11-18 | A value set from code before the first render makes the rating dirty, so a later `defaultValue` does not replace it |
+|      10 | 2026-11-25 | `disabled` is marked as reflected. `name` and `readOnly` update their attributes at once |
 
 ## Overview
 
@@ -207,7 +208,7 @@ value: `{0}` is replaced with the current value and `{1}` with the maximum.
 | `allowReset`   | `allow-reset`   | yes       | `boolean`             | `false` | Clicking the current value resets it to `0`.                     |
 | `readOnly`     | `readonly`      | yes       | `boolean`             | `false` | Whether the rating is read-only. A read-only rating shows its value but ignores user input. |
 | `name`         | `name`          | yes       | `string`              | —       | The name submitted with the form data.                           |
-| `disabled`     | `disabled`      | no        | `boolean`             | `false` | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                             |
+| `disabled`     | `disabled`      | yes       | `boolean`             | `false` | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                             |
 | `invalid`      | `invalid`       | no        | `boolean`             | `false` | The invalid visual state of the component.                       |
 | `defaultValue` | —               | —         | `number`              | —       | The value restored on a form reset.                              |
 | `form`         | —               | —         | `HTMLFormElement \| null` | —   | The associated form. Read-only.                                  |

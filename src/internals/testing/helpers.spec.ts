@@ -236,6 +236,23 @@ export function catchListenerErrors(fn: () => void): unknown[] {
   return errors;
 }
 
+/** Runs `fn` and returns the number of writes of `attribute` on `element`. */
+export function attributeWrites(
+  element: Element,
+  attribute: string,
+  fn: () => void
+): number {
+  const observer = new MutationObserver(() => {});
+  observer.observe(element, { attributeFilter: [attribute] });
+
+  try {
+    fn();
+    return observer.takeRecords().length;
+  } finally {
+    observer.disconnect();
+  }
+}
+
 /**
  * Axe options for components that publish required ARIA relations through
  * ARIA element reflection. Reflection blanks the content attribute that axe
