@@ -106,6 +106,19 @@ describe('Masked input', () => {
       expect(input.value).to.equal(parser.apply(element.value));
     });
 
+    it('keeps a character that a new prompt matches, after a change back', async () => {
+      element.mask = 'CCC';
+      element.value = 'a*b';
+      await elementUpdated(element);
+
+      element.prompt = '*';
+      element.prompt = '_';
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('a*b');
+      expect(element.value).to.equal('a*b');
+    });
+
     it('mask change (no value)', async () => {
       element.mask = 'CCCC';
       syncParser();

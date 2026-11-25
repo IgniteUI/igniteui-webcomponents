@@ -193,6 +193,9 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   @property()
   public override set prompt(value: string) {
     const previous = this._parser.prompt;
+    // Read with the old prompt.
+    const showsValue =
+      this._parser.parse(this._maskedValue) === this._formValue.value;
     this._parser.prompt = value;
 
     if (this._parser.prompt === previous) {
@@ -204,7 +207,12 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
       return;
     }
 
-    this._maskedValue = this._parser.swapPrompt(this._maskedValue, previous);
+    // A text that lost a character to an old prompt shows the raw value again.
+    if (showsValue) {
+      this._maskedValue = this._parser.swapPrompt(this._maskedValue, previous);
+    } else {
+      this._reapplyMask();
+    }
   }
 
   public override get prompt(): string {

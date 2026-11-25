@@ -452,7 +452,8 @@ The groups below mirror the `describe` blocks of the suite.
 ### Generic properties
 
 1. Sensible default values.
-2. Changing the prompt character, with and without a value.
+2. Changing the prompt character, with and without a value. A character of the value that the new prompt matches
+   comes back after a change back.
 3. Changing the mask, with and without a value. A focused empty control shows the empty mask of a new mask or
    prompt, and keeps it on a write of the same empty value.
 4. The placeholder is updated correctly.
