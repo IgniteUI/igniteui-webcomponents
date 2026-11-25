@@ -64,6 +64,7 @@
 |      13 | 2026-11-11 | <kbd>Enter</kbd> submits as in a native form, after the `keypress`         |
 |      14 | 2026-11-19 | The submitted value is `value`; it follows a change of `valueMode`, `mask` or `prompt`, and an emptied control submits nothing |
 |      15 | 2026-11-20 | A value from code and the first render show at once; no transitions with reduced motion |
+|      16 | 2026-11-25 | A change of `mask` fits the value; a masked text as the value keeps its positions; a same-value write and a `prompt` change keep the text |
 
 ## Overview
 
@@ -223,6 +224,17 @@ into a literal by escaping it:
 | `withFormatting` | The value with literals and prompts, e.g. `(555) 123-4567`. |
 
 An empty control returns an empty string in both modes.
+
+A value with the mask length and each literal in its place, such as `12-34` for the mask `00-00`, is a masked text.
+It keeps its positions, also the empty ones, and `value` in `raw` mode reads `1234`. So the `igcChange` detail of
+`withFormatting` mode can go back into `value`, as a two-way binding does. A prompt character in a value shows as an
+empty position, and a masked text drops it from the raw value. A write of the current value keeps the text.
+
+A change of `mask` after the first render fits the value to the new mask. `value` becomes the raw value of the text
+that the new mask shows. Value `1234` with the mask `00-00` becomes `12` after a change to `00`, and stays `12` after a
+change back. The change emits no events and keeps the control pristine. The attributes and properties that you set
+before the first render do not fit the value. They read it with the final `mask` and `prompt`, in any order. A change
+of `prompt` keeps the raw value and the positions of the text. Ignite UI for Angular changes only the text.
 
 #### Prompt character
 
@@ -440,8 +452,10 @@ The groups below mirror the `describe` blocks of the suite.
 ### Generic properties
 
 1. Sensible default values.
-2. Changing the prompt character, with and without a value.
-3. Changing the mask, with and without a value.
+2. Changing the prompt character, with and without a value. A change and a change back keep the positions of the
+   value, also of a character that the new prompt matches.
+3. Changing the mask, with and without a value. A focused empty control shows the empty mask of a new mask or
+   prompt, and keeps it on a write of the same empty value.
 4. The placeholder is updated correctly.
 5. An empty value, with and without literals, and an empty read-only value on focus.
 6. Reading the value without literals, and switching a value with literals to one without.
@@ -465,7 +479,8 @@ Grouped as `Undo / redo` in the suite.
 
 18. Collapses a run of typed characters into a single step, and redoes the restored run.
 19. Supports the alternate shortcuts.
-20. Preserves interior holes in the mask.
+20. Preserves interior holes in the mask, also on a write of the same value, mask or prompt, and on a change of
+    prompt, also after a change of mask.
 21. Starts a new step when the caret moves.
 22. Collapses a run of backspaces into a single step, and keeps typing and deleting as separate steps.
 23. Records a paste as its own step.
@@ -480,11 +495,10 @@ Grouped as `Undo / redo` in the suite.
 Driven by `createFormAssociatedTestBed`.
 
 29. Is form associated, and is not associated on submit without a value.
-30. Is associated on submit, including with value formatting enabled. The submitted value follows a change of
-    `valueMode`, `mask` and `prompt`, also from attributes in any order, and `badInput` follows a change of `mask`.
-    A formatted value that the user empties submits nothing.
+30. Is associated on submit, including with value formatting enabled. `badInput` follows a change of `mask`. A
+    formatted value that the user empties submits nothing.
 31. Is correctly reset on form reset, with and without value formatting, after a `setAttribute` call, and refreshes
-    the rendered masked value and placeholder afterwards.
+    the rendered masked value and placeholder afterwards. A reset to the same raw value shows the default text again.
 32. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>
     submits once.
 33. Reflects the disabled state of an ancestor `fieldset`.
@@ -496,49 +510,67 @@ Driven by `createFormAssociatedTestBed`.
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
 [input suite](../input/spec.md#form-validity-checks) covers them.
 
+#### the submitted value follows
+
+36. A change of `valueMode`, `mask` or `prompt` updates the submitted value in one submission, also from attributes
+    in any order.
+
+#### a change of mask fits the value
+
+37. The value becomes the raw value of the new text. The change submits once, emits no events and keeps the control
+    pristine.
+38. A change back does not restore the cut characters. A value that fits no position becomes empty.
+39. A change of `prompt` keeps the raw value. The attributes of the first render keep the value.
+
+#### a masked text as the value
+
+40. A masked text keeps its positions and its empty positions, and stores its raw value, also for a mask without
+    literals and from attributes in any order. A `setRangeText` edit before the first render reads with the final mask.
+41. A change of `prompt` keeps its positions, and a change of `mask` fits it.
+
 ### defaultValue
 
-36. Form integration - correct initial state, correct submission, correct reset, and dropping the undo history on
+42. Form integration - correct initial state, correct submission, correct reset, and dropping the undo history on
     reset.
-37. Validation - fails the initial validation, and passes once `defaultValue` is updated.
+43. Validation - fails the initial validation, and passes once `defaultValue` is updated.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-38. `value-missing` with `required`.
-39. `bad-input` with an unsatisfied mask pattern.
-40. `custom-error` after `setCustomValidity`.
-41. `invalid` with `required`.
+44. `value-missing` with `required`.
+45. `bad-input` with an unsatisfied mask pattern.
+46. `custom-error` after `setCustomValidity`.
+47. `invalid` with `required`.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-42. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+48. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     `ariaLabelledByElements`, and clicking it focuses the control. A `label` added after the first render names the
     control from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](../input/spec.md#naming-order).
 
 ### Parser and history unit suites
 
-43. [`mask-parser.spec.ts`](./mask-parser.spec.ts) covers the parser on its own: every flag, literals and escaping,
-    applying and parsing values, Unicode digit normalization, and edge and boundary conditions, including UTF-16
-    positions after an astral literal, and astral input and prompts rejected whole.
-44. [`mask-history.spec.ts`](../../internals/mask-history.spec.ts) covers the history on its own: recording, coalescing, traversal
+49. [`mask-parser.spec.ts`](./mask-parser.spec.ts) covers the parser on its own: every flag, literals and escaping,
+    applying and parsing values, a masked text as input, Unicode digit normalization, and edge and boundary
+    conditions, including UTF-16 positions after an astral literal, and astral input and prompts rejected whole.
+50. [`mask-history.spec.ts`](../../internals/mask-history.spec.ts) covers the history on its own: recording, coalescing, traversal
     and invalidation of the steps.
-45. [`mask-parser.property.spec.ts`](./mask-parser.property.spec.ts) checks, for generated masks, prompts and input:
+51. [`mask-parser.property.spec.ts`](./mask-parser.property.spec.ts) checks, for generated masks, prompts and input:
     the escaped mask and literal positions; `apply` and `replace` never throw, keep the mask length, literals and
-    flag rules, and never split an astral character; the `apply` / `parse` round-trip; digit normalization; the
-    non-literal position lookups; and prompt normalization.
+    flag rules, and never split an astral character; the `apply` / `parse` round-trip; `apply` keeps a masked text;
+    digit normalization; the non-literal position lookups; and prompt normalization.
 
 ### Host ARIA
 
-46. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+52. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required`.
-47. The shared host combobox suite (`runHostComboboxTests`): the cases of the
+53. The shared host combobox suite (`runHostComboboxTests`): the cases of the
     [input](../input/spec.md#host-combobox-state), without the projection case.
-48. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+54. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -553,6 +585,8 @@ The [input suite](../input/spec.md#value-state-motion) covers the motion of the 
 - The mask input does not expose a `type` attribute, since it is always an input of type `text`.
 - The component does not format values by locale; the mask is a literal pattern, not a number or date format. Use
   [`igc-date-time-input`](../date-time-input/spec.md) for date and time editing.
+- A value from code keeps the characters that the mask cannot show, also with the `mask` of the same setup:
+  `value="1234" mask="00"` gives `1234` in any attribute order. Only a change of `mask` after the first render fits it.
 
 ## Accessibility
 

@@ -49,6 +49,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
+- #### Mask input
+  - A change of `mask` after the first render fits the value to the new mask. `value` becomes the raw value of the text that the new mask shows. For example, value `1234` with the mask `00-00` becomes `12` after a change to `00`, and stays `12` after a change back. The change emits no events and keeps the control pristine. The attributes and properties that you set before the first render do not fit the value. They read it with the final `mask` and `prompt`, in any order. A change of `prompt` keeps the raw value and the positions of the text. Before, `value` kept the characters that the mask cut, so the `raw` and `withFormatting` modes submitted different text. Ignite UI for Angular changes only the text.
 - #### Navigation drawer
   - A drawer that is `open` on its first render shows at once, with no slide and no backdrop fade. This also applies when a framework renders the drawer open after a user action. To slide it in, call `show()`, or set `open` after the first render.
 - #### QR code
@@ -114,6 +116,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Mask input
   - The submitted value is `value`. A change of `valueMode`, `mask` or `prompt` updates it and the validity at once, also when the `value` attribute comes before `value-mode` or `mask`. Before, the form kept the old text, `badInput` could stay set for a valid value, and the attribute order could submit the raw text in `withFormatting` mode.
   - A formatted value that you empty submits nothing. Before, the form submitted the empty mask, such as `__-__`.
+  - A focused empty control shows the empty mask of a new `mask` or `prompt`. Before, it kept the old empty mask, and a typed character could put its old prompts or literals into the value.
+  - A write of the same `value`, `mask` or `prompt`, as a React wrapper does on each render, keeps the text that you typed. Before, it moved the characters after an empty position to the left. A write of the same empty value also removed the empty mask from a focused control.
+  - A change of `prompt` keeps the empty positions of the text. Before, it moved the characters after an empty position to the left.
+  - A change of `mask` or `prompt` keeps the placeholder on an unfocused control whose value fills no position, as a value write does. Before, it showed the empty mask.
+  - A value with the mask length and each literal in its place, such as the `igcChange` detail in `withFormatting` mode, keeps its positions. For example, `12-34` with the mask `00-00` shows `12-34`, and `value` in `raw` mode reads `1234`. Before, the input read the literals as typed characters and showed `12-_3`, so a two-way binding in `withFormatting` mode broke the text. A prompt character in the value shows as an empty position.
 - #### QR code
   - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
   - A code with `square-style="circle"` no longer fails to scan at some sizes, about 1 time in 10. For this fix, a `square` corner dot in a `circle` corner square draws as a circle.
