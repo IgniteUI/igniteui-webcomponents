@@ -94,6 +94,12 @@ describe('Picker value shapes', () => {
         ).to.eql([june1, june5]);
       });
 
+      it('gives the ends of a reversed range in order', () => {
+        expect(
+          rangeShape.toCalendar({ start: june5, end: june1 }).values
+        ).to.eql([june1, june5]);
+      });
+
       it('gives one date for a range in one day', () => {
         expect(
           rangeShape.toCalendar({ start: june5Morning, end: june5Evening })

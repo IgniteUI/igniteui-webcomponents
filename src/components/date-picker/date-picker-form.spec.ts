@@ -19,6 +19,7 @@ import {
   type ValidationContainerTestsParams,
   ValidityHelpers,
 } from '#internals/testing/validity-helpers.spec.js';
+import IgcCalendarComponent from '../calendar/calendar.js';
 import { type DateRangeDescriptor, DateRangeType } from '../calendar/types.js';
 import IgcDateTimeInputComponent from '../date-time-input/date-time-input.js';
 import IgcInputComponent from '../input/input.js';
@@ -192,6 +193,24 @@ describe('igc-datepicker form integration', () => {
 
         checkDatesEqual(spec.element.value!, defaultDate);
         spec.assertSubmitHasValue(defaultDate.toISOString());
+      });
+
+      it('drops the typed calendar selection when the reset keeps the value', async () => {
+        const defaultDate = new Date(2024, 0, 15);
+        spec.setAttributes({ value: defaultDate.toISOString() });
+        await elementUpdated(spec.element);
+        const calendar = spec.element.renderRoot.querySelector(
+          IgcCalendarComponent.tagName
+        )!;
+
+        await simulateTypingOver(editor, '12122024');
+        await elementUpdated(spec.element);
+        checkDatesEqual(calendar.value!, new Date(2024, 11, 12));
+
+        await reset();
+
+        checkDatesEqual(spec.element.value!, defaultDate);
+        checkDatesEqual(calendar.value!, defaultDate);
       });
 
       it('shows the empty mask when the reset empties the value', async () => {

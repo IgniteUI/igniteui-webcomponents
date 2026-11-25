@@ -18,9 +18,12 @@ export interface PickerValueShape<T> {
   closesOnPick(dates: Date[]): boolean;
 }
 
+// One array, so Lit skips the binding on each render.
+const noDates: Date[] = [];
+
 export const dateShape: PickerValueShape<Date> = {
   selection: 'single',
-  toCalendar: (value) => ({ value, values: [] }),
+  toCalendar: (value) => ({ value, values: noDates }),
   fromCalendar: (dates) => firstOf(dates) ?? null,
   closesOnPick: () => true,
 };

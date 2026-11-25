@@ -86,6 +86,19 @@ describe('DateRangeMaskParser', () => {
       expect(parser.mask).to.equal('MM/dd/yyyy - MM/dd/yyyy');
     });
 
+    it('parses a complete range strictly when the separator holds the prompt', () => {
+      const parser = new DateRangeMaskParser({
+        format: 'MM/dd/yyyy',
+        promptCharacter: '-',
+      });
+
+      expect(parser.parseValue('12/25/2026 - 12/31/2026', true)).to.eql({
+        start: new Date(2026, 11, 25),
+        end: new Date(2026, 11, 31),
+      });
+      expect(parser.parseValue('12/25/2026 - 12/31/20--', true)).to.be.null;
+    });
+
     it('builds range parts with position information', () => {
       const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
       const parts = parser.parts;

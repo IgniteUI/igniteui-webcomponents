@@ -10,6 +10,7 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
+  simulateBackspaceOver,
   simulateBlur,
   simulateClick,
   simulateInput,
@@ -24,6 +25,7 @@ import {
   checkSelectedRange,
   getIcon,
   selectDates,
+  typeAt,
 } from './date-range-picker.utils.spec.js';
 
 describe('Date range picker - two inputs', () => {
@@ -647,6 +649,92 @@ describe('Date range picker - two inputs', () => {
         await elementUpdated(picker);
 
         checkDatesEqual(calendar.activeDate, june3rd2025);
+      });
+
+      it('keeps the selected end while the typed date is incomplete, and drops it while blank', async () => {
+        const start = new Date(2025, 0, 10);
+        const end = new Date(2025, 2, 20);
+        const june10 = new Date(2025, 5, 10);
+        picker.inputFormat = 'MM/dd/yyyy';
+        picker.value = { start, end };
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const input = dateTimeInputs[0].renderRoot.querySelector('input')!;
+        dateTimeInputs[0].focus();
+        await elementUpdated(dateTimeInputs[0]);
+
+        // June 10 is after the end, so the calendar swaps the ends.
+        typeAt(input, '6', 1);
+        await elementUpdated(picker);
+        expect(calendar.values).to.eql([end, june10]);
+
+        // The year of the start.
+        await simulateBackspaceOver(dateTimeInputs[0], 6, 10);
+        await elementUpdated(picker);
+
+        expect(input.value).to.equal('06/10/____');
+        expect(calendar.values).to.eql([end, june10]);
+
+        await simulateBackspaceOver(dateTimeInputs[0], 0, 10);
+        await elementUpdated(picker);
+
+        expect(calendar.values).to.eql([end]);
+        expect(picker.value).to.eql({ start, end });
+      });
+
+      it('keeps the edit of an end that keeps its date when code sets a new range', async () => {
+        const start = new Date(2025, 0, 10);
+        const end = new Date(2025, 2, 20);
+        const april1 = new Date(2025, 3, 1);
+        const june10 = new Date(2025, 5, 10);
+        picker.inputFormat = 'MM/dd/yyyy';
+        picker.value = { start, end };
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const input = dateTimeInputs[0].renderRoot.querySelector('input')!;
+        dateTimeInputs[0].focus();
+        await elementUpdated(dateTimeInputs[0]);
+
+        typeAt(input, '6', 1);
+        await elementUpdated(picker);
+        expect(calendar.values).to.eql([end, june10]);
+
+        picker.value = { start: new Date(start.getTime()), end: april1 };
+        await elementUpdated(picker);
+
+        expect(input.value).to.equal('06/10/2025');
+        expect(calendar.values).to.eql([april1, june10]);
+      });
+
+      it('selects the value when the focus moves to the other input', async () => {
+        const start = new Date(2025, 0, 1);
+        const end = new Date(2025, 2, 20);
+        picker.inputFormat = 'MM/dd/yyyy';
+        picker.value = { start, end };
+        picker.open = true;
+        await elementUpdated(picker);
+
+        const input = dateTimeInputs[0].renderRoot.querySelector('input')!;
+        dateTimeInputs[0].focus();
+        await elementUpdated(dateTimeInputs[0]);
+
+        typeAt(input, '6', 1);
+        await elementUpdated(picker);
+
+        // Only the year stays, so the commit fills the month and the day: January 1, the same start.
+        await simulateBackspaceOver(dateTimeInputs[0], 0, 5);
+        await elementUpdated(picker);
+        expect(calendar.values).to.eql([end, new Date(2025, 5, 1)]);
+
+        const eventSpy = spy(picker, 'emitEvent');
+        dateTimeInputs[1].focus();
+        await elementUpdated(picker);
+
+        expect(eventSpy).not.calledWith('igcChange');
+        expect(picker.value).to.eql({ start, end });
+        expect(calendar.values).to.eql([start, end]);
       });
     });
     describe('Readonly state', () => {

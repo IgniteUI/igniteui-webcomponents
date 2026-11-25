@@ -164,6 +164,56 @@ describe('Date range mask parser properties', () => {
     );
   });
 
+  it('parses an edit by end: a complete end, the previous end while incomplete, and no end while blank', () => {
+    const optionalDate = fc.option(date, { nil: null });
+
+    fc.assert(
+      fc.property(
+        options,
+        date,
+        date,
+        textKind,
+        textKind,
+        optionalDate,
+        optionalDate,
+        (opts, start, end, startKind, endKind, previousStart, previousEnd) => {
+          assumeWallClock(opts.format, start);
+          assumeWallClock(opts.format, end);
+
+          const parser = new DateRangeMaskParser(opts);
+          const single = new DateTimeMaskParser({ format: opts.format });
+          const startText = textOf(single, start, startKind);
+          const endText = textOf(single, end, endKind);
+          const masked = startText + parser.separator + endText;
+
+          const expectedEnd = (
+            text: string,
+            kind: TextKind,
+            previous: Date | null
+          ) =>
+            kind === 'full'
+              ? single.parseDate(text)
+              : kind === 'partial'
+                ? previous
+                : null;
+
+          const ends = {
+            start: expectedEnd(startText, startKind, previousStart),
+            end: expectedEnd(endText, endKind, previousEnd),
+          };
+
+          expect(
+            parser.parseEdit(masked, {
+              start: previousStart,
+              end: previousEnd,
+            }),
+            masked
+          ).to.deep.equal(ends.start || ends.end ? ends : null);
+        }
+      )
+    );
+  });
+
   it('lays out the two dates around the separator', () => {
     fc.assert(
       fc.property(looseOptions, looseOptions, (initial, next) => {

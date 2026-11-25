@@ -64,7 +64,10 @@ function rangeDates(value: DateRangeValue | null): Date[] {
 
 export const rangeShape: PickerValueShape<DateRangeValue> = {
   selection: 'range',
-  toCalendar: (value) => ({ value: null, values: rangeDates(value) }),
+  toCalendar: (value) => ({
+    value: null,
+    values: rangeDates(normalizeRange(value)),
+  }),
   fromCalendar: (dates) =>
     isEmpty(dates) ? null : { start: firstOf(dates), end: lastOf(dates) },
   // The first pick gives one date, the second every date of the range, and a pick of the start again none.
