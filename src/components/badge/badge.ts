@@ -45,12 +45,25 @@ export default class IgcBadgeComponent extends LitElement {
     registerComponent(IgcBadgeComponent);
   }
 
-  private readonly _slots = addSlotController(this, {
-    slots: Slots,
-    onChange: this._handleSlotChange,
-  });
+  private readonly _slots = addSlotController(this, { slots: Slots });
 
-  private _hasIcon = false;
+  /**
+   * Whether the only content is one icon, which renders as a circle. The filter
+   * drops the whitespace text nodes around it.
+   */
+  private get _hasIcon(): boolean {
+    const [content, ...rest] = this._slots
+      .getAssignedNodes(DefaultSlot)
+      .filter((node) => isElement(node) || node.textContent?.trim());
+
+    // The server has no slotted content, and `isElement` needs the DOM `Node`.
+    return (
+      content !== undefined &&
+      isEmpty(rest) &&
+      isElement(content) &&
+      content.matches('igc-icon')
+    );
+  }
 
   /**
    * The type (style variant) of the badge.
@@ -96,19 +109,6 @@ export default class IgcBadgeComponent extends LitElement {
     addInternalsController(this, {
       initialARIA: { role: 'status' },
     });
-  }
-
-  /**
-   * Sets the `icon` part when the only content is one `igc-icon`, which renders as a circle.
-   * The filter drops the whitespace text nodes around it.
-   */
-  protected _handleSlotChange(): void {
-    const [content, ...rest] = this._slots
-      .getAssignedNodes(DefaultSlot)
-      .filter((node) => isElement(node) || node.textContent?.trim());
-
-    this._hasIcon =
-      isEmpty(rest) && isElement(content) && content.matches('igc-icon');
   }
 
   protected override render() {

@@ -78,6 +78,7 @@
 |      21 | 2026-11-20 | A value from code and the first render show at once, also the Material label that moves up; no transitions with reduced motion; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
 |      22 | 2026-11-25 | Add the edit parse, which gives a picker calendar the typed date, the previous date while the date is incomplete, or `null` for a blank mask; a strict parse reads the prompt only in the date parts, so a literal can be the prompt |
 |      23 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
+|      24 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 

@@ -112,6 +112,7 @@
 |      36 | 2026-11-23 | A disabled combo stays closed; the shared disabled popup suite |
 |      37 | 2026-11-20 | A selection by the user animates the option checkboxes; a value from code, a new `data`, a reused row and a value that an `igcChange` handler keeps show at once |
 |      38 | 2026-11-25 | `name` updates its attribute at once |
+|      39 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 

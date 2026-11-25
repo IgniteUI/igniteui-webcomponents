@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { partMap } from '#internals/part-map.js';
@@ -33,13 +33,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
     registerComponent(IgcNavDrawerItemComponent);
   }
 
-  private readonly _slots = addSlotController(this, {
-    slots: Slots,
-    onChange: this._handleSlotChange,
-  });
-
-  @state()
-  private _hasContent = true;
+  private readonly _slots = addSlotController(this, { slots: Slots });
 
   /**
    * Whether the drawer item is disabled.
@@ -60,15 +54,12 @@ export default class IgcNavDrawerItemComponent extends LitElement {
     addThemingController(this, all);
   }
 
-  protected _handleSlotChange(): void {
-    this._hasContent = this._slots.hasAssignedElements('content');
-  }
-
   protected override render() {
     const hasNoIcon = !this._slots.hasAssignedNodes('icon', true);
+    const hasContent = this._slots.hasAssignedElements('content');
 
     return html`
-      <div part=${partMap({ base: true, mini: !this._hasContent })}>
+      <div part=${partMap({ base: true, mini: !hasContent })}>
         <span part="icon" ?hidden=${hasNoIcon}>
           <slot name="icon"></slot>
         </span>

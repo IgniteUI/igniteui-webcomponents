@@ -11,6 +11,7 @@ import { emulateMedia, resetMouse } from '@web/test-runner-commands';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { readFirstUpdate } from '#internals/testing/first-render.spec.js';
 import {
   allowMotion,
   finishAnimationsFor,
@@ -30,7 +31,7 @@ import { isPopoverOpen } from '#internals/utils/dom.js';
 import { configureTheme } from '#theming/config.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcIconComponent from '../icon/icon.js';
-import type IgcNavDrawerItemComponent from './nav-drawer-item.js';
+import IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import IgcNavDrawerComponent from './nav-drawer.js';
 
 describe('Navigation Drawer', () => {
@@ -203,7 +204,7 @@ describe('Navigation Drawer', () => {
 
       expect(navDrawer.children.item(0)).shadowDom.equal(
         `
-        <div part="base">
+        <div part="base mini">
           <span hidden part="icon">
             <slot name="icon"></slot>
           </span>
@@ -213,6 +214,25 @@ describe('Navigation Drawer', () => {
         </div>
       `
       );
+    });
+
+    it('sets the mini part of an item from its content in the first render', async () => {
+      const firstRenderBaseParts = (content: string) => {
+        const item = document.createElement(IgcNavDrawerItemComponent.tagName);
+        item.innerHTML = content;
+
+        return readFirstUpdate(
+          item,
+          () => item.renderRoot.querySelector('[part~="base"]')!.part.value
+        );
+      };
+
+      expect(
+        await firstRenderBaseParts('<igc-icon slot="icon"></igc-icon>')
+      ).to.equal('base mini');
+      expect(
+        await firstRenderBaseParts('<span slot="content"></span>')
+      ).to.equal('base');
     });
 
     it('initial render of a navbar with mini slot', async () => {

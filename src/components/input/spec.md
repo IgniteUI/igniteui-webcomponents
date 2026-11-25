@@ -78,6 +78,7 @@
 |      18 | 2026-11-18 | A change of the `value` attribute keeps the control pristine, as for a native input |
 |      19 | 2026-11-20 | A value from code and the first render show at once, also the Material label that moves up; no transitions with reduced motion; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
 |      20 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
+|      21 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 

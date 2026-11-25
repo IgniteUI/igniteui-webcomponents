@@ -1,5 +1,5 @@
 import { LitElement } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { addValueStateMotion } from '#animations/value-state.js';
 import { addKeyboardFocusRing } from '#internals/controllers/focus-ring.js';
 import {
@@ -45,10 +45,7 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
     return checkBoxValidators;
   }
 
-  protected readonly _slots = addSlotController(this, {
-    slots: Slots,
-    onChange: this._handleSlotChange,
-  });
+  protected readonly _slots = addSlotController(this, { slots: Slots });
 
   protected readonly _focusRingManager = addKeyboardFocusRing(this);
   protected override readonly _formValue = createFormValueState(this, {
@@ -59,8 +56,10 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   @query('input', true)
   protected readonly _input!: HTMLInputElement;
 
-  @state()
-  protected _hideLabel = true;
+  /** Whether the label slot is empty. */
+  protected get _hideLabel(): boolean {
+    return !this._slots.hasAssignedNodes(DefaultSlot);
+  }
 
   /**
    * The value of the control, submitted when the control is checked.
@@ -125,10 +124,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedCheckboxRequiredMixi
   protected override _handleLabelActivation(): void {
     this._input.focus();
     this._input.click();
-  }
-
-  protected _handleSlotChange(): void {
-    this._hideLabel = !this._slots.hasAssignedNodes(DefaultSlot);
   }
 
   protected _handleClick(event: PointerEvent): void {
