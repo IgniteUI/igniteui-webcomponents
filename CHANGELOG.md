@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `logo-shape` clips the logo to a `circle`, `rounded` or `squircle` shape that fills the logo box. The cutout removes only the modules under the shape.
   - `createWifiPayload()`, `createVCardPayload()`, `createEpcPayload()` and `createEventPayload()` from `igniteui-webcomponents/extras/qr-payloads` build the value of a code that a phone turns into a Wi-Fi login, a contact card, a SEPA payment or a calendar event. They escape the text and throw a `RangeError` for input that the format does not allow.
 - #### Splitter
-  - The splitter follows `--ig-size`. The bar is 6px, 12px or 18px thick, the drag handle 4px, 6px or 8px with a 2px, 8px or 8px radius, and the expanders grow with them. The default is small, which is the size from before, so a splitter without `--ig-size` looks the same. `--ig-splitter-size` still sets the small size, and the medium and large steps add to it. A `--ig-splitter-border-radius` that you set applies at every size. In the Indigo theme the idle bar is 1px, 4px or 8px thick by size. The 48px gap around the drag handle is measured from the icon box of the design, so each expander is 5px further from the handle than before at the default size, 3px in the Indigo theme. The area of an expander that takes the pointer is that icon box, centered on the arrow: 18px, 20px or 24px square, 14px, 16px or 24px in the Indigo theme. Before, it was the arrow alone, 4px by 8px at the default size. Before, the splitter had one size, so an app that sets `--ig-size` to medium or large on the splitter or on an ancestor now gets a thicker bar. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
+  - The splitter follows `--ig-size`. The bar is 6px, 12px or 18px thick, the drag handle 4px, 6px or 8px with a 2px, 8px or 8px radius, and the expanders grow with them. The default is small, which is the size from before, so a splitter without `--ig-size` looks the same. `--ig-splitter-size` still sets the small size, and the medium and large steps add to it. A `--ig-splitter-border-radius` that you set applies at every size. In the Indigo theme the idle bar is 1px, 4px or 8px thick by size. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
 
 ### Changed
 - #### Accordion, Expansion panel
@@ -65,6 +65,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `checkValidity()` and `reportValidity()` emit `invalid` on the radios of the group in DOM order. Before, the other radios emitted it first, and the called radio last.
 - #### Select
   - <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when other code already called `preventDefault()` on the key, as in the dropdown. Content in the `header` and `footer` slots still keeps a key that it handled.
+- #### Splitter
+  - An app that sets `--ig-size` to medium or large on the splitter or on an ancestor gets a thicker bar. Before, the splitter had one size. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
+  - The 48px gap around the drag handle is measured from the icon box of the design, so each expander is 5px further from the handle at the default size, 3px in the Indigo theme. The area of an expander that takes the pointer is that icon box, centered on the arrow: 18px, 20px or 24px square, 14px, 16px or 24px in the Indigo theme. Before, it was the arrow alone, 4px by 8px at the default size.
 - #### Tabs
   - The first render shows at once. The selected indicator does not slide in from the start of the strip, and the selected header does not fade in. This also applies when the tabs show later than they render. A selection change after that still animates.
 

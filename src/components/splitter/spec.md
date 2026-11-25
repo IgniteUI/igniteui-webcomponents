@@ -549,6 +549,11 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 51. In the Indigo theme, the hovered bar has the thickness of the size.
 52. In both orientations and at every size, the hitbox of each expander is its icon box, centered on the triangle.
 
+## Assumptions and limitations
+
+- In the Indigo theme, a change of `--ig-size` at run time reaches the idle bar after the 0.5s delay of the bar
+  transition. Until then the idle bar keeps its old thickness.
+
 ## Accessibility
 
 ### ARIA roles and properties

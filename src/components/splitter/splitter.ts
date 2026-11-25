@@ -1001,7 +1001,7 @@ export default class IgcSplitterComponent extends I18nMixin(
       style[`padding${end}`],
       style[`border${start}Width`],
       style[`border${end}Width`],
-    ].reduce((sum, value) => sum + (Number.parseFloat(value) || 0), 0);
+    ].reduce((sum, value) => sum + asNumber(value), 0);
 
     return roundPrecise((thickness * container) / layoutContainer, 3);
   }
