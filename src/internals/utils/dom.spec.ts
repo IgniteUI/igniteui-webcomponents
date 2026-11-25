@@ -6,6 +6,7 @@ import {
   getScaleFactor,
   getVisibleAncestor,
   hasNegativeTabIndex,
+  isAssignedTo,
   iterNodes,
   normalizedTextContent,
   pointToFraction,
@@ -226,6 +227,29 @@ describe('DOM utilities', () => {
         Node.TEXT_NODE,
         Node.COMMENT_NODE,
       ]);
+    });
+  });
+
+  describe('isAssignedTo', () => {
+    it('matches the slot assignment of the browser', async () => {
+      const host = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).innerHTML =
+        '<slot></slot><slot name="start"></slot>';
+
+      host.innerHTML =
+        '<b slot="start"></b><i slot=""></i><u></u>text<!--comment-->';
+      await fixture(host);
+      const children = Array.from(host.childNodes);
+
+      for (const name of ['', 'start']) {
+        const slot = host.shadowRoot!.querySelector<HTMLSlotElement>(
+          name ? `slot[name="${name}"]` : 'slot:not([name])'
+        )!;
+
+        expect(children.filter((node) => isAssignedTo(node, name))).to.eql(
+          slot.assignedNodes()
+        );
+      }
     });
   });
 

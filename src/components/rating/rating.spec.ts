@@ -17,6 +17,7 @@ import {
   homeKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { readFirstUpdate } from '#internals/testing/first-render.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
@@ -213,6 +214,21 @@ describe('Rating component', () => {
         expect(symbol.offsetParent).to.be.ok;
         expect(symbol.getClientRects()).to.not.be.empty;
       });
+    });
+
+    it('renders no default symbols in the first render with projected symbols', async () => {
+      const rating = document.createElement(IgcRatingComponent.tagName);
+      rating.append(
+        document.createElement(IgcRatingSymbolComponent.tagName),
+        document.createElement(IgcRatingSymbolComponent.tagName)
+      );
+
+      const defaults = await readFirstUpdate(
+        rating,
+        () => getRatingSymbols(rating).length
+      );
+
+      expect(defaults).to.equal(0);
     });
 
     it('correctly renders either default or projected symbols', async () => {

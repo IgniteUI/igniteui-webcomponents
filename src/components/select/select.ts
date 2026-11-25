@@ -24,7 +24,7 @@ import { FormValueSelectTransformers } from '#internals/mixins/forms/form-transf
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
-import { isElement, normalizedTextContent } from '#internals/utils/dom.js';
+import { isAssignedTo, normalizedTextContent } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   focusLeftHost,
@@ -417,11 +417,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
 
     return normalizedTextContent(
-      Array.from(selected.childNodes).filter((node) =>
-        isElement(node)
-          ? !node.hasAttribute('slot')
-          : node.nodeType === Node.TEXT_NODE
-      )
+      Array.from(selected.childNodes).filter((node) => isAssignedTo(node, ''))
     );
   }
 

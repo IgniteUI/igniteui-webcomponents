@@ -162,6 +162,16 @@ export function isElement(node: unknown): node is Element {
   return node instanceof Node && node.nodeType === Node.ELEMENT_NODE;
 }
 
+/**
+ * Whether a child `node` of a shadow host goes to the slot named `slotName`,
+ * with `''` for the default slot. A text node goes only to the default slot.
+ */
+export function isAssignedTo(node: Node, slotName: string): boolean {
+  return isElement(node)
+    ? node.slot === slotName
+    : slotName === '' && node.nodeType === Node.TEXT_NODE;
+}
+
 export function isDocument(node: unknown): node is Document {
   return node instanceof Node && node.nodeType === Node.DOCUMENT_NODE;
 }

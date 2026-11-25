@@ -51,6 +51,7 @@
 |       4 | 2026-10-29 | A change of `open` against a running transition ends it                 |
 |       5 | 2026-11-12 | Find-in-page and links to an element open a collapsed panel             |
 |       6 | 2026-11-20 | A change of `open` also ends the transitions of the host, such as the spacing in an accordion |
+|       7 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 
