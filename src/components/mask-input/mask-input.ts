@@ -130,9 +130,15 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
   @property()
   public set value(string: string) {
     const value = string ?? '';
-    this._maskedValue = this._parser.apply(value);
-    this._updateMaskDisplay();
-    this._formValue.setValueAndFormState(value);
+    const raw = this._parser.rawValue(value);
+
+    // A write of the current value, as a React wrapper does on each render, keeps the text.
+    if (value !== this.value || raw !== this._formValue.value) {
+      this._maskedValue = this._parser.apply(value);
+      this._updateMaskDisplay();
+    }
+
+    this._formValue.setValueAndFormState(raw);
   }
 
   public get value(): string {
@@ -152,8 +158,20 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
    */
   @property()
   public override set mask(value: string) {
+    const previous = this._parser.mask;
     this._parser.mask = value;
-    this._reapplyMask();
+
+    if (this._parser.mask !== previous) {
+      this._reapplyMask();
+
+      // The attributes set up the control in any order. A later change stores the raw
+      // value of the new text, and the `mask` change submits it.
+      if (this.hasUpdated) {
+        this._writeFrom('normalize', () => {
+          this._formValue.value = this._parser.parse(this._maskedValue);
+        });
+      }
+    }
   }
 
   public override get mask(): string {
@@ -168,8 +186,12 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
    */
   @property()
   public override set prompt(value: string) {
+    const previous = this._parser.prompt;
     this._parser.prompt = value;
-    this._reapplyMask();
+
+    if (this._parser.prompt !== previous) {
+      this._maskedValue = this._parser.swapPrompt(this._maskedValue, previous);
+    }
   }
 
   public override get prompt(): string {
@@ -200,10 +222,7 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
 
   //#region Internal methods
 
-  /**
-   * Bypasses the `value` setter, whose `apply(parse(x))` left-packs the text:
-   * `1_2-___` would become `12_-___`.
-   */
+  /** Not through the `value` setter, which also empties a focused empty mask. */
   protected override _commitMaskedValue(value: string): void {
     this._maskedValue = value;
     this._formValue.setValueAndFormState(this._parser.parse(value));
@@ -218,10 +237,14 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     this._emitTouchedEvent('igcInput', { detail: this.value });
   }
 
-  /** Applies a new mask or prompt to the current value. */
+  /** Shows the value, or the empty mask of a focused control, in a new mask. */
   private _reapplyMask(): void {
-    if (this.value) {
+    if (this._formValue.value || this._maskedValue) {
       this._maskedValue = this._parser.apply(this._formValue.value);
+    }
+
+    if (!this._focused) {
+      this._updateMaskDisplay();
     }
   }
 
