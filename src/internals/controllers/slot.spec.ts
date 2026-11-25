@@ -9,7 +9,6 @@ import {
 import { LitElement, nothing, type PropertyValues } from 'lit';
 import { ref } from 'lit/directives/ref.js';
 import { firstOf, lastOf } from '../utils/arrays.js';
-import { isElement } from '../utils/dom.js';
 import {
   addSlotController,
   type SlotChangeCallbackParameters,
@@ -293,7 +292,9 @@ describe('Slots controller', () => {
 
     function nodeLabels(nodes: Node[]): NodeLabel[] {
       return nodes.map((node) =>
-        isElement(node) ? node.localName : node.textContent
+        node.nodeType === Node.ELEMENT_NODE
+          ? (node as Element).localName
+          : node.textContent
       );
     }
 
@@ -377,6 +378,19 @@ describe('Slots controller', () => {
       expect(firstOf(snapshots).end).to.eql(
         snapshotQueries(inner.slotController).end
       );
+    });
+
+    it('reports an element adopted from an iframe', async () => {
+      const iframe = await fixture<HTMLIFrameElement>(html`<iframe></iframe>`);
+      const host = document.createElement(firstRenderTag) as FirstRenderHost;
+      // The element keeps the prototypes of the iframe window.
+      host.append(iframe.contentDocument!.createElement('b'));
+      await fixture(host);
+
+      expect(firstOf(snapshots).defaultElements).to.eql(['b']);
+      expect(snapshotQueries(host.slotController).defaultElements).to.eql([
+        'b',
+      ]);
     });
 
     it('reports no content to a query before the first update, such as from a setter', async () => {

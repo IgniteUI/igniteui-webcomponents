@@ -5,11 +5,7 @@ import {
   type ReactiveControllerHost,
 } from 'lit';
 import { isEmpty } from '../utils/arrays.js';
-import {
-  isAssignedTo,
-  isElement,
-  normalizedTextContent,
-} from '../utils/dom.js';
+import { isAssignedTo, normalizedTextContent } from '../utils/dom.js';
 
 type InferSlotNames<T> = T extends readonly (infer U)[] ? U : never;
 
@@ -184,8 +180,9 @@ class SlotController<T> implements ReactiveController {
     slot: T,
     options?: SlotQueryOptions
   ): U[] {
+    // An element adopted from an iframe fails `isElement`, as `instanceof Node`.
     const elements = this.getAssignedNodes(slot, options?.flatten).filter(
-      isElement
+      (node) => node.nodeType === Node.ELEMENT_NODE
     ) as U[];
 
     return options?.selector

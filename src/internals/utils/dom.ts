@@ -165,10 +165,11 @@ export function isElement(node: unknown): node is Element {
 /**
  * Whether a child `node` of a shadow host goes to the slot named `slotName`,
  * with `''` for the default slot. A text node goes only to the default slot.
+ * The `nodeType` checks also accept an element adopted from an iframe.
  */
 export function isAssignedTo(node: Node, slotName: string): boolean {
-  return isElement(node)
-    ? node.slot === slotName
+  return node.nodeType === Node.ELEMENT_NODE
+    ? (node as Element).slot === slotName
     : slotName === '' && node.nodeType === Node.TEXT_NODE;
 }
 

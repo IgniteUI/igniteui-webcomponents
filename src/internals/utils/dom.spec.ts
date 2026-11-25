@@ -251,6 +251,16 @@ describe('DOM utilities', () => {
         );
       }
     });
+
+    it('matches an element of an iframe', async () => {
+      const iframe = await fixture<HTMLIFrameElement>(html`<iframe></iframe>`);
+      const element = iframe.contentDocument!.createElement('b');
+      expect(isAssignedTo(element, '')).to.be.true;
+
+      element.slot = 'start';
+      expect(isAssignedTo(element, 'start')).to.be.true;
+      expect(isAssignedTo(element, '')).to.be.false;
+    });
   });
 
   describe('normalizedTextContent with nodes without text', () => {

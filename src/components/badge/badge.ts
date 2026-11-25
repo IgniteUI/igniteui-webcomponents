@@ -56,7 +56,13 @@ export default class IgcBadgeComponent extends LitElement {
       .getAssignedNodes(DefaultSlot)
       .filter((node) => isElement(node) || node.textContent?.trim());
 
-    return isEmpty(rest) && isElement(content) && content.matches('igc-icon');
+    // The server has no slotted content, and `isElement` needs the DOM `Node`.
+    return (
+      content !== undefined &&
+      isEmpty(rest) &&
+      isElement(content) &&
+      content.matches('igc-icon')
+    );
   }
 
   /**
