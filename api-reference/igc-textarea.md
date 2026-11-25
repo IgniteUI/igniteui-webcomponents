@@ -43,6 +43,10 @@ defineComponents(IgcTextareaComponent);
   less than 1 shows 2 lines.
 - `value`: `string`. Attribute: `value`.
   The value of the component.
+- `defaultValue`: `string`. No attribute.
+  The default value of the control. A form reset restores the value to it.
+  While the value is unchanged since the start or the last form reset, a
+  new default also sets the value. The `value` attribute also sets it.
 - `spellcheck`: `boolean`. Default: `true`. Attribute: `spellcheck`.
   Whether the browser checks the spelling of the value. As for the native attribute,
   only the `"false"` attribute value turns the check off.
@@ -61,10 +65,6 @@ defineComponents(IgcTextareaComponent);
 - `required`: `boolean`. Default: `false`. Attribute: `required`, reflected.
   Whether the control is required. A required control that has no value,
   or is not checked, fails validation.
-- `defaultValue`: `unknown`. No attribute.
-  The default value of the control. A form reset restores the value to it.
-  While the value is unchanged since the start or the last form reset, a
-  new default also sets the value. The `value` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
 - `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.

@@ -13,6 +13,10 @@ defineComponents(IgcDateRangePickerComponent);
 
 - `value`: `DateRangeValue | null`. Attribute: `value`.
   The value of the picker: a range with a `start` and an `end` date, or `null` when the range is empty.
+- `defaultValue`: `DateRangeValue | null`. No attribute.
+  The default value of the control. A form reset restores the value to it.
+  While the value is unchanged since the start or the last form reset, a
+  new default also sets the value. The `value` attribute also sets it.
 - `visibleMonths`: `number`. Default: `2`. Attribute: `visible-months`.
   The number of months displayed in the calendar: 1 or 2.
 - `customRanges`: `CustomDateRange[]`. Default: `[]`. No attribute.
@@ -42,10 +46,6 @@ defineComponents(IgcDateRangePickerComponent);
 - `required`: `boolean`. Default: `false`. Attribute: `required`, reflected.
   Whether the control is required. A required control that has no value,
   or is not checked, fails validation.
-- `defaultValue`: `unknown`. No attribute.
-  The default value of the control. A form reset restores the value to it.
-  While the value is unchanged since the start or the last form reset, a
-  new default also sets the value. The `value` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
 - `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.

@@ -156,6 +156,20 @@ export default class IgcMaskInputComponent extends MaskBehaviorMixin(
     return value ? this._maskedValue : value;
   }
 
+  /* blazorCSSuppress */
+  /**
+   * The default value of the control. A form reset restores the value to it.
+   * While the value is unchanged since the start or the last form reset, a
+   * new default also sets the value. The `value` attribute also sets it.
+   */
+  public override set defaultValue(value: string) {
+    super.defaultValue = value;
+  }
+
+  public override get defaultValue(): string {
+    return this._formValue.defaultValue;
+  }
+
   /**
    * The mask pattern of the control.
    *

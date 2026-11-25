@@ -32,6 +32,10 @@ defineComponents(IgcRatingComponent);
   Use it for screen readers and for localization.
 - `value`: `number`. Default: `0`. Attribute: `value`.
   The value of the rating, clamped between 0 and `max`.
+- `defaultValue`: `number`. No attribute.
+  The default value of the control. A form reset restores the value to it.
+  While the value is unchanged since the start or the last form reset, a
+  new default also sets the value. The `value` attribute also sets it.
 - `hoverPreview`: `boolean`. Default: `false`. Attribute: `hover-preview`, reflected.
   Whether to show a preview of the value when hovering over the symbols.
 - `readOnly`: `boolean`. Default: `false`. Attribute: `readonly`, reflected.
@@ -42,10 +46,6 @@ defineComponents(IgcRatingComponent);
   to it. It also sets `step` to 1 and rounds the value up.
 - `allowReset`: `boolean`. Default: `false`. Attribute: `allow-reset`, reflected.
   Whether to reset the rating when the user selects the same value.
-- `defaultValue`: `unknown`. No attribute.
-  The default value of the control. A form reset restores the value to it.
-  While the value is unchanged since the start or the last form reset, a
-  new default also sets the value. The `value` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
 - `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.

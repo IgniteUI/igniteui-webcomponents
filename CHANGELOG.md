@@ -47,6 +47,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `open = true` and a first render with `open` show the backdrop at once, as they do the dialog. So do an append of an open dialog and a reopen after a close that the dialog cannot cancel. Before, the backdrop faded in. `show()` still fades both in.
 - #### Dropdown
   - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
+- #### Form controls
+  - `defaultValue` has the type of the default that the control keeps. Before, its type was `unknown`. The type is `string` for the input, textarea, mask input and color picker, `number` for the rating and slider, `string | undefined` for the select, `ComboValue<T>[]` for the combo, `Date | null` for the date time input and date picker, `DateRangeValue | null` for the date range picker, and `null` for the file input. As for `value`, the date controls also accept a string. In TypeScript, a write of another type is now an error.
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
 - #### Mask input
@@ -109,7 +111,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - In single input mode, the calendar shows the month of the end that you type or spin, as it does with two inputs. Before, it showed only the month of the start.
   - The `igcInput` and `igcChange` events of content in the prefix and suffix slots of the inputs reach your handlers, and they no longer change the value of the picker. Before, the picker stopped them, and an `igcChange` from that content cleared the value, or its end date with two inputs.
   - A change of `name` renames the submitted `-start` and `-end` entries at once. Before, the form submitted the range under the old name.
+- #### Date time input
+  - The API reference and the custom elements manifest give `value` the type `Date | null`. Before, they gave `T | null`. The TypeScript type does not change.
 - #### File input
+  - A form reset always clears the selection and submits no files, also after code writes `defaultValue`. Before, the form submitted a file list written to `defaultValue` while the control showed no files, and a string one character per entry.
   - The selected files are submitted under the current `name`. Before, a change of `name` kept them under the old name, and a `name` set after the selection submitted no files.
 - #### Form controls
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.

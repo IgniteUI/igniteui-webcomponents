@@ -172,6 +172,20 @@ export default class IgcFileInputComponent extends I18nMixin(
     return this._input?.value ?? '';
   }
 
+  /* blazorCSSuppress */
+  /**
+   * The default value of the control. Always `null`: a file input has no
+   * default selection, so a form reset clears it.
+   */
+  public override set defaultValue(value: null) {
+    super.defaultValue = value;
+  }
+
+  public override get defaultValue(): null {
+    // The transformer keeps no default.
+    return this._formValue.defaultValue as null;
+  }
+
   /**
    * Whether the control allows the user to select more than one file.
    *
@@ -214,14 +228,6 @@ export default class IgcFileInputComponent extends I18nMixin(
   //#endregion
 
   //#region Internal methods
-
-  /**
-   * A file input has no default file list, so the `value` attribute gives no default.
-   * Otherwise a reset submits its string one character at a time.
-   */
-  protected override _setDefaultValue(): void {
-    this._formValue.defaultValue = null;
-  }
 
   /** Restores directly, because the read-only `value` setter never updates the form state. */
   protected override _restoreDefaultValue(): void {
