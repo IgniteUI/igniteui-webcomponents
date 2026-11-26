@@ -1,9 +1,25 @@
-import { html, LitElement } from 'lit';
+import {
+  html,
+  LitElement,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 
 import { property } from 'lit/decorators.js';
 import { addValueStateMotion } from '#animations/value-state.js';
-import { addInternalsController } from '#internals/controllers/internals.js';
+import { type ListContext, listContext } from '#internals/context.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
+import {
+  type ARIAState,
+  addInternalsController,
+} from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
+import { isEmpty } from '#internals/utils/arrays.js';
+import {
+  claimTabIndex,
+  getSlottedChildren,
+  releaseTabIndex,
+} from '#internals/utils/dom.js';
 import { all } from '#themes/list/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles } from './themes/item.base.css.js';
@@ -37,9 +53,18 @@ export default class IgcListItemComponent extends LitElement {
     registerComponent(IgcListItemComponent);
   }
 
+  private readonly _context = addAsyncContextConsumer(this, listContext);
+
+  /** The list that navigates this item, if any. */
+  private get _list(): ListContext | undefined {
+    const list = this._context.value;
+    return list?.navigates(this) ? list : undefined;
+  }
+
   /**
-   * Whether the list item is selected. It changes only the visual style of the
-   * item.
+   * Whether the list item is selected. It changes the visual style of the
+   * item. In a list with keyboard navigation, assistive technology also reads
+   * it as the selected state of the item.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
@@ -54,12 +79,71 @@ export default class IgcListItemComponent extends LitElement {
       initialARIA: {
         role: 'listitem',
       },
+      aria: () => this._resolveARIA(),
     });
 
     addValueStateMotion(this, { watch: () => [this.selected] });
   }
 
-  protected override render() {
+  //#region Lit lifecycle
+
+  public override disconnectedCallback(): void {
+    releaseTabIndex(this);
+    super.disconnectedCallback();
+  }
+
+  protected override willUpdate(): void {
+    const list = this._list;
+
+    if (list) {
+      claimTabIndex(this, list.isTabStop(this) ? '0' : '-1');
+    } else {
+      releaseTabIndex(this);
+    }
+  }
+
+  protected override updated(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('selected')) {
+      this._context.value?.syncState();
+    }
+  }
+
+  //#endregion
+
+  /**
+   * In a navigating list: an option, named by its title, unless the app gives
+   * an `aria-label`, and described by its subtitle and its header. The list
+   * updates the item when its children or its `aria-label` change.
+   */
+  private _resolveARIA(): ARIAState {
+    const list = this._list;
+
+    if (!list) {
+      return {
+        role: 'listitem',
+        ariaSelected: null,
+        ariaLabelledByElements: null,
+        ariaDescribedByElements: null,
+      };
+    }
+
+    const titles = getSlottedChildren(this, 'title');
+    const header = list.headerOf(this);
+    const descriptions = [
+      ...(isEmpty(titles) ? [] : getSlottedChildren(this, 'subtitle')),
+      ...(header ? [header] : []),
+    ];
+    const labelled = !isEmpty(titles) && !this.hasAttribute('aria-label');
+
+    return {
+      role: 'option',
+      ariaSelected: `${this.selected}`,
+      ariaLabelledByElements: labelled ? titles : null,
+      ariaDescribedByElements: isEmpty(descriptions) ? null : descriptions,
+    };
+  }
+
+  protected override render(): TemplateResult {
     return html`
       <section part="start">
         <slot name="start"></slot>

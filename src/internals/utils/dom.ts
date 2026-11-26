@@ -428,6 +428,36 @@ export function setOrRemoveAttribute(
     : element.setAttribute(name, value);
 }
 
+/** The `tabindex` of each element before a roving focus took it over. */
+const ownTabIndexes = new WeakMap<Element, string | null>();
+
+/**
+ * Sets the `tabindex` of `element` for a roving focus, and keeps the value of
+ * the app for {@link releaseTabIndex}.
+ */
+export function claimTabIndex(element: Element, value: string | null): void {
+  if (!ownTabIndexes.has(element)) {
+    ownTabIndexes.set(element, element.getAttribute('tabindex'));
+  }
+
+  setOrRemoveAttribute(element, 'tabindex', value);
+}
+
+/** Gives back the `tabindex` that `element` had before {@link claimTabIndex}. */
+export function releaseTabIndex(element: Element): void {
+  if (ownTabIndexes.has(element)) {
+    setOrRemoveAttribute(element, 'tabindex', ownTabIndexes.get(element));
+    ownTabIndexes.delete(element);
+  }
+}
+
+/** Returns the children of `host` that its slot named `slotName` takes. */
+export function getSlottedChildren(host: Element, slotName: string): Element[] {
+  return Array.from(host.children).filter((child) =>
+    isAssignedTo(child, slotName)
+  );
+}
+
 /** Whether the host has `tabindex="-1"`, which its native control follows. */
 export function hasNegativeTabIndex(host: Element): boolean {
   return host.getAttribute('tabindex') === '-1';

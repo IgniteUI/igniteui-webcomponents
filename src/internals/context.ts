@@ -4,6 +4,8 @@ import type IgcButtonGroupComponent from '../components/button-group/button-grou
 import type IgcToggleButtonComponent from '../components/button-group/toggle-button.js';
 import type IgcCarouselComponent from '../components/carousel/carousel.js';
 import type { ChatState } from '../components/chat/chat-state.js';
+import type IgcListHeaderComponent from '../components/list/list-header.js';
+import type IgcListItemComponent from '../components/list/list-item.js';
 import type IgcTileManagerComponent from '../components/tile-manager/tile-manager.js';
 import type { TabsHeaderPosition } from '../components/types.js';
 
@@ -18,6 +20,20 @@ export type ButtonGroupContext = {
   syncState: (button: IgcToggleButtonComponent) => void;
   /** Whether `button` is the tab stop of the group. */
   isTabStop: (button: IgcToggleButtonComponent) => boolean;
+};
+
+export type ListContext = {
+  /**
+   * Whether the list runs a keyboard navigation for `element`: the list
+   * navigates, and `element` is one of its own items or headers.
+   */
+  navigates: (element: Element) => boolean;
+  /** Whether `item` is the one item of the list in the tab order. */
+  isTabStop: (item: IgcListItemComponent) => boolean;
+  /** The header of the group of `item`. */
+  headerOf: (item: IgcListItemComponent) => IgcListHeaderComponent | undefined;
+  /** Picks the tab stop again after a change of the selection. */
+  syncState: () => void;
 };
 
 export type TileManagerContext = {
@@ -48,6 +64,8 @@ const chatUserInputContext = createContext<ChatState>(
 
 const breadcrumbsContext = createContext<string>(Symbol('breadcrumbs-context'));
 
+const listContext = createContext<ListContext>(Symbol('list-context'));
+
 /** The `headerPosition` of the `igc-tabs` that holds a tab. */
 const tabsHeaderPositionContext = createContext<TabsHeaderPosition>(
   Symbol('tabs-header-position-context')
@@ -59,6 +77,7 @@ export {
   carouselContext,
   chatContext,
   chatUserInputContext,
+  listContext,
   tabsHeaderPositionContext,
   tileManagerContext,
 };

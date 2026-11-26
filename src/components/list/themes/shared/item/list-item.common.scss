@@ -110,3 +110,9 @@ $theme: $material;
         color: var-get($theme, 'item-action-color-selected');
     }
 }
+
+// Inside the item, so the next item cannot cover the ring.
+:host(:focus-visible) {
+    outline: rem(1px) solid var-get($theme, 'item-focus-outline-color');
+    outline-offset: rem(-1px);
+}

@@ -8,3 +8,8 @@ $theme: $indigo;
 
     gap: rem(4px);
 }
+
+:host(:focus-visible) {
+    outline-width: rem(2px);
+    outline-offset: rem(-2px);
+}

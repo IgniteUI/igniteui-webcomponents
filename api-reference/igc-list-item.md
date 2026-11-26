@@ -12,8 +12,9 @@ defineComponents(IgcListItemComponent);
 ## Properties
 
 - `selected`: `boolean`. Default: `false`. Attribute: `selected`, reflected.
-  Whether the list item is selected. It changes only the visual style of the
-  item.
+  Whether the list item is selected. It changes the visual style of the
+  item. In a list with keyboard navigation, assistive technology also reads
+  it as the selected state of the item.
 
 ## Slots
 

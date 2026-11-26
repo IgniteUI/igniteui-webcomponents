@@ -9,3 +9,9 @@ $theme: $base;
     background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');
 }
+
+// The empty list holds the tab stop.
+:host(:focus-visible) {
+    outline: rem(1px) solid var-get($theme, 'item-focus-outline-color');
+    outline-offset: rem(-1px);
+}

@@ -1,3 +1,5 @@
+import { spaceBar } from './controllers/keys.js';
+
 /** The pause, in milliseconds, after which the next key starts a new search. */
 const SEARCH_TIMEOUT = 500;
 
@@ -13,9 +15,8 @@ type TypeaheadOptions<T extends Element> = {
    */
   text?: (item: T) => string;
   /**
-   * Whether a Space can start a search. With `false`, a Space only extends a
-   * running search, so the host can use it for something else, such as an
-   * activation. Default `true`.
+   * Whether a Space can start a search. With `false`, it only extends one, so
+   * the host can use Space to activate. Default `true`.
    */
   spaceStartsSearch?: boolean;
 };
@@ -66,7 +67,7 @@ class Typeahead<T extends Element> {
     }
 
     return (
-      event.key !== ' ' ||
+      event.key !== spaceBar ||
       this._options.spaceStartsSearch !== false ||
       this._running
     );
@@ -113,11 +114,6 @@ class Typeahead<T extends Element> {
     }
 
     return undefined;
-  }
-
-  /** Drops the search term, so the next key starts a new search. */
-  public reset(): void {
-    this._term = '';
   }
 }
 

@@ -308,4 +308,37 @@ describe('Roving focus controller', () => {
       expect(stopping.focused).to.eql([{ id: 0 }, { id: 2 }]);
     });
   });
+
+  describe('with repeating keys', () => {
+    it('should repeat the moves but activate once per press', async () => {
+      const repeatingTag = defineCE(
+        class extends LitElement {
+          public items: Item[] = [{ id: 0 }, { id: 1 }, { id: 2 }];
+          public focused: Item[] = [];
+          public activated: Item[] = [];
+
+          constructor() {
+            super();
+
+            addRovingFocusController<Item & Element>(this, {
+              keybindings: { bindingDefaults: { repeat: true } },
+              items: () => this.items as unknown as (Item & Element)[],
+              current: () => this.items[1] as unknown as Item & Element,
+              focusItem: (item) => this.focused.push(item),
+              activateItem: (item) => this.activated.push(item),
+            });
+          }
+        }
+      );
+      const tagName = unsafeStatic(repeatingTag);
+      const host = await fixture<RovingTestElement>(
+        html`<${tagName}></${tagName}>`
+      );
+      simulateKeyboard(host, 'ArrowRight', 1, { repeat: true });
+      simulateKeyboard(host, 'Enter', 1, { repeat: true });
+
+      expect(host.focused).to.eql([{ id: 2 }]);
+      expect(host.activated).to.be.empty;
+    });
+  });
 });

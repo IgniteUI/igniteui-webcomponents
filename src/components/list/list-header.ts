@@ -1,4 +1,6 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, type TemplateResult } from 'lit';
+import { listContext } from '#internals/context.js';
+import { addAsyncContextConsumer } from '#internals/controllers/async-consumer.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { all } from '#themes/list/themes/header.js';
@@ -22,18 +24,24 @@ export default class IgcListHeaderComponent extends LitElement {
     registerComponent(IgcListHeaderComponent);
   }
 
+  private readonly _context = addAsyncContextConsumer(this, listContext);
+
   constructor() {
     super();
 
     addThemingController(this, all);
 
-    // A list owns only list items. A separator would also hide the content of the header.
+    // A list owns only list items. A separator would also hide the content of
+    // the header. In a navigating list, it is hidden and describes its items.
     addInternalsController(this, {
       initialARIA: { role: 'listitem' },
+      aria: () => ({
+        ariaHidden: this._context.value?.navigates(this) ? 'true' : null,
+      }),
     });
   }
 
-  protected override render() {
+  protected override render(): TemplateResult {
     return html`<slot></slot>`;
   }
 }

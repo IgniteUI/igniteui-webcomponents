@@ -33,7 +33,7 @@ type RovingFocusControllerOptions<T extends Element> = {
   current?: () => T | null | undefined;
   /** Moves the focus to `item`. The host owns any side effects. */
   focusItem: (item: T) => void;
-  /** Runs with the current item on Enter and on Space. */
+  /** Runs with the current item on Enter and on Space, once per press. */
   activateItem?: (item: T) => void;
   /** Whether ArrowLeft and ArrowRight navigate. Defaults to `true`. */
   horizontal?: RovingFocusAxis;
@@ -41,11 +41,7 @@ type RovingFocusControllerOptions<T extends Element> = {
   vertical?: RovingFocusAxis;
   /** Whether Home and End jump to the first and last item. Default `true`. */
   homeEnd?: boolean;
-  /**
-   * Whether an arrow move from the last item goes to the first one, and from
-   * the first item to the last one. With `false`, the move stops at the
-   * ends. Default `true`.
-   */
+  /** Whether the arrow moves wrap around the ends. Default `true`. */
   wrap?: boolean;
   /**
    * How arrow navigation treats a nullish current item:
@@ -109,7 +105,8 @@ class RovingFocusController<T extends Element> {
     }
 
     if (activateItem) {
-      bindings.setActivateHandler(() => this._activate());
+      // A held key activates once, also when the arrows repeat.
+      bindings.setActivateHandler(() => this._activate(), { repeat: false });
     }
   }
 
@@ -135,8 +132,7 @@ class RovingFocusController<T extends Element> {
     const direction = rtlAware && !isLTR(this._host) ? -delta : delta;
     const target = index + direction;
 
-    // Without wrapping, a move past an end stays put. The entry from outside
-    // the set is not a wrap, so it still lands on an edge.
+    // An entry from outside the set still lands on an edge.
     if (
       this._options.wrap === false &&
       index > -1 &&

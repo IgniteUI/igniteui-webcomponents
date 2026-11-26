@@ -84,15 +84,6 @@ describe('Typeahead', () => {
       clock.tick(501);
       expect(typeahead.accepts(keydown(' '))).to.be.false;
     });
-
-    it('rejects a Space after a reset when Space does not start a search', () => {
-      const typeahead = create({ spaceStartsSearch: false });
-
-      typeahead.search('b');
-      typeahead.reset();
-
-      expect(typeahead.accepts(keydown(' '))).to.be.false;
-    });
   });
 
   describe('search without a current item', () => {
@@ -120,15 +111,6 @@ describe('Typeahead', () => {
       expect(typeahead.search('x')).to.be.undefined;
 
       clock.tick(501);
-      expect(typeahead.search('c')).to.equal(items[3]);
-    });
-
-    it('starts a new term after a reset', () => {
-      const typeahead = create();
-
-      type(typeahead, 'bl');
-      typeahead.reset();
-
       expect(typeahead.search('c')).to.equal(items[3]);
     });
 

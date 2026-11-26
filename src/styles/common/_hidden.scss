@@ -1,0 +1,9 @@
+/// Hides the host and its shadow elements that have `hidden`, which a `display`
+/// on the host overrides. `hidden="until-found"` keeps its box for find-in-page;
+/// where the browser does not know the value, its own `[hidden]` rule applies.
+@mixin hidden-host {
+    :host([hidden]),
+    [hidden]:not([hidden='until-found' i]) {
+        display: none !important;
+    }
+}

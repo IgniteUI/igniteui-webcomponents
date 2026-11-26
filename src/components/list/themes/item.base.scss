@@ -1,4 +1,5 @@
 @use 'styles/utilities' as *;
+@use 'styles/common/hidden' as *;
 @include value-state-transitions($on-host: true);
 
 :host {
@@ -23,6 +24,8 @@
         --ig-size: 1;
     }
 }
+
+@include hidden-host();
 
 ::slotted(*) {
     // We're not able to target the control part of the checkbox
@@ -71,5 +74,11 @@
     :host([selected]:last-of-type) {
         outline: rem(1px) solid Highlight;
         outline-offset: rem(-1px);
+    }
+
+    // Thicker than the selected ring, so a focused selected item stands out.
+    :host(:focus-visible) {
+        outline: rem(2px) solid Highlight;
+        outline-offset: rem(-2px);
     }
 }
