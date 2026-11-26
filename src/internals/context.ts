@@ -39,8 +39,6 @@ export type ListContext = {
   roles: () => ListRoles;
   /** Whether an item that is not selected exposes `aria-selected="false"`. */
   exposesUnselected: () => boolean;
-  /** Whether `item` is the one item of the list in the tab order. */
-  isTabStop: (item: IgcListItemComponent) => boolean;
   /** The header of the group of `item`. */
   headerOf: (item: IgcListItemComponent) => IgcListHeaderComponent | undefined;
   /** Picks the tab stop again after a change of the selection. */

@@ -1,4 +1,5 @@
 @use 'styles/utilities' as *;
+@use '../focus-ring' as *;
 
 :host {
     padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
@@ -21,7 +22,4 @@
     gap: sizable(rem(4px), rem(6px), rem(8px));
 }
 
-:host(:focus-visible) {
-    outline-width: rem(2px);
-    outline-offset: rem(-2px);
-}
+@include focus-ring(2px);

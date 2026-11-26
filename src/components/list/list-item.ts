@@ -13,15 +13,16 @@ import {
   type ARIAState,
   addInternalsController,
 } from '#internals/controllers/internals.js';
+import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import {
-  claimTabIndex,
-  getSlottedChildren,
+  normalizedTextContent,
   releaseTabIndex,
 } from '#internals/utils/dom.js';
 import { all } from '#themes/list/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import { styles } from './themes/item.base.css.js';
 import { styles as shared } from './themes/shared/item/list-item.common.css.js';
 
@@ -46,20 +47,40 @@ import { styles as shared } from './themes/shared/item/list-item.common.css.js';
  */
 export default class IgcListItemComponent extends LitElement {
   public static readonly tagName = 'igc-list-item';
-  public static override styles = [styles, shared];
+  public static override styles = [componentBase, styles, shared];
 
   /* blazorSuppress */
   public static register(): void {
     registerComponent(IgcListItemComponent);
   }
 
+  //#region Internal state and properties
+
   private readonly _context = addAsyncContextConsumer(this, listContext);
+
+  // Before the internals, so the first ARIA update can read the slots.
+  private readonly _slots = addSlotController(this, {
+    slots: setSlots('title', 'subtitle'),
+  });
+
+  private readonly _internals = addInternalsController(this, {
+    initialARIA: { role: 'listitem' },
+    aria: () => this._resolveARIA(),
+  });
 
   /** The list that navigates this item, if any. */
   private get _list(): ListContext | undefined {
     const list = this._context.value;
     return list?.navigates(this) ? list : undefined;
   }
+
+  private get _titles(): Element[] {
+    return this._slots.getAssignedElements('title');
+  }
+
+  //#endregion
+
+  //#region Public attributes and properties
 
   /**
    * Whether the list item is selected. It changes the visual style of the
@@ -70,22 +91,16 @@ export default class IgcListItemComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public selected = false;
 
+  //#endregion
+
   constructor() {
     super();
 
     addThemingController(this, all);
-
-    addInternalsController(this, {
-      initialARIA: {
-        role: 'listitem',
-      },
-      aria: () => this._resolveARIA(),
-    });
-
     addValueStateMotion(this, { watch: () => [this.selected] });
   }
 
-  //#region Lit lifecycle
+  //#region Lit lifecycle methods
 
   public override disconnectedCallback(): void {
     releaseTabIndex(this);
@@ -93,27 +108,34 @@ export default class IgcListItemComponent extends LitElement {
   }
 
   protected override willUpdate(): void {
-    const list = this._list;
-
-    if (list) {
-      claimTabIndex(this, list.isTabStop(this) ? '0' : '-1');
-    } else {
-      releaseTabIndex(this);
-    }
+    // The context changes with no property, so this runs on each update.
+    this._internals.setState('navigable', !!this._list);
   }
 
   protected override updated(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('selected')) {
-      this._context.value?.syncState();
+      this._list?.syncState();
     }
   }
 
   //#endregion
 
+  //#region Internal API
+
+  /**
+   * @hidden @internal
+   * The text that a type-ahead search of the list matches: the title, else the
+   * whole content.
+   */
+  public get _searchText(): string {
+    const titles = this._titles;
+    return normalizedTextContent(isEmpty(titles) ? [this] : titles);
+  }
+
   /**
    * In a navigating list: an option or a row, named by its title, unless the
    * app gives an `aria-label`, and described by its subtitle and its header.
-   * The list updates the item when its children or its `aria-label` change.
+   * The list updates the item when its `aria-label` changes.
    */
   private _resolveARIA(): ARIAState {
     const list = this._list;
@@ -127,10 +149,10 @@ export default class IgcListItemComponent extends LitElement {
       };
     }
 
-    const titles = getSlottedChildren(this, 'title');
+    const titles = this._titles;
     const header = list.headerOf(this);
     const descriptions = [
-      ...(isEmpty(titles) ? [] : getSlottedChildren(this, 'subtitle')),
+      ...(isEmpty(titles) ? [] : this._slots.getAssignedElements('subtitle')),
       ...(header ? [header] : []),
     ];
     const labelled = !isEmpty(titles) && !this.hasAttribute('aria-label');
@@ -143,6 +165,8 @@ export default class IgcListItemComponent extends LitElement {
       ariaDescribedByElements: isEmpty(descriptions) ? null : descriptions,
     };
   }
+
+  //#endregion
 
   protected override render(): TemplateResult {
     const parts = html`

@@ -6,7 +6,7 @@ import {
   nextFrame,
   waitUntil,
 } from '@open-wc/testing';
-import { sendKeys } from '@web/test-runner-commands';
+import { emulateMedia, sendKeys } from '@web/test-runner-commands';
 import { LitElement, type TemplateResult } from 'lit';
 import { spy, useFakeTimers } from 'sinon';
 
@@ -17,6 +17,7 @@ import {
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   axeListInternalsRolesOptions,
+  clickWithMouse,
   hoverWithMouse,
   isFocused,
   withDocumentSheets,
@@ -29,8 +30,11 @@ import {
 } from '#internals/testing/simulate.spec.js';
 import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
+import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
+import { configureTheme } from '../../theming/config.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
+import IgcComboComponent from '../combo/combo.js';
 import IgcInputComponent from '../input/input.js';
 import IgcSelectComponent from '../select/select.js';
 import IgcListHeaderComponent from './list-header.js';
@@ -857,6 +861,94 @@ describe('List', () => {
           expect(getComputedStyle(list).outlineStyle).to.equal('solid');
         });
       });
+
+      it('shows on a selected item', async () => {
+        await create(people);
+        items[1].selected = true;
+        await settle();
+        items[0].focus();
+
+        await sendKeys({ press: 'ArrowDown' });
+
+        await withDocumentSheets(palette, () => {
+          expect(getComputedStyle(items[1]).outlineWidth).to.equal('1px');
+        });
+      });
+
+      it('does not show after a click', async () => {
+        await create(people);
+        // The items above a later item can change size as they first render.
+        await clickWithMouse(items[0]);
+
+        await withDocumentSheets(palette, () => {
+          expect(isFocused(items[0])).to.be.true;
+          expect(getComputedStyle(items[0]).outlineStyle).to.equal('none');
+        });
+      });
+
+      it('is 2px wide in the Indigo theme', async () => {
+        await create(people);
+
+        try {
+          configureTheme('indigo');
+          await settle();
+          items[0].focus();
+          await sendKeys({ press: 'ArrowDown' });
+
+          await withDocumentSheets([indigo.styleSheet!], () => {
+            expect(getComputedStyle(items[1]).outlineWidth).to.equal('2px');
+          });
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+
+      it('uses the system highlight color in forced colors mode', async () => {
+        await create(people);
+        items[1].selected = true;
+        await settle();
+
+        const probe = document.createElement('div');
+        probe.style.color = 'Highlight';
+        document.body.append(probe);
+
+        try {
+          await emulateMedia({ forcedColors: 'active' });
+          items[0].focus();
+          await sendKeys({ press: 'ArrowDown' });
+
+          await withDocumentSheets(palette, () => {
+            const style = getComputedStyle(items[1]);
+
+            // Thicker than the ring of a selected item.
+            expect(style.outlineWidth).to.equal('2px');
+            expect(style.outlineColor).to.equal(getComputedStyle(probe).color);
+          });
+        } finally {
+          probe.remove();
+          await emulateMedia({ forcedColors: 'none' });
+        }
+      });
+
+      it('leaves the focus of an item in a static list to the browser', async () => {
+        const root = await fixture<HTMLElement>(html`
+          <div>
+            <button>Before</button>
+            <igc-list>
+              <igc-list-item tabindex="0">Kate</igc-list-item>
+            </igc-list>
+          </div>
+        `);
+        const item = root.querySelector('igc-list-item')!;
+
+        root.querySelector('button')!.focus();
+        await sendKeys({ press: 'Tab' });
+
+        await withDocumentSheets(palette, () => {
+          expect(isFocused(item)).to.be.true;
+          expect(getComputedStyle(item).outlineOffset).to.equal('0px');
+        });
+      });
     });
   });
 
@@ -871,6 +963,7 @@ describe('List', () => {
       defineComponents(
         IgcButtonComponent,
         IgcCheckboxComponent,
+        IgcComboComponent,
         IgcInputComponent,
         IgcSelectComponent
       );
@@ -1033,6 +1126,37 @@ describe('List', () => {
         await settle();
 
         expect(call.getAttribute('tabindex')).to.equal('-1');
+      });
+
+      it('takes out an element that becomes focusable', async () => {
+        await createContacts();
+        const anchor = document.createElement('a');
+        const tag = document.createElement('span');
+        const note = document.createElement('div');
+        const elements = [anchor, tag, note];
+
+        anchor.textContent = 'Docs';
+        tag.textContent = 'Tag';
+        note.textContent = 'Note';
+        items[2].append(...elements);
+        await settle();
+
+        expect(elements.map((each) => each.getAttribute('tabindex'))).to.eql([
+          null,
+          null,
+          null,
+        ]);
+
+        anchor.href = '#docs';
+        tag.tabIndex = 0;
+        note.contentEditable = 'true';
+        await settle();
+
+        expect(elements.map((each) => each.getAttribute('tabindex'))).to.eql([
+          '-1',
+          '-1',
+          '-1',
+        ]);
       });
 
       it('gives the app its tabindex back when the mode changes', async () => {
@@ -1228,6 +1352,30 @@ describe('List', () => {
         expect(isFocused(select)).to.be.true;
 
         await press('Escape');
+        expect(isFocused(items[2])).to.be.true;
+      });
+
+      it('leaves Escape to a closed combo that handles it, and returns to the row on F2', async () => {
+        const combo = document.createElement(
+          IgcComboComponent.tagName
+        ) as IgcComboComponent<{ name: string }>;
+        combo.setAttribute('label', 'Tags');
+        combo.valueKey = 'name';
+        combo.displayKey = 'name';
+        combo.data = [{ name: 'Design' }, { name: 'Code' }];
+        combo.value = ['Design'];
+        items[2].append(combo);
+        await settle();
+        items[2].focus();
+
+        await press('ArrowRight');
+        expect(isFocused(combo)).to.be.true;
+
+        await press('Escape');
+        expect(combo.value).to.be.empty;
+        expect(isFocused(combo)).to.be.true;
+
+        await press('F2');
         expect(isFocused(items[2])).to.be.true;
       });
 

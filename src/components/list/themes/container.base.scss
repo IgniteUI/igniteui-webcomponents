@@ -7,10 +7,3 @@
     overflow: hidden auto;
     height: auto;
 }
-
-@media (forced-colors: active) {
-    :host(:focus-visible) {
-        outline: rem(2px) solid Highlight;
-        outline-offset: rem(-2px);
-    }
-}

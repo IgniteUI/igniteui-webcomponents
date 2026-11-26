@@ -52,9 +52,8 @@ class Typeahead<T extends Element> {
   }
 
   /**
-   * Whether `event` is a key of a search: one printable character, without
-   * Ctrl, Meta or Alt, which make it a shortcut. When `spaceStartsSearch` is
-   * `false`, a Space counts only while a search runs.
+   * Whether `event` is a key of a search. With `spaceStartsSearch: false`, a
+   * Space counts only while a search runs.
    */
   public accepts(event: KeyboardEvent): boolean {
     if (
@@ -74,23 +73,16 @@ class Typeahead<T extends Element> {
   }
 
   /**
-   * Adds `key` to the search term and returns the item that the term finds, or
-   * `undefined` when no item matches.
-   *
-   * @remarks
-   * Without `current`, the first item whose text starts with the term matches.
-   * With `current`, the search goes on from it and wraps around: a longer term
-   * can keep `current`, and a single letter, also when typed again, goes to the
-   * next item that starts with it.
+   * Adds `key` to the search term and returns the item that it finds. With
+   * `current`, the search starts there and wraps, and a repeated letter moves
+   * to the next item with it.
    */
   public search(key: string, current?: T | null): T | undefined {
-    const now = Date.now();
-
-    if (now - this._lastKeyTime > SEARCH_TIMEOUT) {
+    if (!this._running) {
       this._term = '';
     }
 
-    this._lastKeyTime = now;
+    this._lastKeyTime = Date.now();
     this._term += key.toLocaleLowerCase();
 
     const items = this._options.items();

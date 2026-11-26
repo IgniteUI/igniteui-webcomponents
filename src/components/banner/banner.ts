@@ -12,6 +12,7 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { all } from '#themes/banner/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as componentBase } from '../../styles/common/component.css.js';
 import IgcButtonComponent from '../button/button.js';
 import { styles } from './themes/banner.base.css.js';
 
@@ -59,7 +60,7 @@ export default class IgcBannerComponent extends EventEmitterMixin<IgcBannerCompo
   LitElement
 ) {
   public static readonly tagName = 'igc-banner';
-  public static override styles = [styles];
+  public static override styles = [componentBase, styles];
 
   /* blazorSuppress */
   public static register(): void {

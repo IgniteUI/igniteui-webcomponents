@@ -127,21 +127,17 @@ class RovingFocusController<T extends Element> {
       return;
     }
 
-    // An item outside the set gives -1, so the move wraps in from an edge.
+    // An item outside the set gives -1, so the move wraps in from an edge,
+    // also without `wrap`.
     const index = current ? items.indexOf(current) : -1;
     const direction = rtlAware && !isLTR(this._host) ? -delta : delta;
     const target = index + direction;
 
-    // An entry from outside the set still lands on an edge.
-    if (
-      this._options.wrap === false &&
-      index > -1 &&
-      (target < 0 || target >= items.length)
-    ) {
-      return;
-    }
-
-    this._focus(items[wrap(0, items.length - 1, target)]);
+    this._focus(
+      this._options.wrap === false && index > -1
+        ? items[target]
+        : items[wrap(0, items.length - 1, target)]
+    );
   }
 
   private _activate(): void {

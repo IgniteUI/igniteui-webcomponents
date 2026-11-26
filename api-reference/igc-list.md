@@ -16,18 +16,15 @@ defineComponents(IgcListComponent);
   - `none`: a static list. Its items are not focusable.
   - `listbox`: the list is one tab stop. The arrow keys, Home, End and typed
     letters move between the items, and Enter or Space clicks the focused
-    item. Each item exposes its `selected` state to assistive technology.
-    An item holds no interactive content.
-  - `grid`: as `listbox`, and each item is a row that can hold controls.
-    The list takes the controls out of the tab order. Left and Right move
-    between the item and its controls, Up and Down move from a control to
-    the next or previous item, and Escape or F2 returns to the item. A
-    control that uses the arrow keys, such as a text field, keeps them.
+    item. An item holds no interactive content.
+  - `grid`: as `listbox`, for items that hold controls. Left and Right move
+    between an item and its controls, and Escape or F2 returns to the item.
+    A control that uses the arrow keys, such as a text field, keeps them.
 
-  The app owns the selection. It toggles `selected` on the items, for
-  example in a `click` handler, and sets `aria-multiselectable="true"` on
-  the list when more than one item can be selected. A grid item that is not
-  selected exposes its state only while the list has `aria-multiselectable`.
+  The app owns the selection: it toggles `selected` on the items and sets
+  `aria-multiselectable="true"` on the list for a multiple selection. In a
+  grid, an item that is not selected exposes its state only with
+  `aria-multiselectable`.
 
 ## Slots
 

@@ -57,6 +57,7 @@ This directory hosts three public components: [`igc-list`](#igc-list), [`igc-lis
 |       7 | 2026-11-26 | Listbox navigation (`navigation`), the `empty` slot, item names from the title; the `hidden` attribute hides an item and a header |
 |       8 | 2026-11-26 | Grid navigation (`navigation="grid"`) for items that hold controls |
 |       9 | 2026-11-26 | A grid control that removes itself leaves the focus on its row; slotted content with `hidden` does not render |
+|      10 | 2026-11-26 | The focus ring shows only in a list with navigation and uses the system highlight color in forced colors mode; an element that becomes focusable in a grid row leaves the tab order |
 
 ## Overview
 
@@ -131,7 +132,7 @@ or the custom content, and finally the end content. Headers separate the section
 **Keyboard navigation.** In a list with `navigation="listbox"`, Tab reaches one item: the item focused last, else the
 first selected item, else the first item. The arrow keys, Home, End and typed letters move the focus between the
 items, and Enter or Space activates the focused item. The next Tab leaves the list. The focused item shows a focus
-ring, also when it is selected.
+ring, also when it is selected. A static list leaves the focus ring of a focusable item to the browser.
 
 **Grid navigation.** In a list with `navigation="grid"`, the keys of the listbox move between the items. Right and Left
 move from the focused item to its controls and between them, and back to the item after the last or before the
@@ -234,9 +235,11 @@ the selection. In a list with keyboard navigation, `selected` is also the state 
 
 - The list sets `tabindex="-1"` on the controls of the items, and gives the app its own value back when the mode
   changes or a control leaves the list. For a component that renders its control in its shadow root, such as
-  `igc-button` or `igc-checkbox`, the value goes on the component. Controls that arrive later are handled too.
+  `igc-button` or `igc-checkbox`, the value goes on the component. Controls that arrive later, and elements that
+  become focusable through `href`, `tabindex` or `contenteditable`, are handled too.
 - Left and Right reach the controls in the order of the layout: the `start` area, the title and subtitle, the
-  content, then the `end` area. A disabled control and one that does not render are skipped.
+  content, then the `end` area. A control that is disabled, inert, hidden from assistive technology or does not
+  render is skipped.
 - A click on a control bubbles to its item. Stop the propagation in the control's own `click` handler, so that the
   control does not also activate the item.
 - A list with `navigation` set, inside an item, counts as one control. Left and Right focus its tab stop item, and
@@ -456,8 +459,11 @@ Change of the navigation:
 
 Focus ring:
 
-54. The item that the keyboard focused shows the ring (with the Bootstrap palette adopted).
-55. The empty list that has the focus shows the ring.
+54. The item that the keyboard focused shows the ring (with the Bootstrap palette adopted), also when it is selected.
+    A click shows no ring. The ring is 2px in Indigo. In forced colors mode it is 2px in the system highlight color,
+    also on a selected item (real key presses).
+55. The empty list that has the focus shows the ring. A focusable item of a static list keeps the ring of the
+    browser.
 
 ### Grid navigation
 
@@ -477,7 +483,8 @@ Tab order:
 61. The controls of the rows have `tabindex="-1"`, and one row is the tab stop.
 62. One Tab reaches the list and the next leaves it, also from a control, in both directions (real key presses).
 63. A control that arrives later leaves the tab order once it renders.
-64. A disabled control leaves the tab order once it is enabled.
+64. A disabled control leaves the tab order once it is enabled. So does an element that becomes focusable through
+    `href`, `tabindex` or `contenteditable`.
 65. A change of the mode gives the app its `tabindex` back.
 66. A control that leaves the list gets the app's `tabindex` back.
 
@@ -496,7 +503,7 @@ Keyboard:
 77. A key that a control handled stays with it.
 78. Escape and F2 return from a control to its row, also from a text field.
 79. Escape closes the open popup of an `igc-select` and leaves the focus on it; the next Escape returns to the row
-    (real key presses).
+    (real key presses). A closed `igc-combo` that handles Escape keeps it, and F2 returns to the row.
 80. Enter and Space click the row, but not from a control.
 81. Type-ahead moves between the rows, but not from a control.
 

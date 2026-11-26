@@ -1,5 +1,4 @@
 @use '../utilities/mixins' as *;
-@use 'hidden' as *;
 @use 'igniteui-theming/sass/themes/mixins' as *;
 @use 'igniteui-theming/sass/color/functions' as *;
 @use 'igniteui-theming/sass/typography/functions' as *;
@@ -23,7 +22,18 @@
     }
 }
 
-@include hidden-host();
+// A `display` in the component styles overrides `hidden`. `hidden="until-found"`
+// keeps its box for find-in-page; where the browser does not know the value, its
+// own `[hidden]` rule applies.
+:host([hidden]),
+[hidden]:not([hidden='until-found' i]) {
+    display: none !important;
+}
+
+// A rule of its own: a selector that an engine rejects drops its whole rule.
+::slotted([hidden]:not([hidden='until-found' i])) {
+    display: none !important;
+}
 
 // A form control inside a component reserves no message lines. The outer
 // component renders its own, if it has any.

@@ -478,7 +478,9 @@ export function claimTabIndex(element: Element, value: string | null): void {
     ownTabIndexes.set(element, element.getAttribute('tabindex'));
   }
 
-  setOrRemoveAttribute(element, 'tabindex', value);
+  if (element.getAttribute('tabindex') !== value) {
+    setOrRemoveAttribute(element, 'tabindex', value);
+  }
 }
 
 /** Gives back the `tabindex` that `element` had before {@link claimTabIndex}. */

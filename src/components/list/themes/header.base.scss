@@ -1,5 +1,4 @@
 @use 'styles/utilities' as *;
-@use 'styles/common/hidden' as *;
 
 :host {
     @include type-style('overline');
@@ -10,8 +9,6 @@
     padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
     padding-block: pad-block(rem(2px), rem(4px), rem(8px));
 }
-
-@include hidden-host();
 
 ::slotted(*) {
     font: inherit;
