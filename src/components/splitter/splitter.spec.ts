@@ -4031,6 +4031,443 @@ describe('Splitter', () => {
     });
   });
 
+  describe('Sizing', () => {
+    const orientations = ['horizontal', 'vertical'] as const;
+    // `space` is the room from a triangle to the edge of the icon box of the design.
+    // `idle` and `indigoSpace` are the idle bar thickness and that room in indigo.
+    const steps = [
+      {
+        size: 'small',
+        value: '1',
+        bar: 6,
+        handle: 4,
+        expander: 4,
+        radius: 2,
+        space: 5,
+        idle: 1,
+        indigoSpace: 3,
+      },
+      {
+        size: 'medium',
+        value: '2',
+        bar: 12,
+        handle: 6,
+        expander: 5,
+        radius: 8,
+        space: 5,
+        idle: 4,
+        indigoSpace: 3,
+      },
+      {
+        size: 'large',
+        value: '3',
+        bar: 18,
+        handle: 8,
+        expander: 6,
+        radius: 8,
+        space: 6,
+        idle: 8,
+        indigoSpace: 6,
+      },
+    ];
+
+    function measure(target: IgcSplitterComponent) {
+      const horizontal = target.orientation === 'horizontal';
+      const extent = horizontal ? 'width' : 'height';
+      const length = horizontal ? 'height' : 'width';
+      const start = horizontal ? 'left' : 'top';
+      const center = (rect: DOMRect) => rect[start] + rect[extent] / 2;
+      const bar = getSplitterPart(target, BAR_PART).getBoundingClientRect();
+      const handle = getSplitterPart(
+        target,
+        DRAG_HANDLE_PART
+      ).getBoundingClientRect();
+      const expander =
+        getButtonParts(target).startCollapseBtn.getBoundingClientRect();
+
+      return {
+        bar: bar[extent],
+        barLength: bar[length],
+        handle: handle[extent],
+        handleLength: handle[length],
+        expanderBase: expander[length],
+        handleOffset: center(handle) - center(bar),
+        handleRadius: getComputedStyle(
+          getSplitterPart(target, DRAG_HANDLE_PART)
+        ).borderRadius,
+      };
+    }
+
+    it('renders the small size without --ig-size', () => {
+      const { bar, handle, expanderBase, handleRadius } = measure(splitter);
+
+      expect(bar).to.equal(6);
+      expect(handle).to.equal(4);
+      expect(handleRadius).to.equal('2px');
+      expect(expanderBase).to.equal(8);
+    });
+
+    it('sizes the bar, the drag handle and the expanders at medium and large, in both orientations', async () => {
+      for (const orientation of orientations) {
+        splitter.orientation = orientation;
+
+        for (const step of steps.slice(1)) {
+          const label = `${orientation} ${step.size}`;
+          splitter.style.setProperty('--ig-size', step.value);
+          await elementUpdated(splitter);
+
+          const { bar, handle, expanderBase, handleOffset, handleRadius } =
+            measure(splitter);
+
+          expect(bar, label).to.equal(step.bar);
+          expect(handle, label).to.equal(step.handle);
+          expect(expanderBase, label).to.equal(step.expander * 2);
+          expect(handleOffset, label).to.equal(0);
+          expect(handleRadius, label).to.equal(`${step.radius}px`);
+        }
+      }
+    });
+
+    it('adds each step to an overridden --ig-splitter-size', async () => {
+      splitter.style.setProperty('--ig-splitter-size', '10px');
+
+      for (const step of steps) {
+        splitter.style.setProperty('--ig-size', step.value);
+        await elementUpdated(splitter);
+
+        const { bar, handle, expanderBase } = measure(splitter);
+
+        // 6px more than the default 4px size at every step.
+        expect(bar, step.size).to.equal(step.bar + 6);
+        expect(handle, step.size).to.equal(step.handle + 6);
+        expect(expanderBase, step.size).to.equal((step.expander + 6) * 2);
+      }
+    });
+
+    function gaps(target: IgcSplitterComponent) {
+      const { startCollapseBtn, endCollapseBtn } = getButtonParts(target);
+      const bar = getSplitterPart(target, BAR_PART).getBoundingClientRect();
+      const handle = getSplitterPart(
+        target,
+        DRAG_HANDLE_PART
+      ).getBoundingClientRect();
+      const start = startCollapseBtn.getBoundingClientRect();
+      const end = endCollapseBtn.getBoundingClientRect();
+      // The edges on the axis of the bar length.
+      const [near, far] =
+        target.orientation === 'horizontal'
+          ? (['top', 'bottom'] as const)
+          : (['left', 'right'] as const);
+
+      return {
+        handleGaps: [handle[near] - start[far], end[near] - handle[far]],
+        buttonsGap: end[near] - start[far],
+        inside: start[near] >= bar[near] && end[far] <= bar[far],
+      };
+    }
+
+    it('keeps 48px between the drag handle and the icon box of each expander, at every size', async () => {
+      for (const step of steps) {
+        splitter.style.setProperty('--ig-size', step.value);
+        await elementUpdated(splitter);
+
+        const gap = 48 + step.space;
+        expect(gaps(splitter).handleGaps, step.size).to.eql([gap, gap]);
+      }
+    });
+
+    function hitboxes(target: IgcSplitterComponent) {
+      const { startCollapseBtn, endCollapseBtn } = getButtonParts(target);
+      const px = (value: string) => Number.parseFloat(value);
+
+      return [startCollapseBtn, endCollapseBtn].map((expander) => {
+        const border = getComputedStyle(expander);
+        const box = getComputedStyle(expander, '::before');
+        const width = px(box.width);
+        const height = px(box.height);
+
+        return {
+          width,
+          height,
+          // The offset of the center of the hitbox from the center of the triangle.
+          offsetX:
+            px(box.left) +
+            width / 2 -
+            (px(border.borderRightWidth) - px(border.borderLeftWidth)) / 2,
+          offsetY:
+            px(box.top) +
+            height / 2 -
+            (px(border.borderBottomWidth) - px(border.borderTopWidth)) / 2,
+        };
+      });
+    }
+
+    it('sizes the hitbox of each expander to the icon box and centers it on the triangle, in both orientations', async () => {
+      // The triangle is a border, which needs its color: the tests load no theme tokens.
+      splitter.style.setProperty('--expander-color', 'currentColor');
+
+      for (const orientation of orientations) {
+        splitter.orientation = orientation;
+
+        for (const step of steps) {
+          splitter.style.setProperty('--ig-size', step.value);
+          await elementUpdated(splitter);
+
+          const box = 2 * step.expander + 2 * step.space;
+          const centered = { width: box, height: box, offsetX: 0, offsetY: 0 };
+          expect(hitboxes(splitter), `${step.size} ${orientation}`).to.eql([
+            centered,
+            centered,
+          ]);
+        }
+      }
+    });
+
+    it('uses the smaller icon box of indigo for the gaps', async () => {
+      await withDocumentSheets([indigo.styleSheet!], async () => {
+        try {
+          configureTheme('indigo');
+
+          for (const step of steps) {
+            splitter.style.setProperty('--ig-size', step.value);
+            await elementUpdated(splitter);
+
+            const gap = 48 + step.indigoSpace;
+            expect(gaps(splitter).handleGaps, step.size).to.eql([gap, gap]);
+          }
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+    });
+
+    it('keeps the 48px margins around the drag handle with a collapsed pane', async () => {
+      const handleTop = () =>
+        getSplitterPart(splitter, DRAG_HANDLE_PART).getBoundingClientRect()
+          .top -
+        getSplitterPart(splitter, BAR_PART).getBoundingClientRect().top;
+      // The handle, its two 48px margins and the 18px box of the one expander that is left, centered in the 500px bar.
+      const groupStart = (500 - (125 + 96 + 18)) / 2;
+
+      splitter.toggle('start');
+      await elementUpdated(splitter);
+      expect(handleTop()).to.equal(groupStart + 48);
+
+      splitter.toggle('start');
+      splitter.toggle('end');
+      await elementUpdated(splitter);
+      expect(handleTop()).to.equal(groupStart + 18 + 48);
+    });
+
+    it('keeps the drag handle at 25% of a short bar and narrows the gaps, at every size and in both orientations', async () => {
+      for (const orientation of orientations) {
+        splitter.orientation = orientation;
+        splitter.style.width = orientation === 'vertical' ? '128px' : '500px';
+        splitter.style.height =
+          orientation === 'horizontal' ? '128px' : '500px';
+
+        for (const step of steps) {
+          const label = `${orientation} ${step.size}`;
+          splitter.style.setProperty('--ig-size', step.value);
+          await elementUpdated(splitter);
+
+          const { handleLength } = measure(splitter);
+          const { handleGaps, inside } = gaps(splitter);
+          // Half of what the bar leaves after the handle, less the triangle and the space on its far side.
+          const gap = (128 - 32) / 2 - step.expander * 2 - step.space;
+
+          expect(handleLength, label).to.equal(32);
+          expect(handleGaps, label).to.eql([gap, gap]);
+          expect(inside, label).to.be.true;
+        }
+      }
+    });
+
+    it('keeps the expander boxes 48px apart without a drag handle and inside a bar too short for it', async () => {
+      splitter.hideDragHandle = true;
+      splitter.style.setProperty('--ig-size', '3');
+
+      for (const orientation of orientations) {
+        const length = orientation === 'horizontal' ? 'height' : 'width';
+        splitter.orientation = orientation;
+
+        splitter.style[length] = '500px';
+        await elementUpdated(splitter);
+        // 48px between the two icon boxes, and 6px from each box edge to its triangle.
+        expect(gaps(splitter).buttonsGap, orientation).to.equal(48 + 12);
+
+        // The two 24px boxes leave 20px of the bar.
+        splitter.style[length] = '68px';
+        await elementUpdated(splitter);
+
+        const { buttonsGap, inside } = gaps(splitter);
+        expect(buttonsGap, orientation).to.equal(20 + 12);
+        expect(inside, orientation).to.be.true;
+
+        splitter.style[length] = '500px';
+      }
+    });
+
+    // A resize observer reports after the animation frame callbacks of its frame.
+    async function observerReport() {
+      await nextFrame();
+      await nextFrame();
+      await elementUpdated(splitter);
+    }
+
+    it('drops the minimum sizes that no longer fit when the size makes the bar thicker', async () => {
+      // 490px of minimums fit beside the 6px bar, and not beside the 18px one.
+      splitter.startMinSize = '245px';
+      splitter.endMinSize = '245px';
+      await observerReport();
+
+      splitter.style.setProperty('--ig-size', '3');
+      await observerReport();
+
+      const { startSize, endSize } = getPanesSizes(splitter, 'width');
+      expect(startSize + endSize).to.equal(500 - 18);
+    });
+
+    it('counts a fractional bar thickness against the minimum sizes', async () => {
+      // The 6.375px bar leaves 493.625px, less than the 493.75px of minimums.
+      splitter.style.setProperty('--ig-splitter-size', '4.375px');
+      splitter.startMinSize = '246.875px';
+      splitter.endMinSize = '246.875px';
+      await observerReport();
+
+      const { startSize, endSize } = getPanesSizes(splitter, 'width');
+      expect(startSize + endSize).to.be.closeTo(493.625, 0.05);
+    });
+
+    it('measures the bar in the coordinates of a scaled ancestor', async () => {
+      // 495px of minimums do not fit beside the 6px bar.
+      splitter.parentElement!.style.transform = 'scale(2)';
+      splitter.parentElement!.style.transformOrigin = '0 0';
+      splitter.startMinSize = '49.5%';
+      splitter.endMinSize = '49.5%';
+      await observerReport();
+
+      try {
+        const { startSize, endSize } = getPanesSizes(splitter, 'width');
+        expect(startSize + endSize).to.equal((500 - 6) * 2);
+      } finally {
+        splitter.parentElement!.style.transform = '';
+      }
+    });
+
+    it('keeps the minimum sizes that fit beside the idle bar under a rotated ancestor in indigo', async () => {
+      await withDocumentSheets([indigo.styleSheet!], async () => {
+        try {
+          configureTheme('indigo');
+          splitter.parentElement!.style.rotate = '1deg';
+          splitter.style.setProperty('--ig-size', '3');
+          await elementUpdated(splitter);
+          await nextFrame();
+          finishAnimationsFor(splitter.shadowRoot!);
+
+          // 450px of minimums fit beside the 18px bar.
+          splitter.startMinSize = '225px';
+          splitter.endMinSize = '225px';
+          await elementUpdated(splitter);
+
+          const pane = getSplitterPart(splitter, START_PART);
+          expect(pane.style.minWidth).to.equal('225px');
+        } finally {
+          splitter.parentElement!.style.rotate = '';
+          configureTheme('bootstrap');
+        }
+      });
+    });
+
+    it('keeps a 1px, 4px and 8px idle bar by size, also with an overridden size, in indigo', async () => {
+      await withDocumentSheets([indigo.styleSheet!], async () => {
+        try {
+          configureTheme('indigo');
+          await elementUpdated(splitter);
+
+          for (const step of steps) {
+            splitter.style.setProperty('--ig-size', step.value);
+            await elementUpdated(splitter);
+            await nextFrame();
+            finishAnimationsFor(splitter.shadowRoot!);
+
+            expect(measure(splitter).bar, step.size).to.be.closeTo(
+              step.idle,
+              0.01
+            );
+          }
+
+          splitter.orientation = 'vertical';
+          await elementUpdated(splitter);
+          await nextFrame();
+          finishAnimationsFor(splitter.shadowRoot!);
+
+          expect(measure(splitter).bar, 'vertical').to.be.closeTo(8, 0.01);
+
+          splitter.style.setProperty('--ig-splitter-size', '10px');
+          await elementUpdated(splitter);
+          await nextFrame();
+          finishAnimationsFor(splitter.shadowRoot!);
+
+          expect(measure(splitter).bar, 'overridden size').to.be.closeTo(
+            8,
+            0.01
+          );
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+    });
+
+    it('takes the full bar thickness from the panes while the bar is idle in indigo', async () => {
+      await withDocumentSheets([indigo.styleSheet!], async () => {
+        try {
+          configureTheme('indigo');
+          splitter.style.setProperty('--ig-size', '3');
+          await elementUpdated(splitter);
+          await nextFrame();
+          finishAnimationsFor(splitter.shadowRoot!);
+
+          // 488px of minimums do not fit beside the 18px bar.
+          splitter.startMinSize = '244px';
+          splitter.endMinSize = '244px';
+          await elementUpdated(splitter);
+
+          const { startSize, endSize } = getPanesSizes(splitter, 'width');
+
+          expect(measure(splitter).bar).to.be.closeTo(8, 0.01);
+          expect(startSize + endSize).to.equal(500 - 18);
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+    });
+
+    it('shows the full bar thickness on hover at every size in indigo', async () => {
+      await withDocumentSheets([indigo.styleSheet!], async () => {
+        try {
+          configureTheme('indigo');
+          await elementUpdated(splitter);
+          await sendMouse({
+            type: 'move',
+            position: getCenter(getSplitterPart(splitter, BAR_PART)),
+          });
+
+          for (const step of steps) {
+            splitter.style.setProperty('--ig-size', step.value);
+            await elementUpdated(splitter);
+            await nextFrame();
+            finishAnimationsFor(splitter.shadowRoot!);
+
+            expect(measure(splitter).bar, step.size).to.equal(step.bar);
+          }
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+    });
+  });
+
   runHiddenAncestorTests(html`
     <igc-splitter style="height: 200px">
       <div slot="start">Start</div>

@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `gradient` paints the data modules, the alignment patterns and the corners with a `linear` or `radial` gradient, from `--ig-qr-code-gradient-start` to `--ig-qr-code-gradient-end`. `gradient-angle` turns a linear gradient. An explicit `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` wins for its part. Keep both colors much darker than the background.
   - `logo-shape` clips the logo to a `circle`, `rounded` or `squircle` shape that fills the logo box. The cutout removes only the modules under the shape.
   - `createWifiPayload()`, `createVCardPayload()`, `createEpcPayload()` and `createEventPayload()` from `igniteui-webcomponents/extras/qr-payloads` build the value of a code that a phone turns into a Wi-Fi login, a contact card, a SEPA payment or a calendar event. They escape the text and throw a `RangeError` for input that the format does not allow.
+- #### Splitter
+  - The splitter follows `--ig-size`. The bar is 6px, 12px or 18px thick, the drag handle 4px, 6px or 8px with a 2px, 8px or 8px radius, and the expanders grow with them. The default is small, which is the size from before, so a splitter without `--ig-size` looks the same. `--ig-splitter-size` still sets the small size, and the medium and large steps add to it. A `--ig-splitter-border-radius` that you set applies at every size. In the Indigo theme the idle bar is 1px, 4px or 8px thick by size. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
 
 ### Changed
 - #### Accordion, Expansion panel
@@ -67,6 +69,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `checkValidity()` and `reportValidity()` emit `invalid` on the radios of the group in DOM order. Before, the other radios emitted it first, and the called radio last.
 - #### Select
   - <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when other code already called `preventDefault()` on the key, as in the dropdown. Content in the `header` and `footer` slots still keeps a key that it handled.
+- #### Splitter
+  - An app that sets `--ig-size` to medium or large on the splitter or on an ancestor gets a thicker bar. Before, the splitter had one size. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
+  - The 48px gap around the drag handle is measured from the icon box of the design, so each expander is 5px further from the handle at the default size, 3px in the Indigo theme. The area of an expander that takes the pointer is that icon box, centered on the arrow: 18px, 20px or 24px square, 14px, 16px or 24px in the Indigo theme. Before, it was the arrow alone, 4px by 8px at the default size.
 - #### Tabs
   - The first render shows at once. The selected indicator does not slide in from the start of the strip, and the selected header does not fade in. This also applies when the tabs show later than they render. A selection change after that still animates.
 
@@ -149,6 +154,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The input shows the content of an element with an empty `slot` attribute in the selected item, as the item shows it. Before, the input left it out.
 - #### Slider
   - A change of the user that fails validation shows the invalid styles at once.
+- #### Splitter
+  - On a bar too short for the drag handle, the two expanders and the 48px gaps between them, the drag handle keeps 25% of the bar length and the gaps get narrower. Before, the gaps stayed 48px, so the handle shrank and the expanders touched the ends of the bar. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
+  - In the Indigo theme, the minimum sizes of the panes count the full thickness of the bar while it is idle. Before, they counted the thickness that the idle bar shows, so two minimums that filled the splitter overflowed it. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
 
 ## [7.5.0] - 2026-11-16
 ### Added
