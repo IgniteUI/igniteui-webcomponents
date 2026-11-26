@@ -84,8 +84,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The first render shows at once. The selected indicator does not slide in from the start of the strip, and the selected header does not fade in. This also applies when the tabs show later than they render. A selection change after that still animates.
 
 ### Fixed
+- #### All components
+  - Slotted content with the `hidden` attribute does not render, such as a link in the `start` slot of a list item or the `actions` of a banner. Before, a component that sets `display` on its slotted content still showed it. `hidden="until-found"` keeps its box, so find-in-page can reach it.
 - #### Badge, Chat, Checkbox, Chip, Circular progress, Combo, Date picker, Date range picker, Date time input, Dialog, Expansion panel, File input, Input, Linear progress, Mask input, Navigation drawer, Radio, Rating, Select, Stepper, Switch, Textarea, Tile manager, Tooltip
   - The first render shows the slotted content, such as a checkbox label, the `prefixed` part of an input or the `icon` part of a badge. Before, it showed only after the next update.
+- #### Banner
+  - The `hidden` attribute hides the banner. Before, it still rendered.
 - #### Calendar, Date picker, Date range picker, Date time input
   - An ISO string with a signed six digit year, such as `+010000-01-01T00:00:00.000Z`, sets the value. `toISOString()` gives this format for dates before year 0 and after year 9999. Before, the value became `null`.
 - #### Checkbox, Radio, Switch

@@ -188,6 +188,20 @@ describe('Banner', () => {
       expect(narrow.getBoundingClientRect().width).to.equal(280);
       expect(container.scrollWidth).to.equal(container.clientWidth);
     });
+
+    it('hides the banner and its actions that have `hidden`', async () => {
+      banner = await fixture<IgcBannerComponent>(html`
+        <igc-banner open>
+          A message
+          <div slot="actions" hidden>Actions</div>
+        </igc-banner>
+      `);
+
+      expect(banner.querySelector('div')!.checkVisibility()).to.be.false;
+
+      banner.hidden = true;
+      expect(banner.checkVisibility()).to.be.false;
+    });
   });
 
   describe('Methods` Tests', () => {

@@ -311,13 +311,18 @@ export default class IgcListComponent extends LitElement {
     }
 
     // No `relatedTarget`: the window lost the focus, which the item keeps;
-    // Chromium reports the removal of the item; or the focus went to no
-    // element, which ends it.
+    // Chromium reports the removal of the item or of its focused control,
+    // which the mutation handler takes; or the focus went to no element,
+    // which ends it.
     queueMicrotask(() => {
       const item = this._focused;
       const active = getRoot(this)?.activeElement;
 
-      if (item?.isConnected && !(active && item.contains(active))) {
+      if (
+        item?.isConnected &&
+        item.contains(event.target as Node) &&
+        !(active && item.contains(active))
+      ) {
         this._focused = undefined;
       }
     });
@@ -364,6 +369,8 @@ export default class IgcListComponent extends LitElement {
       if (rows.size > 0) {
         this._syncControls([...rows]);
       }
+
+      this._keepFocusInRow(changes.removed.map(({ target }) => target));
       return;
     }
 
@@ -525,6 +532,26 @@ export default class IgcListComponent extends LitElement {
         node.querySelector(OWN_CHILDREN) !== null ||
         (target === this && isAssignedTo(node, 'empty')))
     );
+  }
+
+  /**
+   * Moves the lost focus to its row after a removal from the row, such as a
+   * control that removed itself. `parents` are the parents of the removed
+   * elements. A nested list that navigates keeps the focus in its own rows.
+   */
+  private _keepFocusInRow(parents: Element[]): void {
+    const row = this._focused;
+
+    const fromRow = (parent: Element): boolean => {
+      const list = parent.closest(IgcListComponent.tagName)!;
+      return (
+        this._rowOf(parent) === row && (list === this || !this._isWidget(list))
+      );
+    };
+
+    if (row && this._focusIsLost() && parents.some(fromRow)) {
+      this._focusItem(row);
+    }
   }
 
   /** Whether no element has the focus, as after the removal of the focused one. */

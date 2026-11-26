@@ -164,6 +164,18 @@ describe('List', () => {
       expect(hidden.checkVisibility()).to.be.false;
       expect(shown.getAttribute('tabindex')).to.equal('0');
     });
+
+    it('hides the content of an item that has `hidden`', async () => {
+      const item = await fixture<IgcListItemComponent>(html`
+        <igc-list-item>
+          <span slot="start" hidden>JD</span>
+          <span slot="title">Jane Doe</span>
+        </igc-list-item>
+      `);
+
+      expect(item.querySelector('[slot="start"]')!.checkVisibility()).to.be
+        .false;
+    });
   });
 
   describe('Items far from the view', () => {
@@ -1090,7 +1102,7 @@ describe('List', () => {
 
       it('skips a disabled control and one that does not render', async () => {
         call.disabled = true;
-        link.style.display = 'none';
+        link.hidden = true;
         await settle();
 
         pressOnFocused('ArrowRight');
@@ -1272,6 +1284,62 @@ describe('List', () => {
         await settle();
 
         expect(isFocused(items[1])).to.be.true;
+      });
+
+      it('moves the focus to the row when a control removes itself', async () => {
+        remove.addEventListener('click', () => remove.remove());
+        remove.focus();
+        simulateClick(remove);
+        await settle();
+
+        expect(isFocused(items[0])).to.be.true;
+      });
+
+      it('moves the focus to the row when a control with a shadow tree goes away', async () => {
+        call.focus();
+        call.remove();
+        await settle();
+
+        expect(isFocused(items[0])).to.be.true;
+      });
+
+      it('keeps the focus on a control when another control of its row goes away', async () => {
+        call.focus();
+        remove.remove();
+        await settle();
+
+        expect(isFocused(call)).to.be.true;
+      });
+
+      it('does not take the focus back after it went to no element', async () => {
+        remove.focus();
+        remove.blur();
+        await settle();
+        remove.remove();
+        await settle();
+
+        expect(document.activeElement).to.equal(document.body);
+      });
+
+      it('leaves the focus in a nested grid to that grid', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <span slot="title">Kate</span>
+              <igc-list navigation="grid" aria-label="Tasks">
+                <igc-list-item>Review <button>Done</button></igc-list-item>
+              </igc-list>
+            </igc-list-item>
+          </igc-list>
+        `);
+        const [, task] = items;
+        const button = list.querySelector('button')!;
+
+        button.focus();
+        button.remove();
+        await settle();
+
+        expect(isFocused(task)).to.be.true;
       });
     });
 

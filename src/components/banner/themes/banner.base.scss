@@ -1,9 +1,12 @@
 @use 'styles/utilities' as *;
+@use 'styles/common/hidden' as *;
 
 :host {
     display: block;
     min-width: min(rem(320px), 100%);
 }
+
+@include hidden-host();
 
 [part~='spacer'] {
     display: flex;
