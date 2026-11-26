@@ -50,9 +50,11 @@ registerMaterialIcons(
   'headset-mic',
   'keyboard',
   'lock',
+  'minus',
   'movie',
   'music-note',
   'notifications',
+  'plus',
   'videocam',
   'visibility',
   'volume-up'
@@ -240,7 +242,9 @@ const styles = html`
     }
 
     .ls-quantity {
-      width: 6rem;
+      min-width: 1.5rem;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
     }
 
     .ls-empty {
@@ -823,13 +827,15 @@ const cartLines: CartLine[] = [
   { id: 'webcam', name: '4K webcam', icon: 'videocam', price: 99, quantity: 2 },
 ];
 
+const maxQuantity = 10;
+
 export const Cart: Story = {
   argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'The cart of an online store. Each item holds a quantity field and a Remove button, so the list has `navigation="grid"`: each item is a row, and the list takes the controls out of the order of the Tab key. Tab reaches one row and the next Tab leaves the cart. Up and Down move between the rows, Right reaches the quantity field and then the Remove button, and Left goes back. The quantity field keeps the arrow keys, so Up and Down change the number; Escape or F2 returns to the row. Only selected items expose `aria-selected`, and the cart selects none, so a screen reader reads no selected state. When Remove takes a row away, the focus moves to the next row. The `empty` slot shows a message once the cart is empty, and the empty list takes the focus.',
+          'The cart of an online store. Each item holds Decrease, Increase and Remove buttons, so the list has `navigation="grid"`: each item is a row, and the list takes the buttons out of the order of the Tab key. Tab reaches one row and the next Tab leaves the cart. Up and Down move between the rows, also from a button. Right goes from the row to Decrease, Increase and Remove, and Left goes back; Escape or F2 returns to the row. The buttons stay enabled at the lowest and the highest quantity, because a focused button that becomes disabled loses the focus; the status line reads the limit instead. The subtitle holds the quantity, so a screen reader reads it with the row. Only selected items expose `aria-selected`, and the cart selects none, so a screen reader reads no selected state. When Remove takes a row away, the focus moves to the next row. The `empty` slot shows a message once the cart is empty, and the empty list takes the focus.',
       },
     },
   },
@@ -837,9 +843,14 @@ export const Cart: Story = {
     let lines = cartLines.map((line) => ({ ...line }));
     let status = '';
 
-    const setQuantity = (line: CartLine, value: string) => {
-      line.quantity = Math.min(10, Math.max(1, Math.round(Number(value)) || 1));
-      status = '';
+    const changeQuantity = (line: CartLine, step: number) => {
+      const quantity = Math.min(maxQuantity, Math.max(1, line.quantity + step));
+
+      status =
+        quantity === line.quantity
+          ? `${line.name} stays at ${quantity}, the ${step < 0 ? 'lowest' : 'highest'} quantity.`
+          : `Quantity of ${line.name}: ${quantity}.`;
+      line.quantity = quantity;
       story.update();
     };
 
@@ -873,20 +884,26 @@ export const Cart: Story = {
                   ></igc-icon>
                   <span slot="title">${line.name}</span>
                   <span slot="subtitle" class="ls-size">
-                    ${dollars.format(line.price)} each ·
-                    ${dollars.format(line.price * line.quantity)}
+                    Quantity ${line.quantity} · ${dollars.format(line.price)}
+                    each · ${dollars.format(line.price * line.quantity)}
                   </span>
-                  <igc-input
+                  <igc-icon-button
                     slot="end"
-                    class="ls-quantity"
-                    type="number"
-                    min="1"
-                    max="10"
-                    aria-label="Quantity of ${line.name}"
-                    .value=${String(line.quantity)}
-                    @igcChange=${({ detail }: CustomEvent<string>) =>
-                      setQuantity(line, detail)}
-                  ></igc-input>
+                    variant="flat"
+                    name="minus"
+                    aria-label="Decrease the quantity of ${line.name}"
+                    @click=${() => changeQuantity(line, -1)}
+                  ></igc-icon-button>
+                  <span slot="end" class="ls-quantity" aria-hidden="true">
+                    ${line.quantity}
+                  </span>
+                  <igc-icon-button
+                    slot="end"
+                    variant="flat"
+                    name="plus"
+                    aria-label="Increase the quantity of ${line.name}"
+                    @click=${() => changeQuantity(line, 1)}
+                  ></igc-icon-button>
                   <igc-icon-button
                     slot="end"
                     variant="flat"
