@@ -107,8 +107,8 @@ export function deferFocus(
       return;
     }
 
-    // An update after the first one can add the element to focus, for
-    // example the carousel indicators after a `slotchange`.
+    // A later update, such as one after a `slotchange`, can add the element
+    // to focus.
     if (host.isUpdatePending) {
       host.updateComplete.then(repeat);
       return;

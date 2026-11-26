@@ -424,6 +424,17 @@ export default class IgcCarouselComponent extends I18nMixin(
     }
   }
 
+  protected override update(changedProperties: PropertyValues<this>): void {
+    // From `hostUpdate` until the first render commits, a slot query reads the
+    // host children. `willUpdate` is too early.
+    if (!this.hasUpdated) {
+      this._readSlots();
+      this._activateInitialSlide();
+    }
+
+    super.update(changedProperties);
+  }
+
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
@@ -444,6 +455,7 @@ export default class IgcCarouselComponent extends I18nMixin(
     // Republish for consumers created after their own first render (Blazor timing).
     this._context.publish();
 
+    // A hydrating first update reads no slots. The initial slot change reads them.
     this._activateInitialSlide();
   }
 
@@ -481,29 +493,34 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   //#region Event listeners
 
-  private _handleSlotChange(
-    params: SlotChangeCallbackParameters<InferSlotNames<typeof Slots>>
-  ): void {
-    if (params.isDefault || params.isInitial) {
+  private _handleSlotChange({
+    slot,
+    isDefault,
+    isInitial,
+  }: SlotChangeCallbackParameters<InferSlotNames<typeof Slots>>): void {
+    // The first update already read the slots, except while it hydrated. After
+    // a server render, no `slotchange` may follow.
+    if (isInitial) {
+      this._readSlots();
+      return;
+    }
+
+    if (isDefault) {
       const previousSlide = this._activeSlide;
       const previousIndex = this.current;
 
-      this._slides = this._slots.getAssignedElements(DefaultSlot, {
-        selector: IgcCarouselSlideComponent.tagName,
-      });
+      this._slides = this._querySlides();
 
       if (previousSlide && !this._slides.includes(previousSlide)) {
         this._reactivateSlide(previousSlide, previousIndex);
-      } else if (this.hasUpdated && !this._activeSlide) {
+      } else if (!this._activeSlide) {
         // Slides came into an empty carousel after the first render, so activate one.
         this._activateInitialSlide();
       }
     }
 
-    if (params.slot === 'indicator') {
-      this._projectedIndicators = this._slots.getAssignedElements('indicator', {
-        selector: IgcCarouselIndicatorComponent.tagName,
-      });
+    if (slot === 'indicator') {
+      this._projectedIndicators = this._queryProjectedIndicators();
     }
   }
 
@@ -565,6 +582,23 @@ export default class IgcCarouselComponent extends I18nMixin(
   //#endregion
 
   //#region Internal API
+
+  private _querySlides(): IgcCarouselSlideComponent[] {
+    return this._slots.getAssignedElements(DefaultSlot, {
+      selector: IgcCarouselSlideComponent.tagName,
+    });
+  }
+
+  private _queryProjectedIndicators(): IgcCarouselIndicatorComponent[] {
+    return this._slots.getAssignedElements('indicator', {
+      selector: IgcCarouselIndicatorComponent.tagName,
+    });
+  }
+
+  private _readSlots(): void {
+    this._slides = this._querySlides();
+    this._projectedIndicators = this._queryProjectedIndicators();
+  }
 
   private _handleNavigationInteractionNext(): void {
     this._handleInteraction(this.next);
