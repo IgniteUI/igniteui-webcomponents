@@ -90,8 +90,7 @@
 
 }
 
-:host-context([dir='rtl']),
-:host([dir='rtl']) {
+:host(:dir(rtl)) {
     [part~="navigation-button"] {
         transform: rotate(180deg);
 

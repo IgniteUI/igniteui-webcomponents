@@ -55,6 +55,7 @@
 |       5 | 2026-11-02 | The events of the days view stay inside the calendar.                         |
 |       6 | 2026-11-18 | An internal function brings a date into view for the pickers, and keeps the months when the date is shown |
 |       7 | 2026-11-20 | The date properties accept an ISO string with a signed six digit year |
+|       8 | 2026-11-26 | The navigation buttons follow `dir` on any ancestor, in all browsers |
 
 ## Overview
 
@@ -432,7 +433,8 @@ The groups below mirror the `describe` blocks of those suites.
 ### Rendering
 
 1. Passes the a11y audit, including issue #1636 - a week of hidden days.
-2. Renders the calendar successfully, compared against a DOM snapshot.
+2. Renders the calendar successfully, compared against a DOM snapshot. Mirrors the navigation buttons with `dir="rtl"`
+   on the calendar or an ancestor, and not inside a nested `dir="ltr"`.
 3. Renders the `title` and `header-date` slots.
 4. Enables `hideOutsideDays`.
 5. Applies the vertical orientation part.
@@ -550,4 +552,5 @@ Already covered by the [relevant section of the specification](#keyboard-interac
 ### Right to Left support
 
 The component works in a Right-to-Left context without additional setup or configuration. The grid direction, the
-order of the navigation buttons and the horizontal arrow navigation follow the inline direction.
+order of the navigation buttons and the horizontal arrow navigation follow the inline direction. The direction comes
+from `dir` on the calendar or on any ancestor, such as `<html>`.

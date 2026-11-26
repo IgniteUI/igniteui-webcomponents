@@ -75,13 +75,13 @@ $theme: $base;
 }
 
 :host([position='start']),
-:host([dir='rtl'][position='end']) {
-    --dir: #{direction($rtl: true)};
+:host(:dir(rtl)[position='end']) {
+    --dir: -1;
 }
 
 :host([position='end']),
-:host([dir='rtl'][position='start']) {
-    --dir: #{direction($rtl: false)};
+:host(:dir(rtl)[position='start']) {
+    --dir: 1;
 }
 
 :host([position='top']),

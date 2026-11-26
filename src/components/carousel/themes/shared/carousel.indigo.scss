@@ -42,9 +42,8 @@ igc-button::part(focused):hover {
     &::after {
         width: rem(8px);
         height: rem(8px);
-        inset-block-start: 50%;
-        inset-inline-start: 50%;
-        transform: translateX(calc(-50% * var(--dir))) translateY(-50%);
+        inset: 0;
+        margin: auto;
     }
 
     &:hover {
@@ -91,12 +90,6 @@ igc-button::part(focused):hover {
     [part='indicators start'],
     [part='label indicators start'] {
         margin-inline-start: rem(16px);
-    }
-
-    [part~='dot'] {
-        &::after {
-            transform: translateX(calc(50% * var(--dir))) translateY(-50%);
-        }
     }
 }
 
