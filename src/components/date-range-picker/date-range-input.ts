@@ -58,15 +58,7 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   // #region Public attributes and properties
 
   /* @tsTwoWayProperty(true, "igcChange", "detail", false, true) */
-  /**
-   * The value of the date range input.
-   *
-   * Only ever holds a committed value. While the user is typing, the intermediate
-   * state lives in the masked text and is committed - together with an `igcChange`
-   * event - when the edit is committed on blur.
-   *
-   * @attr
-   */
+  /** The committed range. The typed text commits on blur. */
   @property({ attribute: false })
   public override set value(value: DateRangeValue | null) {
     this._applyValue(value);
@@ -105,18 +97,6 @@ export default class IgcDateRangeInputComponent extends EventEmitterMixin<
   protected override _applyMask(formatString: string): void {
     super._applyMask(formatString);
     this._parser.prompt = this.prompt;
-  }
-
-  // #region Public API Overrides
-
-  /** Increments a date/time portion. The `value` updates at once. */
-  public override stepUp(datePart?: DateRangePart, delta?: number): void {
-    super.stepUp(datePart, delta);
-  }
-
-  /** Decrements a date/time portion. The `value` updates at once. */
-  public override stepDown(datePart?: DateRangePart, delta?: number): void {
-    super.stepDown(datePart, delta);
   }
 
   // #endregion

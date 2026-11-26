@@ -67,6 +67,7 @@
 |      17 | 2026-11-18 | In input mode, the text input shows only the invalid state of the picker, and reports the validity of the picker |
 |      18 | 2026-11-23 | A disabled picker stays closed; the shared disabled popup suite |
 |      19 | 2026-11-20 | In input mode, a color that the user picks animates the input; a value from code shows at once |
+|      20 | 2026-11-25 | `name` updates its attribute at once |
 
 ## Overview
 

@@ -88,6 +88,9 @@
 |      28 | 2026-11-20 | The ends of a range accept an ISO string with a signed six digit year; the value shape properties use any valid date |
 |      29 | 2026-11-23 | A disabled picker stays closed and disabling discards a draft; the shared disabled popup suite |
 |      30 | 2026-11-20 | A range that the user picks animates the inputs; a value from code, also from an `igcChange` handler, shows at once |
+|      31 | 2026-11-25 | While the user types, an incomplete or invalid end keeps the end that the calendar selects, and a blank end drops out, in both layouts; the calendar shows the value again when the edit ends, and with two inputs a new range from code keeps the edit of an end whose date stays; a complete range parses strictly when the separator holds the prompt |
+|      32 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
+|      33 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 
@@ -198,6 +201,9 @@ As a developer, I expect to be able to:
 - Typing a date selects it in the calendar and brings its month into view. The date is the one in the focused editor
   with two inputs, and the end at the caret in single input mode. While that date is incomplete, or while the caret is
   in the separator, the start comes into view, or the end when there is no start.
+- Each end of the calendar selection follows its typed date on its own. While a typed end is incomplete or invalid,
+  the calendar keeps the end that it selects, and a blank end drops out of the selection. The value does not change
+  until the edit is committed.
 - In single input mode the field is editable in dropdown mode and read-only in dialog mode. Each end spins like a
   date-time input, with the same step rules and the day of the start date as the default part. A spin while you
   type reads the typed text of its end and keeps the text of the other end, also a `stepUp` or `stepDown` from code,
@@ -690,7 +696,9 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
 13. Interactions - interactions with the input and the open and clear buttons. A closed picker does not cancel
     <kbd>Escape</kbd>. <kbd>Ctrl</kbd> + arrow stops at each part edge, also without separators. Arrow keys and `stepUp`
     in a range with one typed end spin that end and keep the text of the other end. Typing or a spin in the end brings
-    the end into view; an edit with the caret in the separator brings the start into view.
+    the end into view; an edit with the caret in the separator brings the start into view. The calendar selects a
+    complete typed end, keeps the selected end while the typed end is incomplete, also a start typed after the end,
+    and drops a blank end.
 14. Undo and redo of the masked range text.
 15. Slots.
 
@@ -703,7 +711,10 @@ input and two inputs suites run with reduced motion, so the dialog does not fade
 19. Interactions - selection through the calendar, interactions with the inputs and the open and clear buttons, and
     the readonly state. An editor commit keeps the time of both ends. A typed end before the start is swapped in
     the `igcInput` detail and in the calendar, while the editors keep the typed order. A clear through the icon is
-    reported one time, when the focus leaves the picker, and not when the focus moves to the other input.
+    reported one time, when the focus leaves the picker, and not when the focus moves to the other input. The
+    calendar keeps the selected start while the typed start is incomplete and drops a blank one; a move of the focus
+    to the other input shows the value again, also when the commit keeps the value; a new range from code keeps the
+    edit of an end whose date stays, as its editor does.
 20. Slots.
 
 ### Form integration suite
@@ -712,7 +723,8 @@ The form suite runs these groups in each layout:
 
 21. Form associated - submission, also under a changed `name`, reset and the disabled ancestor state. A reset during an
     edit discards the typed text, with and without a default, and the next blur keeps the restored value. A reset
-    that empties the value shows the empty mask in the focused editor. <kbd>Enter</kbd> submits when the range is
+    that empties the value shows the empty mask in the focused editor, and a reset that keeps the value drops the typed
+    calendar selection. <kbd>Enter</kbd> submits when the range is
     valid, and a real <kbd>Enter</kbd> submits once. Each editor shows the invalid state of the picker.
 22. Initial validation - a click on the calendar icon does not make a required picker invalid.
 23. `defaultValue` - initial state, submission, reset and validation.
@@ -737,14 +749,15 @@ The focus after the form checks and the `invalid` event rules come from the form
 ### Range mask parser
 
 28. Initialization (a literal separator and a widened year format), range parsing, range formatting, part queries,
-    spinning, prompt updates and mask updates.
+    spinning, prompt updates and mask updates. A complete range parses strictly when the separator holds the prompt.
 
 ### Range mask parser properties
 
 29. For generated formats, separators and dates: the round-trip, each side parsed like a single date, the layout
     around the separator after a mask change, and no throw or invalid date for any string. A strict value parse
     gives a range only when both ends are complete; a lenient one parses each end as typed, and gives `null` when
-    neither end is a valid date or the mask is blank. For the part editing:
+    neither end is a valid date or the mask is blank. An edit parse gives each complete end, the end of the previous
+    range while an end is incomplete, and no end while it is blank. For the part editing:
     each end spins like a single date, also from its text while the text of the other end stays; an empty range
     takes the seed at both ends; the part at the caret and the default part name their end.
 
@@ -753,7 +766,8 @@ The focus after the form checks and the `invalid` event rules come from the form
 30. Without a DOM: an empty range is `null`; a range in order stays the same object; reversed ends swap, by time also
     on the same day; a missing end becomes `null`. The form value transformers normalize a value, a default value and
     an attribute string, and compare ranges by their dates. The calendar dates of a range, a range in one day, a
-    partial range and no range; the range of a calendar selection; a complete range.
+    partial range and no range, and the ends of a reversed range in order; the range of a calendar selection; a
+    complete range.
 
 ### Range value shape properties
 
@@ -767,7 +781,9 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 32. For each layout: the editors, the start editor first, and none in a root without them; the range of the editors;
     the typed range and the typed date during an edit of the start, while the committed range stays; the focus on the
-    start editor after a pick, which selects its text only with two inputs. In the single input, the end at the
+    start editor after a pick, which selects its text only with two inputs. The edit is the range of the editors
+    without an edit; during an edit of the start it keeps the typed order, the start of the previous range while the
+    start is incomplete, and no start while it is blank. In the single input, the end at the
     caret, also at the edge of a part and nothing in the separator, gives the typed date; with two inputs, each
     editor gives its own date.
 

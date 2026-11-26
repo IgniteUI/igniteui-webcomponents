@@ -4,9 +4,31 @@
 
 $theme: $material;
 $splitter-color: var-get($theme, 'bar-color');
-$bar-size: var-get($theme, 'size');
-$expander-border: $bar-size solid var-get($theme, 'expander-color');
-$expander-border-active: $bar-size solid var-get($theme, 'expander-color-active');
+$size: var-get($theme, 'size');
+$expander-size: var(--_expander-size);
+$expander-space: var(--_expander-space);
+$expander-box: var(--_expander-box);
+$expander-border: $expander-size solid var-get($theme, 'expander-color');
+$expander-border-active: $expander-size solid var-get($theme, 'expander-color-active');
+
+// The design gap between the drag handle and each icon box.
+$gap: rem(48px);
+
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
+    // Not theme tokens, so the handle can't get thicker than the bar.
+    // Mirrored by igx-splitter in igniteui-angular.
+    --_bar-size: #{sizable(calc(#{$size} + #{rem(2px)}), calc(#{$size} + #{rem(8px)}), calc(#{$size} + #{rem(14px)}))};
+    --_handle-size: #{sizable($size, calc(#{$size} + #{rem(2px)}), calc(#{$size} + #{rem(4px)}))};
+    --_expander-size: #{sizable($size, calc(#{$size} + #{rem(1px)}), calc(#{$size} + #{rem(2px)}))};
+
+    // From the triangle to the edge of the 18px, 20px and 24px icon box.
+    --_expander-space: #{sizable(rem(5px), rem(5px), rem(6px))};
+
+    // The icon box: the triangle base and the space on both sides.
+    --_expander-box: calc(2 * (#{$expander-size} + #{$expander-space}));
+}
 
 [part~='splitter-bar'] {
     background: hsla(from $splitter-color h s l / 68%);
@@ -29,7 +51,6 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
     &:focus-visible {
         outline: none;
         box-shadow: 0 0 0 rem(2px) var-get($theme, 'focus-color');
-        z-index: 1;
     }
 }
 
@@ -68,11 +89,23 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
 }
 
 // `$main` is the axis of the bar thickness, `$cross` the axis of its length.
-@each $orientation, $extent, $main, $cross in (horizontal, width, inline, block), (vertical, height, block, inline) {
+// `$bar-length` is the bar length in cq units. The bar is the size container.
+@each $orientation, $extent, $main, $cross, $bar-length in (horizontal, width, inline, block, 100cqb), (vertical, height, block, inline, 100cqi) {
+    // One handle margin on a short bar: half of the 75% the handle leaves, less one icon box.
+    $room: calc(#{0.375 * $bar-length} - #{$expander-box});
+
+    // Without a drag handle: what the two icon boxes leave of the bar, up to the gap.
+    :host([orientation='#{$orientation}']:is([disable-resize], [hide-drag-handle])) {
+        [part~='start-collapse-btn'] {
+            margin-#{$cross}-end: calc(
+                #{$expander-space} + clamp(0px, calc(#{$bar-length} - 2 * #{$expander-box}), #{$gap})
+            );
+        }
+    }
+
     :host([orientation='#{$orientation}']) {
         [part~='splitter-bar'] {
-            #{$extent}: $bar-size;
-            padding-#{$main}: rem(1px);
+            #{$extent}: var(--_bar-size);
 
             &:active {
                 [part~='start-expand-btn'],
@@ -88,18 +121,33 @@ $expander-border-active: $bar-size solid var-get($theme, 'expander-color-active'
         }
 
         [part~='drag-handle'] {
-            #{$extent}: $bar-size;
+            #{$extent}: var(--_handle-size);
+            margin-#{$cross}: clamp(0px, #{$room}, #{$gap});
         }
 
         [part*='collapse-btn'],
         [part*='expand-btn'] {
-            border-#{$cross}-start: $bar-size solid transparent;
-            border-#{$cross}-end: $bar-size solid transparent;
+            border-#{$cross}-start: $expander-size solid transparent;
+            border-#{$cross}-end: $expander-size solid transparent;
+            margin-#{$cross}: $expander-space;
+
+            // The hitbox is the icon box, centered on the triangle.
+            // Mirrored by igx-splitter in igniteui-angular.
+            &::before {
+                width: $expander-box;
+                height: $expander-box;
+                inset-#{$cross}-start: calc(#{$expander-box} / -2);
+                inset-#{$main}-start: calc((#{$expander-size} - #{$expander-box}) / 2);
+            }
         }
 
         [part~='start-expand-btn'],
         [part~='end-collapse-btn'] {
             border-#{$main}-start: $expander-border;
+
+            &::before {
+                inset-#{$main}-start: calc((#{$expander-size} + #{$expander-box}) / -2);
+            }
         }
 
         [part~='start-collapse-btn'],

@@ -17,6 +17,7 @@ import {
 } from '#internals/testing/form-testbed.spec.js';
 import { checkDatesEqual, isFocused } from '#internals/testing/helpers.spec.js';
 import {
+  simulateBackspaceOver,
   simulateCancelableKeydown,
   simulateInput,
   simulateKeyboard,
@@ -703,6 +704,51 @@ describe('Date range picker - single input', () => {
 
           expect(input.value).to.equal('01/10/2025 - 06/20/2025');
           checkDatesEqual(calendar.activeDate, new Date(2025, 5, 20));
+        });
+
+        it('selects a complete typed end and keeps it while the end is incomplete', async () => {
+          const eventSpy = spy(picker, 'emitEvent');
+          const typed = [new Date(2025, 0, 10), new Date(2025, 5, 20)];
+
+          typeAt(input, '6', 14);
+          await elementUpdated(picker);
+          expect(calendar.values).to.eql(typed);
+
+          // The year of the end.
+          await simulateBackspaceOver(rangeInput, 19, 23);
+          await elementUpdated(picker);
+
+          expect(input.value).to.equal('01/10/2025 - 06/20/____');
+          expect(calendar.values).to.eql(typed);
+          expect(eventSpy).calledWith('igcInput', { detail: null });
+          expect(picker.value).to.eql({
+            start: new Date(2025, 0, 10),
+            end: new Date(2025, 2, 20),
+          });
+        });
+
+        it('keeps a typed start after the end while the start is incomplete', async () => {
+          // June 10 is after the end, so the calendar swaps the ends.
+          const typed = [new Date(2025, 2, 20), new Date(2025, 5, 10)];
+
+          typeAt(input, '6', 1);
+          await elementUpdated(picker);
+          expect(input.value).to.equal('06/10/2025 - 03/20/2025');
+          expect(calendar.values).to.eql(typed);
+
+          await simulateBackspaceOver(rangeInput, 6, 10);
+          await elementUpdated(picker);
+
+          expect(input.value).to.equal('06/10/____ - 03/20/2025');
+          expect(calendar.values).to.eql(typed);
+        });
+
+        it('drops a blank end from the selection', async () => {
+          await simulateBackspaceOver(rangeInput, 13, 23);
+          await elementUpdated(picker);
+
+          expect(input.value).to.equal('01/10/2025 - __/__/____');
+          expect(calendar.values).to.eql([new Date(2025, 0, 10)]);
         });
 
         it('brings the start into view while the caret is in the separator', async () => {

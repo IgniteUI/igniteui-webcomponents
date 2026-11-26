@@ -82,6 +82,48 @@ describe('Mask parser', () => {
     expect(parser.apply('ABCD99')).to.equal('CC-ABCD-99_-99');
   });
 
+  it('keeps the positions of a masked text', () => {
+    parser.mask = '00-00';
+
+    expect(parser.isMaskedText('12-34')).to.be.true;
+    expect(parser.apply('12-34')).to.equal('12-34');
+    expect(parser.apply('1_-34')).to.equal('1_-34');
+    expect(parser.apply('1a-34')).to.equal('1_-34');
+    // A masked text keeps its UTF-16 positions, also for an astral character.
+    expect(parser.apply('😀-34')).to.equal('__-34');
+
+    // The text of another mask, or a raw value, is input.
+    expect(parser.isMaskedText('12/34')).to.be.false;
+    expect(parser.apply('12/34')).to.equal('12-_3');
+    expect(parser.isMaskedText('1234')).to.be.false;
+
+    parser.mask = 'CC-CC';
+    expect(parser.apply('ab-c')).to.equal('ab--c');
+
+    // Without literals, the mask length is enough.
+    parser.mask = 'CCC';
+    expect(parser.isMaskedText('a_c')).to.be.true;
+    expect(parser.apply('a_c')).to.equal('a_c');
+  });
+
+  it('reads the raw value of a masked text only', () => {
+    parser.mask = '00-00';
+
+    expect(parser.rawValue('1_-34')).to.equal('134');
+    expect(parser.rawValue('1a-34')).to.equal('1a34');
+    expect(parser.rawValue('12345')).to.equal('12345');
+  });
+
+  it('reads a masked text with the prompt that it was written with', () => {
+    parser.mask = 'CC_CC';
+    parser.prompt = '*';
+
+    // The literal `_` stays, and a `*` of the input is a character.
+    expect(parser.apply('1___4', '_')).to.equal('1*_*4');
+    expect(parser.apply('**_*4', '_')).to.equal('**_*4');
+    expect(parser.apply('**_*4')).to.equal('**_*4');
+  });
+
   it('validates mask pattern rules', () => {
     const validate = (string: string) =>
       parser.isValidString(parser.apply(string));

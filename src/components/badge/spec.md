@@ -42,6 +42,7 @@
 |       2 | 2026-10-01 | Position the badge in a wrapper; hidden text through CSS |
 |       3 | 2026-10-14 | No role description on the badge                         |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                 |
+|       5 | 2026-11-25 | The first render sets the `icon` part                    |
 
 ## Overview
 
@@ -217,10 +218,11 @@ None applicable.
 6. It is not applied when the icon is accompanied by text, nor for text-only content.
 7. It is cleared when the icon is removed.
 8. A badge that is not icon-only keeps its inline padding.
+9. The first render applies the `icon` part.
 
 ### ARIA tests
 
-9. The badge exposes a status role and no role description.
+10. The badge exposes a status role and no role description.
 
 ### Not covered by the suite
 

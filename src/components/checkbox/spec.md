@@ -38,6 +38,7 @@ This directory hosts two form-associated components that share the same base imp
     - [Hidden ancestor](#hidden-ancestor)
     - [Value state motion](#value-state-motion)
     - [Indeterminate value state motion](#indeterminate-value-state-motion)
+    - [First render](#first-render)
     - [Not covered by the suites](#not-covered-by-the-suites)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -62,6 +63,8 @@ This directory hosts two form-associated components that share the same base imp
 |      11 | 2026-11-11 | <kbd>Enter</kbd> submits only through the first submit button of the form, as for a native checkbox, and not after a canceled `keypress` |
 |      12 | 2026-11-18 | A change of the `checked` attribute or of `value` keeps the control pristine, as for a native checkbox |
 |      13 | 2026-11-20 | Only a change by the user animates the checkbox and the switch; a change from code and the first render show at once; no transitions with reduced motion. The Material switch thumb moves with a transition, not with keyframes; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
+|      14 | 2026-11-25 | `name` updates its attribute at once |
+|      15 | 2026-11-25 | The first render shows the slotted label |
 
 ## Overview
 
@@ -409,6 +412,7 @@ through `@web/test-runner`, with `@open-wc/testing` fixtures and assertions, and
 | `simulateClick` / `simulateKeyboard` | User interaction driven without real device events. |
 | `ValidityHelpers` | Assertions for validity, invalid styling and validation slot presence and content. |
 | `isFocused` | Focus assertions that see through shadow roots. |
+| `runFirstRenderLabelTests` | A case asserting that the first render shows the slotted label. |
 
 The groups below mirror the `describe` blocks of the two suites.
 
@@ -519,6 +523,12 @@ starts indeterminate, because a click is the only change of `indeterminate` that
 41. `indeterminate = false` from code starts none.
 42. A first render in the indeterminate state starts none.
 43. With reduced motion, a click starts none.
+
+### First render
+
+Present in both suites.
+
+44. The first render shows the slotted label.
 
 ### Not covered by the suites
 

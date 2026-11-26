@@ -112,6 +112,20 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return this._formValue.value;
   }
 
+  /* blazorCSSuppress */
+  /**
+   * The default value of the control. A form reset restores the value to it.
+   * While the value is unchanged since the start or the last form reset, a
+   * new default also sets the value. The `value` attribute also sets it.
+   */
+  public override set defaultValue(value: Date | string | null | undefined) {
+    super.defaultValue = value;
+  }
+
+  public override get defaultValue(): Date | null {
+    return this._formValue.defaultValue;
+  }
+
   //#endregion
 
   //#region Internal API

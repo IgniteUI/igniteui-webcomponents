@@ -201,7 +201,8 @@ declare global {
   - Override `requestUpdate()` only when a reaction cannot wait for the next update, also for
     a property of a base class. Lit calls it from the setter with the name and the old value.
     Call `super.requestUpdate()` first, and compare the value with the old value. The form
-    mixin submits the form value again there, and the radio moves to the group of a new `name`.
+    mixin writes the `name` attribute there and submits the form value again. The radio
+    moves to the group of a new `name`.
 - Export a new component from `src/index.ts`, in alphabetical order:
 
   ```ts
@@ -302,7 +303,6 @@ A controller in a field:
 ```ts
 private readonly _slots = addSlotController(this, {
   slots: setSlots('prefix', 'suffix'),
-  onChange: this._handleSlotChange,
 });
 ```
 
@@ -310,17 +310,24 @@ private readonly _slots = addSlotController(this, {
 
 - Use slots for content composition and document each one with `@slot`. The default slot holds
   the main content. Named slots (`prefix`, `suffix`, `header`) have one purpose each.
-- Use `addSlotController` to react to slot changes. Query the default slot with the
-  `DefaultSlot` key (`'[default]'`):
+- Use `addSlotController` to query slotted content and to react to slot changes. Query the
+  default slot with the `DefaultSlot` key (`'[default]'`). When the template depends on slotted
+  content, query from `render()`, not from an `onChange` handler that stores state:
 
   ```ts
-  private _handleSlotChange(): void {
-    this._hasPrefix = this._slots.hasAssignedElements('prefix');
-    this._hasIcon = this._slots.hasAssignedElements('[default]', {
+  protected override render() {
+    const hasPrefix = this._slots.hasAssignedElements('prefix');
+    const hasIcon = this._slots.hasAssignedElements('[default]', {
       selector: 'igc-icon',
     });
+    // ...
   }
   ```
+
+  Queries from `render()` see the slotted content in the first render too. A query that runs
+  before it, such as from a setter, the first `willUpdate()` or an earlier controller, reports
+  no content. In the first render, a query also reports content for a slot that the template
+  does not render, and a flattened query does not return fallback content.
 
 ## Shadow DOM and CSS Parts
 
@@ -626,18 +633,20 @@ Each component has tests in `[component].spec.ts`. They cover:
 - Test the light DOM and the shadow DOM (`expect(el).dom…`, `expect(el).shadowDom…`).
 - Use the shared helpers in `#internals/testing/`:
 
-  | Module                     | Provides                                                                       |
-  | -------------------------- | ------------------------------------------------------------------------------ |
-  | `simulate.spec.js`         | `simulateClick`, `simulateKeyboard`, `simulatePointerDown`, `simulateInput`, … |
-  | `form-testbed.spec.js`     | `createFormAssociatedTestBed` and the shared label and ARIA projection suites  |
-  | `validity-helpers.spec.js` | Validity assertions and `runValidationContainerTests`. Await it.               |
-  | `invoker-commands.spec.js` | `runInvokerCommandsTests`                                                      |
-  | `helpers.spec.js`          | Animation, focus, scroll and style helpers, and `axeReflectedRelationsOptions` |
-  | `motion.spec.js`           | `transitionsIn` and `withTheme`                                                |
-  | `value-state.spec.js`      | `runValueStateMotionTests`                                                     |
-  | `fast-check-setup.spec.js` | `fc` with the seed, `SLOW_PROPERTY_RUNS`, `orderedPair` and `withFixture`      |
-  | `date-arbitraries.spec.js` | Date arbitraries, wall clocks and `assumeWallClock` for date properties        |
-  | `qr-decoder.spec.js`       | `prepareQrDecoder`, `readQr` for an image and `readQrMatrix` for a QR matrix   |
+  | Module                        | Provides                                                                       |
+  | ----------------------------- | ------------------------------------------------------------------------------ |
+  | `simulate.spec.js`            | `simulateClick`, `simulateKeyboard`, `simulatePointerDown`, `simulateInput`, … |
+  | `form-testbed.spec.js`        | `createFormAssociatedTestBed` and the shared label and ARIA projection suites  |
+  | `validity-helpers.spec.js`    | Validity assertions and `runValidationContainerTests`. Await it.               |
+  | `invoker-commands.spec.js`    | `runInvokerCommandsTests`                                                      |
+  | `first-render.spec.js`        | `readFirstUpdate` and `runFirstRenderLabelTests`                               |
+  | `focus-before-render.spec.js` | `runFocusBeforeRenderTests`                                                    |
+  | `helpers.spec.js`             | Animation, focus, scroll and style helpers, and `axeReflectedRelationsOptions` |
+  | `motion.spec.js`              | `transitionsIn` and `withTheme`                                                |
+  | `value-state.spec.js`         | `runValueStateMotionTests`                                                     |
+  | `fast-check-setup.spec.js`    | `fc` with the seed, `SLOW_PROPERTY_RUNS`, `orderedPair` and `withFixture`      |
+  | `date-arbitraries.spec.js`    | Date arbitraries, wall clocks and `assumeWallClock` for date properties        |
+  | `qr-decoder.spec.js`          | `prepareQrDecoder`, `readQr` for an image and `readQrMatrix` for a QR matrix   |
 
   Use the simulated events, not `element.click()` or a hand-built `KeyboardEvent`. They send
   the full event sequence of a real user interaction.
@@ -730,8 +739,9 @@ A parser, converter or serializer that takes user or stored input also gets prop
 
   Keep the field initializer. It gives the default value, and `onChange` does not run for it.
   Use hand-written accessors only for a computed getter or for storage outside the instance.
-  To share a config between properties, put it in a static field, as
-  `IgcInputComponent._revalidate` does.
+  To share a config between the properties of one class, put it in a static field, as
+  `IgcInputComponent._revalidate` does. To share a config between classes, export it from
+  a module, as `reflectReadOnly` in `#internals/mixins/forms/associated.js` does.
 
 ## Custom Events
 
@@ -1042,6 +1052,9 @@ edits.
    */
   ```
 
+- Some properties write their own attribute and do not use the `reflect` option of
+  `@property`. Put `@reflect` after `@attr` on them, so the manifest shows them as reflected.
+  Examples are `name`, `disabled` and `readOnly` of the form controls.
 - A deprecated member uses this format:
   ``@deprecated since [SemVer]. Use the `[new API]` [type] instead.``
 
@@ -1107,8 +1120,8 @@ The skeleton is a default, not a schema:
 
 - If a section does not apply, write "None applicable." instead of removing it. Then a reader
   can see the difference between a missing feature and a missing document. Remove a section
-  only if the whole area has no meaning for the component. For example, the splitter has no
-  `## Assumptions and limitations`.
+  only if the whole area has no meaning for the component. For example, the validation
+  container has no `## Assumptions and limitations`.
 - Add sections where a component needs them: `### CSS custom properties` for the rating and
   the highlight, `### Terms` for the carousel.
 - A directory with several components can split `## API` into one subsection for each

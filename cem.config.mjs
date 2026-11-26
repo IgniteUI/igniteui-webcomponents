@@ -138,17 +138,27 @@ const IMPORT_QUALIFIER = /import\("[^"]*"\)\./g;
 /**
  * The analyzer copies an inherited member as written, so a member typed with a
  * type parameter (`TGet` of `I18nMixin`) keeps that name, also under an
- * override. Resolve it with the checker on each element.
+ * override. It also gives an override the type of the member that it
+ * overrides. Resolve both with the checker on each element.
  *
  * @example `TGet` -> `Required<IChipResourceStrings>` on `igc-chip`
+ * @example `unknown` -> `Date | null` for the `defaultValue` override of `igc-date-picker`
  */
-function resolveTypeParametersPlugin() {
+function resolveMemberTypesPlugin() {
   let typescript;
   const classNodes = new Map();
   const typeParameterNames = new Set();
 
+  /** Whether the class declares `name` with its own type annotation. */
+  const declaresTyped = (node, name) =>
+    node.members.some(
+      (classMember) =>
+        classMember.name?.getText() === name &&
+        (classMember.type ?? classMember.parameters?.[0]?.type)
+    );
+
   return {
-    name: 'IGC - RESOLVE TYPE PARAMETERS',
+    name: 'IGC - RESOLVE MEMBER TYPES',
 
     analyzePhase({ ts, node, moduleDoc }) {
       typescript ??= ts;
@@ -176,10 +186,11 @@ function resolveTypeParametersPlugin() {
           const instanceType = checker.getTypeAtLocation(node);
 
           for (const [index, member] of (declaration.members ?? []).entries()) {
-            if (
-              !member.inheritedFrom ||
-              !typeParameterNames.has(member.type?.text)
-            ) {
+            const shouldResolve =
+              typeParameterNames.has(member.type?.text) ||
+              (member.kind === 'field' && declaresTyped(node, member.name));
+
+            if (!(member.inheritedFrom && shouldResolve)) {
               continue;
             }
 
@@ -294,6 +305,6 @@ export default {
     }),
     pruneExpandedTypesPlugin(),
     stripUndefinedDefaultsPlugin(),
-    resolveTypeParametersPlugin(),
+    resolveMemberTypesPlugin(),
   ],
 };

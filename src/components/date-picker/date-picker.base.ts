@@ -23,6 +23,7 @@ import {
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '#internals/mixins/forms/associated-required.js';
+import { reflectReadOnly } from '#internals/mixins/forms/associated.js';
 import type { FormValue } from '#internals/mixins/forms/form-value.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
 import { asArray, firstOf } from '#internals/utils/arrays.js';
@@ -139,14 +140,16 @@ export abstract class IgcDatePickerBaseComponent<
     read: () => this._value,
     write: (value) =>
       this._writeFrom('edit', () => {
+        // A pick or a commit replaces the edit, also with the same value.
+        this._editValue = undefined;
         this._value = value;
       }),
     report: (force) => this._reportChange(this._value, force),
   });
 
-  /** The value as the user types it. Without a draft, the calendar shows the value. */
+  /** The calendar selection while the user types. Wrapped, so a blank edit (`null`) differs from no edit. */
   @state({ hasChanged: (value, old) => !equal(value, old) })
-  protected _draft?: { value: T | null };
+  protected _editValue?: { value: T | null };
 
   protected _activeDate: Date | null = null;
   protected _min: Date | null = null;
@@ -163,10 +166,12 @@ export abstract class IgcDatePickerBaseComponent<
   @query(IgcDialogComponent.tagName)
   private readonly _dialog?: IgcDialogComponent;
 
+  protected get _calendarValue(): T | null {
+    return this._editValue ? this._editValue.value : this._value;
+  }
+
   private get _calendarSelection(): CalendarBinding {
-    return this._shape.toCalendar(
-      this._draft ? this._draft.value : this._value
-    );
+    return this._shape.toCalendar(this._calendarValue);
   }
 
   private get _startDate(): Date | null {
@@ -181,7 +186,10 @@ export abstract class IgcDatePickerBaseComponent<
   protected set _value(value: T | null) {
     const previous = this._value;
     this._formValue.setValueAndFormState(value);
-    this._draft = undefined;
+    // A same-value write, such as a re-render, keeps the edit, as the editor does.
+    if (!this._formValue.isSameValue(previous, this._value)) {
+      this._editValue = this._editAfterValueChange(previous);
+    }
     if (!this._activeDate) {
       this._setCalendarActiveDate(this._startDate);
     }
@@ -241,6 +249,13 @@ export abstract class IgcDatePickerBaseComponent<
 
   //#region Overridable hooks
 
+  /** The edit after a value change. The editor drops its edit for a new value, so the calendar shows the value. */
+  protected _editAfterValueChange(
+    _previous: T | null
+  ): { value: T | null } | undefined {
+    return undefined;
+  }
+
   protected get _calendarIconTitle(): string | undefined {
     return undefined;
   }
@@ -281,9 +296,11 @@ export abstract class IgcDatePickerBaseComponent<
   /**
    * Whether the control is read-only. The user cannot change the value or open the calendar.
    * @attr readonly
+   * @reflect
    * @default false
    */
-  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
+  @property({ type: Boolean, attribute: 'readonly' })
+  @coercedProperty(reflectReadOnly)
   public readOnly = false;
 
   /**
@@ -503,6 +520,17 @@ export abstract class IgcDatePickerBaseComponent<
       .set(escapeKey, this._onEscapeKey, { when: () => this.open });
   }
 
+  protected override createRenderRoot(): HTMLElement | DocumentFragment {
+    const root = super.createRenderRoot();
+
+    // Any editor blur ends the edit, also a commit that emits nothing. Focus moves inside the picker never reach the host.
+    root.addEventListener('focusout', () => {
+      this._editValue = undefined;
+    });
+
+    return root;
+  }
+
   protected override willUpdate(props: PropertyValues): void {
     super.willUpdate(props);
 
@@ -530,6 +558,12 @@ export abstract class IgcDatePickerBaseComponent<
       locale,
       getDateTimeFormat(this.displayFormat)
     );
+  }
+
+  /** A reset discards the edit of the editors, also when the restored value is the same. */
+  protected override formResetCallback(): void {
+    super.formResetCallback();
+    this._editValue = undefined;
   }
 
   protected _setDateConstraints(): void {
@@ -615,6 +649,19 @@ export abstract class IgcDatePickerBaseComponent<
     const { value, values } = this._calendarSelection;
     this._calendar.value = value;
     this._calendar.values = values;
+  }
+
+  /**
+   * Stops the inner event of an editor, and returns whether the picker owns the editor. An editor that a layout
+   * change removes commits nothing, as its typed text goes with it. The events of slotted content go on to the
+   * application.
+   */
+  protected _acceptEditorEvent(event: Event): boolean {
+    const target = event.target as PickerEditor;
+    if (target.getRootNode() !== this.renderRoot) return false;
+
+    event.stopPropagation();
+    return this._ownedEditors.includes(target);
   }
 
   /** Commits a value from an editor. An edit back to the reported value emits nothing. */

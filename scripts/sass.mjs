@@ -203,54 +203,36 @@ function createHasher() {
 
 /** @typedef {ReturnType<typeof createHasher>} Hasher */
 
-/** @param {number} n */
-const formatCount = (n) => n.toLocaleString('en-US');
-
 /**
  * Collects the Sass warnings of one build pass.
  *
  * Sass repeats a warning for every entry that loads the file it comes from, and
- * the theming partials reach nearly every entry. A deprecation from a package
- * under `node_modules` is only counted, because the fix belongs to that package.
- * Every other warning, including an `@warn` from a package, prints once for each
- * site, with the number of times it occurred.
- *
- * Sass's own `quietDeps` does not fit: it treats every file loaded through
- * `loadPaths` as a dependency, and `src` is one of the load paths.
+ * the shared partials reach nearly every entry. Each warning prints once for
+ * each site, with the number of times it occurred.
  */
 function createWarningLog() {
-  /** @type {Set<string>} */
-  const hiddenIds = new Set();
-  let hiddenCount = 0;
-
   /** @type {Map<string, { text: string, count: number }>} */
-  const shown = new Map();
+  const records = new Map();
 
   /** @type {sass.Logger} */
   const logger = {
     warn(message, options) {
       const { span, stack } = options;
-      const id = options.deprecation ? options.deprecationType.id : undefined;
       const file = fileUrlToRelative(span?.url);
-
-      if (id && file?.startsWith('node_modules/')) {
-        hiddenIds.add(id);
-        hiddenCount++;
-        return;
-      }
-
-      const kind = id ? `Deprecation [${id}]` : 'Warning';
+      const kind = options.deprecation
+        ? `Deprecation [${options.deprecationType.id}]`
+        : 'Warning';
       const site =
         file && span
           ? `${file}:${span.start.line + 1}:${span.start.column + 1}`
           : (stack?.trim().split('\n', 1)[0] ?? 'unknown location');
       const head = `${kind} at ${site}\n${message}`;
-      const record = shown.get(head);
+      const record = records.get(head);
 
       if (record) {
         record.count++;
       } else {
-        shown.set(head, {
+        records.set(head, {
           text: stack ? `${head}\n${stack.trimEnd()}` : head,
           count: 1,
         });
@@ -262,17 +244,9 @@ function createWarningLog() {
     logger,
 
     report() {
-      for (const { text, count } of shown.values()) {
+      for (const { text, count } of records.values()) {
         report.warn(
-          count > 1 ? `${text}\n(${formatCount(count)} times)` : text
-        );
-      }
-
-      if (hiddenCount) {
-        const ids = Array.from(hiddenIds).join(', ');
-
-        report.warn(
-          `Hid ${formatCount(hiddenCount)} deprecation warnings from dependencies (${ids}).`
+          count > 1 ? `${text}\n(${count.toLocaleString('en-US')} times)` : text
         );
       }
     },
@@ -409,9 +383,8 @@ class StyleBuilder {
         style: 'compressed',
         loadPaths: [toAbsolute('node_modules'), toAbsolute('src')],
         logger,
-        // Without it Sass stops after a few warnings of one kind in each
-        // compilation, and the dependency warnings come first, so the
-        // warnings of our own code could be lost.
+        // Without it Sass prints only five of each deprecation in a
+        // compilation, so sites are lost and the counts are too low.
         verbose: true,
       }
     );

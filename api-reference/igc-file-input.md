@@ -13,6 +13,9 @@ defineComponents(IgcFileInputComponent);
 - `value`: `string`. Attribute: `value`.
   The value of the control: the name of the first selected file, as the native file input gives it.
   As for the native file input, only an empty string can be set. It clears the selection.
+- `defaultValue`: `null`. No attribute.
+  The default value of the control. Always `null`: a file input has no
+  default selection, so a form reset clears it.
 - `multiple`: `boolean`. Default: `false`. Attribute: `multiple`, reflected.
   Whether the control allows the user to select more than one file.
 - `directory`: `boolean`. Default: `false`. Attribute: `directory`.
@@ -36,13 +39,9 @@ defineComponents(IgcFileInputComponent);
 - `required`: `boolean`. Default: `false`. Attribute: `required`, reflected.
   Whether the control is required. A required control that has no value,
   or is not checked, fails validation.
-- `defaultValue`: `unknown`. No attribute.
-  The default value of the control. A form reset restores the value to it.
-  While the value is unchanged since the start or the last form reset, a
-  new default also sets the value. The `value` attribute also sets it.
 - `name`: `string`. Attribute: `name`, reflected.
   The name of the control, submitted with the form data.
-- `disabled`: `boolean`. Default: `false`. Attribute: `disabled`.
+- `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.
   Whether the control is disabled. A disabled control is not validated,
   and the form does not submit its value.
 - `invalid`: `boolean`. Default: `false`. Attribute: `invalid`.

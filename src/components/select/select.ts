@@ -24,7 +24,7 @@ import { FormValueSelectTransformers } from '#internals/mixins/forms/form-transf
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
-import { isElement, normalizedTextContent } from '#internals/utils/dom.js';
+import { isAssignedTo, normalizedTextContent } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
   focusLeftHost,
@@ -207,6 +207,20 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   public get value(): string | undefined {
     return this._formValue.value;
+  }
+
+  /* blazorCSSuppress */
+  /**
+   * The default value of the control. A form reset restores the value to it.
+   * While the value is unchanged since the start or the last form reset, a
+   * new default also sets the value. The `value` attribute also sets it.
+   */
+  public override set defaultValue(value: string | undefined) {
+    super.defaultValue = value;
+  }
+
+  public override get defaultValue(): string | undefined {
+    return this._formValue.defaultValue;
   }
 
   /**
@@ -403,11 +417,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
 
     return normalizedTextContent(
-      Array.from(selected.childNodes).filter((node) =>
-        isElement(node)
-          ? !node.hasAttribute('slot')
-          : node.nodeType === Node.TEXT_NODE
-      )
+      Array.from(selected.childNodes).filter((node) => isAssignedTo(node, ''))
     );
   }
 

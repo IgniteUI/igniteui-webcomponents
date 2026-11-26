@@ -53,6 +53,7 @@
 |       6 | 2026-11-06 | Forward the host `aria-expanded`, `aria-haspopup` and `aria-controls`   |
 |       7 | 2026-11-18 | Animate a selection change by the user; a change from code shows at once or joins the running animation of the user |
 |       8 | 2026-11-20 | While a change from code shows at once, all the transitions of the chip stop, also on slotted elements and over the transitions that the app sets on parts, not only those of the base and the indicator |
+|       9 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 

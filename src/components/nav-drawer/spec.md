@@ -56,6 +56,7 @@ This directory hosts three public components: [`igc-nav-drawer`](#igc-nav-drawer
 |       7 | 2026-11-05 | The dialog stays modal until the exit ends, so the exit runs in all browsers; `hide()` and `igcClosed` come after the exit; fixed content of the shown drawer and mini variant is placed against the viewport; no motion with reduced motion |
 |       8 | 2026-11-20 | No item transitions with reduced motion |
 |       9 | 2026-11-20 | A drawer that is `open` on its first render shows at once, with no slide and no backdrop fade |
+|      10 | 2026-11-25 | An item gets the `mini` part from its content in the first render, also an item with no content and no icon |
 
 ## Overview
 
@@ -314,7 +315,8 @@ The suite lives in [`nav-drawer.spec.ts`](./nav-drawer.spec.ts) and runs in a re
 3. The items, the header items, the item slots and the mini variant render in their containers. The mini variant of a
    relative drawer is painted under an earlier page layer with `z-index: 1`. In the material theme, an item keeps its
    highlight in front of the background of the drawer. Fixed content of an open edge drawer, and of the mini variant,
-   is placed against the viewport.
+   is placed against the viewport. An item gets the `mini` part from its content in the first render: an item with
+   only an icon gets it, an item with content does not.
 4. The label names the dialog and the mini variant.
 
 ### Host ARIA

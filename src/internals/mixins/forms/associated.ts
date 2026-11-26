@@ -7,7 +7,9 @@ import {
   internalsOf,
 } from '../../controllers/internals.js';
 import { enterKey, isComposingKey, isKey } from '../../controllers/keys.js';
+import type { CoercedPropertyConfig } from '../../decorators/coerced-property.js';
 import { getHostLocale } from '../../i18n/i18n-controller.js';
+import { setOrRemoveAttribute } from '../../utils/dom.js';
 import {
   addSafeEventListener,
   preventDefault,
@@ -198,6 +200,39 @@ function submitImplicitly(form: HTMLFormElement, fromTextField: boolean): void {
 
 //#endregion
 
+/** The attribute that each control writes for one of its properties now. */
+const ownAttributeWrites = new WeakMap<Element, string>();
+
+/**
+ * Runs `write`, which makes `attribute` of `host` follow a property at once.
+ * The attribute does not set the property again, so the property keeps the
+ * value that code set, as with the `reflect` option of a Lit property.
+ */
+function writeOwnAttribute(
+  host: Element,
+  attribute: string,
+  write: () => void
+): void {
+  ownAttributeWrites.set(host, attribute);
+
+  try {
+    write();
+  } finally {
+    ownAttributeWrites.delete(host);
+  }
+}
+
+/**
+ * Writes the `readonly` attribute at once. The browser does not validate a
+ * control that has this attribute.
+ */
+export const reflectReadOnly: CoercedPropertyConfig<boolean, Element> = {
+  onChange: ({ host, value: readOnly }) =>
+    writeOwnAttribute(host, 'readonly', () =>
+      host.toggleAttribute('readonly', Boolean(readOnly))
+    ),
+};
+
 /**
  * `stateKey` names the state property, whose attribute sets the default.
  * `hostAria` lists more host attributes to forward, see `HostAriaMixin`.
@@ -278,14 +313,16 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     /**
      * The name of the control, submitted with the form data.
      * @attr
+     * @reflect
      */
-    @property({ reflect: true })
+    @property()
     public name!: string;
 
     /**
      * Whether the control is disabled. A disabled control is not validated,
      * and the form does not submit its value.
      * @attr
+     * @reflect
      * @default false
      */
     @property({ type: Boolean })
@@ -386,6 +423,17 @@ function BaseFormAssociated<T extends LitElementConstructor>(
     ): void {
       super.requestUpdate(...args);
       const [name, oldValue] = args;
+
+      // The form uses the attribute as the key of a string value.
+      if (name === 'name' && !Object.is(this.name, oldValue)) {
+        const attribute = this.name == null ? null : `${this.name}`;
+
+        if (this.getAttribute('name') !== attribute) {
+          writeOwnAttribute(this, 'name', () =>
+            setOrRemoveAttribute(this, 'name', attribute)
+          );
+        }
+      }
 
       // Lit calls this from the setter of each reactive property, at once.
       if (
@@ -709,6 +757,10 @@ function BaseFormAssociated<T extends LitElementConstructor>(
       prev: string | null,
       current: string | null
     ): void {
+      if (ownAttributeWrites.get(this) === name) {
+        return;
+      }
+
       if (name !== stateKey) {
         super.attributeChangedCallback(name, prev, current);
         return;

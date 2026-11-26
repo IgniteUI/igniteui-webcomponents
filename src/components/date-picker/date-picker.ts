@@ -269,6 +269,20 @@ export default class IgcDatePickerComponent extends I18nMixin(
     return this._formValue.value;
   }
 
+  /* blazorCSSuppress */
+  /**
+   * The default value of the control. A form reset restores the value to it.
+   * While the value is unchanged since the start or the last form reset, a
+   * new default also sets the value. The `value` attribute also sets it.
+   */
+  public override set defaultValue(value: Date | string | null | undefined) {
+    super.defaultValue = value;
+  }
+
+  public override get defaultValue(): Date | null {
+    return this._formValue.defaultValue;
+  }
+
   /**
    * The placeholder text of the control.
    * @attr
@@ -297,13 +311,15 @@ export default class IgcDatePickerComponent extends I18nMixin(
   //#region Event handlers
 
   protected _handleInputChangeEvent(event: CustomEvent<Date>): void {
-    event.stopPropagation();
-
-    this._commitEditorValue((event.target as IgcDateTimeInputComponent).value);
+    if (this._acceptEditorEvent(event)) {
+      this._commitEditorValue(
+        (event.target as IgcDateTimeInputComponent).value
+      );
+    }
   }
 
   protected _handleInputEvent(event: CustomEvent<Date>): void {
-    event.stopPropagation();
+    if (!this._acceptEditorEvent(event)) return;
 
     this._setTouchedState();
 
@@ -312,10 +328,22 @@ export default class IgcDatePickerComponent extends I18nMixin(
       return;
     }
 
-    const draft = (event.target as IgcDateTimeInputComponent)._uncommittedValue;
+    const input = event.target as IgcDateTimeInputComponent;
+    const typed = input._uncommittedValue;
 
-    this._setCalendarActiveDate(draft);
-    this.emitEvent('igcInput', { detail: draft });
+    this._editValue = { value: input._parseEdit(this._calendarValue) };
+    this._setCalendarActiveDate(typed);
+    this.emitEvent('igcInput', { detail: typed });
+  }
+
+  //#endregion
+
+  //#region Internal API
+
+  /** Takes the value of the input after a call that ends its edit, so the calendar shows it too. */
+  private _takeInputValue(): void {
+    this.value = this._input.value;
+    this._editValue = undefined;
   }
 
   //#endregion
@@ -328,7 +356,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
    */
   public stepUp(datePart?: DatePart, delta?: number): void {
     this._input.stepUp(datePart, delta);
-    this.value = this._input.value;
+    this._takeInputValue();
   }
 
   /**
@@ -337,7 +365,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
    */
   public stepDown(datePart?: DatePart, delta?: number): void {
     this._input.stepDown(datePart, delta);
-    this.value = this._input.value;
+    this._takeInputValue();
   }
 
   /** Selects the text in the input of the component. */
@@ -367,7 +395,7 @@ export default class IgcDatePickerComponent extends I18nMixin(
     mode?: RangeTextSelectMode
   ): void {
     this._input.setRangeText(replacement, start, end, mode);
-    this.value = this._input.value;
+    this._takeInputValue();
   }
 
   //#endregion

@@ -24,7 +24,7 @@
         overflow: auto;
         box-sizing: border-box;
 
-        // Keeps the z-index of the slotted content under the focused bar.
+        // Keeps the z-index of the slotted content under the bar.
         isolation: isolate;
     }
 
@@ -38,16 +38,28 @@
     }
 
     [part~='splitter-bar'] {
+        // Keeps the focus ring and the expander hitboxes above the panes.
+        z-index: 1;
         display: flex;
         flex-shrink: 0;
         justify-content: center;
+        align-items: center;
         box-sizing: content-box;
+
+        // The margins read the bar length in cq units.
+        container-type: size;
 
         [part*='collapse-btn'],
         [part*='expand-btn'] {
+            position: relative;
             cursor: pointer;
             width: 0;
             height: 0;
+
+            &::before {
+                content: '';
+                position: absolute;
+            }
         }
     }
 }
@@ -65,7 +77,6 @@
 
     [part~='drag-handle'] {
         height: 25%;
-        margin: rem(48px) 0;
     }
 }
 
@@ -82,7 +93,6 @@
 
     [part~='drag-handle'] {
         width: 25%;
-        margin: 0 rem(48px);
     }
 }
 
@@ -101,20 +111,6 @@
 :host(:state(end-collapsed)) {
     [part~='end-pane'] {
         display: none;
-    }
-}
-
-:host([disable-resize][orientation='horizontal']),
-:host([hide-drag-handle][orientation='horizontal']) {
-    [part~='start-collapse-btn'] {
-        margin-block-end: rem(48px);
-    }
-}
-
-:host([disable-resize][orientation='vertical']),
-:host([hide-drag-handle][orientation='vertical']) {
-    [part~='start-collapse-btn'] {
-        margin-inline-end: rem(48px);
     }
 }
 

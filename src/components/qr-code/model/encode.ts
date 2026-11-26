@@ -219,11 +219,9 @@ function fitVersion(
     const segments = splitSegments(chars, group);
     const bits = encodeSegments(segments, group);
 
+    // Only the segments must fit: the terminator may shrink (ISO/IEC 18004).
     for (let version = start; version <= end; version++) {
-      if (
-        Math.ceil((bits.length + 4) / 8) <=
-        getDataCodewordsCount(version, ecIndex)
-      ) {
+      if (bits.length <= getDataCodewordsCount(version, ecIndex) * 8) {
         return { version, segments, bits };
       }
     }

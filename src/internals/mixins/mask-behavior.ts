@@ -12,6 +12,7 @@ import {
   metaKey,
   shiftKey,
 } from '../controllers/key-bindings.js';
+import { coercedProperty } from '../decorators/coerced-property.js';
 import {
   createMaskHistory,
   type MaskEditKind,
@@ -19,6 +20,7 @@ import {
 } from '../mask-history.js';
 import type { MaskedInputOptions } from '../templates/masked-input.js';
 import type { AbstractConstructor } from './constructor.js';
+import { reflectReadOnly } from './forms/associated.js';
 import type { BaseFormAssociatedElement } from './forms/types.js';
 
 export type MaskSelection = {
@@ -67,7 +69,7 @@ export declare class MaskBehaviorElementInterface {
 
   /**
    * Writes a complete masked text into the value pipeline: `igc-mask-input`
-   * commits to its form value, the date editors keep a draft until blur.
+   * commits to its form value, the date editors keep an edit until blur.
    */
   protected _commitMaskedValue(value: string): void;
 
@@ -98,6 +100,7 @@ export declare class MaskBehaviorElementInterface {
   /**
    * Whether the control is read-only. The user cannot change its value.
    * @attr readonly
+   * @reflect
    * @default false
    */
   public readOnly: boolean;
@@ -271,9 +274,11 @@ export function MaskBehaviorMixin<
      * Whether the control is read-only. The user cannot change its value.
      *
      * @attr readonly
+     * @reflect
      * @default false
      */
-    @property({ type: Boolean, reflect: true })
+    @property({ type: Boolean, attribute: 'readonly' })
+    @coercedProperty(reflectReadOnly)
     public readOnly = false;
 
     /**
@@ -567,7 +572,6 @@ export function MaskBehaviorMixin<
       this._history.settle(next, caret);
     }
 
-    /** Reconciles the history with the current masked text. */
     private _historyResync(): void {
       this._history.resync(this._historyText);
     }
@@ -596,7 +600,7 @@ export function MaskBehaviorMixin<
       this.requestUpdate();
 
       // Native inputs announce an undo as an `input` event; the date picker
-      // hosts read their draft value from it.
+      // hosts read their typed value from it.
       this._emitInputEvent();
 
       await this.updateComplete;

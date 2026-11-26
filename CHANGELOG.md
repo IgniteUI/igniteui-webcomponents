@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `gradient` paints the data modules, the alignment patterns and the corners with a `linear` or `radial` gradient, from `--ig-qr-code-gradient-start` to `--ig-qr-code-gradient-end`. `gradient-angle` turns a linear gradient. An explicit `--ig-qr-code-corner-square-color` or `--ig-qr-code-corner-dot-color` wins for its part. Keep both colors much darker than the background.
   - `logo-shape` clips the logo to a `circle`, `rounded` or `squircle` shape that fills the logo box. The cutout removes only the modules under the shape.
   - `createWifiPayload()`, `createVCardPayload()`, `createEpcPayload()` and `createEventPayload()` from `igniteui-webcomponents/extras/qr-payloads` build the value of a code that a phone turns into a Wi-Fi login, a contact card, a SEPA payment or a calendar event. They escape the text and throw a `RangeError` for input that the format does not allow.
+- #### Splitter
+  - The splitter follows `--ig-size`. The bar is 6px, 12px or 18px thick, the drag handle 4px, 6px or 8px with a 2px, 8px or 8px radius, and the expanders grow with them. The default is small, which is the size from before, so a splitter without `--ig-size` looks the same. `--ig-splitter-size` still sets the small size, and the medium and large steps add to it. A `--ig-splitter-border-radius` that you set applies at every size. In the Indigo theme the idle bar is 1px, 4px or 8px thick by size. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
 
 ### Changed
 - #### Accordion, Expansion panel
@@ -32,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Without `activeDate`, a value set from code brings its month into view in the calendar, also while the calendar is open. Before, the calendar stayed on its month until the next open from the calendar icon or the keyboard.
   - With `visibleMonths` above 1, an open by the user, from the calendar icon, <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> or a click on the input or the label in dialog mode, shows the value in the first month. Before, the value could open in another month.
 - #### Date picker, Date range picker
+  - While you type, the calendar selects a complete typed date. While the date is incomplete or not valid, the calendar keeps its last selection, and an empty input clears it. In the date range picker, each end follows its own text. The value still changes only when the edit is committed. Before, the date picker calendar showed the committed date until the blur. The date range picker calendar dropped an end while its text was incomplete, and the whole range in single input mode.
   - In editable dropdown mode, a clear through the clear icon is reported with `igcChange` when the focus leaves the picker. Before, the input reported it when the focus left the input, also on a move to the calendar or to the other input of a date range picker.
 - #### Date picker, Date time input
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` move the time 12 hours also when the input format has no AM/PM part, as a step does for the other parts that the format does not show. Before, they did nothing.
@@ -46,8 +49,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `open = true` and a first render with `open` show the backdrop at once, as they do the dialog. So do an append of an open dialog and a reopen after a close that the dialog cannot cancel. Before, the backdrop faded in. `show()` still fades both in.
 - #### Dropdown
   - <kbd>Enter</kbd> closes the open list also when no item is active, as in the select. Before, the list stayed open.
+- #### Form controls
+  - `defaultValue` has the type of the default that the control keeps. Before, its type was `unknown`. The type is `string` for the input, textarea, mask input and color picker, `number` for the rating and slider, `string | undefined` for the select, `ComboValue<T>[]` for the combo, `Date | null` for the date time input and date picker, `DateRangeValue | null` for the date range picker, and `null` for the file input. As for `value`, the date controls also accept a string. In TypeScript, a write of another type is now an error.
 - #### Library
   - The library supports the last 2 major versions of Chrome, Edge, Firefox, Opera and Safari. The fallbacks for older browsers are removed, and the styles no longer have vendor prefixes for them.
+- #### Mask input
+  - A change of `mask` after the first render fits the value to the new mask. `value` becomes the raw value of the text that the new mask shows. For example, value `1234` with the mask `00-00` becomes `12` after a change to `00`, and stays `12` after a change back. The change emits no events and keeps the control pristine. The attributes and properties that you set before the first render do not fit the value. They read it with the final `mask` and `prompt`, in any order. A change of `prompt` keeps the raw value and the positions of the text. Before, `value` kept the characters that the mask cut, so the `raw` and `withFormatting` modes submitted different text. Ignite UI for Angular changes only the text.
 - #### Navigation drawer
   - A drawer that is `open` on its first render shows at once, with no slide and no backdrop fade. This also applies when a framework renders the drawer open after a user action. To slide it in, call `show()`, or set `open` after the first render.
 - #### QR code
@@ -62,10 +69,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `checkValidity()` and `reportValidity()` emit `invalid` on the radios of the group in DOM order. Before, the other radios emitted it first, and the called radio last.
 - #### Select
   - <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when other code already called `preventDefault()` on the key, as in the dropdown. Content in the `header` and `footer` slots still keeps a key that it handled.
+- #### Splitter
+  - An app that sets `--ig-size` to medium or large on the splitter or on an ancestor gets a thicker bar. Before, the splitter had one size. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
+  - The 48px gap around the drag handle is measured from the icon box of the design, so each expander is 5px further from the handle at the default size, 3px in the Indigo theme. The area of an expander that takes the pointer is that icon box, centered on the arrow: 18px, 20px or 24px square, 14px, 16px or 24px in the Indigo theme. Before, it was the arrow alone, 4px by 8px at the default size. The bar stays above both panes, so content of the end pane that reaches over the bar shows under it. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
 - #### Tabs
   - The first render shows at once. The selected indicator does not slide in from the start of the strip, and the selected header does not fade in. This also applies when the tabs show later than they render. A selection change after that still animates.
 
 ### Fixed
+- #### Badge, Chat, Checkbox, Chip, Circular progress, Combo, Date picker, Date range picker, Date time input, Dialog, Expansion panel, File input, Input, Linear progress, Mask input, Navigation drawer, Radio, Rating, Select, Stepper, Switch, Textarea, Tile manager, Tooltip
+  - The first render shows the slotted content, such as a checkbox label, the `prefixed` part of an input or the `icon` part of a badge. Before, it showed only after the next update.
 - #### Calendar, Date picker, Date range picker, Date time input
   - An ISO string with a signed six digit year, such as `+010000-01-01T00:00:00.000Z`, sets the value. `toISOString()` gives this format for dates before year 0 and after year 9999. Before, the value became `null`.
 - #### Checkbox, Radio, Switch
@@ -82,6 +94,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - In multiple selection, a change of `name` moves the submitted values to the new name at once. Before, the form submitted them under the old name.
 - #### Date picker
   - The first render no longer logs a Lit development warning that a cached field was read before the first update.
+  - The `igcInput` and `igcChange` events of slotted content, such as an input in the `suffix` slot, go on to the application and do not change the value. Before, the picker stopped them, and an `igcChange` from slotted content could change the value.
 - #### Date picker, Date range picker
   - An editor no longer shows the invalid styles when the focus moves from it to other content of the picker, such as the other editor of a date range picker. The editors show the invalid state of the picker, together with its validation message.
   - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
@@ -92,7 +105,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A form reset discards the text that you typed and did not commit yet, as for a native date input. Before, a partly typed date stayed in the focused input, and in a picker the next blur committed it as a date, also over the restored default value.
   - An empty value that code or a form reset sets while the input has focus replaces the date that the input shows. Before, the input kept showing the old date, and a spin started from it.
   - A year spin stops at year 9999 and at year 1, and a year outside them, such as one set from code, only moves toward them. Before, a spin past year 9999 gave a five digit year that did not fit the input.
+  - A `prompt` that is also a separator of the input format no longer makes a typed date incomplete. Examples are `-` with `yyyy-MM-dd`, and `-` with the ` - ` of the date range picker. Before, the `igcInput` detail of a complete date was `null`, and an arrow key or a spin started again from today.
   - Ctrl + Arrow Left and Ctrl + Arrow Right stop at each date part in an input format without separators, such as `yyyyMMdd`, and do not stop inside a separator of more than one character, such as `, `. Before, the date time input went to the start or the end of the input, and the single input of the date range picker skipped a part.
+- #### Date picker, Date range picker, Date time input, Input, Mask input, Rating, Textarea
+  - A change of `readOnly` updates the `readonly` attribute at once, as for a native control, so constraint validation follows it at once. Before, the attribute changed in the next render. Until then, a required empty control that became read-only still blocked a form submission.
 - #### Date picker, Date time input
   - `stepUp(DatePart.AmPm)` and `stepDown(DatePart.AmPm)` read AM or PM from the value. Before, while the input did not have focus and the display format was different from the input format, they read the display text, so they did nothing or switched only from PM to AM.
 - #### Date range picker
@@ -102,10 +118,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - In single input mode, the calendar shows the month of the end that you type or spin, as it does with two inputs. Before, it showed only the month of the start.
   - The `igcInput` and `igcChange` events of content in the prefix and suffix slots of the inputs reach your handlers, and they no longer change the value of the picker. Before, the picker stopped them, and an `igcChange` from that content cleared the value, or its end date with two inputs.
   - A change of `name` renames the submitted `-start` and `-end` entries at once. Before, the form submitted the range under the old name.
+- #### Date time input
+  - The API reference and the custom elements manifest give `value` the type `Date | null`. Before, they gave `T | null`. The TypeScript type does not change.
 - #### File input
+  - A form reset always clears the selection and submits no files, also after code writes `defaultValue`. Before, the form submitted a file list written to `defaultValue` while the control showed no files, and a string one character per entry.
   - The selected files are submitted under the current `name`. Before, a change of `name` kept them under the old name, and a `name` set after the selection submitted no files.
 - #### Form controls
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
+  - A change of `name` updates the `name` attribute at once, as for a native control, so the form data takes the new name. Before, a control that submits a string kept the old name until the next render. Such controls include the input, the select and a single selection combo. A `null` or `undefined` name also removes the attribute at once.
 - #### Tile manager
   - The tile transitions are styled also with a theme compiled from Sass. The tile manager adds their rules to the document instead of the theme style sheets. [#2608](https://github.com/IgniteUI/igniteui-webcomponents/issues/2608)
 - #### Input, Textarea
@@ -113,9 +133,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Mask input
   - The submitted value is `value`. A change of `valueMode`, `mask` or `prompt` updates it and the validity at once, also when the `value` attribute comes before `value-mode` or `mask`. Before, the form kept the old text, `badInput` could stay set for a valid value, and the attribute order could submit the raw text in `withFormatting` mode.
   - A formatted value that you empty submits nothing. Before, the form submitted the empty mask, such as `__-__`.
+  - A focused empty control shows the empty mask of a new `mask` or `prompt`. Before, it kept the old empty mask, and a typed character could put its old prompts or literals into the value.
+  - A write of the same `value`, `mask` or `prompt`, as a React wrapper does on each render, keeps the text that you typed. Before, it moved the characters after an empty position to the left. A write of the same empty value also removed the empty mask from a focused control.
+  - A change of `prompt` keeps the empty positions of the text. Before, it moved the characters after an empty position to the left.
+  - A change of `mask` or `prompt` keeps the placeholder on an unfocused control whose value fills no position, as a value write does. Before, it showed the empty mask.
+  - A value with the mask length and each literal in its place, such as the `igcChange` detail in `withFormatting` mode, keeps its positions. For example, `12-34` with the mask `00-00` shows `12-34`, and `value` in `raw` mode reads `1234`. Before, the input read the literals as typed characters and showed `12-_3`, so a two-way binding in `withFormatting` mode broke the text. A prompt character in the value shows as an empty position.
+- #### Navigation drawer
+  - An item without content gets the `mini` part, as the part description says. Before, an item with neither content nor an icon did not get it.
 - #### QR code
   - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
   - A code with `square-style="circle"` no longer fails to scan at some sizes, about 1 time in 10. For this fix, a `square` corner dot in a `circle` corner square draws as a circle.
+  - A value that leaves fewer than 4 bits of a version for the terminator at the end of the data gets that version. The terminator gets shorter or goes, as ISO/IEC 18004 allows. Before, such a value got the next version, for example 41 digits at level `L` got version 2, not 1. On a pinned `version`, and for 7089 digits at level `L`, the code rendered nothing. A value that the code writes as bytes only, such as lowercase text, keeps its version.
 - #### Radio
   - The validity of a group changes at once when a radio joins or leaves the group, and on a form reset. A radio joins or leaves by `name`, by form owner or by a DOM change. A removed radio has the validity of a group of its own, as a native radio does. Before, the other radios kept the old validity. A group stayed invalid after its required radio left. After a form reset, the validity was correct only after the next render.
   - A checked radio that joins a group, by connect, `name` or form owner, unchecks the other radios of the group, as a native radio does. Before, two radios of the group could stay checked.
@@ -125,8 +153,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Select
   - A selection that fails validation shows the invalid styles at once, also when the select never had the focus.
   - <kbd>Tab</kbd> on the open list without an active option no longer clears a `value` that matches no option yet, for example one whose option a framework renders later.
+  - The input shows the content of an element with an empty `slot` attribute in the selected item, as the item shows it. Before, the input left it out.
 - #### Slider
   - A change of the user that fails validation shows the invalid styles at once.
+- #### Splitter
+  - On a bar too short for the drag handle, the two expanders and the 48px gaps between them, the drag handle keeps 25% of the bar length and the gaps get narrower. Before, the gaps stayed 48px, so the handle shrank and the expanders touched the ends of the bar. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
+  - In the Indigo theme, the minimum sizes of the panes count the full thickness of the bar while it is idle. Before, they counted the thickness that the idle bar shows, so two minimums that filled the splitter overflowed it. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
 
 ## [7.5.0] - 2026-11-16
 ### Added

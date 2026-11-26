@@ -56,6 +56,9 @@
 |       7 | 2026-10-21 | API descriptions aligned with the JSDoc.                                             |
 |       8 | 2026-11-02 | A `focus()` call before the first render applies after the render                    |
 |       9 | 2026-11-18 | A value set from code before the first render makes the rating dirty, so a later `defaultValue` does not replace it |
+|      10 | 2026-11-25 | `disabled` is marked as reflected. `name` and `readOnly` update their attributes at once |
+|      11 | 2026-11-25 | The `defaultValue` row has the JSDoc wording |
+|      12 | 2026-11-25 | The first render shows the slotted content, and draws no default symbols next to projected ones |
 
 ## Overview
 
@@ -207,9 +210,9 @@ value: `{0}` is replaced with the current value and `{1}` with the maximum.
 | `allowReset`   | `allow-reset`   | yes       | `boolean`             | `false` | Clicking the current value resets it to `0`.                     |
 | `readOnly`     | `readonly`      | yes       | `boolean`             | `false` | Whether the rating is read-only. A read-only rating shows its value but ignores user input. |
 | `name`         | `name`          | yes       | `string`              | —       | The name submitted with the form data.                           |
-| `disabled`     | `disabled`      | no        | `boolean`             | `false` | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                             |
+| `disabled`     | `disabled`      | yes       | `boolean`             | `false` | Whether the control is disabled. A disabled control is not validated, and the form does not submit its value.                             |
 | `invalid`      | `invalid`       | no        | `boolean`             | `false` | The invalid visual state of the component.                       |
-| `defaultValue` | —               | —         | `number`              | —       | The value restored on a form reset.                              |
+| `defaultValue` | —               | —         | `number`              | —       | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it. |
 | `form`         | —               | —         | `HTMLFormElement \| null` | —   | The associated form. Read-only.                                  |
 | `validity`     | —               | —         | `ValidityState`       | —       | The validity state of the control. Read-only.                    |
 | `validationMessage` | —          | —         | `string`              | —       | The validation message of the control. Read-only.                |
@@ -289,7 +292,7 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 2. The ARIA attributes are set, and `value-format` is reflected in the announced value text.
 3. A value above `max` is truncated, and an out-of-bounds value is normalized.
 4. The default symbols render, projected symbols render in their place, and `max` follows the number of projected
-   symbols.
+   symbols. With projected symbols, the first render draws no default symbols.
 
 ### Interaction
 

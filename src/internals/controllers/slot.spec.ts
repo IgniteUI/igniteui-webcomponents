@@ -6,7 +6,8 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { LitElement } from 'lit';
+import { LitElement, nothing, type PropertyValues } from 'lit';
+import { ref } from 'lit/directives/ref.js';
 import { firstOf, lastOf } from '../utils/arrays.js';
 import {
   addSlotController,
@@ -272,6 +273,323 @@ describe('Slots controller', () => {
       await elementUpdated(host);
 
       expect(changes).to.have.members(['start', '']);
+    });
+  });
+
+  describe('First render', () => {
+    type FirstRenderSlots = SlotController<'[default]' | 'start' | 'end'>;
+    type FirstRenderHost = LitElement & { slotController: FirstRenderSlots };
+    type NodeLabel = string | null;
+    type QuerySnapshot = {
+      start: NodeLabel[];
+      defaultNodes: NodeLabel[];
+      defaultElements: NodeLabel[];
+      end: NodeLabel[];
+    };
+
+    let firstRenderTag: string;
+    let snapshots: QuerySnapshot[];
+
+    function nodeLabels(nodes: Node[]): NodeLabel[] {
+      return nodes.map((node) =>
+        node.nodeType === Node.ELEMENT_NODE
+          ? (node as Element).localName
+          : node.textContent
+      );
+    }
+
+    function snapshotQueries(slots: FirstRenderSlots): QuerySnapshot {
+      return {
+        start: nodeLabels(slots.getAssignedNodes('start')),
+        defaultNodes: nodeLabels(slots.getAssignedNodes('[default]')),
+        defaultElements: nodeLabels(slots.getAssignedElements('[default]')),
+        end: nodeLabels(slots.getAssignedNodes('end', true)),
+      };
+    }
+
+    before(() => {
+      firstRenderTag = defineCE(
+        class extends LitElement {
+          public readonly slotController: FirstRenderSlots = addSlotController(
+            this,
+            { slots: setSlots('start', 'end') }
+          );
+
+          protected override render() {
+            snapshots.push(snapshotQueries(this.slotController));
+            return html`
+              <slot name="start"></slot>
+              <slot></slot>
+              <slot name="end"></slot>
+            `;
+          }
+        }
+      );
+    });
+
+    beforeEach(() => {
+      snapshots = [];
+    });
+
+    it('reports the host children that the slots get', async () => {
+      const host = document.createElement(firstRenderTag) as FirstRenderHost;
+
+      host.innerHTML = [
+        '<span slot="start"></span>',
+        '<b slot="start"></b>',
+        'Text',
+        '<i></i>',
+        '<em slot=""></em>',
+        '<u slot="other"></u>',
+        '<!--comment-->',
+        '<slot slot="end"></slot>',
+      ].join('');
+      await fixture(host);
+
+      expect(firstOf(snapshots)).to.eql({
+        start: ['span', 'b'],
+        defaultNodes: ['Text', 'i', 'em'],
+        defaultElements: ['i', 'em'],
+        // A slot outside a shadow tree does not flatten.
+        end: ['slot'],
+      });
+      expect(firstOf(snapshots)).to.eql(snapshotQueries(host.slotController));
+    });
+
+    it('flattens a slot of an outer shadow tree', async () => {
+      const outerTag = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            protected override render() {
+              const inner = unsafeStatic(firstRenderTag);
+              return html`<${inner}><slot slot="end"></slot></${inner}>`;
+            }
+          }
+        )
+      );
+
+      const outer = await fixture<LitElement>(
+        html`<${outerTag}><span></span></${outerTag}>`
+      );
+      const inner = outer.renderRoot.firstElementChild as FirstRenderHost;
+      await elementUpdated(inner);
+
+      expect(firstOf(snapshots).end).to.eql(['span']);
+      expect(firstOf(snapshots).end).to.eql(
+        snapshotQueries(inner.slotController).end
+      );
+    });
+
+    it('reports an element adopted from an iframe', async () => {
+      const iframe = await fixture<HTMLIFrameElement>(html`<iframe></iframe>`);
+      const host = document.createElement(firstRenderTag) as FirstRenderHost;
+      // The element keeps the prototypes of the iframe window.
+      host.append(iframe.contentDocument!.createElement('b'));
+      await fixture(host);
+
+      expect(firstOf(snapshots).defaultElements).to.eql(['b']);
+      expect(snapshotQueries(host.slotController).defaultElements).to.eql([
+        'b',
+      ]);
+    });
+
+    it('flattens a slot of an outer shadow tree, adopted from an iframe', async () => {
+      const iframe = await fixture<HTMLIFrameElement>(html`<iframe></iframe>`);
+      const forwarding = iframe.contentDocument!.createElement('slot');
+      forwarding.slot = 'end';
+
+      const inner = document.createElement(firstRenderTag) as FirstRenderHost;
+      inner.append(forwarding);
+      const outer = document.createElement('div');
+      outer.attachShadow({ mode: 'open' }).append(inner);
+      outer.innerHTML = '<span></span>';
+      await fixture(outer);
+      await elementUpdated(inner);
+
+      expect(firstOf(snapshots).end).to.eql(['span']);
+      expect(firstOf(snapshots).end).to.eql(
+        snapshotQueries(inner.slotController).end
+      );
+    });
+
+    it('does not flatten an SVG element named slot', async () => {
+      const svgSlot = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'slot'
+      );
+      svgSlot.setAttribute('slot', 'end');
+
+      const inner = document.createElement(firstRenderTag) as FirstRenderHost;
+      inner.append(svgSlot);
+      const outer = document.createElement('div');
+      outer.attachShadow({ mode: 'open' }).append(inner);
+      await fixture(outer);
+      await elementUpdated(inner);
+
+      expect(firstOf(snapshots).end).to.eql(['slot']);
+      expect(firstOf(snapshots).end).to.eql(
+        snapshotQueries(inner.slotController).end
+      );
+    });
+
+    it('reports the host children with other nodes in the render root', async () => {
+      const tagName = defineCE(
+        class extends (customElements.get(
+          firstRenderTag
+        ) as typeof LitElement) {
+          protected override createRenderRoot() {
+            const root = super.createRenderRoot();
+            root.append(document.createElement('style'));
+            return root;
+          }
+        }
+      );
+      const host = document.createElement(tagName) as FirstRenderHost;
+      host.innerHTML = '<span slot="start"></span>';
+      await fixture(host);
+
+      expect(firstOf(snapshots).start).to.eql(['span']);
+    });
+
+    it('reports no content to a query before the first update, such as from a setter', async () => {
+      const host = document.createElement(firstRenderTag) as FirstRenderHost;
+      host.innerHTML = '<span slot="start"></span>';
+
+      // Before the connection and before the first update.
+      expect(host.slotController.hasAssignedElements('start')).to.be.false;
+
+      const container = await fixture<HTMLDivElement>(html`<div></div>`);
+      container.append(host);
+      expect(host.slotController.hasAssignedElements('start')).to.be.false;
+
+      await elementUpdated(host);
+      expect(host.slotController.hasAssignedElements('start')).to.be.true;
+
+      // After the first update, a slot that is not rendered has no content.
+      host.renderRoot.querySelector('slot[name="start"]')!.remove();
+      expect(host.slotController.hasAssignedElements('start')).to.be.false;
+    });
+
+    it('reports no content after the commit of a template without the slot', async () => {
+      const results: boolean[] = [];
+      const tagName = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            public readonly slotController = addSlotController(this, {
+              slots: setSlots('start'),
+            });
+
+            protected override update(changed: PropertyValues): void {
+              results.push(this.slotController.hasAssignedElements('start'));
+              super.update(changed);
+              results.push(this.slotController.hasAssignedElements('start'));
+            }
+
+            protected override render() {
+              return nothing;
+            }
+          }
+        )
+      );
+
+      await fixture(html`<${tagName}><span slot="start"></span></${tagName}>`);
+
+      expect(results.slice(0, 2)).to.eql([true, false]);
+    });
+
+    it('reports no content after an update request during the commit', async () => {
+      const results: boolean[] = [];
+      const tagName = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            public readonly slotController = addSlotController(this, {
+              slots: setSlots('start'),
+            });
+
+            private readonly _onCommit = (): void => {
+              this.requestUpdate();
+              results.push(this.slotController.hasAssignedElements('start'));
+            };
+
+            protected override render() {
+              return html`<div ${ref(this._onCommit)}></div>`;
+            }
+          }
+        )
+      );
+
+      await fixture(html`<${tagName}><span slot="start"></span></${tagName}>`);
+
+      expect(firstOf(results)).to.be.false;
+    });
+
+    it('reports no content with a manual slot assignment', async () => {
+      const results: boolean[] = [];
+      const tagName = unsafeStatic(
+        defineCE(
+          class extends LitElement {
+            public static override shadowRootOptions: ShadowRootInit = {
+              ...LitElement.shadowRootOptions,
+              slotAssignment: 'manual',
+            };
+
+            public readonly slotController = addSlotController(this, {
+              slots: setSlots('start'),
+            });
+
+            protected override render() {
+              results.push(this.slotController.hasAssignedElements('start'));
+              return html`<slot name="start"></slot>`;
+            }
+          }
+        )
+      );
+
+      await fixture(html`<${tagName}><span slot="start"></span></${tagName}>`);
+
+      expect(firstOf(results)).to.be.false;
+    });
+
+    it('reports no content to a pending update after a first render that throws', async () => {
+      let fail = true;
+      const tagName = defineCE(
+        class extends LitElement {
+          public readonly slotController = addSlotController(this, {
+            slots: setSlots('start'),
+          });
+
+          // Keeps the error out of the update promise, which Lit rejects and
+          // fires again on the next update.
+          protected override performUpdate(): void {
+            try {
+              super.performUpdate();
+            } catch {
+              fail = false;
+            }
+          }
+
+          protected override render() {
+            if (fail) throw new Error('First render');
+            return html`<slot name="start"></slot>`;
+          }
+        }
+      );
+
+      const host = document.createElement(tagName) as LitElement & {
+        slotController: SlotController<'start'>;
+      };
+      host.innerHTML = '<span slot="start"></span>';
+
+      const container = await fixture<HTMLDivElement>(html`<div></div>`);
+      container.append(host);
+      await host.updateComplete;
+      expect(host.hasUpdated).to.be.false;
+
+      host.requestUpdate();
+      expect(host.slotController.hasAssignedElements('start')).to.be.false;
+
+      await elementUpdated(host);
+      expect(host.slotController.hasAssignedElements('start')).to.be.true;
     });
   });
 

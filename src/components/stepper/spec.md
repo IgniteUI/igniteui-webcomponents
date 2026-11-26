@@ -52,6 +52,7 @@ This directory hosts two public components: [`igc-stepper`](#igc-stepper) and [`
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                                |
 |       5 | 2026-10-23 | The stepper makes a stacking context, so the z-index of the step headers and bodies does not compete with the layers of the page |
 |       6 | 2026-10-28 | `active` applies at once, so the last one set wins; navigation from an inaccessible active step; enabling a step of a fully disabled stepper; a step that an `igcActiveStepChanging` handler activates stays |
+|       7 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 

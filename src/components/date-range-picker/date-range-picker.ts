@@ -19,6 +19,7 @@ import { I18nMixin } from '#internals/mixins/i18n.js';
 import { isEmpty } from '#internals/utils/arrays.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { asNumber, clamp } from '#internals/utils/math.js';
+import { equal } from '#internals/utils/objects.js';
 import { createIdGenerator } from '#internals/utils/strings.js';
 import { all } from '#themes/date-range-picker/themes/themes.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -270,6 +271,22 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     return this.resourceStrings;
   }
 
+  /** With two inputs, the editor of an end that keeps its date keeps its edit. */
+  protected override _editAfterValueChange(
+    previous: DateRangeValue | null
+  ): { value: DateRangeValue | null } | undefined {
+    if (!(this.useTwoInputs && this._editValue)) return undefined;
+
+    const edit = this._editValue.value;
+    const value = this._value;
+    const end = (key: keyof DateRangeValue): Date | null =>
+      equal(previous?.[key] ?? null, value?.[key] ?? null)
+        ? (edit?.[key] ?? null)
+        : (value?.[key] ?? null);
+
+    return { value: { start: end('start'), end: end('end') } };
+  }
+
   protected override get _defaultDisplayFormat(): string | undefined {
     return this._inputFormat ?? getLocaleDateTimeFormats(this.locale).display;
   }
@@ -320,6 +337,22 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
 
   public get value(): DateRangeValue | null {
     return this._formValue.value;
+  }
+
+  /* blazorCSSuppress */
+  /**
+   * The default value of the control. A form reset restores the value to it.
+   * While the value is unchanged since the start or the last form reset, a
+   * new default also sets the value. The `value` attribute also sets it.
+   */
+  public override set defaultValue(
+    value: DateRangeValue | string | null | undefined
+  ) {
+    super.defaultValue = value;
+  }
+
+  public override get defaultValue(): DateRangeValue | null {
+    return this._formValue.defaultValue;
   }
 
   /**
@@ -426,12 +459,12 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   }
 
   protected override willUpdate(changedProperties: PropertyValues<this>): void {
-    // The render swaps the editors, so a typed draft goes with them.
+    // The render swaps the editors, so an edit goes with them.
     if (
       changedProperties.has('useTwoInputs') ||
       changedProperties.has('mode')
     ) {
-      this._draft = undefined;
+      this._editValue = undefined;
     }
 
     super.willUpdate(changedProperties);
@@ -479,13 +512,13 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
     }
 
     const editors = this._editors;
-    const draft = normalizeRange(editors.typed());
-    const typed = editors.typedDate(event.target as PickerEditor);
+    const typed = normalizeRange(editors.typed());
+    const typedDate = editors.typedDate(event.target as PickerEditor);
 
-    this._draft = { value: draft };
-    this._setCalendarActiveDate(typed ?? draft?.start ?? draft?.end);
+    this._editValue = { value: editors.edit(this._calendarValue) };
+    this._setCalendarActiveDate(typedDate ?? typed?.start ?? typed?.end);
 
-    this.emitEvent('igcInput', { detail: draft });
+    this.emitEvent('igcInput', { detail: typed });
   }
 
   protected _handleEditorChange(event: Event): void {
@@ -497,19 +530,6 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
   // #endregion
 
   // #region Private methods
-
-  /**
-   * Stops the inner event of an editor, and returns whether the editor belongs to the layout that `useTwoInputs`
-   * selects. An editor that a layout change removes commits nothing, as its typed text goes with it. The events of
-   * slotted content go on to the application.
-   */
-  private _acceptEditorEvent(event: Event): boolean {
-    const target = event.target as PickerEditor;
-    if (target.getRootNode() !== this.renderRoot) return false;
-
-    event.stopPropagation();
-    return this._ownedEditors.includes(target);
-  }
 
   /** Applies a predefined range like a calendar selection. */
   private _handleRangeSelect({ detail }: CustomEvent<DateRangeValue>): void {

@@ -64,7 +64,8 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |      11 | 2026-11-02 | Tiles fit the responsive columns, a start after the last column moves back, nested managers keep their own column count and gap |
 |      12 | 2026-11-02 | Percentage gaps in a resize, CSS `direction` in a drag, a drag copy that does not act as a tile, no count loop with the page scrollbar |
 |      13 | 2026-11-02 | View transition names only during a transition of the manager, a stacking context for the content of a tile, a drag target that stays while the pointer is in it |
-|      14 | 2026-11-17 | The tile manager adds its view transition rules to the document, instead of the theme style sheets |
+|      14 | 2026-11-25 | The first render shows the slotted content |
+|      15 | 2026-11-26 | The tile manager adds its view transition rules to the document, instead of the theme style sheets |
 
 ## Overview
 

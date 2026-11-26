@@ -72,8 +72,7 @@ describe('Combo', () => {
 
     it('submits the value under a new name (single)', async () => {
       spec.setProperties({ singleSelect: true });
-      // A string value goes under the `name` attribute, which the update reflects.
-      await spec.rename('renamed', true);
+      await spec.rename('renamed');
 
       spec.assertSubmitHasValues(['BG01']);
     });

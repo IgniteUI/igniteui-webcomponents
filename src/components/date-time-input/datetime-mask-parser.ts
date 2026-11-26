@@ -44,7 +44,6 @@ export interface SpunText<V> {
 
 //#region Constants
 
-/** Maps format characters to their corresponding DatePartType */
 const FORMAT_CHAR_TO_DATE_PART = new Map<string, DatePartType>([
   ['d', DatePartType.Date],
   ['D', DatePartType.Date],
@@ -60,7 +59,6 @@ const FORMAT_CHAR_TO_DATE_PART = new Map<string, DatePartType>([
   ['T', DatePartType.AmPm],
 ]);
 
-/** Century threshold for two-digit year interpretation */
 const CENTURY_THRESHOLD = 50;
 const CENTURY_BASE = 2000;
 
@@ -76,7 +74,6 @@ function resolveYear(year: number, typed: string): number {
   return year + (year < CENTURY_THRESHOLD ? CENTURY_BASE : CENTURY_BASE - 100);
 }
 
-/** Default values for missing date parts */
 const DEFAULT_DATE_VALUES = {
   year: 2000,
   month: 0,
@@ -190,7 +187,6 @@ export abstract class DateFormatMaskParser<
     );
   }
 
-  /** The first part of the given type, if the format contains one. */
   public getPartByType(type: DatePartType): T | undefined {
     return this.parts.find((part) => part.type === type);
   }
@@ -205,6 +201,15 @@ export abstract class DateFormatMaskParser<
     return this.parts.every(
       (part) =>
         part.type === DatePartType.Literal || !this._typedPart(masked, part)
+    );
+  }
+
+  /** Whether no date/time position is a prompt. A literal can match the prompt. */
+  public isComplete(masked: string): boolean {
+    return this.parts.every(
+      (part) =>
+        part.type === DatePartType.Literal ||
+        !masked.substring(part.start, part.end).includes(this.prompt)
     );
   }
 
@@ -243,6 +248,9 @@ export abstract class DateFormatMaskParser<
    * lenient one fills the missing parts from their defaults. A blank mask gives `null`.
    */
   public abstract parseValue(masked: string, strict: boolean): V | null;
+
+  /** Parses an edit. A blank mask gives `null`; an incomplete or invalid date keeps `previous`. */
+  public abstract parseEdit(masked: string, previous: V | null): V | null;
 
   /** Formats a value into the editable mask. */
   public abstract formatValue(value: V | null): string;
@@ -361,7 +369,7 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
 
   /** An invalid date gives `null` in both modes. */
   public override parseValue(masked: string, strict: boolean): Date | null {
-    if ((strict && masked.includes(this.prompt)) || this.isBlank(masked)) {
+    if ((strict && !this.isComplete(masked)) || this.isBlank(masked)) {
       return null;
     }
 
@@ -369,11 +377,19 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
     return isValidDate(parsed) ? parsed : null;
   }
 
+  public override parseEdit(
+    masked: string,
+    previous: Date | null
+  ): Date | null {
+    return (
+      this.parseValue(masked, true) ?? (this.isBlank(masked) ? null : previous)
+    );
+  }
+
   /** Parses a masked string into a Date. Returns null if it is not a valid date. */
   public parseDate(masked: string): Date | null {
     const parts = this._extractDateValues(masked);
 
-    // Convert to zero-based month (only if month is in format)
     if (parts[DatePartType.Month] !== undefined) {
       parts[DatePartType.Month]! -= 1;
     }
@@ -432,9 +448,6 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
     });
   }
 
-  /**
-   * Applies AM/PM conversion to hours if format includes AM/PM.
-   */
   private _applyAmPmConversion(
     parts: Partial<Record<DatePartType, number>>,
     masked: string
@@ -453,9 +466,6 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
       (hours % 12) + (marker.toLowerCase() === 'pm' ? 12 : 0);
   }
 
-  /**
-   * Creates a Date object from parsed parts with defaults for missing values.
-   */
   private _createDateFromParts(
     parts: Partial<Record<DatePartType, number>>
   ): Date {
@@ -505,7 +515,7 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
       return this.seeded(request.seed);
     }
 
-    const type = part as unknown as DatePartType;
+    const type: DatePartType = part;
     const step =
       request.delta || request.spinDelta?.[part as keyof DatePartDeltas] || 1;
     const date = new Date(value.getTime());

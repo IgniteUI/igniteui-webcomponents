@@ -64,6 +64,7 @@
 |       6 | 2026-10-21 | An invalid `version` falls back to the automatic version             |
 |       7 | 2026-11-17 | Shapes, `cornerDotStyle`, `dotScale`, logo cutout and version fit  |
 |       8 | 2026-11-23 | Mixed-mode segments; no ECI header; payload helpers; export holds only the code; whole-pixel modules; alignment patterns; new dot styles and `leaf`; gradient; `logo-shape` |
+|       9 | 2026-11-25 | A value that leaves fewer than 4 bits for the terminator fits its version |
 
 ## Overview
 
@@ -608,7 +609,9 @@ None. The SVG is rendered entirely from the properties of the component.
     codeword count of that version, and never takes more bits than one segment of the best single mode. A decoder
     reads the bytes of the data back from the matrix.
 51. The matrix is square, with the side length of its version, and data over the capacity of a version throws the
-    capacity error. A requested version that is not an integer from 1 to 40 throws.
+    capacity error. A requested version that is not an integer from 1 to 40 throws. The longest value of one mode
+    fits its version, also with fewer than 4 bits left for the terminator, one more character throws, and a decoder
+    reads the value back.
 
 ### Host ARIA
 

@@ -60,6 +60,8 @@
 |       9 | 2026-10-29 | The base of the slider has no transition, so the slider hides at the same time as a hidden ancestor |
 |      10 | 2026-11-02 | A `focus()` call before the first render applies after the render                                   |
 |      11 | 2026-11-18 | A change of the user that fails validation shows the invalid styles at once |
+|      12 | 2026-11-25 | `name` updates its attribute at once |
+|      13 | 2026-11-25 | The `defaultValue` row has the JSDoc wording |
 
 ## Overview
 
@@ -272,7 +274,7 @@ Shared by `igc-slider` and `igc-range-slider`:
 | `value`        | `value`   | no        | `number`  | `0`     | The value of the component.                      |
 | `name`         | `name`    | yes       | `string`  | —       | The name submitted with the form data.           |
 | `invalid`      | `invalid` | no        | `boolean` | `false` | The invalid visual state of the component.       |
-| `defaultValue` | —         | —         | `number`  | —       | The value restored on a form reset.              |
+| `defaultValue` | —         | —         | `number`  | —       | The default value of the control. A form reset restores the value to it. While the value is unchanged since the start or the last form reset, a new default also sets the value. The `value` attribute also sets it. |
 
 It also exposes the `form`, `validity`, `validationMessage` and `willValidate` members of a form-associated
 element.
