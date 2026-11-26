@@ -61,6 +61,37 @@ const KEYBOARD_RESIZE_STEP = 10;
 
 const PANES = ['start', 'end'] as const satisfies readonly PanePosition[];
 
+/** The names that follow the orientation. `extent` is the axis of the pane sizes and the bar thickness. */
+const AXES = {
+  horizontal: {
+    extent: 'width',
+    offset: 'offsetWidth',
+    client: 'clientX',
+    point: 'x',
+    start: 'Left',
+    end: 'Right',
+    min: 'minWidth',
+    max: 'maxWidth',
+    crossMin: 'minHeight',
+    crossMax: 'maxHeight',
+  },
+  vertical: {
+    extent: 'height',
+    offset: 'offsetHeight',
+    client: 'clientY',
+    point: 'y',
+    start: 'Top',
+    end: 'Bottom',
+    min: 'minHeight',
+    max: 'maxHeight',
+    crossMin: 'minWidth',
+    crossMax: 'maxWidth',
+  },
+} as const satisfies Record<SplitterOrientation, object>;
+
+/** The container and bar extents on the axis of the orientation. */
+type BarMeasurement = { container: number; bar: number };
+
 const CSS_LENGTH =
   /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)(%|px|em|rem|ch|ex|cap|ic|lh|rlh|vw|vh|vi|vb|vmin|vmax|cm|mm|q|in|pt|pc)?$/i;
 
@@ -217,14 +248,15 @@ export default class IgcSplitterComponent extends I18nMixin(
 
   private _resizeState: SplitterResizeState = { ...DEFAULT_RESIZE_STATE };
 
-  private _measurement: { container: number; bar: number } | null = null;
+  private _measurement: BarMeasurement | null = null;
 
-  private readonly _resizeObserver: ReturnType<
-    typeof addResizeObserverController
-  >;
+  private readonly _resizeObserver = addResizeObserverController(this, {
+    callback: this._handleContainerResize,
+    requestUpdate: false,
+  });
 
   /** Container and bar extents at the last handled resize. */
-  private _observed = { container: -1, bar: -1 };
+  private _observed: BarMeasurement = { container: -1, bar: -1 };
 
   @query('[part~="base"]')
   private readonly _base!: HTMLElement;
@@ -249,6 +281,11 @@ export default class IgcSplitterComponent extends I18nMixin(
 
   private get _isHorizontal(): boolean {
     return this.orientation === 'horizontal';
+  }
+
+  /** Any orientation other than horizontal takes the vertical names. */
+  private get _axis() {
+    return this._isHorizontal ? AXES.horizontal : AXES.vertical;
   }
 
   /** `-1` when the panes run right to left, else `1`. */
@@ -444,10 +481,6 @@ export default class IgcSplitterComponent extends I18nMixin(
 
     addSlotController(this, { slots: Slots });
 
-    this._resizeObserver = addResizeObserverController(this, {
-      callback: this._handleContainerResize,
-    });
-
     const keys = addKeybindings(this, { ref: this._separatorRef })
       .set(homeKey, () => this._handleMinMaxResize('min'))
       .set(endKey, () => this._handleMinMaxResize('max'));
@@ -615,9 +648,9 @@ export default class IgcSplitterComponent extends I18nMixin(
   //#region Internal API
 
   private _getDragDelta(e: PointerEvent): number {
-    const deltaX = e.clientX - this._resizeState.dragStartPosition.x;
-    const deltaY = e.clientY - this._resizeState.dragStartPosition.y;
-    return this._resolveDelta(deltaX, deltaY);
+    const { client, point } = this._axis;
+    const start = this._resizeState.dragStartPosition[point];
+    return (e[client] - start) * this._rtlSign;
   }
 
   private _endDrag(): void {
@@ -786,10 +819,6 @@ export default class IgcSplitterComponent extends I18nMixin(
     this._endDrag();
   }
 
-  private _resolveDelta(deltaX: number, deltaY: number): number {
-    return (this._isHorizontal ? deltaX : deltaY) * this._rtlSign;
-  }
-
   // While collapsed, both sizes render as 'auto', so report the saved sizes.
   private _reportedSize(pane: PanePosition): string {
     const state = this._panes[pane];
@@ -926,11 +955,11 @@ export default class IgcSplitterComponent extends I18nMixin(
   }
 
   private _rectSize(): [number, number] {
-    const axis = this._isHorizontal ? 'width' : 'height';
+    const { extent } = this._axis;
     const startPaneRect = this._startPane.getBoundingClientRect();
     const endPaneRect = this._endPane.getBoundingClientRect();
 
-    return [startPaneRect[axis], endPaneRect[axis]];
+    return [startPaneRect[extent], endPaneRect[extent]];
   }
 
   private _calcNewSizes(
@@ -963,13 +992,13 @@ export default class IgcSplitterComponent extends I18nMixin(
   }
 
   /**
-   * Reads the container and bar extents once per update pass. The style writes
-   * between the reads would force a reflow for each read.
+   * Caches the container and bar extents until `_clearMeasurement()`. The style
+   * writes between the reads would force a reflow for each read.
    */
-  private _measure(): { container: number; bar: number } {
+  private _measure(): BarMeasurement {
     if (!this._measurement) {
-      const axis = this._isHorizontal ? 'width' : 'height';
-      const container = this._base?.getBoundingClientRect()[axis] ?? 0;
+      const container =
+        this._base?.getBoundingClientRect()[this._axis.extent] ?? 0;
 
       this._measurement = { container, bar: this._measureBar(container) };
     }
@@ -977,23 +1006,17 @@ export default class IgcSplitterComponent extends I18nMixin(
     return this._measurement;
   }
 
-  /**
-   * The layout thickness of the bar, which no transform changes, at the scale
-   * of the measured `container`.
-   */
+  /** The untransformed bar thickness, at the scale of `container`. */
   private _measureBar(container: number): number {
     const separator = this._separator;
-    const layoutContainer =
-      this._base?.[this._isHorizontal ? 'offsetWidth' : 'offsetHeight'];
+    const { extent, offset, start, end } = this._axis;
+    const layoutContainer = this._base?.[offset];
 
     if (!(separator && layoutContainer)) {
       return 0;
     }
 
     const style = getComputedStyle(separator);
-    const [extent, start, end] = this._isHorizontal
-      ? (['width', 'Left', 'Right'] as const)
-      : (['height', 'Top', 'Bottom'] as const);
     // The bar is a content box.
     const thickness = [
       style[extent],
@@ -1003,6 +1026,7 @@ export default class IgcSplitterComponent extends I18nMixin(
       style[`border${end}Width`],
     ].reduce((sum, value) => sum + asNumber(value), 0);
 
+    // Three decimals drop float noise and keep a subpixel thickness.
     return roundPrecise((thickness * container) / layoutContainer, 3);
   }
 
@@ -1028,9 +1052,7 @@ export default class IgcSplitterComponent extends I18nMixin(
   private _updatePanes(): void {
     const collapsed = this._collapsedPane !== null;
     const overflow = !collapsed && this._minSizesOverflow();
-    const [min, max, crossMin, crossMax] = this._isHorizontal
-      ? ['minWidth', 'maxWidth', 'minHeight', 'maxHeight']
-      : ['minHeight', 'maxHeight', 'minWidth', 'maxWidth'];
+    const { min, max, crossMin, crossMax } = this._axis;
 
     for (const pane of PANES) {
       const { size, styles } = this._panes[pane];

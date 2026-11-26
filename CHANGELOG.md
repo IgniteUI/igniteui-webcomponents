@@ -71,7 +71,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - <kbd>Tab</kbd> and <kbd>Escape</kbd> on the select act also when other code already called `preventDefault()` on the key, as in the dropdown. Content in the `header` and `footer` slots still keeps a key that it handled.
 - #### Splitter
   - An app that sets `--ig-size` to medium or large on the splitter or on an ancestor gets a thicker bar. Before, the splitter had one size. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
-  - The 48px gap around the drag handle is measured from the icon box of the design, so each expander is 5px further from the handle at the default size, 3px in the Indigo theme. The area of an expander that takes the pointer is that icon box, centered on the arrow: 18px, 20px or 24px square, 14px, 16px or 24px in the Indigo theme. Before, it was the arrow alone, 4px by 8px at the default size.
+  - The 48px gap around the drag handle is measured from the icon box of the design, so each expander is 5px further from the handle at the default size, 3px in the Indigo theme. The area of an expander that takes the pointer is that icon box, centered on the arrow: 18px, 20px or 24px square, 14px, 16px or 24px in the Indigo theme. Before, it was the arrow alone, 4px by 8px at the default size. The bar stays above both panes, so content of the end pane that reaches over the bar shows under it. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
 - #### Tabs
   - The first render shows at once. The selected indicator does not slide in from the start of the strip, and the selected header does not fade in. This also applies when the tabs show later than they render. A selection change after that still animates.
 
