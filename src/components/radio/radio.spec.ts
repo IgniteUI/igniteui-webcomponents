@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import type { TemplateResult } from 'lit';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { runFirstRenderLabelTests } from '#internals/testing/first-render.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   createFormAssociatedTestBed,
@@ -243,6 +244,8 @@ describe('Radio Component', () => {
       expect(radios.every((radio) => radio.invalid)).to.be.false;
     });
   });
+
+  runFirstRenderLabelTests(IgcRadioComponent.tagName);
 
   describe('Form integration', () => {
     const values = [1, 2, 3];

@@ -542,6 +542,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   protected override render() {
     const hoverActive = this.hoverPreview && this._isInteractive;
     const valueLabelHidden = !this._slots.hasAssignedNodes('value-label', true);
+    // `_symbols` waits for the slot change. The query sees the projected
+    // symbols in the first render, so no default symbols render and go away.
+    const hasProjectedSymbols = this._slots.hasAssignedElements('symbol', {
+      selector: IgcRatingSymbolComponent.tagName,
+    });
 
     return html`
       <label part="label" id="rating-label" ?hidden=${!this.label}
@@ -573,7 +578,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
           @pointermove=${bindIf(hoverActive, this._handlePointerMove)}
         >
           <slot name="symbol">
-            ${this._hasProjectedSymbols ? nothing : this._renderSymbols()}
+            ${hasProjectedSymbols ? nothing : this._renderSymbols()}
           </slot>
         </div>
         <label part="value-label" ?hidden=${valueLabelHidden}>

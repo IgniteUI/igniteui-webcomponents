@@ -49,6 +49,7 @@
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc. |
 |       5 | 2026-11-06 | The circular indicator: reduced motion, forced colors, the box of the ring |
 |       6 | 2026-11-06 | The linear indicator: reduced motion |
+|       7 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 

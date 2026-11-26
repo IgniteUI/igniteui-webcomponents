@@ -58,6 +58,7 @@
 |       9 | 2026-11-18 | A value set from code before the first render makes the rating dirty, so a later `defaultValue` does not replace it |
 |      10 | 2026-11-25 | `disabled` is marked as reflected. `name` and `readOnly` update their attributes at once |
 |      11 | 2026-11-25 | The `defaultValue` row has the JSDoc wording |
+|      12 | 2026-11-25 | The first render shows the slotted content, and draws no default symbols next to projected ones |
 
 ## Overview
 
@@ -291,7 +292,7 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 2. The ARIA attributes are set, and `value-format` is reflected in the announced value text.
 3. A value above `max` is truncated, and an out-of-bounds value is normalized.
 4. The default symbols render, projected symbols render in their place, and `max` follows the number of projected
-   symbols.
+   symbols. With projected symbols, the first render draws no default symbols.
 
 ### Interaction
 

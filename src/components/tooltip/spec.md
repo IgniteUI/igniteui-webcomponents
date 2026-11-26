@@ -60,6 +60,7 @@
 |       7 | 2026-10-30 | Triggers bind once; a changed `anchor` resolves before `show` |
 |       8 | 2026-11-03 | A change of `open` ends a queued or running transition; a hide trigger during the show animation ends the animation |
 |       9 | 2026-11-03 | White space between the tags no longer hides `message` |
+|      10 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 

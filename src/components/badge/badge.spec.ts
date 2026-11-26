@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { internalsOf } from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { readFirstUpdate } from '#internals/testing/first-render.spec.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcBadgeComponent from './badge.js';
 
@@ -108,6 +109,13 @@ describe('Badge', () => {
       );
 
       expect(hasIconPart(el)).to.be.true;
+    });
+
+    it('applies the icon part in the first render', async () => {
+      const badge = document.createElement(IgcBadgeComponent.tagName);
+      badge.append(document.createElement(IgcIconComponent.tagName));
+
+      expect(await readFirstUpdate(badge, () => hasIconPart(badge))).to.be.true;
     });
 
     it('should not apply the icon part when the icon is accompanied by text', async () => {

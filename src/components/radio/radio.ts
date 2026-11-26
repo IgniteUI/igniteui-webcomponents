@@ -137,10 +137,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
     },
   });
 
-  private readonly _slots = addSlotController(this, {
-    slots: Slots,
-    onChange: this._handleSlotChange,
-  });
+  private readonly _slots = addSlotController(this, { slots: Slots });
 
   protected override readonly _formValue = createFormValueState(this, {
     initialValue: false,
@@ -149,9 +146,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
 
   @query('input', true)
   protected readonly _input!: HTMLInputElement;
-
-  @state()
-  protected _hideLabel = true;
 
   @state()
   private _tabIndex = 0;
@@ -272,10 +266,6 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
   //#endregion
 
   //#region Event handlers
-
-  protected _handleSlotChange(): void {
-    this._hideLabel = !this._slots.hasAssignedNodes(DefaultSlot, true);
-  }
 
   /** Focuses and checks the radio, as a native radio label does. */
   protected override _handleLabelActivation(): void {
@@ -452,7 +442,7 @@ export default class IgcRadioComponent extends FormAssociatedCheckboxRequiredMix
             ?hidden=${this.disabled}
           ></span>
         `,
-        hideLabel: this._hideLabel,
+        hideLabel: !this._slots.hasAssignedNodes(DefaultSlot, true),
         tabindex: this._tabIndex,
         description: helperText(this, this._slots),
         onClick: this._handleClick,

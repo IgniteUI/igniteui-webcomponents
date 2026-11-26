@@ -951,6 +951,16 @@ describe('Select', () => {
       expect(getInput().value).to.equal('Alpha');
     });
 
+    it('includes an element with an empty slot attribute, as the default slot shows it', async () => {
+      select = await fixture<IgcSelectComponent>(
+        html`<igc-select value="a">
+          <igc-select-item value="a"><b slot="">Alpha</b></igc-select-item>
+        </igc-select>`
+      );
+
+      expect(getInput().value).to.equal('Alpha');
+    });
+
     it('is empty when there is no selection', async () => {
       select = await fixture<IgcSelectComponent>(createBasicSelect());
 

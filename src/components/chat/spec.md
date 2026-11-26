@@ -64,6 +64,7 @@
 |      10 | 2026-11-04 | The code color variables of the Markdown renderer have GitHub fallbacks and apply in light and dark mode; `igcNavigate` for links in messages |
 |      11 | 2026-11-06 | The <kbd>Enter</kbd> that commits an IME composition does not send the message |
 |      12 | 2026-11-12 | A message far from the view skips its rendering; the list also follows the bottom when it grows |
+|      13 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 

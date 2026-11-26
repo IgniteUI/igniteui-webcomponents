@@ -76,6 +76,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The first render shows at once. The selected indicator does not slide in from the start of the strip, and the selected header does not fade in. This also applies when the tabs show later than they render. A selection change after that still animates.
 
 ### Fixed
+- #### Badge, Chat, Checkbox, Chip, Circular progress, Combo, Date picker, Date range picker, Date time input, Dialog, Expansion panel, File input, Input, Linear progress, Mask input, Navigation drawer, Radio, Rating, Select, Stepper, Switch, Textarea, Tile manager, Tooltip
+  - The first render shows the slotted content, such as a checkbox label, the `prefixed` part of an input or the `icon` part of a badge. Before, it showed only after the next update.
 - #### Calendar, Date picker, Date range picker, Date time input
   - An ISO string with a signed six digit year, such as `+010000-01-01T00:00:00.000Z`, sets the value. `toISOString()` gives this format for dates before year 0 and after year 9999. Before, the value became `null`.
 - #### Checkbox, Radio, Switch
@@ -134,9 +136,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A change of `prompt` keeps the empty positions of the text. Before, it moved the characters after an empty position to the left.
   - A change of `mask` or `prompt` keeps the placeholder on an unfocused control whose value fills no position, as a value write does. Before, it showed the empty mask.
   - A value with the mask length and each literal in its place, such as the `igcChange` detail in `withFormatting` mode, keeps its positions. For example, `12-34` with the mask `00-00` shows `12-34`, and `value` in `raw` mode reads `1234`. Before, the input read the literals as typed characters and showed `12-_3`, so a two-way binding in `withFormatting` mode broke the text. A prompt character in the value shows as an empty position.
+- #### Navigation drawer
+  - An item without content gets the `mini` part, as the part description says. Before, an item with neither content nor an icon did not get it.
 - #### QR code
   - A logo no longer makes a short value unreadable. The component selects a larger version, so that the logo hides no more codewords than the error correction recovers. When you set `version`, the logo gets smaller.
   - A code with `square-style="circle"` no longer fails to scan at some sizes, about 1 time in 10. For this fix, a `square` corner dot in a `circle` corner square draws as a circle.
+  - A value that leaves fewer than 4 bits of a version for the terminator at the end of the data gets that version. The terminator gets shorter or goes, as ISO/IEC 18004 allows. Before, such a value got the next version, for example 41 digits at level `L` got version 2, not 1. On a pinned `version`, and for 7089 digits at level `L`, the code rendered nothing. A value that the code writes as bytes only, such as lowercase text, keeps its version.
 - #### Radio
   - The validity of a group changes at once when a radio joins or leaves the group, and on a form reset. A radio joins or leaves by `name`, by form owner or by a DOM change. A removed radio has the validity of a group of its own, as a native radio does. Before, the other radios kept the old validity. A group stayed invalid after its required radio left. After a form reset, the validity was correct only after the next render.
   - A checked radio that joins a group, by connect, `name` or form owner, unchecks the other radios of the group, as a native radio does. Before, two radios of the group could stay checked.
@@ -146,6 +151,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Select
   - A selection that fails validation shows the invalid styles at once, also when the select never had the focus.
   - <kbd>Tab</kbd> on the open list without an active option no longer clears a `value` that matches no option yet, for example one whose option a framework renders later.
+  - The input shows the content of an element with an empty `slot` attribute in the selected item, as the item shows it. Before, the input left it out.
 - #### Slider
   - A change of the user that fails validation shows the invalid styles at once.
 - #### Splitter

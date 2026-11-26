@@ -100,6 +100,48 @@ function singleModeBits(
   }
 }
 
+/** Characters that no split into segments encodes in fewer bits. */
+const SINGLE_MODE_CHARS = {
+  numeric: ALPHANUMERIC.slice(0, 10),
+  alphanumeric: ALPHANUMERIC.slice(10),
+  byte: 'abcdefghijklmnopqrstuvwxyz',
+};
+
+/** Returns the most characters of `mode` that `version` holds at `level`, from the oracle. */
+function modeCapacity(
+  mode: (typeof SINGLE_MODES)[number],
+  version: number,
+  level: QrErrorCorrectionLevel
+): number {
+  const capacity = 8 * getDataCodewordsCount(version, EC_LEVEL_INDEX[level]);
+  const char = SINGLE_MODE_CHARS[mode][0];
+  let low = 0;
+  let high = capacity;
+
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    if (singleModeBits(char.repeat(middle), mode, version) <= capacity) {
+      low = middle;
+    } else {
+      high = middle - 1;
+    }
+  }
+
+  return low;
+}
+
+/** The longest value of one mode that a version holds, and a character that overflows it. */
+const capacityEdge = fc
+  .tuple(version, ecLevel, fc.constantFrom(...SINGLE_MODES))
+  .chain(([v, level, mode]) => {
+    const unit = fc.constantFrom(...SINGLE_MODE_CHARS[mode]);
+    const length = modeCapacity(mode, v, level);
+
+    return fc
+      .tuple(fc.string({ unit, minLength: length, maxLength: length }), unit)
+      .map(([value, overflow]) => ({ v, level, value, overflow }));
+  });
+
 describe('QR model properties', () => {
   before(prepareQrDecoder);
 
@@ -170,14 +212,30 @@ describe('QR model properties', () => {
   });
 
   it('gives a decoder the bytes of the data back', async () => {
+    const values = fc.oneof(
+      fc.tuple(anyData, ecLevel),
+      capacityEdge.map(({ value, level }) => [value, level] as const)
+    );
+
     await fc.assert(
-      fc.asyncProperty(anyData, ecLevel, async (value, level) => {
+      fc.asyncProperty(values, async ([value, level]) => {
         const { matrix } = generateQRCodeMatrix(value, level);
         expect(await readQrMatrix(matrix)).to.deep.equal(
           TEXT_ENCODER.encode(value)
         );
       }),
       { numRuns: SLOW_PROPERTY_RUNS }
+    );
+  });
+
+  it('fits the longest value of a version into it, also with no room for the whole terminator', () => {
+    fc.assert(
+      fc.property(capacityEdge, ({ v, level, value, overflow }) => {
+        expect(encodeQR(value, level).version).to.equal(v);
+        expect(() => encodeQR(`${value}${overflow}`, level, v)).to.throw(
+          /Data too long/
+        );
+      })
     );
   });
 

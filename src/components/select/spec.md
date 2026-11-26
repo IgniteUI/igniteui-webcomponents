@@ -75,6 +75,8 @@ This directory hosts four public components: [`igc-select`](#igc-select), [`igc-
 |      14 | 2026-11-20 | A selection by the user animates the input; a value that an `igcChange` handler or other code sets shows at once |
 |      15 | 2026-11-25 | `name` updates its attribute at once |
 |      16 | 2026-11-25 | `defaultValue` has the type of `value`, `string \| undefined` |
+|      17 | 2026-11-25 | The display value includes an element with an empty `slot` attribute |
+|      18 | 2026-11-25 | The first render shows the slotted content |
 
 ## Overview
 
@@ -487,7 +489,8 @@ helpers from [`src/internals/testing`](../../internals/testing). The groups belo
 ### Display value
 
 12. The display value is rendered from the selected item, and falls back to the placeholder when nothing is
-    selected.
+    selected. It holds the default slot content of the item, also an element with an empty `slot` attribute, and
+    not the prefix and the suffix.
 
 ### Accessibility semantics
 
