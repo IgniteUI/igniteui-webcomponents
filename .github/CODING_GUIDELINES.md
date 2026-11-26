@@ -1120,8 +1120,8 @@ The skeleton is a default, not a schema:
 
 - If a section does not apply, write "None applicable." instead of removing it. Then a reader
   can see the difference between a missing feature and a missing document. Remove a section
-  only if the whole area has no meaning for the component. For example, the splitter has no
-  `## Assumptions and limitations`.
+  only if the whole area has no meaning for the component. For example, the validation
+  container has no `## Assumptions and limitations`.
 - Add sections where a component needs them: `### CSS custom properties` for the rating and
   the highlight, `### Terms` for the carousel.
 - A directory with several components can split `## API` into one subsection for each

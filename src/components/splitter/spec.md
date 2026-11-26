@@ -46,6 +46,7 @@
     - [Hidden ancestor](#hidden-ancestor)
     - [Orientation change in a theme](#orientation-change-in-a-theme)
     - [Sizing](#sizing-1)
+  - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
     - [Keyboard support](#keyboard-support)
@@ -63,6 +64,7 @@
 |       6 | 2026-10-29 | Transition only the colors, the shadow and the scale of the bar, so the bar hides at the same time as a hidden ancestor and takes its new size, and in the Indigo theme its new scale, at once after an orientation change |
 |       7 | 2026-11-02 | Each pane makes a stacking context, so the focused bar stays above slotted content with any `z-index` |
 |       8 | 2026-11-19 | The bar, the drag handle and the expanders follow `--ig-size`, with small as the default. A short bar narrows the gaps around the drag handle, not the handle |
+|       9 | 2026-11-26 | The bar stays above both panes, so the whole icon box of each expander takes the pointer. The limits of the design handoff are listed |
 
 ## Overview
 
@@ -257,7 +259,7 @@ the drag handle 10px, 12px and 14px.
 The drag handle is 25% of the bar length at every size, with 48px between it and the icon box of each expander. The
 box is the 18px, 20px and 24px icon of the design (14px, 16px and 24px in the Indigo theme), so the triangle is 5px,
 5px and 6px further away (3px, 3px and 6px in Indigo). The box, centered on the triangle, is also the area of the
-expander that takes the pointer. On a bar too short for that, the gaps get narrower and the
+expander that takes the pointer, also where it reaches over a pane: the bar stays above both panes. On a bar too short for that, the gaps get narrower and the
 handle keeps its 25%. Without a drag handle the two boxes are 48px apart, or closer on a bar too short for that. In the Indigo theme the idle bar is 1px, 4px or 8px thick by size and takes
 the thickness of the size on hover and focus.
 
@@ -535,7 +537,7 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
     size.
 40. At every size the drag handle is 48px from the icon box of each expander: 53px, 53px and 54px from the triangle.
 41. In the Indigo theme the icon box is smaller: 51px, 51px and 54px from the triangle.
-42. With a collapsed pane, the drag handle keeps its 48px margins and its position.
+42. With a collapsed pane, the drag handle keeps its 48px margins.
 43. On a short bar, at every size and in both orientations, the drag handle keeps 25% of the bar length, the gaps to
     the expanders get narrower and the expanders stay inside the bar.
 44. Without a drag handle the expander boxes are 48px apart, and on a bar too short for that they stay inside the bar.
@@ -548,11 +550,22 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 50. In the Indigo theme, the panes give up the full thickness of the bar while the bar is idle.
 51. In the Indigo theme, the hovered bar has the thickness of the size.
 52. In both orientations and at every size, the hitbox of each expander is its icon box, centered on the triangle.
+53. In both orientations, the whole icon box of each expander takes the pointer, also where it reaches over a pane:
+    on the idle bar, and on the hovered bar of the Indigo theme.
+54. In the Indigo theme, the bar with keyboard focus has the thickness of the size, in both orientations.
 
 ## Assumptions and limitations
 
 - In the Indigo theme, a change of `--ig-size` at run time reaches the idle bar after the 0.5s delay of the bar
   transition. Until then the idle bar keeps its old thickness.
+- The design handoff draws the expanders as arrow icons. They are CSS triangles, 8px, 10px and 12px long in every
+  theme, centered in the icon box of the design.
+- The design handoff gives a 46px gap between the drag handle and each icon box at large. The gap is 48px at every
+  size.
+- The Fluent, Bootstrap and Indigo themes take the 2px, 8px and 8px radius of the drag handle from the shared schema.
+  The handoff gives no radius for each theme.
+- The icon box reaches into each pane next to the bar. Over the start pane it covers the scrollbar next to the bar
+  for the length of the box.
 
 ## Accessibility
 

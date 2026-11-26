@@ -24,7 +24,7 @@
         overflow: auto;
         box-sizing: border-box;
 
-        // Keeps the z-index of the slotted content under the focused bar.
+        // Keeps the z-index of the slotted content under the bar.
         isolation: isolate;
     }
 
@@ -38,13 +38,15 @@
     }
 
     [part~='splitter-bar'] {
+        // Keeps the focus ring and the expander hitboxes above the panes.
+        z-index: 1;
         display: flex;
         flex-shrink: 0;
         justify-content: center;
         align-items: center;
         box-sizing: content-box;
 
-        // Gives the drag handle the bar length, as container query units.
+        // The margins read the bar length in cq units.
         container-type: size;
 
         [part*='collapse-btn'],
@@ -57,9 +59,6 @@
             &::before {
                 content: '';
                 position: absolute;
-
-                // Keeps the hitbox above the panes.
-                z-index: 1;
             }
         }
     }

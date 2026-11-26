@@ -321,7 +321,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'A mail client with the inbox in the start pane and the open message in the end pane. Drag the bar to resize the panes, or focus it with Tab and use the arrow keys, which move it by 10 pixels. Home and End move it to the minimum and the maximum size of the start pane. The buttons on the bar and Ctrl + an arrow key collapse and expand the panes. The host `aria-labelledby` points at the inbox heading, so screen readers read the bar as "Inbox" with the size of the inbox in percent, as the window splitter pattern suggests. Each pane scrolls its own content, so the content has a name and a tab stop. Use the controls panel to change the orientation, the sizes and the constraints.',
+          'A mail client with the inbox in the start pane and the open message in the end pane. Drag the bar to resize the panes, or focus it with Tab and use the arrow keys, which move it by 10 pixels. Home and End move it to the minimum and the maximum size of the start pane. The buttons on the bar and Ctrl + an arrow key collapse and expand the panes. The host `aria-labelledby` points at the inbox heading, so screen readers read the bar as "Inbox" with the size of the inbox in percent, as the window splitter pattern suggests. Each pane scrolls its own content, so the content has a name and a tab stop. Use the controls panel to change the orientation, the sizes and the constraints. Use the size toolbar of Storybook to change `--ig-size`, which sets the bar, drag handle and expander sizes.',
       },
     },
   },
