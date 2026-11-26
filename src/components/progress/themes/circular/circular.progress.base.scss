@@ -117,8 +117,7 @@
     }
 }
 
-:host(:dir(rtl)),
-:host([dir='rtl']) {
+:host(:dir(rtl)) {
     [part~='svg'][part~='indeterminate'] [part~='fill'] {
         animation-name: igc-indeterminate-accordion-rtl;
     }

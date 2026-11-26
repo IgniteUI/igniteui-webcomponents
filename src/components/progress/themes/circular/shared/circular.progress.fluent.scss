@@ -30,8 +30,7 @@ $theme: $fluent;
     }
 }
 
-:host(:dir(rtl)),
-:host([dir='rtl']) {
+:host(:dir(rtl)) {
     [part~='svg'][part~='indeterminate'] [part~='fill'] {
         animation-name: igc-indeterminate-circular-fluent-rtl;
     }

@@ -5,8 +5,7 @@
 $theme: $fluent;
 $track-color: color(gray, 200);
 
-:host(:dir(rtl)[indeterminate]),
-:host([dir='rtl']) {
+:host(:dir(rtl)[indeterminate]) {
     [part~='track'] {
         transform: rotateY(0deg);
     }
