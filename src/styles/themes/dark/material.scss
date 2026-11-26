@@ -1,5 +1,7 @@
 @use 'igniteui-theming/sass/color/presets/dark/material' as *;
 @use '../base/material' as base;
-@use '../base/scrollbars';
+@use 'igniteui-theming/sass/themes/schemas/components/dark/scrollbar' as *;
+@use 'styles/utilities' as utils;
 @use '../third-party/grid/material.dark' as grid;
 @include base.root-styles($palette, 'dark');
+@include utils.scrollbar($dark-material-scrollbar, '.ig-scrollbar');

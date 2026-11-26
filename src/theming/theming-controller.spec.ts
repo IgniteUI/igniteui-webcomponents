@@ -11,6 +11,7 @@ import { css, LitElement, html as litHtml } from 'lit';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import IgcThemeProviderComponent from '../components/theme-provider/theme-provider.js';
 import { configureTheme } from './config.js';
+import { scrollbars } from './scrollbars.js';
 import {
   addThemingController,
   type ThemingController,
@@ -524,6 +525,7 @@ describe('Theming Controller', () => {
 
       expect(Array.from(root.adoptedStyleSheets)).to.have.ordered.members([
         elementSheet,
+        scrollbars.dark.material.styleSheet,
         mockThemes.dark.shared!.styleSheet,
         mockThemes.dark.material!.styleSheet,
         foreign,
@@ -553,6 +555,7 @@ describe('Theming Controller', () => {
         Array.from(el.shadowRoot!.adoptedStyleSheets)
       ).to.have.ordered.members([
         sheet,
+        scrollbars.light.bootstrap.styleSheet,
         mockThemes.light.shared!.styleSheet,
         mockThemes.light.bootstrap!.styleSheet,
       ]);
@@ -680,6 +683,7 @@ describe('Theming Controller', () => {
       expect(
         Array.from(el.shadowRoot!.adoptedStyleSheets)
       ).to.have.ordered.members([
+        scrollbars.light.bootstrap.styleSheet,
         mockThemes.light.shared!.styleSheet,
         base.styleSheet,
         override.styleSheet,
@@ -698,7 +702,10 @@ describe('Theming Controller', () => {
 
       expect(
         Array.from(el.shadowRoot!.adoptedStyleSheets)
-      ).to.have.ordered.members([base.styleSheet]);
+      ).to.have.ordered.members([
+        scrollbars.dark.bootstrap.styleSheet,
+        base.styleSheet,
+      ]);
     });
 
     it('gives the instances of a class the same sheets', async () => {

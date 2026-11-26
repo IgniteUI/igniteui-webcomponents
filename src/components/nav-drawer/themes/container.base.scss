@@ -17,9 +17,10 @@ $theme: $base;
     // so it takes no space and has no transitions.
     [part='base'],
     [part='mini'] {
-        --ig-scrollbar-size: rem(8px);
         --_duration: var(--transition-duration);
 
+        // `scrollbar-width` does not inherit, so the parts that scroll set it.
+        scrollbar-width: var(--sb-width, thin);
         margin: unset;
         border: unset;
         outline-style: none;

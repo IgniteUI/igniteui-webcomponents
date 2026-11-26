@@ -1,17 +1,21 @@
-@mixin ig-scrollbar($track-size, $track-bg, $thumb-bg) {
-    // Firefox only
-    scrollbar-width: $track-size;
-    scrollbar-color: $thumb-bg $track-bg;
+@use 'igniteui-theming/sass/themes/mixins' as *;
+@use 'igniteui-theming/sass/themes/components/scrollbar/scrollbar-theme' as *;
 
-    // Chromium only
-    ::-webkit-scrollbar {
-        width: $track-size;
-        height: $track-size;
-        background: $track-bg;
-    }
+/// Emits the scrollbar tokens of a schema on a scope and applies them with the
+/// standard scrollbar properties. `scrollbar-color` inherits, so the elements
+/// inside the scope get its colors. `scrollbar-width` does not inherit, so an
+/// inner element that scrolls sets it on its own.
+/// @param {Map} $schema - A design system schema or its scrollbar schema.
+/// @param {String} $scope [':host'] - The selector that receives the tokens.
+/// @example scss
+///   @include scrollbar($dark-fluent-scrollbar, '.ig-scrollbar');
+@mixin scrollbar($schema, $scope: ':host') {
+    #{$scope} {
+        // Emits no theme markers, so an `.ig-scrollbar` class on `<html>` keeps the detected theme.
+        @include css-vars-from-theme(scrollbar-theme($schema));
 
-    ::-webkit-scrollbar-thumb {
-        background: $thumb-bg;
+        scrollbar-width: var(--sb-width, auto);
+        scrollbar-color: var(--sb-thumb-bg-color) var(--sb-track-bg-color);
     }
 }
 

@@ -1,5 +1,7 @@
 @use 'igniteui-theming/sass/color/presets/dark/indigo' as *;
 @use '../base/indigo' as base;
-@use '../base/scrollbars';
+@use 'igniteui-theming/sass/themes/schemas/components/dark/scrollbar' as *;
+@use 'styles/utilities' as utils;
 @use '../third-party/grid/indigo.dark' as grid;
 @include base.root-styles($palette, 'dark');
+@include utils.scrollbar($dark-indigo-scrollbar, '.ig-scrollbar');
