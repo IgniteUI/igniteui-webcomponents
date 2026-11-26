@@ -5,14 +5,14 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { LitElement, html as litHtml } from 'lit';
+import { type CSSResult, LitElement, html as litHtml } from 'lit';
 
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { all as scrollbars } from '#themes/scrollbar/themes/themes.js';
 import IgcNavDrawerComponent from '../components/nav-drawer/nav-drawer.js';
 import IgcThemeProviderComponent from '../components/theme-provider/theme-provider.js';
 import { styles as fluentLight } from '../styles/themes/light/fluent.css.js';
 import { configureTheme } from './config.js';
-import { scrollbars } from './scrollbars.js';
 import { addThemingController } from './theming-controller.js';
 import type { Theme, ThemeVariant } from './types.js';
 
@@ -114,13 +114,16 @@ describe('Scrollbars', () => {
     }
   }
 
-  it('adopts the scrollbar sheet of the theme', async () => {
-    configureTheme('fluent', 'dark');
+  it('adopts the light scrollbar sheet, then the dark one, in a dark theme', async () => {
+    configureTheme('indigo', 'dark');
     const { host } = await render();
+    const [light, dark] = scrollbars.dark.indigo as CSSResult[];
+    const adopted = host.shadowRoot!.adoptedStyleSheets;
 
-    expect(host.shadowRoot!.adoptedStyleSheets).to.include(
-      scrollbars.dark.fluent.styleSheet
+    expect(adopted.indexOf(dark.styleSheet!)).to.equal(
+      adopted.indexOf(light.styleSheet!) + 1
     );
+    expect(adopted.indexOf(light.styleSheet!)).to.be.greaterThan(-1);
   });
 
   it('swaps the scrollbar colors on a theme change', async () => {

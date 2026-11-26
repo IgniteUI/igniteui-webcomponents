@@ -1,3 +1,0 @@
-@use 'styles/utilities' as *;
-@use 'igniteui-theming/sass/themes/schemas/components/dark/scrollbar' as *;
-@include scrollbar($dark-fluent-scrollbar);

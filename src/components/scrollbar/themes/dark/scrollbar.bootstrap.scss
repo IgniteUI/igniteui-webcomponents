@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/components/scrollbar/scrollbar-theme' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/scrollbar' as light;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/scrollbar' as dark;
+
+:host {
+    @include css-vars-from-theme(
+        dark-overrides(scrollbar-theme(light.$bootstrap-scrollbar), scrollbar-theme(dark.$dark-bootstrap-scrollbar))
+    );
+}

@@ -74,8 +74,11 @@ the two bases: `dark-overrides(light.$bootstrap, $theme, $base, light.$base)` (s
 - Add a new theme file to the aggregator (`themes.ts`), in cascade order. The component must
   not import a per-theme sheet directly: the publish build fails, because the sheet would
   reach the bundles of the other themes.
-- The shared sizing, scrollbar and `[hidden]` rules are in `src/styles/common/component.scss`,
-  which compiles once to `componentBase`. Do not `@use` it in a base file.
+- The shared sizing and `[hidden]` rules are in `src/styles/common/component.scss`, which
+  compiles once to `componentBase`. Do not `@use` it in a base file.
+- The scrollbar colors come from the scrollbar sheet that the theming controller adopts. A part
+  that scrolls inherits them. To change its width, set `scrollbar-width: var(--sb-width, thin)`
+  on the part, because `scrollbar-width` does not inherit. Do not use `::-webkit-scrollbar`.
 
 ### 2. Document new parts or custom properties
 

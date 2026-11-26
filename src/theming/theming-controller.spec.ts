@@ -7,11 +7,11 @@ import {
   oneEvent,
   unsafeStatic,
 } from '@open-wc/testing';
-import { css, LitElement, html as litHtml } from 'lit';
+import { type CSSResult, css, LitElement, html as litHtml } from 'lit';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { all as scrollbars } from '#themes/scrollbar/themes/themes.js';
 import IgcThemeProviderComponent from '../components/theme-provider/theme-provider.js';
 import { configureTheme } from './config.js';
-import { scrollbars } from './scrollbars.js';
 import {
   addThemingController,
   type ThemingController,
@@ -75,6 +75,13 @@ const mockThemes: Themes = {
     `,
   },
 };
+
+/** The scrollbar sheets that a host adopts with `theme` and `variant`, in order. */
+function scrollbarSheets(variant: 'light' | 'dark', theme: Theme) {
+  return [scrollbars[variant][theme]]
+    .flat()
+    .map((style) => (style as CSSResult).styleSheet!);
+}
 
 type ThemedTestComponentElement = LitElement & {
   themingController: ThemingController;
@@ -525,7 +532,7 @@ describe('Theming Controller', () => {
 
       expect(Array.from(root.adoptedStyleSheets)).to.have.ordered.members([
         elementSheet,
-        scrollbars.dark.material.styleSheet,
+        ...scrollbarSheets('dark', 'material'),
         mockThemes.dark.shared!.styleSheet,
         mockThemes.dark.material!.styleSheet,
         foreign,
@@ -555,7 +562,7 @@ describe('Theming Controller', () => {
         Array.from(el.shadowRoot!.adoptedStyleSheets)
       ).to.have.ordered.members([
         sheet,
-        scrollbars.light.bootstrap.styleSheet,
+        ...scrollbarSheets('light', 'bootstrap'),
         mockThemes.light.shared!.styleSheet,
         mockThemes.light.bootstrap!.styleSheet,
       ]);
@@ -683,7 +690,7 @@ describe('Theming Controller', () => {
       expect(
         Array.from(el.shadowRoot!.adoptedStyleSheets)
       ).to.have.ordered.members([
-        scrollbars.light.bootstrap.styleSheet,
+        ...scrollbarSheets('light', 'bootstrap'),
         mockThemes.light.shared!.styleSheet,
         base.styleSheet,
         override.styleSheet,
@@ -703,7 +710,7 @@ describe('Theming Controller', () => {
       expect(
         Array.from(el.shadowRoot!.adoptedStyleSheets)
       ).to.have.ordered.members([
-        scrollbars.dark.bootstrap.styleSheet,
+        ...scrollbarSheets('dark', 'bootstrap'),
         base.styleSheet,
       ]);
     });

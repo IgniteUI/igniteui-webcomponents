@@ -44,11 +44,9 @@ const THEME_ENTRY_GLOB = 'src/styles/themes/{light,dark}/*.scss';
 
 /**
  * The base styles shared by most components, compiled once and prepended to
- * their `static styles` instead of being emitted into every component entry,
- * and the scrollbar sheet of each theme, which the theming controller adopts.
+ * their `static styles` instead of being emitted into every component entry.
  */
-const COMMON_ENTRY_GLOB =
-  'src/styles/common/{component.scss,scrollbar/{light,dark}/*.scss}';
+const COMMON_ENTRY_GLOB = 'src/styles/common/component.scss';
 
 /** The global light theme entries. Their stems are the theme names. */
 const THEME_NAMES_GLOB = 'src/styles/themes/light/*.scss';

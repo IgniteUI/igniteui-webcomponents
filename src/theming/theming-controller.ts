@@ -7,9 +7,9 @@ import {
 } from 'lit';
 
 import { getOrInsertComputed } from '#internals/utils/objects.js';
+import { all as scrollbars } from '#themes/scrollbar/themes/themes.js';
 import { _globalThemeListeners, getTheme } from './config.js';
 import { type ThemeContext, themeContext } from './context.js';
-import { scrollbars } from './scrollbars.js';
 import type {
   ComponentThemes,
   Theme,
@@ -95,8 +95,7 @@ function resolveSheets(
     return new Set(
       [
         ...ctor.elementStyles,
-        scrollbars[variant][theme],
-        ...[shared, themed].flat(),
+        ...[scrollbars[variant][theme], shared, themed].flat(),
       ]
         .filter((style) => style !== undefined)
         .map((style) =>

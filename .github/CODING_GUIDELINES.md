@@ -404,8 +404,14 @@ themes/
   ```
 
 - `src/styles/common/component.scss` holds the rules that every component shares: sizing,
-  `box-sizing`, scrollbars and `[hidden]`. It compiles once, to `componentBase`. Put
+  `box-sizing` and `[hidden]`. It compiles once, to `componentBase`. Put
   `componentBase` first in `static styles`. Do not `@use` this file in a base file.
+- The theming controller adopts the scrollbar sheet of the theme
+  (`src/components/scrollbar/themes/themes.ts`) after the element styles of every themed
+  component. It sets the `--sb-*` tokens of `scrollbar-theme()` on `:host` and applies them with
+  `scrollbar-color` and `scrollbar-width`. `scrollbar-color` inherits, so the parts take the
+  colors of the host. `scrollbar-width` does not, so a part that scrolls and needs another width
+  sets `scrollbar-width: var(--sb-width, <width>)` itself. Do not use `::-webkit-scrollbar`.
 - Theme values come from the `igniteui-theming` schemas. `_themes.scss` digests them, and
   `var-get()` reads them. `light/[component].shared.scss` emits the full `$base` variable set.
   A light theme file emits only `diff($base, $theme)`. In dark mode, the component adopts the

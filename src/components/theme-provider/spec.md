@@ -158,8 +158,7 @@ igc-theme-provider.material-dark {
 ```
 
 Without Sass, copy all the `:root` rules of the theme file into a rule for the provider, or into an `@scope` block
-with `:scope` in place of `:root`. The theme file has more than one `:root` rule, and the scrollbar colors are in a
-rule of their own.
+with `:scope` in place of `:root`. The theme file has more than one `:root` rule.
 
 #### Registration order
 
