@@ -42,6 +42,12 @@ type RovingFocusControllerOptions<T extends Element> = {
   /** Whether Home and End jump to the first and last item. Default `true`. */
   homeEnd?: boolean;
   /**
+   * Whether an arrow move from the last item goes to the first one, and from
+   * the first item to the last one. With `false`, the move stops at the
+   * ends. Default `true`.
+   */
+  wrap?: boolean;
+  /**
    * How arrow navigation treats a nullish current item:
    * - `skip` - do nothing (default)
    * - `wrap` - navigate from outside the list, so "next" lands on the first
@@ -56,8 +62,9 @@ type RovingFocusControllerOptions<T extends Element> = {
  * Implements the roving keyboard navigation of the container components.
  *
  * @remarks
- * Moves wrap over a flat list, and the horizontal axis follows the writing
- * direction. A hierarchy, such as the tree, needs its own navigation.
+ * Moves wrap over a flat list unless `wrap` is `false`, and the horizontal
+ * axis follows the writing direction. A hierarchy, such as the tree, needs its
+ * own navigation.
  */
 class RovingFocusController<T extends Element> {
   private readonly _host: RovingFocusHost;
@@ -126,9 +133,19 @@ class RovingFocusController<T extends Element> {
     // An item outside the set gives -1, so the move wraps in from an edge.
     const index = current ? items.indexOf(current) : -1;
     const direction = rtlAware && !isLTR(this._host) ? -delta : delta;
-    const next = wrap(0, items.length - 1, index + direction);
+    const target = index + direction;
 
-    this._focus(items[next]);
+    // Without wrapping, a move past an end stays put. The entry from outside
+    // the set is not a wrap, so it still lands on an edge.
+    if (
+      this._options.wrap === false &&
+      index > -1 &&
+      (target < 0 || target >= items.length)
+    ) {
+      return;
+    }
+
+    this._focus(items[wrap(0, items.length - 1, target)]);
   }
 
   private _activate(): void {

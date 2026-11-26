@@ -24,6 +24,7 @@ import { FormValueSelectTransformers } from '#internals/mixins/forms/form-transf
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { partMap } from '#internals/part-map.js';
 import { renderSlottedIcon } from '#internals/templates/slotted-icon.js';
+import { createTypeahead } from '#internals/typeahead.js';
 import { isAssignedTo, normalizedTextContent } from '#internals/utils/dom.js';
 import {
   addSafeEventListener,
@@ -142,8 +143,9 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return selectValidators;
   }
 
-  private _searchTerm = '';
-  private _lastKeyTime = 0;
+  private readonly _typeahead = createTypeahead<IgcSelectItemComponent>({
+    items: () => this._listbox.activeItems,
+  });
 
   private readonly _slots = addSlotController(this, { slots: Slots });
 
@@ -332,30 +334,15 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   //#region Keyboard event handlers
 
   private _handleSearch(event: KeyboardEvent): void {
-    // A printable key held with a modifier is a shortcut, not type-ahead.
-    if (event.ctrlKey || event.metaKey || event.altKey) {
-      return;
-    }
-
-    if (!/^.$/u.test(event.key) || this._listbox.isContentEvent(event)) {
+    if (
+      !this._typeahead.accepts(event) ||
+      this._listbox.isContentEvent(event)
+    ) {
       return;
     }
 
     event.preventDefault();
-    const now = Date.now();
-
-    if (now - this._lastKeyTime > 500) {
-      this._searchTerm = '';
-    }
-
-    this._lastKeyTime = now;
-    this._searchTerm += event.key.toLocaleLowerCase();
-
-    const item = this._listbox.activeItems.find((item) =>
-      item.textContent?.trim().toLocaleLowerCase().startsWith(this._searchTerm)
-    );
-
-    this._listbox.moveTo(item);
+    this._listbox.moveTo(this._typeahead.search(event.key));
   }
 
   private _handleSpace(): void {

@@ -225,4 +225,87 @@ describe('Roving focus controller', () => {
     simulateKeyboard(instance, 'Home');
     expect(instance.focused).to.be.empty;
   });
+
+  describe('without wrapping', () => {
+    let stoppingTag: string;
+    let stopping: RovingTestElement;
+
+    before(() => {
+      stoppingTag = defineCE(
+        class extends LitElement {
+          public items: Item[] = [{ id: 0 }, { id: 1 }, { id: 2 }];
+          public currentItem: Item | null = this.items[1];
+          public focused: Item[] = [];
+
+          constructor() {
+            super();
+
+            addRovingFocusController<Item & Element>(this, {
+              items: () => this.items as unknown as (Item & Element)[],
+              current: () => this.currentItem as (Item & Element) | null,
+              vertical: true,
+              focusItem: (item) => this.focused.push(item),
+              wrap: false,
+            });
+          }
+        }
+      );
+    });
+
+    beforeEach(async () => {
+      const tagName = unsafeStatic(stoppingTag);
+      stopping = await fixture(html`<${tagName}></${tagName}>`);
+    });
+
+    it('should still move between the items', () => {
+      simulateKeyboard(stopping, 'ArrowDown');
+      simulateKeyboard(stopping, 'ArrowLeft');
+      expect(stopping.focused).to.eql([{ id: 2 }, { id: 0 }]);
+    });
+
+    it('should stop at the last item', () => {
+      stopping.currentItem = stopping.items[2];
+
+      simulateKeyboard(stopping, 'ArrowDown');
+      simulateKeyboard(stopping, 'ArrowRight');
+      expect(stopping.focused).to.be.empty;
+    });
+
+    it('should stop at the first item', () => {
+      stopping.currentItem = stopping.items[0];
+
+      simulateKeyboard(stopping, 'ArrowUp');
+      simulateKeyboard(stopping, 'ArrowLeft');
+      expect(stopping.focused).to.be.empty;
+    });
+
+    it('should stop at the ends in RTL, where the horizontal arrows flip', () => {
+      stopping.dir = 'rtl';
+
+      stopping.currentItem = stopping.items[0];
+      simulateKeyboard(stopping, 'ArrowRight');
+      expect(stopping.focused).to.be.empty;
+
+      stopping.currentItem = stopping.items[2];
+      simulateKeyboard(stopping, 'ArrowLeft');
+      expect(stopping.focused).to.be.empty;
+
+      simulateKeyboard(stopping, 'ArrowRight');
+      expect(stopping.focused).to.eql([{ id: 1 }]);
+    });
+
+    it('should still enter at an edge when the current item is not in the set', () => {
+      stopping.currentItem = { id: 42 };
+
+      simulateKeyboard(stopping, 'ArrowDown');
+      simulateKeyboard(stopping, 'ArrowUp');
+      expect(stopping.focused).to.eql([{ id: 0 }, { id: 2 }]);
+    });
+
+    it('should keep Home and End', () => {
+      simulateKeyboard(stopping, 'Home');
+      simulateKeyboard(stopping, 'End');
+      expect(stopping.focused).to.eql([{ id: 0 }, { id: 2 }]);
+    });
+  });
 });
