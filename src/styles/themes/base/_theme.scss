@@ -22,7 +22,7 @@
         --ig-scrollbar-size: #{rem(16px)};
     }
 
-    body[dir='rtl'] {
+    body:dir(rtl) {
         --ig-dir: -1;
     }
 

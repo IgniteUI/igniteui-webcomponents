@@ -1546,6 +1546,55 @@ describe('Carousel', () => {
     const heightOf = (element: Element) =>
       element.getBoundingClientRect().height;
 
+    const isMirrored = (el: IgcCarouselComponent) => {
+      const previous = el.renderRoot.querySelector(
+        '[part="navigation previous"]'
+      )!;
+      return new DOMMatrix(getComputedStyle(previous).transform).a === -1;
+    };
+
+    const indicatorsOffset = (el: IgcCarouselComponent) => {
+      const box = el.getBoundingClientRect();
+      const indicators = el.renderRoot
+        .querySelector('[part~="indicators"]')!
+        .getBoundingClientRect();
+      return Math.round(
+        indicators.left + indicators.width / 2 - (box.left + box.width / 2)
+      );
+    };
+
+    it('mirrors the navigation and centers the indicators with `dir` on an ancestor', async () => {
+      const container = await fixture<HTMLElement>(
+        html`<div dir="rtl" style="width: 400px">
+          ${createCarouselComponent()}
+        </div>`
+      );
+      const el = container.querySelector(IgcCarouselComponent.tagName)!;
+
+      expect(isMirrored(el)).to.be.true;
+      expect(indicatorsOffset(el)).to.equal(0);
+
+      container.dir = 'ltr';
+      expect(isMirrored(el)).to.be.false;
+      expect(indicatorsOffset(el)).to.equal(0);
+
+      el.dir = 'rtl';
+      expect(isMirrored(el)).to.be.true;
+      expect(indicatorsOffset(el)).to.equal(0);
+    });
+
+    it('follows a nested `dir="ltr"` inside an RTL ancestor', async () => {
+      const container = await fixture<HTMLElement>(
+        html`<div dir="rtl">
+          <div dir="ltr" style="width: 400px">${createCarouselComponent()}</div>
+        </div>`
+      );
+      const el = container.querySelector(IgcCarouselComponent.tagName)!;
+
+      expect(isMirrored(el)).to.be.false;
+      expect(indicatorsOffset(el)).to.equal(0);
+    });
+
     it('takes the height of its tallest slide', async () => {
       const el = await fixture<IgcCarouselComponent>(html`
         <igc-carousel style="width: 400px">

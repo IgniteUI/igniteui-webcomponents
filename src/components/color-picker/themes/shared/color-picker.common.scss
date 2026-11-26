@@ -292,8 +292,7 @@ $input-theme: input-theme.$material;
     }
 }
 
-:host(:dir(rtl)),
-:host([dir='rtl']) {
+:host(:dir(rtl)) {
     --_slider-track-direction: to left;
 }
 

@@ -160,6 +160,48 @@ describe('Navigation Drawer', () => {
       }
     });
 
+    describe('RTL', () => {
+      // The side that the closed drawer slides out to, from its `translate`.
+      const closedSide = (drawer: IgcNavDrawerComponent) => {
+        const base = drawer.renderRoot.querySelector('[part="base"]')!;
+        const [x] = getComputedStyle(base).translate.split(' ');
+        return x.startsWith('-') ? 'left' : 'right';
+      };
+
+      it('slides a closed drawer out past its own edge with `dir` on an ancestor', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div dir="rtl">
+            <igc-nav-drawer position="start"></igc-nav-drawer>
+            <igc-nav-drawer position="end"></igc-nav-drawer>
+          </div>
+        `);
+        const [start, end] = container.querySelectorAll(
+          IgcNavDrawerComponent.tagName
+        );
+
+        expect([closedSide(start), closedSide(end)]).to.eql(['right', 'left']);
+
+        container.dir = 'ltr';
+        expect([closedSide(start), closedSide(end)]).to.eql(['left', 'right']);
+
+        start.dir = 'rtl';
+        expect(closedSide(start)).to.equal('right');
+      });
+
+      it('follows a nested `dir="ltr"` inside an RTL ancestor', async () => {
+        const container = await fixture<HTMLElement>(html`
+          <div dir="rtl">
+            <div dir="ltr">
+              <igc-nav-drawer position="start"></igc-nav-drawer>
+            </div>
+          </div>
+        `);
+        const drawer = container.querySelector(IgcNavDrawerComponent.tagName)!;
+
+        expect(closedSide(drawer)).to.equal('left');
+      });
+    });
+
     it('places fixed content of the mini variant against the viewport', async () => {
       navDrawer = await createNavDrawer(html`
         <igc-nav-drawer>

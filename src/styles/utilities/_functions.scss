@@ -1,16 +1,6 @@
 @use 'sass:map';
 @use 'igniteui-theming/sass/utils' as *;
 
-@function direction($rtl: false) {
-    $dir: 1;
-
-    @if $rtl == true {
-        $dir: -1;
-    }
-
-    @return calc(var(--ig-dir, 1) * #{$dir});
-}
-
 /// Returns the declarations a dark theme sheet needs when the light theme
 /// sheet of the same name is adopted before it.
 ///

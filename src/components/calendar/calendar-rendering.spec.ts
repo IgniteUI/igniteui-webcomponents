@@ -848,6 +848,41 @@ describe('Calendar Rendering', () => {
       expect(dom.navigation.years.textContent!.trim()).to.equal('2025');
     });
   });
+
+  describe('RTL', () => {
+    const isMirrored = (calendar: IgcCalendarComponent) => {
+      const button = calendar.renderRoot.querySelector(
+        '[part~="navigation-button"]'
+      )!;
+      return new DOMMatrix(getComputedStyle(button).transform).a === -1;
+    };
+
+    it('mirrors the navigation buttons with `dir` on an ancestor', async () => {
+      const container = await fixture<HTMLElement>(
+        html`<div dir="rtl"><igc-calendar></igc-calendar></div>`
+      );
+      calendar = container.querySelector(IgcCalendarComponent.tagName)!;
+
+      expect(isMirrored(calendar)).to.be.true;
+
+      container.dir = 'ltr';
+      expect(isMirrored(calendar)).to.be.false;
+
+      calendar.dir = 'rtl';
+      expect(isMirrored(calendar)).to.be.true;
+    });
+
+    it('follows a nested `dir="ltr"` inside an RTL ancestor', async () => {
+      const container = await fixture<HTMLElement>(
+        html`<div dir="rtl">
+          <div dir="ltr"><igc-calendar></igc-calendar></div>
+        </div>`
+      );
+      calendar = container.querySelector(IgcCalendarComponent.tagName)!;
+
+      expect(isMirrored(calendar)).to.be.false;
+    });
+  });
 });
 
 function createCalendarElement(template?: TemplateResult) {

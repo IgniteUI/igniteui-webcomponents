@@ -13,6 +13,9 @@
     // Keeps the z-index of the parts inside the component.
     isolation: isolate;
 
+    // The sign of horizontal offsets: 1 in LTR, -1 in RTL.
+    --dir: 1;
+
     section {
         display: grid;
         grid-template: minmax(0, 1fr) / minmax(0, 1fr);
@@ -92,14 +95,8 @@ igc-button::part(base) {
     min-width: initial;
 }
 
-:host(:not([vertical])),
-:host([dir='rtl'][vertical]) {
-    --dir: #{direction($rtl: false)};
-}
-
-:host([vertical]),
-:host([dir='rtl']:not([vertical])) {
-    --dir: #{direction($rtl: true)};
+:host(:dir(rtl)) {
+    --dir: -1;
 }
 
 :host(:not([vertical])) {
@@ -124,9 +121,10 @@ igc-button::part(base) {
     }
 
     [part~='indicators'] {
-        inset-inline-start: 50%;
+        inset-inline: 0;
         inset-block-end: 0;
-        transform: translateX(calc(-50% * var(--dir)));
+        width: fit-content;
+        margin-inline: auto;
     }
 
     [part='indicators start'],

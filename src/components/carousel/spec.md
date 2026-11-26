@@ -59,6 +59,7 @@
 |       7 | 2026-10-29 | The carousel takes the height of its tallest slide; the arrow color tokens reach the navigation buttons |
 |       8 | 2026-10-29 | The navigation buttons have no transition, and the indicator dots transition only their border color; the active slide, the active indicator and its dot no longer set `visibility: visible`; so the carousel hides at the same time as a hidden ancestor |
 |       9 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                                                                                                                                                      |
+|      10 | 2026-11-26 | The navigation buttons and the indicators follow `dir` on any ancestor |
 
 ## Overview
 
@@ -435,6 +436,8 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 36. The slides do not widen the carousel past its minimum width.
 37. The arrow color tokens of the theme reach the icon color variables of the navigation buttons, also while a
     button has the keyboard focus.
+    With `dir="rtl"` on the carousel or an ancestor, the navigation buttons are mirrored and the indicators stay
+    centered. A nested `dir="ltr"` keeps them unmirrored.
 
 ### Indicator container
 
@@ -488,4 +491,5 @@ Already covered by the [relevant section of the specification](#keyboard-interac
 ### Right to Left support
 
 The component works in a Right-to-Left context without additional setup or configuration. The animation, the
-swipe direction and the arrow keys are mirrored.
+swipe direction, the arrow keys, the navigation buttons and the indicators are mirrored. The direction comes from
+`dir` on the carousel or on any ancestor, such as `<html>`.

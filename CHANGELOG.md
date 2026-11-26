@@ -78,6 +78,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - #### Badge, Chat, Checkbox, Chip, Circular progress, Combo, Date picker, Date range picker, Date time input, Dialog, Expansion panel, File input, Input, Linear progress, Mask input, Navigation drawer, Radio, Rating, Select, Stepper, Switch, Textarea, Tile manager, Tooltip
   - The first render shows the slotted content, such as a checkbox label, the `prefixed` part of an input or the `icon` part of a badge. Before, it showed only after the next update.
+- #### Calendar, Carousel, Navigation drawer
+  - The components follow `dir="rtl"` on any ancestor, such as `<html>`, and a nested `dir="ltr"` or `dir="auto"`. The calendar mirrors its navigation buttons, the carousel its navigation buttons and indicators, and a `start` or `end` navigation drawer slides out past its own edge. Before, the carousel and the navigation drawer followed only `dir` on the element, and the calendar followed `dir` only in Chromium. A carousel or navigation drawer with `dir="rtl"` inside a `<body dir="rtl">` with a theme flipped twice and showed LTR. The carousel and the navigation drawer no longer read `--ig-dir`, so set `dir` to switch them to RTL. [#2605](https://github.com/IgniteUI/igniteui-webcomponents/issues/2605)
+- #### Themes
+  - The themes set `--ig-dir: -1` on a `<body>` whose direction is RTL, also through `dir` on `<html>`. Before, only `<body dir="rtl">` set it. [#2605](https://github.com/IgniteUI/igniteui-webcomponents/issues/2605)
 - #### Calendar, Date picker, Date range picker, Date time input
   - An ISO string with a signed six digit year, such as `+010000-01-01T00:00:00.000Z`, sets the value. `toISOString()` gives this format for dates before year 0 and after year 9999. Before, the value became `null`.
 - #### Checkbox, Radio, Switch

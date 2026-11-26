@@ -12,8 +12,7 @@
     width: 100%;
 }
 
-:host(:dir(rtl)),
-:host([dir='rtl']) {
+:host(:dir(rtl)) {
     --linear-strips-orientation: 45deg;
 }
 
@@ -30,8 +29,7 @@
 
 @include reduced-motion();
 
-:host(:dir(rtl)[indeterminate]),
-:host([dir='rtl'][indeterminate]) {
+:host(:dir(rtl)[indeterminate]) {
     [part~='track'] {
         transform: rotateY(180deg);
     }
