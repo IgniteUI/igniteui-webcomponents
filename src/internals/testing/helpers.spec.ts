@@ -262,3 +262,13 @@ export function attributeWrites(
 export const axeReflectedRelationsOptions = {
   ignoredRules: ['aria-required-attr'],
 };
+
+/**
+ * Axe options for a list with keyboard navigation. The list and its items
+ * take their roles through `ElementInternals`, which axe does not read, so
+ * axe sees an option or a grid cell without its required parent and trips
+ * `aria-required-parent`. Assert the roles through `internalsOf()` instead.
+ */
+export const axeListInternalsRolesOptions = {
+  ignoredRules: ['aria-required-parent'],
+};

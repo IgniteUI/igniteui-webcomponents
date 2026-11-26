@@ -48,7 +48,7 @@ export type LinearProgressLabelAlign =
   | 'bottom-start'
   | 'bottom'
   | 'bottom-end';
-export type ListNavigation = 'none' | 'listbox';
+export type ListNavigation = 'none' | 'listbox' | 'grid';
 export type MaskInputValueMode = 'raw' | 'withFormatting';
 export type NavDrawerPosition = 'start' | 'end' | 'top' | 'bottom' | 'relative';
 export type SliderTickLabelRotation = 0 | 90 | -90;

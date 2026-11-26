@@ -22,12 +22,23 @@ export type ButtonGroupContext = {
   isTabStop: (button: IgcToggleButtonComponent) => boolean;
 };
 
+/** The roles of a list with keyboard navigation and of its items. */
+export type ListRoles = {
+  list: 'list' | 'listbox' | 'grid';
+  item: 'listitem' | 'option' | 'row';
+  cell?: 'gridcell';
+};
+
 export type ListContext = {
   /**
    * Whether the list runs a keyboard navigation for `element`: the list
    * navigates, and `element` is one of its own items or headers.
    */
   navigates: (element: Element) => boolean;
+  /** The roles of the list, its items and the one cell of an item, if any. */
+  roles: () => ListRoles;
+  /** Whether an item that is not selected exposes `aria-selected="false"`. */
+  exposesUnselected: () => boolean;
   /** Whether `item` is the one item of the list in the tab order. */
   isTabStop: (item: IgcListItemComponent) => boolean;
   /** The header of the group of `item`. */

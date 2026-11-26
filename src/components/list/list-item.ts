@@ -111,9 +111,9 @@ export default class IgcListItemComponent extends LitElement {
   //#endregion
 
   /**
-   * In a navigating list: an option, named by its title, unless the app gives
-   * an `aria-label`, and described by its subtitle and its header. The list
-   * updates the item when its children or its `aria-label` change.
+   * In a navigating list: an option or a row, named by its title, unless the
+   * app gives an `aria-label`, and described by its subtitle and its header.
+   * The list updates the item when its children or its `aria-label` change.
    */
   private _resolveARIA(): ARIAState {
     const list = this._list;
@@ -136,15 +136,16 @@ export default class IgcListItemComponent extends LitElement {
     const labelled = !isEmpty(titles) && !this.hasAttribute('aria-label');
 
     return {
-      role: 'option',
-      ariaSelected: `${this.selected}`,
+      role: list.roles().item,
+      ariaSelected:
+        this.selected || list.exposesUnselected() ? `${this.selected}` : null,
       ariaLabelledByElements: labelled ? titles : null,
       ariaDescribedByElements: isEmpty(descriptions) ? null : descriptions,
     };
   }
 
   protected override render(): TemplateResult {
-    return html`
+    const parts = html`
       <section part="start">
         <slot name="start"></slot>
       </section>
@@ -159,6 +160,10 @@ export default class IgcListItemComponent extends LitElement {
         <slot name="end"></slot>
       </section>
     `;
+    // The one cell of a grid row. `display: contents` keeps the item layout.
+    const cell = this._list?.roles().cell;
+
+    return cell ? html`<div role=${cell} data-cell>${parts}</div>` : parts;
   }
 }
 

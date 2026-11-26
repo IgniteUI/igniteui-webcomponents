@@ -19,6 +19,7 @@ This directory hosts three public components: [`igc-list`](#igc-list), [`igc-lis
       - [Headers](#headers)
       - [Selection](#selection)
       - [Keyboard navigation](#keyboard-navigation)
+      - [Grid navigation](#grid-navigation)
       - [Empty state](#empty-state)
     - [Localization](#localization)
     - [Keyboard interactions](#keyboard-interactions)
@@ -34,6 +35,7 @@ This directory hosts three public components: [`igc-list`](#igc-list), [`igc-lis
     - [Hidden attribute](#hidden-attribute)
     - [Items far from the view](#items-far-from-the-view)
     - [Listbox navigation](#listbox-navigation)
+    - [Grid navigation](#grid-navigation-1)
     - [Value state motion](#value-state-motion)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -53,6 +55,7 @@ This directory hosts three public components: [`igc-list`](#igc-list), [`igc-lis
 |       5 | 2026-11-12 | An item far from the view skips its rendering    |
 |       6 | 2026-11-20 | A `selected` item from code shows at once; the hover still fades; no transitions with reduced motion; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
 |       7 | 2026-11-26 | Listbox navigation (`navigation`), the `empty` slot, item names from the title; the `hidden` attribute hides an item and a header |
+|       8 | 2026-11-26 | Grid navigation (`navigation="grid"`) for items that hold controls |
 
 ## Overview
 
@@ -62,7 +65,8 @@ sections can be introduced with an `igc-list-header`.
 The list is a layout and semantics container. It does not own a data source, does not virtualize, and does not
 manage the selection of its items; each item carries its own selected state. With `navigation="listbox"`, the list
 also runs the keyboard model of an ARIA listbox: one tab stop, the arrow keys, type-ahead, and the selected state of
-each item for assistive technology. The app still owns the selection.
+each item for assistive technology. With `navigation="grid"`, each item is a row that can hold controls, which the
+arrow keys reach. The app still owns the selection.
 
 ### Key features
 
@@ -71,6 +75,8 @@ each item for assistive technology. The app still owns the selection.
 - **Per-item selected state**, reflected for styling.
 - **Listbox navigation** (opt-in): one tab stop, the arrow keys, Home, End, type-ahead, activation with Enter and
   Space, and the selected state exposed to assistive technology.
+- **Grid navigation** (opt-in): the listbox keys, and Left and Right to reach the controls of an item, which leave
+  the tab order.
 - **Empty state** through the `empty` slot.
 - **Themeable** through shadow parts for every region of an item.
 
@@ -81,6 +87,8 @@ each item for assistive technology. The app still owns the selection.
 - The selected state of an item must be settable and reflected.
 - With `navigation="listbox"`, the list must be one tab stop and follow the keyboard model of the APG listbox
   pattern, and each item must expose its selected state.
+- With `navigation="grid"`, the list must be one tab stop and follow the APG layout grid pattern with one cell per
+  row, and the controls of the items must be reachable with the arrow keys.
 - The list must show the content of the `empty` slot while it has no items.
 - The elements must be integrated and themeable with the theming mechanism of the library.
 - The elements must be WAI-ARIA compliant and support RTL layouts without additional configuration.
@@ -96,6 +104,7 @@ As an end-user, I expect to:
 - see the items grouped under headers where that applies.
 - see which items are selected.
 - move through the items with the keyboard, activate one with Enter or Space, and hear which item is selected.
+- reach the buttons and fields of an item with the arrow keys, without a Tab stop for each of them.
 - find out that a list is empty.
 
 ### Developer stories
@@ -108,6 +117,7 @@ As a developer, I expect to be able to:
 - separate sections of the list with headers.
 - mark items as selected.
 - turn on keyboard navigation with one property and keep my own selection logic.
+- put buttons, links and fields in the items and keep the list one tab stop.
 - show a message while the list has no items.
 
 ## Functionality
@@ -121,6 +131,12 @@ or the custom content, and finally the end content. Headers separate the section
 first selected item, else the first item. The arrow keys, Home, End and typed letters move the focus between the
 items, and Enter or Space activates the focused item. The next Tab leaves the list. The focused item shows a focus
 ring, also when it is selected.
+
+**Grid navigation.** In a list with `navigation="grid"`, the keys of the listbox move between the items. Right and Left
+move from the focused item to its controls and between them, and back to the item after the last or before the
+first. Up and Down on a control move to the next or previous item, and Escape or F2 return to the item. A text field,
+a slider or another control that uses the arrow keys keeps them. Tab and Shift+Tab leave the list, also from a
+control.
 
 **Motion.** Code sets `selected`, so the item shows it at once, also on the first render. A list that reuses items while
 it scrolls does not fade them. The hover still fades, and it turns back on in the first frame with no change from code.
@@ -201,6 +217,34 @@ the selection. In a list with keyboard navigation, `selected` is also the state 
   the important text in the title or the subtitle. An item without a title is named by its content.
 - An `aria-label`, `aria-labelledby` or `aria-describedby` that the app sets on an item wins.
 
+#### Grid navigation
+
+```html
+<igc-list navigation="grid" aria-label="Contacts">
+  <igc-list-item>
+    <igc-avatar slot="start" initials="JD"></igc-avatar>
+    <span slot="title">Jane Doe</span>
+    <span slot="subtitle">Product designer</span>
+    <igc-icon-button slot="end" name="phone" aria-label="Call"></igc-icon-button>
+    <igc-icon-button slot="end" name="delete" aria-label="Delete"></igc-icon-button>
+  </igc-list-item>
+</igc-list>
+```
+
+- The list sets `tabindex="-1"` on the controls of the items, and gives the app its own value back when the mode
+  changes or a control leaves the list. For a component that renders its control in its shadow root, such as
+  `igc-button` or `igc-checkbox`, the value goes on the component. Controls that arrive later are handled too.
+- Left and Right reach the controls in the order of the layout: the `start` area, the title and subtitle, the
+  content, then the `end` area. A disabled control and one that does not render are skipped.
+- A click on a control bubbles to its item. Stop the propagation in the control's own `click` handler, so that the
+  control does not also activate the item.
+- A list with `navigation` set, inside an item, counts as one control. Left and Right focus its tab stop item, and
+  the outer list changes nothing inside it. A nested static list is plain content.
+- Escape returns from a control to its item unless the control handles Escape. A control that handles it also while
+  its popup is closed, such as `igc-combo`, keeps it; F2 still returns to the item.
+- Only selected items expose `aria-selected="true"`, which suits a list of actions. When the items can be selected,
+  set `aria-multiselectable` on the list, `"true"` or `"false"`, and every item exposes its selected state.
+
 #### Empty state
 
 ```html
@@ -210,8 +254,8 @@ the selection. In a list with keyboard navigation, `selected` is also the state 
 ```
 
 The `empty` slot renders while the list has no items. Headers do not count. In a list with keyboard navigation, the
-empty list is a tab stop, and its content is read as an option. When items arrive while the list has the focus, the
-focus moves to them.
+empty list is a tab stop, and its content is read as an option (listbox) or as a row with one cell (grid). When
+items arrive while the list has the focus, the focus moves to them.
 
 ### Localization
 
@@ -232,8 +276,26 @@ With `navigation="listbox"`, while an item has the focus:
 | Printable characters | Type-ahead: the next item whose title (else its content) starts with the typed letters. A pause of half a second starts a new search. Space is a letter only during a search. |
 | Tab / Shift+Tab      | Leaves the list.                                                                               |
 
+With `navigation="grid"`, also:
+
+| Focus   | Key             | Action                                                                                    |
+| ------- | --------------- | ----------------------------------------------------------------------------------------- |
+| Item    | Right / Left    | The first / last control of the item. Mirrored in right-to-left. Nothing without controls. |
+| Control | Right / Left    | The next / previous control, else the item.                                               |
+| Control | Down / Up       | The next / previous item. Stops at the ends.                                              |
+| Control | Escape / F2     | The item, unless the control handled the key, for example to close its popup.             |
+| Control | Tab / Shift+Tab | Leaves the list.                                                                          |
+| Control | Other keys      | The control's own behavior.                                                               |
+
+A control that uses the arrow keys keeps all of them: a text-like `input`, `textarea`, `select`, editable content, or
+an element with the role `textbox`, `searchbox`, `combobox`, `slider`, `spinbutton`, `listbox`, `radiogroup`,
+`radio`, `menu`, `menubar`, `tablist`, `toolbar`, `tree`, `treegrid` or `grid`, also inside a shadow root or set
+through the `ElementInternals` of a library component. A nested list with `navigation` set is the exception: it
+leaves Left and Right to the row. The list also leaves alone a key that a control already handled.
+
 When the focused item is removed, the focus moves to the item that took its place, else to the next item that
-renders, else to the last item that renders, else to the empty list. After the focus went to no element, as after a
+renders, else to the last item that renders, else to the empty list. In a grid, this also applies when a control of
+the item has the focus, and the focus lands on the item. After the focus went to no element, as after a
 click on the page, a removal does not take it back.
 
 ## API
@@ -244,7 +306,7 @@ Displays a collection of data items in a templatable list format.
 
 | Property   | Attribute  | Reflected | Type                   | Default  | Description                          |
 | ---------- | ---------- | --------- | ---------------------- | -------- | ------------------------------------ |
-| navigation | navigation | No        | `'none' \| 'listbox'` | `'none'` | The keyboard navigation of the list. |
+| navigation | navigation | No        | `'none' \| 'listbox' \| 'grid'` | `'none'` | The keyboard navigation of the list. |
 
 | Slot      | Description                                                                  |
 | --------- | ---------------------------------------------------------------------------- |
@@ -394,14 +456,79 @@ Focus ring:
 54. The item that the keyboard focused shows the ring (with the Bootstrap palette adopted).
 55. The empty list that has the focus shows the ring.
 
+### Grid navigation
+
+The fixtures hold a link, a `button`, an `igc-button`, an `igc-input` and an `igc-checkbox` in the items.
+
+Roles and states:
+
+56. The list is a `grid`, each item a `row`, and each row has one `gridcell` that takes no box.
+57. A row is named by its title, and described by its header.
+58. Without `aria-multiselectable`, only a selected row exposes `aria-selected`.
+59. With `aria-multiselectable`, `"true"` or `"false"`, every row exposes its selected state, and without it again only
+    the selected row does.
+60. The list, its shadow root and the shadow root of an item pass the accessibility audit (see below).
+
+Tab order:
+
+61. The controls of the rows have `tabindex="-1"`, and one row is the tab stop.
+62. One Tab reaches the list and the next leaves it, also from a control, in both directions (real key presses).
+63. A control that arrives later leaves the tab order once it renders.
+64. A disabled control leaves the tab order once it is enabled.
+65. A change of the mode gives the app its `tabindex` back.
+66. A control that leaves the list gets the app's `tabindex` back.
+
+Keyboard:
+
+67. Right moves through the controls of a row in the order of the layout, and back to the row.
+68. Left moves the other way.
+69. Left and Right are mirrored in a right-to-left list.
+70. A disabled control and a control that does not render are skipped.
+71. On a row without controls, Left and Right do nothing and the default is kept.
+72. Up, Down, Home and End move between the rows, also Up and Down from a control, and stop at the ends.
+73. Up moves from the control of a library component to the previous row (real key presses).
+74. A text field keeps all the arrow keys (real key presses).
+75. A widget with an arrow-key role keeps the arrow keys, and the default is kept.
+76. A component whose arrow-key role comes from its `ElementInternals` keeps the arrow keys.
+77. A key that a control handled stays with it.
+78. Escape and F2 return from a control to its row, also from a text field.
+79. Escape closes the open popup of an `igc-select` and leaves the focus on it; the next Escape returns to the row
+    (real key presses).
+80. Enter and Space click the row, but not from a control.
+81. Type-ahead moves between the rows, but not from a control.
+
+Focus:
+
+82. The row of a focused control is the tab stop.
+83. A window blur does not end the focus of a control, so the removal of its row still moves the focus.
+84. When a control removes its row, the focus moves to the next row.
+
+Ownership:
+
+85. The list navigates the rows and the controls inside wrapper elements.
+86. A nested list that navigates is one control: Right focuses its tab stop, Up and Down stay in it, also at its ends,
+    Left returns to the outer row, and Escape returns to the outer row from inside it (real key presses). The outer
+    list writes no `tabindex` inside it.
+87. A static nested list is content: its controls are controls of the outer row.
+
+Empty list:
+
+88. The `empty` content shows as a row with one cell, and the empty list is a tab stop.
+89. The focus moves to the rows that arrive while the empty list has it.
+
+Change of the navigation:
+
+90. A grid turns into a listbox: the roles change, the item renders no cell, the controls get their `tabindex` back,
+    and Left and Right do nothing.
+
 ### Value state motion
 
 Generated by `runValueStateMotionTests` in the Material theme. A hover is the user interaction that animates.
 
-56. A hover starts transitions.
-57. A change from code starts none.
-58. A first render in the changed state starts none.
-59. With reduced motion, a hover starts none.
+91. A hover starts transitions.
+92. A change from code starts none.
+93. A first render in the changed state starts none.
+94. With reduced motion, a hover starts none.
 
 ### Not covered by the suite
 
@@ -409,8 +536,11 @@ Generated by `runValueStateMotionTests` in the Material theme. A hover is the us
   elements, and asserts only the number of projected children. The DOM order of a header and its items is not
   covered.
 - axe does not read roles from `ElementInternals`, so the accessibility audits do not check the roles of the list,
-  the items and the headers. The audit of the empty listbox ignores `aria-required-parent`, because axe does not see
-  the `listbox` parent of the empty option; scenario 41 asserts the role directly.
+  the items and the headers. The audits of the empty listbox and of the grid ignore `aria-required-parent` through
+  `axeListInternalsRolesOptions` (`src/internals/testing/helpers.spec.ts`), because axe does not see the parent of the
+  empty option or of the cells of the rows; scenarios 41 and 56 assert the roles directly.
+- The grid cell has `display: contents`. Chromium keeps it in the accessibility tree. Firefox and WebKit were not
+  checked with a screen reader.
 - The suite reads the roles, states, names and descriptions from `ElementInternals`. What a screen reader announces
   is not covered.
 - The `selected` property of the item has no dedicated case.
@@ -431,8 +561,13 @@ Generated by `runValueStateMotionTests` in the Material theme. A hover is the us
   rendering. Safari 26 and the other browsers find it.
 - Selection state lives on the individual items; the list neither enforces nor tracks it.
 - A static list does not manage focus or keyboard navigation between the items.
-- In a list with keyboard navigation, an item holds no interactive content: an option exposes its content as plain
-  text, and the list takes the keys of the item.
+- In a listbox, an item holds no interactive content: an option exposes its content as plain text, and the list takes
+  the keys of the item. Use `navigation="grid"` for items with controls.
+- In a grid, a nested list with `navigation` set keeps its own tab stop, so Tab from the outer row enters it.
+- In a grid, a control is found by its element type, or as a component whose shadow root has a focusable element.
+  A Lit component is found once it renders. Another custom element that is defined after it is added to the list is
+  found at the next change in the list.
+- In a grid, when a control that has the focus removes itself and not its row, the focus goes to no element.
 - The keyboard navigation does not cover the items of an `igc-virtual-scroll` inside the list: Home, End and
   type-ahead would reach only the rendered items. Do not set `navigation` on such a list.
 - Items have no disabled state. An app that needs one sets `aria-disabled="true"` on the item and ignores its clicks.
@@ -460,6 +595,10 @@ Generated by `runValueStateMotionTests` in the Material theme. A hover is the us
   so the positions count only the items. An item with a title is named by it and also described by its subtitle.
 - The content of the `empty` slot is an option of the empty listbox, so assistive technology reads it when the list
   gets the focus.
+- With `navigation="grid"`, the list exposes the `grid` role and its items the `row` role, each with one `gridcell`
+  around its content. Names and descriptions follow the listbox rules. A row exposes `aria-selected="true"` when it is
+  selected; while the list has `aria-multiselectable`, every row exposes its selected state. The controls keep their
+  roles and names. The content of the `empty` slot is a row with one cell.
 
 ### Keyboard support
 
@@ -468,4 +607,4 @@ Already covered by the [relevant section of the specification](#keyboard-interac
 ### Right to Left support
 
 The components work in a Right-to-Left context without additional setup or configuration. The start and end areas of
-an item follow the inline direction.
+an item follow the inline direction, and in a grid, Left and Right follow it too.

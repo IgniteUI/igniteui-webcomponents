@@ -1,9 +1,30 @@
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import {
+  html,
+  LitElement,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import { property } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { type ListContext, listContext } from '#internals/context.js';
+import {
+  type ListContext,
+  type ListRoles,
+  listContext,
+} from '#internals/context.js';
 import { addContextProvider } from '#internals/controllers/context-provider.js';
 import { addInternalsController } from '#internals/controllers/internals.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  escapeKey,
+  f2Key,
+  isKey,
+  shiftKey,
+  tabKey,
+} from '#internals/controllers/key-bindings.js';
 import {
   createMutationController,
   type MutationControllerParams,
@@ -13,11 +34,13 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { createTypeahead } from '#internals/typeahead.js';
 import { firstOf, isEmpty } from '#internals/utils/arrays.js';
 import {
+  canTakeFocus,
   claimTabIndex,
   getRoot,
   getSlottedChildren,
   isAssignedTo,
   isElement,
+  isLTR,
   normalizedTextContent,
   releaseTabIndex,
 } from '#internals/utils/dom.js';
@@ -25,16 +48,28 @@ import {
   addSafeEventListener,
   focusLeftHost,
 } from '#internals/utils/events.js';
+import { wrap } from '#internals/utils/math.js';
 import { all } from '#themes/list/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
 import type { ListNavigation } from '../types.js';
+import {
+  type ControlSearchResult,
+  findControls,
+  takesArrows,
+} from './list-grid.js';
 import IgcListHeaderComponent from './list-header.js';
 import IgcListItemComponent from './list-item.js';
 import { styles } from './themes/container.base.css.js';
 import { styles as shared } from './themes/shared/container/list.common.css.js';
 
 const OWN_CHILDREN = `${IgcListItemComponent.tagName},${IgcListHeaderComponent.tagName}`;
+
+const ROLES = {
+  none: { list: 'list', item: 'listitem' },
+  listbox: { list: 'listbox', item: 'option' },
+  grid: { list: 'grid', item: 'row', cell: 'gridcell' },
+} satisfies Record<ListNavigation, ListRoles>;
 
 /**
  * Displays a collection of data items in a templatable list format.
@@ -70,13 +105,20 @@ export default class IgcListComponent extends LitElement {
   private _lastFocused?: IgcListItemComponent;
 
   /**
-   * The focused item. Firefox and WebKit fire no `focusout` for a removed
-   * element, so it stays until the focus moves to another element.
+   * The item that has the focus or holds it in a control. Firefox and WebKit
+   * fire no `focusout` for a removed element, so it stays until the focus
+   * moves to another element.
    */
   private _focused?: IgcListItemComponent;
 
+  /** The controls of the grid rows, out of the tab order. */
+  private readonly _controls = new Set<HTMLElement>();
+
   private readonly _context: ListContext = {
     navigates: (element) => this._navigable && this._owns(element),
+    roles: () => this._roles,
+    exposesUnselected: () =>
+      !this._isGrid || this.hasAttribute('aria-multiselectable'),
     isTabStop: (item) => item === this._tabStop,
     headerOf: (item) => this._headers.get(item),
     syncState: () => this.requestUpdate(),
@@ -91,8 +133,16 @@ export default class IgcListComponent extends LitElement {
     spaceStartsSearch: false,
   });
 
+  private get _isGrid(): boolean {
+    return this.navigation === 'grid';
+  }
+
   private get _navigable(): boolean {
-    return this.navigation === 'listbox';
+    return this._isGrid || this.navigation === 'listbox';
+  }
+
+  private get _roles(): ListRoles {
+    return ROLES[this.navigation] ?? ROLES.none;
   }
 
   private get _visibleItems(): IgcListItemComponent[] {
@@ -111,10 +161,16 @@ export default class IgcListComponent extends LitElement {
    *   letters move between the items, and Enter or Space clicks the focused
    *   item. Each item exposes its `selected` state to assistive technology.
    *   An item holds no interactive content.
+   * - `grid`: as `listbox`, and each item is a row that can hold controls.
+   *   The list takes the controls out of the tab order. Left and Right move
+   *   between the item and its controls, Up and Down move from a control to
+   *   the next or previous item, and Escape or F2 returns to the item. A
+   *   control that uses the arrow keys, such as a text field, keeps them.
    *
    * The app owns the selection. It toggles `selected` on the items, for
    * example in a `click` handler, and sets `aria-multiselectable="true"` on
-   * the list when more than one item can be selected.
+   * the list when more than one item can be selected. A grid item that is not
+   * selected exposes its state only while the list has `aria-multiselectable`.
    *
    * @attr navigation
    * @default 'none'
@@ -131,7 +187,7 @@ export default class IgcListComponent extends LitElement {
 
     addInternalsController(this, {
       initialARIA: { role: 'list' },
-      aria: () => ({ role: this._navigable ? 'listbox' : 'list' }),
+      aria: () => ({ role: this._roles.list }),
     });
 
     addContextProvider(this, {
@@ -144,7 +200,12 @@ export default class IgcListComponent extends LitElement {
       config: {
         childList: true,
         subtree: true,
-        attributeFilter: ['hidden', 'aria-label'],
+        attributeFilter: [
+          'hidden',
+          'disabled',
+          'aria-label',
+          'aria-multiselectable',
+        ],
       },
       callback: this._handleMutations,
     });
@@ -153,7 +214,9 @@ export default class IgcListComponent extends LitElement {
       keybindings: {
         // A Space that extends a type-ahead search is a letter, not a click.
         skip: (node, event) =>
-          !this._isNavigableItem(node) || this._typeahead.accepts(event),
+          this._isNavigableItem(node)
+            ? this._typeahead.accepts(event)
+            : !this._movesFromControl(node, event),
         bindingDefaults: { preventDefault: true, repeat: true },
       },
       horizontal: false,
@@ -163,6 +226,17 @@ export default class IgcListComponent extends LitElement {
       focusItem: (item) => item.focus(),
       activateItem: (item) => item.click(),
     });
+
+    addKeybindings(this, {
+      skip: (node, event) => !this._gridRowOf(node, event),
+      // The handlers cancel only the keys that they use.
+      bindingDefaults: { preventDefault: false, repeat: true },
+    })
+      .set(arrowLeft, (event) => this._moveInRow(event, -1))
+      .set(arrowRight, (event) => this._moveInRow(event, 1))
+      .set(escapeKey, this._returnToRow)
+      .set(f2Key, this._returnToRow)
+      .set([shiftKey, tabKey], this._leaveFromControl);
 
     addSafeEventListener(this, 'keydown', this._handleTypeahead);
     addSafeEventListener(this, 'focusin', this._handleFocusIn);
@@ -174,10 +248,26 @@ export default class IgcListComponent extends LitElement {
   public override connectedCallback(): void {
     super.connectedCallback();
     this._collect();
+
+    // After a move. The first update does the first sync.
+    if (this.hasUpdated) {
+      this._syncControls();
+    }
   }
 
-  protected override willUpdate(): void {
+  public override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._syncControls();
+  }
+
+  protected override update(changedProperties: PropertyValues<this>): void {
     this._updateTabStop();
+
+    if (changedProperties.has('navigation')) {
+      this._syncControls();
+    }
+
+    super.update(changedProperties);
   }
 
   //#endregion
@@ -196,9 +286,11 @@ export default class IgcListComponent extends LitElement {
   }
 
   private _handleFocusIn(event: FocusEvent): void {
-    const item = event.target as Element;
+    const item = this._navigable
+      ? this._rowOf(event.target as Element)
+      : undefined;
 
-    if (!this._isNavigableItem(item)) {
+    if (!item) {
       return;
     }
 
@@ -223,8 +315,9 @@ export default class IgcListComponent extends LitElement {
     // element, which ends it.
     queueMicrotask(() => {
       const item = this._focused;
+      const active = getRoot(this)?.activeElement;
 
-      if (item?.isConnected && getRoot(this)?.activeElement !== item) {
+      if (item?.isConnected && !(active && item.contains(active))) {
         this._focused = undefined;
       }
     });
@@ -232,16 +325,18 @@ export default class IgcListComponent extends LitElement {
 
   private _handleMutations({ changes }: MutationControllerParams): void {
     const nodes = [...changes.added, ...changes.removed];
-    const attributes = changes.attributes;
+    const changed = (name: string) =>
+      changes.attributes
+        .filter(({ attributeName }) => attributeName === name)
+        .map(({ node }) => node);
 
-    // A new title, subtitle or `aria-label` names or describes the item again.
     if (this._navigable) {
-      const touched = [
-        ...nodes.map(({ target }) => target),
-        ...attributes
-          .filter(({ attributeName }) => attributeName === 'aria-label')
-          .map(({ node }) => node),
-      ];
+      // A new title, subtitle or `aria-label` names or describes the item
+      // again, and `aria-multiselectable` changes the selected state of a row.
+      const touched =
+        this._isGrid && changed('aria-multiselectable').includes(this)
+          ? this._items
+          : [...nodes.map(({ target }) => target), ...changed('aria-label')];
 
       for (const element of new Set(touched)) {
         if (element instanceof IgcListItemComponent && this._owns(element)) {
@@ -251,9 +346,24 @@ export default class IgcListComponent extends LitElement {
     }
 
     if (
-      !attributes.some(({ attributeName }) => attributeName === 'hidden') &&
+      isEmpty(changed('hidden')) &&
       !nodes.some(({ node, target }) => this._affectsItems(node, target))
     ) {
+      // A control that comes, goes or changes its `disabled` state.
+      const rows = new Set(
+        [
+          ...nodes
+            .filter(({ node }) => isElement(node))
+            .map(({ target }) => target),
+          ...(changed('disabled') as Element[]),
+        ]
+          .map((element) => this._rowOf(element))
+          .filter((row) => row !== undefined)
+      );
+
+      if (rows.size > 0) {
+        this._syncControls([...rows]);
+      }
       return;
     }
 
@@ -263,6 +373,7 @@ export default class IgcListComponent extends LitElement {
     const hostFocused = getRoot(this)?.activeElement === this;
 
     this._collect();
+    this._syncControls();
 
     if (this._lastFocused && !this._owns(this._lastFocused)) {
       this._lastFocused = undefined;
@@ -292,6 +403,95 @@ export default class IgcListComponent extends LitElement {
 
   //#endregion
 
+  //#region Keyboard navigation
+
+  /** The row of `node` when a grid key moves from it. A key that a control handled stays with it. */
+  private _gridRowOf(
+    node: Element,
+    event: KeyboardEvent
+  ): IgcListItemComponent | undefined {
+    return this._isGrid && !event.defaultPrevented
+      ? this._rowOf(node)
+      : undefined;
+  }
+
+  /** The target of a grid key and its row, which the skip callback found. */
+  private _gridTarget(event: KeyboardEvent): {
+    target: Element;
+    row: IgcListItemComponent;
+    onRow: boolean;
+  } {
+    const target = event.target as Element;
+    const row = this._rowOf(target)!;
+
+    return { target, row, onRow: target === row };
+  }
+
+  private _takesArrows(
+    event: KeyboardEvent,
+    row: IgcListItemComponent
+  ): boolean {
+    return takesArrows(event, row, (element) => this._isWidget(element));
+  }
+
+  /** Moves between a grid row and its controls, around the ends. */
+  private _moveInRow(event: KeyboardEvent, delta: 1 | -1): void {
+    const { target, row, onRow } = this._gridTarget(event);
+
+    if (!onRow && this._takesArrows(event, row)) {
+      return;
+    }
+
+    const controls = this._controlsOf(row).controls.filter(canTakeFocus);
+
+    if (isEmpty(controls)) {
+      return;
+    }
+
+    event.preventDefault();
+
+    // 0 is the row, also for a focused element outside the controls.
+    const stops = [row, ...controls];
+    const index = controls.findIndex((control) => control.contains(target)) + 1;
+    const step = isLTR(this) ? delta : -delta;
+    const next = stops[wrap(0, stops.length - 1, index + step)];
+
+    next instanceof IgcListComponent ? next._focusTabStop() : next.focus();
+  }
+
+  /**
+   * Whether Up or Down on a control of a grid row moves to the next or
+   * previous row: the control neither uses nor handled the key.
+   */
+  private _movesFromControl(node: Element, event: KeyboardEvent): boolean {
+    const row = this._gridRowOf(node, event);
+
+    return (
+      !!row &&
+      (isKey(event, arrowUp) || isKey(event, arrowDown)) &&
+      !this._takesArrows(event, row)
+    );
+  }
+
+  private _returnToRow(event: KeyboardEvent): void {
+    const { row, onRow } = this._gridTarget(event);
+
+    if (!onRow) {
+      event.preventDefault();
+      row.focus();
+    }
+  }
+
+  /**
+   * Shift+Tab from a control would stop at its row, the tab stop. It starts
+   * from the row instead, and the default action leaves the list.
+   */
+  private _leaveFromControl(event: KeyboardEvent): void {
+    this._gridTarget(event).row.focus();
+  }
+
+  //#endregion
+
   //#region Internal API
 
   private _owns(element: Element): boolean {
@@ -304,6 +504,18 @@ export default class IgcListComponent extends LitElement {
       node instanceof IgcListItemComponent &&
       this._owns(node)
     );
+  }
+
+  /** The own item that is `node` or holds it. */
+  private _rowOf(node: Element): IgcListItemComponent | undefined {
+    let item = node.closest(IgcListItemComponent.tagName);
+
+    // The items of a nested list belong to it.
+    while (item && !this._owns(item)) {
+      item = item.parentElement?.closest(IgcListItemComponent.tagName) ?? null;
+    }
+
+    return item ?? undefined;
   }
 
   private _affectsItems(node: Node, target: Element): boolean {
@@ -339,6 +551,64 @@ export default class IgcListComponent extends LitElement {
 
     if (getRoot(this)?.activeElement !== item) {
       item.updateComplete.then(retry);
+    }
+  }
+
+  /** A nested list that navigates counts as one control. */
+  private _isWidget(element: Element): element is IgcListComponent {
+    return element instanceof IgcListComponent && element._navigable;
+  }
+
+  private _controlsOf(row: IgcListItemComponent): ControlSearchResult {
+    return findControls(row, {
+      known: this._controls,
+      isWidget: (element) => this._isWidget(element),
+    });
+  }
+
+  /**
+   * Takes the controls of `rows` out of the tab order, and gives the app its
+   * `tabindex` back on the controls that left them.
+   */
+  private _syncControls(
+    rows: readonly IgcListItemComponent[] = this._items
+  ): void {
+    const inGrid = this._isGrid && this.isConnected;
+    const scope = new Set(rows);
+    const searches = inGrid
+      ? rows
+          .filter((row) => this._owns(row))
+          .map((row) => this._controlsOf(row))
+      : [];
+    const pending = searches.flatMap((search) => search.pending);
+    const found = new Set(
+      searches
+        .flatMap((search) => search.controls)
+        // A nested list keeps its own tab stop.
+        .filter((control) => !(control instanceof IgcListComponent))
+    );
+
+    for (const control of this._controls) {
+      const row = this._rowOf(control);
+
+      if (!found.has(control) && (!inGrid || !row || scope.has(row))) {
+        releaseTabIndex(control);
+        this._controls.delete(control);
+      }
+    }
+
+    for (const control of found) {
+      if (!this._controls.has(control)) {
+        claimTabIndex(control, '-1');
+        this._controls.add(control);
+      }
+    }
+
+    // A host that renders later may turn into a control.
+    if (!isEmpty(pending)) {
+      Promise.allSettled(pending.map((host) => host.updateComplete)).then(() =>
+        this._syncControls(rows)
+      );
     }
   }
 
@@ -386,6 +656,11 @@ export default class IgcListComponent extends LitElement {
     this._hasEmptyContent = hasEmptyContent;
   }
 
+  /** Focuses the tab stop item, else the empty list itself. */
+  private _focusTabStop(): void {
+    (this._tabStop ?? this).focus();
+  }
+
   /** An empty list that navigates is the tab stop itself. */
   private _updateTabStop(): void {
     const candidates = this._navigable
@@ -412,20 +687,25 @@ export default class IgcListComponent extends LitElement {
 
   //#endregion
 
-  protected override render(): TemplateResult {
-    // In a listbox, the empty-state content is read as its only option.
-    const emptyRole =
-      this._navigable && this._hasEmptyContent ? 'option' : undefined;
+  /** In a navigating list, the empty-state content is read as its only item. */
+  private _renderEmpty(): TemplateResult {
+    const slot = html`<slot name="empty"></slot>`;
 
+    if (!this._navigable || !this._hasEmptyContent) {
+      return html`<div>${slot}</div>`;
+    }
+
+    const { item, cell } = this._roles;
+
+    return html`<div role=${item}>
+      ${cell ? html`<div role=${cell}>${slot}</div>` : slot}
+    </div>`;
+  }
+
+  protected override render(): TemplateResult {
     return html`
       <slot></slot>
-      ${
-        isEmpty(this._items)
-          ? html`<div role=${ifDefined(emptyRole)}>
-              <slot name="empty"></slot>
-            </div>`
-          : nothing
-      }
+      ${isEmpty(this._items) ? this._renderEmpty() : nothing}
     `;
   }
 }

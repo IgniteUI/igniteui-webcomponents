@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### List
+  - `navigation` turns on keyboard navigation, as in the Ignite UI for Angular list. The list stays one tab stop: Tab reaches the item focused last, else the first selected item, else the first item.
+    - `listbox`: the list follows the ARIA listbox pattern. Up, Down, Home, End and typed letters move between the items, and Enter or Space dispatches a `click` on the focused item. Each item exposes its `selected` state to assistive technology.
+    - `grid`: the list follows the ARIA layout grid pattern, with one cell per item, for items that hold buttons, links or fields. The list takes those controls out of the tab order. Left and Right reach them, Up and Down move from a control to the next or previous item, and Escape or F2 returns to the item. A control that uses the arrow keys, such as a text field, keeps them.
+    - The app keeps its own selection logic: it toggles `selected` in a `click` handler and sets `aria-multiselectable` on the list.
+  - An item with a `title` is named by its title and described by its subtitle and by the header of its group. Headers are hidden from assistive technology in a list with navigation.
+  - The `empty` slot renders while the list has no items, such as a "No results" message. In a list with navigation, the empty list is a tab stop, and the focus moves to the items when they arrive.
+  - When the focused item is removed, the focus moves to the next item.
 - #### QR code
   - `dot-style`, `square-style` and `corner-dot-style` take `squircle`, a square with soft corners.
   - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.
@@ -128,6 +136,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A change of `name` updates the `name` attribute at once, as for a native control, so the form data takes the new name. Before, a control that submits a string kept the old name until the next render. Such controls include the input, the select and a single selection combo. A `null` or `undefined` name also removes the attribute at once.
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
+- #### List
+  - The `hidden` attribute hides a list item and a list header. Before, they still rendered.
 - #### Mask input
   - The submitted value is `value`. A change of `valueMode`, `mask` or `prompt` updates it and the validity at once, also when the `value` attribute comes before `value-mode` or `mask`. Before, the form kept the old text, `badInput` could stay set for a valid value, and the attribute order could submit the raw text in `withFormatting` mode.
   - A formatted value that you empty submits nothing. Before, the form submitted the empty mask, such as `__-__`.

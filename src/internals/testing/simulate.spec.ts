@@ -37,6 +37,16 @@ export function simulateBlur(node: Element): void {
   node.dispatchEvent(new FocusEvent('blur'));
 }
 
+/**
+ * Dispatches a bubbling `focusout` without `relatedTarget`, as when the window
+ * loses the focus and the element keeps it.
+ */
+export function simulateFocusOut(node: Element): void {
+  node.dispatchEvent(
+    new FocusEvent('focusout', { bubbles: true, composed: true })
+  );
+}
+
 export function simulatePointerDown(
   node: Element,
   options?: PointerEventInit,

@@ -268,8 +268,32 @@ export function scrollIntoView(
   });
 }
 
-const TABBABLE_SELECTOR =
-  'a[href], button, input, textarea, select, details, summary, iframe, audio[controls], video[controls], [tabindex]:not([tabindex="-1"])';
+/** The elements that take the focus by their type, in both selectors below. */
+const FOCUSABLE_TYPES = [
+  'a[href]',
+  'button',
+  'textarea',
+  'select',
+  'summary',
+  'iframe',
+  'audio[controls]',
+  'video[controls]',
+  '[tabindex]:not([tabindex="-1"])',
+];
+
+const TABBABLE_SELECTOR = [...FOCUSABLE_TYPES, 'input', 'details'].join(',');
+
+/**
+ * The elements that take the focus by their type, also editable content and
+ * image map areas. A `details` element and a hidden input are not, because
+ * the `summary` takes the focus and a hidden input does not render.
+ */
+export const FOCUSABLE_SELECTOR = [
+  ...FOCUSABLE_TYPES,
+  'area[href]',
+  'input:not([type="hidden" i])',
+  '[contenteditable]:not([contenteditable="false" i])',
+].join(',');
 
 /**
  * Returns the focused element, also inside open shadow roots. The search starts in `root`, or in
@@ -327,6 +351,20 @@ function isRadioGroupStop(element: HTMLElement): boolean {
   ).filter((other) => other.form === element.form);
 
   return group[0] === element && !group.some((other) => other.checked);
+}
+
+/**
+ * Whether `element` can take the focus now: it renders, it is not disabled,
+ * hidden from assistive technology or inert. Unlike Tab, a `.focus()` call
+ * also reaches an element with `tabindex="-1"`.
+ */
+export function canTakeFocus(element: HTMLElement): boolean {
+  return (
+    !isHiddenOrDisabled(element) &&
+    !element.matches(':disabled') &&
+    !element.closest('[inert]') &&
+    element.checkVisibility()
+  );
 }
 
 function isFocusable(element: HTMLElement): boolean {

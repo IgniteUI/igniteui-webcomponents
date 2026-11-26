@@ -2505,10 +2505,10 @@
     "igc-list": {
       "class": "IgcListComponent",
       "attributes": {
-        "navigation": "ListNavigation ('listbox' | 'none')"
+        "navigation": "ListNavigation ('grid' | 'listbox' | 'none')"
       },
       "properties": {
-        "navigation": "ListNavigation ('listbox' | 'none')",
+        "navigation": "ListNavigation ('grid' | 'listbox' | 'none')",
         "static tagName": "readonly string"
       },
       "methods": {

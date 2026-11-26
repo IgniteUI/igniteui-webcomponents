@@ -1,21 +1,38 @@
-import { expect, fixture, html, nextFrame, waitUntil } from '@open-wc/testing';
+import {
+  defineCE,
+  expect,
+  fixture,
+  html,
+  nextFrame,
+  waitUntil,
+} from '@open-wc/testing';
 import { sendKeys } from '@web/test-runner-commands';
-import type { TemplateResult } from 'lit';
+import { LitElement, type TemplateResult } from 'lit';
 import { spy, useFakeTimers } from 'sinon';
 
-import { internalsOf } from '#internals/controllers/internals.js';
+import {
+  addInternalsController,
+  internalsOf,
+} from '#internals/controllers/internals.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  axeListInternalsRolesOptions,
   hoverWithMouse,
   isFocused,
   withDocumentSheets,
 } from '#internals/testing/helpers.spec.js';
 import {
   simulateCancelableKeydown,
+  simulateClick,
+  simulateFocusOut,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
 import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js';
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
+import IgcButtonComponent from '../button/button.js';
+import IgcCheckboxComponent from '../checkbox/checkbox.js';
+import IgcInputComponent from '../input/input.js';
+import IgcSelectComponent from '../select/select.js';
 import IgcListHeaderComponent from './list-header.js';
 import type IgcListItemComponent from './list-item.js';
 import IgcListComponent from './list.js';
@@ -26,6 +43,39 @@ describe('List', () => {
   });
 
   let list: IgcListComponent;
+
+  let items: IgcListItemComponent[];
+  let headers: IgcListHeaderComponent[];
+
+  const aria = <K extends keyof ARIAMixin>(element: Element, name: K) =>
+    internalsOf(element)?.getARIA(name);
+
+  const titleOf = (item: Element) => item.querySelector('[slot="title"]')!;
+
+  const tabIndexes = () => items.map((item) => item.getAttribute('tabindex'));
+
+  /** Lets the list, its items and their controls take in the DOM changes. */
+  async function settle(): Promise<void> {
+    for (let i = 0; i < 3; i++) {
+      await list.updateComplete;
+      await Promise.all(
+        Array.from(
+          list.querySelectorAll('*'),
+          (element) => (element as Partial<LitElement>).updateComplete
+        )
+      );
+    }
+  }
+
+  async function create(template: TemplateResult): Promise<void> {
+    const root = await fixture<HTMLElement>(template);
+    list = root.matches('igc-list')
+      ? (root as IgcListComponent)
+      : root.querySelector('igc-list')!;
+    await settle();
+    items = Array.from(list.querySelectorAll('igc-list-item'));
+    headers = Array.from(list.querySelectorAll('igc-list-header'));
+  }
 
   describe('List with items', () => {
     beforeEach(async () => {
@@ -160,41 +210,6 @@ describe('List', () => {
   });
 
   describe('Listbox navigation', () => {
-    let items: IgcListItemComponent[];
-    let headers: IgcListHeaderComponent[];
-
-    const aria = <K extends keyof ARIAMixin>(element: Element, name: K) =>
-      internalsOf(element)?.getARIA(name);
-
-    const titleOf = (item: Element) => item.querySelector('[slot="title"]')!;
-
-    const tabIndexes = () => items.map((item) => item.getAttribute('tabindex'));
-
-    /** Lets the list and its items take in the context and the DOM changes. */
-    async function settle(): Promise<void> {
-      for (let i = 0; i < 3; i++) {
-        await list.updateComplete;
-        await Promise.all(
-          Array.from(
-            list.querySelectorAll<
-              IgcListItemComponent | IgcListHeaderComponent
-            >('igc-list-item, igc-list-header'),
-            (element) => element.updateComplete
-          )
-        );
-      }
-    }
-
-    async function create(template: TemplateResult): Promise<void> {
-      const root = await fixture<HTMLElement>(template);
-      list = root.matches('igc-list')
-        ? (root as IgcListComponent)
-        : root.querySelector('igc-list')!;
-      await settle();
-      items = Array.from(list.querySelectorAll('igc-list-item'));
-      headers = Array.from(list.querySelectorAll('igc-list-header'));
-    }
-
     const people = html`
       <igc-list navigation="listbox" aria-label="People">
         <igc-list-header>Team</igc-list-header>
@@ -285,6 +300,8 @@ describe('List', () => {
 
       it('is accessible', async () => {
         await expect(list).to.be.accessible();
+        await expect(list).shadowDom.to.be.accessible();
+        await expect(items[0]).shadowDom.to.be.accessible();
       });
     });
 
@@ -627,11 +644,10 @@ describe('List', () => {
       });
 
       it('is accessible', async () => {
-        // The list sets its `listbox` role through ElementInternals, which axe
-        // does not read, so axe sees the empty option without its parent.
-        await expect(list).to.be.accessible({
-          ignoredRules: ['aria-required-parent'],
-        });
+        await expect(list).to.be.accessible(axeListInternalsRolesOptions);
+        await expect(list).shadowDom.to.be.accessible(
+          axeListInternalsRolesOptions
+        );
         expect(aria(list, 'role')).to.equal('listbox');
       });
     });
@@ -828,6 +844,574 @@ describe('List', () => {
         await withDocumentSheets(palette, () => {
           expect(getComputedStyle(list).outlineStyle).to.equal('solid');
         });
+      });
+    });
+  });
+
+  describe('Grid navigation', () => {
+    let link: HTMLAnchorElement;
+    let call: IgcButtonComponent;
+    let remove: HTMLButtonElement;
+    let note: IgcInputComponent;
+    let pin: IgcCheckboxComponent;
+
+    before(() => {
+      defineComponents(
+        IgcButtonComponent,
+        IgcCheckboxComponent,
+        IgcInputComponent,
+        IgcSelectComponent
+      );
+    });
+
+    const cellOf = (item: IgcListItemComponent) =>
+      item.renderRoot.querySelector<HTMLElement>('[data-cell]');
+
+    const press = (key: string) => sendKeys({ press: key });
+
+    const pressOnFocused = (key: string) =>
+      simulateKeyboard(document.activeElement!, key);
+
+    // The link comes last in the DOM, but first in the layout of the row.
+    const contacts = html`
+      <igc-list navigation="grid" aria-label="Contacts">
+        <igc-list-header>Team</igc-list-header>
+        <igc-list-item>
+          <span slot="title">Kate</span>
+          <igc-button slot="end" id="call">Call</igc-button>
+          <button slot="end" id="remove">Delete</button>
+          <a slot="start" href="#kate" id="link">Profile</a>
+        </igc-list-item>
+        <igc-list-item>
+          <span slot="title">Bob</span>
+          <igc-input slot="end" label="Note" id="note"></igc-input>
+          <igc-checkbox slot="end" id="pin">Pin</igc-checkbox>
+        </igc-list-item>
+        <igc-list-item><span slot="title">Ann</span></igc-list-item>
+      </igc-list>
+    `;
+
+    async function createContacts(template = contacts): Promise<void> {
+      await create(template);
+      link = list.querySelector('#link')!;
+      call = list.querySelector('#call')!;
+      remove = list.querySelector('#remove')!;
+      note = list.querySelector('#note')!;
+      pin = list.querySelector('#pin')!;
+    }
+
+    describe('Roles and states', () => {
+      beforeEach(async () => {
+        await createContacts();
+      });
+
+      it('is a grid of rows with one cell each', () => {
+        expect(aria(list, 'role')).to.equal('grid');
+
+        for (const item of items) {
+          expect(aria(item, 'role')).to.equal('row');
+          expect(cellOf(item)?.getAttribute('role')).to.equal('gridcell');
+          expect(getComputedStyle(cellOf(item)!).display).to.equal('contents');
+        }
+      });
+
+      it('names a row by its title, and describes it by its header', () => {
+        expect(aria(items[0], 'ariaLabelledByElements')).to.eql([
+          titleOf(items[0]),
+        ]);
+        expect(aria(items[0], 'ariaDescribedByElements')).to.eql([headers[0]]);
+      });
+
+      it('exposes only a selected row without aria-multiselectable', async () => {
+        items[1].selected = true;
+        await settle();
+
+        expect(aria(items[0], 'ariaSelected')).to.be.null;
+        expect(aria(items[1], 'ariaSelected')).to.equal('true');
+      });
+
+      it('exposes the selected state of every row with aria-multiselectable', async () => {
+        const states = () => items.map((item) => aria(item, 'ariaSelected'));
+        items[1].selected = true;
+
+        for (const value of ['true', 'false']) {
+          list.setAttribute('aria-multiselectable', value);
+          await settle();
+
+          expect(states()).to.eql(['false', 'true', 'false']);
+        }
+
+        list.removeAttribute('aria-multiselectable');
+        await settle();
+
+        expect(states()).to.eql([null, 'true', null]);
+      });
+
+      it('is accessible', async () => {
+        await expect(list).to.be.accessible(axeListInternalsRolesOptions);
+        await expect(list).shadowDom.to.be.accessible(
+          axeListInternalsRolesOptions
+        );
+        await expect(items[0]).shadowDom.to.be.accessible(
+          axeListInternalsRolesOptions
+        );
+      });
+    });
+
+    describe('Tab order', () => {
+      it('takes the controls of the rows out of the tab order', async () => {
+        await createContacts();
+
+        for (const control of [link, call, remove, note, pin]) {
+          expect(control.getAttribute('tabindex')).to.equal('-1');
+        }
+        expect(tabIndexes()).to.eql(['0', '-1', '-1']);
+      });
+
+      it('is one tab stop, also when a control has the focus', async () => {
+        await createContacts(html`
+          <div>
+            <button id="before">Before</button>
+            ${contacts}
+            <button id="after">After</button>
+          </div>
+        `);
+        const before = document.getElementById('before')!;
+        const after = document.getElementById('after')!;
+        before.focus();
+
+        await press('Tab');
+        expect(isFocused(items[0])).to.be.true;
+
+        await press('ArrowRight');
+        expect(isFocused(link)).to.be.true;
+
+        await press('Tab');
+        expect(isFocused(after)).to.be.true;
+
+        await press('Shift+Tab');
+        expect(isFocused(items[0])).to.be.true;
+
+        await press('ArrowRight');
+        await press('Shift+Tab');
+        expect(isFocused(before)).to.be.true;
+      });
+
+      it('takes out a control that arrives later, once it renders', async () => {
+        await createContacts();
+        const button = document.createElement('igc-button');
+        button.textContent = 'Later';
+        items[2].append(button);
+        await settle();
+
+        expect(button.getAttribute('tabindex')).to.equal('-1');
+      });
+
+      it('takes out a control once it is enabled', async () => {
+        await createContacts(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <igc-button id="call" disabled>Call</igc-button>
+            </igc-list-item>
+          </igc-list>
+        `);
+        expect(call.hasAttribute('tabindex')).to.be.false;
+
+        call.disabled = false;
+        await settle();
+
+        expect(call.getAttribute('tabindex')).to.equal('-1');
+      });
+
+      it('gives the app its tabindex back when the mode changes', async () => {
+        await createContacts();
+        list.navigation = 'none';
+        await settle();
+        remove.setAttribute('tabindex', '2');
+        list.navigation = 'grid';
+        await settle();
+        expect(remove.getAttribute('tabindex')).to.equal('-1');
+
+        list.navigation = 'listbox';
+        await settle();
+
+        expect(remove.getAttribute('tabindex')).to.equal('2');
+        expect(link.hasAttribute('tabindex')).to.be.false;
+        expect(call.hasAttribute('tabindex')).to.be.false;
+      });
+
+      it('gives the app its tabindex back when a control leaves the list', async () => {
+        await createContacts(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <button id="remove" tabindex="2">Delete</button>
+            </igc-list-item>
+          </igc-list>
+        `);
+        expect(remove.getAttribute('tabindex')).to.equal('-1');
+
+        list.after(remove);
+        await settle();
+
+        expect(remove.getAttribute('tabindex')).to.equal('2');
+        remove.remove();
+      });
+    });
+
+    describe('Keyboard', () => {
+      beforeEach(async () => {
+        await createContacts();
+        items[0].focus();
+      });
+
+      it('moves with Right through the controls of a row, in their layout order, and back to the row', () => {
+        for (const stop of [link, call, remove, items[0]]) {
+          pressOnFocused('ArrowRight');
+          expect(isFocused(stop)).to.be.true;
+        }
+      });
+
+      it('moves with Left through the controls of a row the other way', () => {
+        for (const stop of [remove, call, link, items[0]]) {
+          pressOnFocused('ArrowLeft');
+          expect(isFocused(stop)).to.be.true;
+        }
+      });
+
+      it('mirrors Left and Right in a right-to-left list', () => {
+        list.dir = 'rtl';
+
+        pressOnFocused('ArrowLeft');
+        expect(isFocused(link)).to.be.true;
+
+        pressOnFocused('ArrowRight');
+        expect(isFocused(items[0])).to.be.true;
+      });
+
+      it('skips a disabled control and one that does not render', async () => {
+        call.disabled = true;
+        link.style.display = 'none';
+        await settle();
+
+        pressOnFocused('ArrowRight');
+        expect(isFocused(remove)).to.be.true;
+      });
+
+      it('leaves Left and Right alone on a row without controls', () => {
+        items[2].focus();
+
+        expect(simulateCancelableKeydown(items[2], 'ArrowRight')).to.be.false;
+        expect(isFocused(items[2])).to.be.true;
+      });
+
+      it('moves with Up, Down, Home and End on the rows, also from a control, and stops at the ends', () => {
+        pressOnFocused('ArrowDown');
+        expect(isFocused(items[1])).to.be.true;
+
+        items[0].focus();
+        pressOnFocused('ArrowLeft');
+        pressOnFocused('ArrowUp');
+        expect(isFocused(remove)).to.be.true;
+
+        pressOnFocused('ArrowDown');
+        expect(isFocused(items[1])).to.be.true;
+
+        pressOnFocused('End');
+        expect(isFocused(items[2])).to.be.true;
+
+        pressOnFocused('ArrowDown');
+        expect(isFocused(items[2])).to.be.true;
+
+        pressOnFocused('Home');
+        expect(isFocused(items[0])).to.be.true;
+      });
+
+      it('moves with Up from a control of a library component', async () => {
+        items[1].focus();
+        await press('ArrowLeft');
+        expect(isFocused(pin)).to.be.true;
+
+        await press('ArrowUp');
+        expect(isFocused(items[0])).to.be.true;
+      });
+
+      it('leaves the arrow keys to a text field', async () => {
+        items[1].focus();
+        await press('ArrowRight');
+        expect(isFocused(note)).to.be.true;
+
+        for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']) {
+          await press(key);
+          expect(isFocused(note)).to.be.true;
+        }
+      });
+
+      it('leaves the arrow keys to a widget with an arrow-key role', async () => {
+        const slider = document.createElement('div');
+        Object.assign(slider, { role: 'slider', ariaLabel: 'Volume' });
+        slider.tabIndex = 0;
+        items[2].append(slider);
+        await settle();
+        slider.focus();
+
+        expect(simulateCancelableKeydown(slider, 'ArrowRight')).to.be.false;
+        expect(simulateCancelableKeydown(slider, 'ArrowDown')).to.be.false;
+        expect(isFocused(slider)).to.be.true;
+      });
+
+      it('leaves the arrow keys to a component whose role comes from its internals', async () => {
+        const tag = defineCE(
+          class extends LitElement {
+            constructor() {
+              super();
+              addInternalsController(this, { initialARIA: { role: 'slider' } });
+            }
+          }
+        );
+        const widget = document.createElement(tag);
+        widget.tabIndex = 0;
+        items[2].append(widget);
+        await settle();
+        widget.focus();
+
+        expect(simulateCancelableKeydown(widget, 'ArrowDown')).to.be.false;
+        expect(simulateCancelableKeydown(widget, 'ArrowRight')).to.be.false;
+        expect(isFocused(widget)).to.be.true;
+      });
+
+      it('leaves alone a key that a control handled', () => {
+        remove.addEventListener('keydown', (event) => event.preventDefault());
+        remove.focus();
+
+        simulateCancelableKeydown(remove, 'ArrowRight');
+        simulateCancelableKeydown(remove, 'Escape');
+        expect(isFocused(remove)).to.be.true;
+      });
+
+      it('returns from a control to its row on Escape and on F2', async () => {
+        for (const key of ['Escape', 'F2']) {
+          link.focus();
+          expect(simulateCancelableKeydown(link, key)).to.be.true;
+          expect(isFocused(items[0])).to.be.true;
+        }
+
+        items[1].focus();
+        await press('ArrowRight');
+        await press('Escape');
+        expect(isFocused(items[1])).to.be.true;
+      });
+
+      it('lets an open popup close on Escape, and returns to the row on the next Escape', async () => {
+        const select = document.createElement('igc-select');
+        select.setAttribute('label', 'Status');
+        select.append(document.createElement('igc-select-item'));
+        items[2].append(select);
+        await settle();
+        items[2].focus();
+
+        await press('ArrowRight');
+        await select.show();
+        await press('Escape');
+        await waitUntil(() => !select.open);
+        expect(isFocused(select)).to.be.true;
+
+        await press('Escape');
+        expect(isFocused(items[2])).to.be.true;
+      });
+
+      it('clicks the row on Enter and on Space, but not from a control', () => {
+        const click = spy();
+        items[0].addEventListener('click', click);
+
+        pressOnFocused('Enter');
+        pressOnFocused(' ');
+        expect(click.callCount).to.equal(2);
+
+        remove.focus();
+        pressOnFocused('Enter');
+        pressOnFocused(' ');
+        expect(click.callCount).to.equal(2);
+      });
+
+      it('searches the rows by type-ahead, but not from a control', () => {
+        pressOnFocused('b');
+        expect(isFocused(items[1])).to.be.true;
+
+        remove.focus();
+        pressOnFocused('a');
+        expect(isFocused(remove)).to.be.true;
+      });
+    });
+
+    describe('Focus', () => {
+      beforeEach(async () => {
+        await createContacts();
+      });
+
+      it('makes the row of a focused control the tab stop', async () => {
+        pin.focus();
+        await settle();
+
+        expect(tabIndexes()).to.eql(['-1', '0', '-1']);
+      });
+
+      it('keeps the row of a control that keeps the focus while the window loses it', async () => {
+        remove.focus();
+        simulateFocusOut(remove);
+        await settle();
+        items[0].remove();
+        await settle();
+
+        expect(isFocused(items[1])).to.be.true;
+      });
+
+      it('moves the focus to the next row when a control removes its row', async () => {
+        remove.addEventListener('click', () => items[0].remove());
+        remove.focus();
+        simulateClick(remove);
+        await settle();
+
+        expect(isFocused(items[1])).to.be.true;
+      });
+    });
+
+    describe('Ownership', () => {
+      it('navigates the rows and the controls inside wrapper elements', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <div>
+              <igc-list-item>A <button>Edit</button></igc-list-item>
+            </div>
+            <div><igc-list-item>B</igc-list-item></div>
+          </igc-list>
+        `);
+        const button = list.querySelector('button')!;
+
+        expect(aria(items[1], 'role')).to.equal('row');
+        expect(button.getAttribute('tabindex')).to.equal('-1');
+
+        items[0].focus();
+        pressOnFocused('ArrowRight');
+        expect(isFocused(button)).to.be.true;
+
+        pressOnFocused('ArrowDown');
+        expect(isFocused(items[1])).to.be.true;
+      });
+
+      it('treats a nested list that navigates as one control', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <span slot="title">Kate</span>
+              <igc-list navigation="listbox" aria-label="Tags">
+                <igc-list-item>Design</igc-list-item>
+                <igc-list-item>Code</igc-list-item>
+              </igc-list>
+              <button slot="end">Delete</button>
+            </igc-list-item>
+            <igc-list-item>Bob</igc-list-item>
+          </igc-list>
+        `);
+        const [row, design, code, bob] = items;
+        const nested = list.querySelector('igc-list')!;
+        const button = list.querySelector('button')!;
+
+        expect(tabIndexes()).to.eql(['0', '0', '-1', '-1']);
+        expect(nested.hasAttribute('tabindex')).to.be.false;
+        expect(button.getAttribute('tabindex')).to.equal('-1');
+
+        row.focus();
+        await press('ArrowRight');
+        expect(isFocused(design)).to.be.true;
+
+        // Up and Down stay in the nested list, also at its ends.
+        await press('ArrowDown');
+        await press('ArrowDown');
+        expect(isFocused(code)).to.be.true;
+
+        await press('ArrowUp');
+        await press('ArrowUp');
+        expect(isFocused(design)).to.be.true;
+
+        await press('ArrowLeft');
+        expect(isFocused(row)).to.be.true;
+
+        await press('ArrowLeft');
+        expect(isFocused(button)).to.be.true;
+
+        await press('ArrowLeft');
+        expect(isFocused(design)).to.be.true;
+
+        await press('Escape');
+        expect(isFocused(row)).to.be.true;
+        expect(isFocused(bob)).to.be.false;
+      });
+
+      it('treats a static nested list as content', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <igc-list>
+                <igc-list-item><button>Open</button></igc-list-item>
+              </igc-list>
+            </igc-list-item>
+          </igc-list>
+        `);
+        const button = list.querySelector('button')!;
+
+        expect(button.getAttribute('tabindex')).to.equal('-1');
+
+        items[0].focus();
+        pressOnFocused('ArrowRight');
+        expect(isFocused(button)).to.be.true;
+      });
+    });
+
+    describe('Empty list', () => {
+      it('shows the empty content as a row with one cell', async () => {
+        await create(html`
+          <igc-list navigation="grid" aria-label="Contacts">
+            <span slot="empty">No results</span>
+          </igc-list>
+        `);
+        const cell =
+          list.renderRoot.querySelector('slot[name="empty"]')!.parentElement!;
+
+        expect(cell.getAttribute('role')).to.equal('gridcell');
+        expect(cell.parentElement!.getAttribute('role')).to.equal('row');
+        expect(list.getAttribute('tabindex')).to.equal('0');
+      });
+
+      it('moves the focus to the rows that arrive while it has the focus', async () => {
+        await create(html`<igc-list navigation="grid"></igc-list>`);
+        const item = document.createElement('igc-list-item');
+        item.textContent = 'Kate';
+        list.focus();
+
+        list.append(item);
+        await settle();
+
+        expect(isFocused(item)).to.be.true;
+        expect(aria(item, 'role')).to.equal('row');
+      });
+    });
+
+    describe('Change of the navigation', () => {
+      it('turns into a listbox', async () => {
+        await createContacts();
+
+        list.navigation = 'listbox';
+        await settle();
+
+        expect(aria(list, 'role')).to.equal('listbox');
+        expect(aria(items[0], 'role')).to.equal('option');
+        expect(aria(items[0], 'ariaSelected')).to.equal('false');
+        expect(cellOf(items[0])).to.be.null;
+        expect(link.hasAttribute('tabindex')).to.be.false;
+
+        items[0].focus();
+        pressOnFocused('ArrowRight');
+        expect(isFocused(items[0])).to.be.true;
       });
     });
   });
