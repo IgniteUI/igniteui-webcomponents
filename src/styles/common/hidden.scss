@@ -1,0 +1,6 @@
+// A component `display` rule overrides `hidden`. `until-found` keeps its box for
+// find-in-page; a browser without it uses its own `[hidden]` rule.
+:host([hidden]),
+[hidden]:not([hidden='until-found' i]) {
+    display: none !important;
+}

@@ -127,6 +127,16 @@ describe('Theme Provider', () => {
     expect(computedStyle.display).to.equal('contents');
   });
 
+  it('hides its content with `hidden`', async () => {
+    const el = await fixture<IgcThemeProviderComponent>(
+      html`<igc-theme-provider hidden
+        ><div id="content">Test Content</div></igc-theme-provider
+      >`
+    );
+
+    expect(el.querySelector('#content')!.checkVisibility()).to.be.false;
+  });
+
   describe('Context Provider', () => {
     it('should provide theme context to descendant components', async () => {
       const tag = unsafeStatic(consumerTag);

@@ -42,6 +42,7 @@
 |       1 | 2026-09-21 | Initial specification                                      |
 |       2 | 2026-10-07 | Describe the theme variables that the provider keeps as-is |
 |       3 | 2026-10-21 | API descriptions aligned with the JSDoc.                   |
+|       4 | 2026-11-27 | `hidden` hides the provider and its content                |
 
 ## Overview
 
@@ -233,17 +234,18 @@ None applicable.
 1. The component passes the accessibility audit and is initialized with its default values.
 2. The `theme` and `variant` properties are accepted through their attributes and reflected back when they change.
 3. Projected content is rendered, and the host has `display: contents`.
+4. `hidden` hides the projected content.
 
 ### Context provider
 
-4. The theme context reaches the descendant components.
-5. The context is updated when the `theme` and the `variant` properties change.
-6. Nested providers with different themes each apply to their own subtree.
-7. Descendants added at runtime receive the context.
+5. The theme context reaches the descendant components.
+6. The context is updated when the `theme` and the `variant` properties change.
+7. Nested providers with different themes each apply to their own subtree.
+8. Descendants added at runtime receive the context.
 
 ### Theme and variant combinations
 
-8. Every combination of the four themes and the two variants is supported.
+9. Every combination of the four themes and the two variants is supported.
 
 ### Not covered by the suite
 
