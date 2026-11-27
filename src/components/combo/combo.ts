@@ -441,7 +441,7 @@ export default class IgcComboComponent<
    * groups keep the order of the data source.
    * @attr group-sorting
    * @default "asc"
-   * @type {"asc" | "desc" | "none"}
+   * @type {'asc' | 'desc' | 'none'}
    */
   @property({ attribute: 'group-sorting' })
   public groupSorting: GroupingDirection = 'asc';

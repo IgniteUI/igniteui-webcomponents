@@ -125,10 +125,10 @@ const metadata: Meta<IgcRangeSliderComponent> = {
       table: { defaultValue: { summary: '0' } },
     },
     tickOrientation: {
-      type: { name: 'enum', value: ['start', 'end', 'mirror'] },
+      type: { name: 'enum', value: ['end', 'mirror', 'start'] },
       description:
         'Where the ticks are drawn: before the track (`start`), after it (`end`),\nor on both sides (`mirror`).',
-      options: ['start', 'end', 'mirror'],
+      options: ['end', 'mirror', 'start'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
     },
@@ -249,7 +249,7 @@ interface IgcRangeSliderArgs {
    * Where the ticks are drawn: before the track (`start`), after it (`end`),
    * or on both sides (`mirror`).
    */
-  tickOrientation: 'start' | 'end' | 'mirror';
+  tickOrientation: 'end' | 'mirror' | 'start';
   /** Whether the labels of the primary ticks are hidden. */
   hidePrimaryLabels: boolean;
   /** Whether the labels of the secondary ticks are hidden. */

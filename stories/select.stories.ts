@@ -87,16 +87,16 @@ const metadata: Meta<IgcSelectComponent> = {
       type: {
         name: 'enum',
         value: [
-          'bottom',
           'top',
           'top-start',
           'top-end',
+          'bottom',
           'bottom-start',
           'bottom-end',
-          'left',
           'right',
           'right-start',
           'right-end',
+          'left',
           'left-start',
           'left-end',
         ],
@@ -104,16 +104,16 @@ const metadata: Meta<IgcSelectComponent> = {
       description:
         'The preferred placement of the select dropdown around its input.',
       options: [
-        'bottom',
         'top',
         'top-start',
         'top-end',
+        'bottom',
         'bottom-start',
         'bottom-end',
-        'left',
         'right',
         'right-start',
         'right-end',
+        'left',
         'left-start',
         'left-end',
       ],
@@ -208,16 +208,16 @@ interface IgcSelectArgs {
   placeholder: string;
   /** The preferred placement of the select dropdown around its input. */
   placement:
-    | 'bottom'
     | 'top'
     | 'top-start'
     | 'top-end'
+    | 'bottom'
     | 'bottom-start'
     | 'bottom-end'
-    | 'left'
     | 'right'
     | 'right-start'
     | 'right-end'
+    | 'left'
     | 'left-start'
     | 'left-end';
   /**

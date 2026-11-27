@@ -78,9 +78,9 @@ const metadata: Meta<IgcCarouselComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     indicatorsOrientation: {
-      type: { name: 'enum', value: ['start', 'end'] },
+      type: { name: 'enum', value: ['end', 'start'] },
       description: 'The position of the indicator controls (dots).',
-      options: ['start', 'end'],
+      options: ['end', 'start'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'end' } },
     },
@@ -152,7 +152,7 @@ interface IgcCarouselArgs {
   /** Whether the carousel has vertical alignment. */
   vertical: boolean;
   /** The position of the indicator controls (dots). */
-  indicatorsOrientation: 'start' | 'end';
+  indicatorsOrientation: 'end' | 'start';
   /**
    * The format of the `aria-label` of the carousel indicators.
    * Each `{0}` changes to the number of the corresponding slide.

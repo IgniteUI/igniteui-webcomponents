@@ -11,7 +11,7 @@ defineComponents(IgcDropdownComponent);
 
 ## Properties
 
-- `placement`: `'bottom' | 'top' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'left' | 'right' | 'right-start' | 'right-end' | 'left-start' | 'left-end'`. Default: `'bottom-start'`. Attribute: `placement`.
+- `placement`: `'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'right' | 'right-start' | 'right-end' | 'left' | 'left-start' | 'left-end'`. Default: `'bottom-start'`. Attribute: `placement`.
   The preferred placement of the component around the target element.
 - `flip`: `boolean`. Default: `false`. Attribute: `flip`.
   Whether the dropdown flips to the opposite side of the target when it does not fit in the visible area.

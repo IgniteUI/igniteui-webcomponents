@@ -128,10 +128,10 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'text',
     },
     groupSorting: {
-      type: { name: 'enum', value: ['none', 'asc', 'desc'] },
+      type: { name: 'enum', value: ['asc', 'desc', 'none'] },
       description:
         'The sort order of the groups, by their group value. With `none`, the\ngroups keep the order of the data source.',
-      options: ['none', 'asc', 'desc'],
+      options: ['asc', 'desc', 'none'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'asc' } },
     },
@@ -295,7 +295,7 @@ interface IgcComboArgs {
    * The sort order of the groups, by their group value. With `none`, the
    * groups keep the order of the data source.
    */
-  groupSorting: 'none' | 'asc' | 'desc';
+  groupSorting: 'asc' | 'desc' | 'none';
   /**
    * Whether the search input shows the icon that toggles case-sensitive
    * filtering. In remote filtering mode, read `filteringOptions.caseSensitive`

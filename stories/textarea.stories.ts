@@ -92,10 +92,10 @@ const metadata: Meta<IgcTextareaComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     resize: {
-      type: { name: 'enum', value: ['vertical', 'none', 'auto'] },
+      type: { name: 'enum', value: ['vertical', 'auto', 'none'] },
       description:
         'How the user can resize the control.\nWith `auto`, the height of the control fits its content and the resize handle is hidden.',
-      options: ['vertical', 'none', 'auto'],
+      options: ['vertical', 'auto', 'none'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'vertical' } },
     },
@@ -213,7 +213,7 @@ interface IgcTextareaArgs {
    * How the user can resize the control.
    * With `auto`, the height of the control fits its content and the resize handle is hidden.
    */
-  resize: 'vertical' | 'none' | 'auto';
+  resize: 'vertical' | 'auto' | 'none';
   /**
    * The number of visible text lines of the control. As in the native textarea, a value
    * less than 1 shows 2 lines.
