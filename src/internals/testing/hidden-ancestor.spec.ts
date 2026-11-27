@@ -11,6 +11,7 @@ import {
   partLabel,
   shadowRootsIn,
 } from './helpers.spec.js';
+import { instantMarksEnded } from './value-state.spec.js';
 
 function visibilityTransitionsIn(container: HTMLElement): string[] {
   const animations = [
@@ -55,6 +56,7 @@ export function runHiddenAncestorTests(template: TemplateResult): void {
           const container = await fixture<HTMLElement>(
             html`<div>${template}</div>`
           );
+          await instantMarksEnded(container);
           await enterState(state, container.firstElementChild as HTMLElement);
           await nextFrame();
 
