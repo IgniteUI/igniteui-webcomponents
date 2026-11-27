@@ -5,7 +5,11 @@ import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js'
 import { styles as fluent } from '../../styles/themes/light/fluent.css.js';
 import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import { styles as material } from '../../styles/themes/light/material.css.js';
-import { shadowRootsIn, withDocumentSheets } from './helpers.spec.js';
+import {
+  partLabel,
+  shadowRootsIn,
+  withDocumentSheets,
+} from './helpers.spec.js';
 
 /** The test page has no palette, so no color changes without one. */
 const PALETTES = { bootstrap, fluent, indigo, material };
@@ -16,8 +20,7 @@ export function transitionsIn(container: Element): string[] {
     .flatMap((root) => getCSSTransitions(root, { subtree: true }))
     .map(({ effect, transitionProperty }) => {
       const { target, pseudoElement } = effect as KeyframeEffect;
-      const part = target?.getAttribute('part');
-      return `${target?.localName}${part ? `[part="${part}"]` : ''}${pseudoElement ?? ''} ${transitionProperty}`;
+      return `${partLabel(target!, pseudoElement)} ${transitionProperty}`;
     });
 }
 

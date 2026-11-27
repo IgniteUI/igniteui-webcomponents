@@ -1,8 +1,36 @@
-import { expect, fixture } from '@open-wc/testing';
+import { expect, fixture, nextFrame } from '@open-wc/testing';
 import { emulateMedia, resetMouse } from '@web/test-runner-commands';
 import type { LitElement, TemplateResult } from 'lit';
-import { allowMotion, painted } from './helpers.spec.js';
+import { allowMotion, elementsIn, painted } from './helpers.spec.js';
 import { transitionsIn, withTheme } from './motion.spec.js';
+
+/** The mark ends in the first frame with no change from code. */
+const MAX_INSTANT_FRAMES = 10;
+
+function hasInstantMark(element: Element): boolean {
+  return (
+    element.hasAttribute('data-instant') ||
+    element.matches(':state(ig-instant)')
+  );
+}
+
+/**
+ * Waits until no element in `container` has the instant mark of
+ * `#animations/value-state.js`, which turns its transitions off. Fails when
+ * the mark stays on.
+ */
+export async function instantMarksEnded(container: Element): Promise<void> {
+  for (
+    let frame = 0;
+    [container, ...elementsIn(container)].some(hasInstantMark);
+    frame++
+  ) {
+    expect(frame, 'frames with an instant mark').to.be.below(
+      MAX_INSTANT_FRAMES
+    );
+    await nextFrame();
+  }
+}
 
 export interface ValueStateMotionConfig<T extends LitElement> {
   /** The control before the change. */

@@ -1,34 +1,15 @@
-import { expect, fixture } from '@open-wc/testing';
-import { spy } from 'sinon';
-import { defineAllComponents } from '#internals/definitions/defineAllComponents.js';
-import { isUnderPageLayer } from '#internals/testing/helpers.spec.js';
+import { expect } from '@open-wc/testing';
+import {
+  definedTags,
+  fixtureTag,
+} from '#internals/testing/defined-tags.spec.js';
+import {
+  elementsIn,
+  isUnderPageLayer,
+  partLabel,
+} from '#internals/testing/helpers.spec.js';
 import { configureTheme } from '#theming/config.js';
 import { THEMES } from '#theming/types.js';
-
-/** Tags that render only inside a parent, mounted in that parent. */
-const PARENTS = new Map([
-  ['igc-message-attachments', 'igc-chat'],
-  ['igc-tab', 'igc-tabs'],
-]);
-
-/** The tags that `defineAllComponents` defines, with their dependencies. */
-function definedTags(): string[] {
-  const define = spy(customElements, 'define');
-
-  try {
-    defineAllComponents();
-    return define.args.map(([tag]) => tag);
-  } finally {
-    define.restore();
-  }
-}
-
-function zIndexedElementsIn(root: ShadowRoot): Element[] {
-  return Array.from(root.querySelectorAll('*')).flatMap((element) => [
-    ...(getComputedStyle(element).zIndex === 'auto' ? [] : [element]),
-    ...(element.shadowRoot ? zIndexedElementsIn(element.shadowRoot) : []),
-  ]);
-}
 
 /** Whether the point that `isUnderPageLayer` hit-tests lies in `box`, where the page layer goes. */
 function isOver(box: DOMRect, part: Element): boolean {
@@ -46,10 +27,6 @@ function isOver(box: DOMRect, part: Element): boolean {
   );
 }
 
-function label(element: Element): string {
-  return `${element.localName}[part="${element.getAttribute('part')}"]`;
-}
-
 /**
  * Hit tests do not reach pseudo-elements, so the z-index of `::before` and
  * `::after` is not checked.
@@ -65,19 +42,16 @@ describe('z-index containment', () => {
 
       for (const tag of tags) {
         it(`paints the parts of <${tag}> under an earlier page layer`, async () => {
-          const parent = PARENTS.get(tag);
-          const element = await fixture<HTMLElement>(
-            parent
-              ? `<${parent}><${tag}></${tag}></${parent}>`
-              : `<${tag}></${tag}>`
-          );
-          const { shadowRoot } = parent ? element.querySelector(tag)! : element;
-          const box = element.parentElement!.getBoundingClientRect();
+          const { container, element } = await fixtureTag(tag);
+          const box = container.parentElement!.getBoundingClientRect();
 
-          const leaks = (shadowRoot ? zIndexedElementsIn(shadowRoot) : [])
+          const leaks = (
+            element.shadowRoot ? elementsIn(element.shadowRoot) : []
+          )
+            .filter((part) => getComputedStyle(part).zIndex !== 'auto')
             .filter((part) => isOver(box, part))
-            .filter((part) => !isUnderPageLayer(element, part))
-            .map(label);
+            .filter((part) => !isUnderPageLayer(container, part))
+            .map((part) => partLabel(part));
 
           expect(leaks).to.eql([]);
         });
