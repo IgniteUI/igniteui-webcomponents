@@ -21,13 +21,13 @@ defineComponents(IgcStepperComponent);
 - `contentTop`: `boolean`. Default: `false`. Attribute: `content-top`, reflected.
   Whether the content is displayed above the steps. Applies only to the
   horizontal orientation.
-- `verticalAnimation`: `'fade' | 'none' | 'grow'`. Default: `'grow'`. Attribute: `vertical-animation`.
+- `verticalAnimation`: `'grow' | 'fade' | 'none'`. Default: `'grow'`. Attribute: `vertical-animation`.
   The animation type when in vertical mode.
 - `horizontalAnimation`: `'slide' | 'fade' | 'none'`. Default: `'slide'`. Attribute: `horizontal-animation`.
   The animation type when in horizontal mode.
 - `animationDuration`: `number`. Default: `320`. Attribute: `animation-duration`.
   The animation duration in either vertical or horizontal mode in milliseconds.
-- `titlePosition`: `'bottom' | 'top' | 'start' | 'end' | 'auto'`. Default: `'auto'`. Attribute: `title-position`.
+- `titlePosition`: `'auto' | 'bottom' | 'top' | 'end' | 'start'`. Default: `'auto'`. Attribute: `title-position`.
   The position of the steps title.
 
 ## Methods

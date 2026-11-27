@@ -534,6 +534,16 @@ describe('Tree', () => {
         'Tree Item 2',
       ]);
     });
+
+    it('hides an item with `hidden`', async () => {
+      tree = await TreeTestFunctions.createTreeElement(simpleTree);
+      const [item] = tree.items;
+
+      item.hidden = true;
+      await elementUpdated(item);
+
+      expect(item.checkVisibility()).to.be.false;
+    });
   });
 
   describe('Items far from the view', () => {

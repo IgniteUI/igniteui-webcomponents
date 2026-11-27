@@ -91,6 +91,7 @@
 |      31 | 2026-11-25 | While the user types, an incomplete or invalid end keeps the end that the calendar selects, and a blank end drops out, in both layouts; the calendar shows the value again when the edit ends, and with two inputs a new range from code keeps the edit of an end whose date stays; a complete range parses strictly when the separator holds the prompt |
 |      32 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
 |      33 | 2026-11-25 | The first render shows the slotted content |
+|      34 | 2026-11-27 | The focused single input shows every digit of a year past 9999 or before year 1, for each end; the calendar stays in the years 1 to 9999 |
 
 ## Overview
 
@@ -750,6 +751,8 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 28. Initialization (a literal separator and a widened year format), range parsing, range formatting, part queries,
     spinning, prompt updates and mask updates. A complete range parses strictly when the separator holds the prompt.
+    Each end widens its year part for a year past 9999 alone, and a spin into the year range narrows it. In the
+    single input, a spin that narrows the start year keeps it selected.
 
 ### Range mask parser properties
 

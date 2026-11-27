@@ -22,7 +22,7 @@ defineComponents(IgcTabsComponent);
   the right in a right-to-left layout. In a column, the Up and Down arrow keys move
   between the tabs. When the headers do not fit in the height of the tabs, scroll
   buttons above and below them scroll the column.
-- `activation`: `'manual' | 'auto'`. Default: `'auto'`. Attribute: `activation`.
+- `activation`: `'auto' | 'manual'`. Default: `'auto'`. Attribute: `activation`.
   The activation behavior of the tabs.
 
   With `auto`, a tab is selected when it receives keyboard focus.

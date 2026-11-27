@@ -36,6 +36,20 @@ describe('Async context consumer', () => {
 
   afterEach(() => sinon.restore());
 
+  it('gets the context once at connect, before its first update', async () => {
+    const providerTag = 'igc-async-consumer-test-ready-provider';
+    defineProvider(providerTag);
+
+    const container = await fixture<HTMLElement>('<div></div>');
+    const provider = document.createElement(providerTag);
+    const consumer = document.createElement(consumerTag) as Consumer;
+    provider.append(consumer);
+    container.append(provider);
+
+    expect(consumer.received).to.eql(['value']);
+    expect(consumer.hasUpdated).to.be.false;
+  });
+
   it('answers the waiting consumers of a provider that the browser defines later', async () => {
     const providerTag = 'igc-async-consumer-test-provider';
     const consumer = `<${consumerTag}></${consumerTag}>`;

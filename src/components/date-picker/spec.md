@@ -89,6 +89,8 @@
 |      24 | 2026-11-25 | The calendar selects a complete typed date, keeps the last selection while the date is incomplete or invalid, and clears it for an empty input; the calendar shows the value again when the edit ends; the input and change events of slotted content go on to the application |
 |      25 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
 |      26 | 2026-11-25 | The first render shows the slotted content |
+|      27 | 2026-11-27 | `inputFormat` and `displayFormat` return the locale formats before the first render |
+|      28 | 2026-11-27 | The focused input shows every digit of a year past 9999 or before year 1; the calendar stays in the years 1 to 9999 |
 
 ## Overview
 
@@ -730,7 +732,8 @@ fade, except in the dialog mode transition specs.
 19. Active date - defaults to the current date, falls back to the value when only the value is set, and is settable.
 20. Localization - sets `inputFormat` and `displayFormat`, applies the predefined display formats, defaults
     `inputFormat` from `Intl.DateTimeFormat` for the locale, and uses the locale format for `displayFormat` when it
-    is not defined.
+    is not defined. Before the first render, both properties return the locale formats, and a min/max message
+    shows its bound in them.
 21. Sets the underlying input into readonly mode in dialog mode.
 22. Derives the calendar week start from the locale when `week-start` is not set.
 

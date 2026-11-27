@@ -8,6 +8,7 @@ import {
   DAYS_IN_WEEK,
   type DayParameter,
   toCalendarDay,
+  YEAR_RANGE,
 } from '#internals/date/model.js';
 import { getOrCreateForLocale } from '#internals/i18n/locale.js';
 import { firstOf, isEmpty, lastOf } from '#internals/utils/arrays.js';
@@ -27,6 +28,12 @@ import {
 export const MONTHS_PER_ROW = 3;
 export const YEARS_PER_ROW = 3;
 export const YEARS_PER_PAGE = 15;
+
+/** The first and last dates of the year range. */
+export const YEAR_RANGE_DAYS = {
+  first: new CalendarDay({ year: YEAR_RANGE.min, month: 0, date: 1 }),
+  last: new CalendarDay({ year: YEAR_RANGE.max, month: 11, date: 31 }),
+} as const;
 
 const CALENDAR_CELLS = 42; // 6 weeks × 7 days
 const WEEK_DAYS_MAP = {
@@ -127,7 +134,8 @@ export function isDatePartBefore(
   return indexOf(first) < indexOf(second);
 }
 
-const monthIndex = (value: DayParameter) =>
+/** The months from year 0 to the month of `value`. */
+export const monthIndex = (value: DayParameter): number =>
   value instanceof Date
     ? value.getFullYear() * 12 + value.getMonth()
     : value.year * 12 + value.month;
@@ -240,4 +248,15 @@ export function createDateConstraints(
     ...(max ? [{ type: DateRangeType.After, dateRange: [max] }] : []),
     ...(disabledDates ?? []),
   ];
+}
+
+/** The disabled dates and the dates outside the year range: the dates the user cannot select. */
+export function unreachableDates(
+  disabledDates?: DateRangeDescriptor[]
+): DateRangeDescriptor[] {
+  return createDateConstraints(
+    YEAR_RANGE_DAYS.first.native,
+    YEAR_RANGE_DAYS.last.native,
+    disabledDates
+  );
 }

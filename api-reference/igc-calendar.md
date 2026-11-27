@@ -41,7 +41,7 @@ defineComponents(IgcCalendarComponent);
 - `activeDate`: `Date`. Attribute: `active-date`.
   The date that the calendar shows and highlights. It changes when the user navigates.
   Without it, the calendar starts at its value, or at the current date when there is no value.
-- `selection`: `'multiple' | 'single' | 'range'`. Default: `'single'`. Attribute: `selection`.
+- `selection`: `'single' | 'multiple' | 'range'`. Default: `'single'`. Attribute: `selection`.
   The selection mode of the calendar: `single`, `multiple` or `range`.
   A change after the first render clears the value and the values.
 - `showWeekNumbers`: `boolean`. Default: `false`. Attribute: `show-week-numbers`, reflected.

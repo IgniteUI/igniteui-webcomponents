@@ -76,10 +76,10 @@ const metadata: Meta<IgcTabsComponent> = {
       table: { defaultValue: { summary: 'top' } },
     },
     activation: {
-      type: { name: 'enum', value: ['manual', 'auto'] },
+      type: { name: 'enum', value: ['auto', 'manual'] },
       description:
         'The activation behavior of the tabs.\n\nWith `auto`, a tab is selected when it receives keyboard focus.\nWith `manual`, a tab is selected only on click, or on Enter or Space.',
-      options: ['manual', 'auto'],
+      options: ['auto', 'manual'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'auto' } },
     },
@@ -112,7 +112,7 @@ interface IgcTabsArgs {
    * With `auto`, a tab is selected when it receives keyboard focus.
    * With `manual`, a tab is selected only on click, or on Enter or Space.
    */
-  activation: 'manual' | 'auto';
+  activation: 'auto' | 'manual';
 }
 type Story = StoryObj<IgcTabsArgs>;
 

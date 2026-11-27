@@ -10,8 +10,9 @@ import report from './report.mjs';
  * `spec.md` and its spec files. Warns only; it never fails the build.
  *
  * - A `###` heading with no matching `describe` block, and a `describe` block
- *   with no heading. The blocks are the children of the single root
- *   `describe` of a spec file, or its top-level blocks when it has several.
+ *   with no heading, in the spec files of the component directory tree. The
+ *   blocks are the children of a single root `describe` with nested blocks,
+ *   else the top-level blocks.
  *   Titles match when one contains the other after normalizing. A heading
  *   that names a shared suite of `src/internals/testing` counts as covered,
  *   and a "Not covered…" heading is skipped.
@@ -70,7 +71,8 @@ function describeTitles(file, text) {
   visit(source, 0);
 
   const roots = blocks.filter((block) => block.depth === 0);
-  const level = roots.length === 1 ? 1 : 0;
+  const level =
+    roots.length === 1 && blocks.some((block) => block.depth === 1) ? 1 : 0;
   return blocks
     .filter((block) => block.depth === level)
     .map((block) => block.title);
@@ -143,7 +145,7 @@ for await (const specMd of glob('src/components/*/spec.md', { cwd: ROOT })) {
   /** @type {string[]} */
   const titles = [];
 
-  for await (const spec of glob(`${dir}/*.spec.ts`, { cwd: ROOT })) {
+  for await (const spec of glob(`${dir}/**/*.spec.ts`, { cwd: ROOT })) {
     titles.push(
       ...describeTitles(spec, await readFile(path.join(ROOT, spec), 'utf8'))
     );

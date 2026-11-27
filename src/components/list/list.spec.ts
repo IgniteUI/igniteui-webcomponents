@@ -63,15 +63,13 @@ describe('List', () => {
 
   /** Lets the list, its items and their controls take in the DOM changes. */
   async function settle(): Promise<void> {
-    for (let i = 0; i < 3; i++) {
-      await list.updateComplete;
-      await Promise.all(
-        Array.from(
-          list.querySelectorAll('*'),
-          (element) => (element as Partial<LitElement>).updateComplete
-        )
-      );
-    }
+    await list.updateComplete;
+    await Promise.all(
+      Array.from(
+        list.querySelectorAll('*'),
+        (element) => (element as Partial<LitElement>).updateComplete
+      )
+    );
   }
 
   async function create(template: TemplateResult): Promise<void> {

@@ -1,0 +1,8 @@
+{
+  // The checker program of `cem.config.mjs`: the sources with the root compiler
+  // options, without the specs, whose literal types can change the member order
+  // of a public union in the manifest.
+  "extends": "../tsconfig.json",
+  "include": ["../src/**/*.ts"],
+  "exclude": ["../src/**/*.spec.ts", "../src/**/*.stories.ts"]
+}

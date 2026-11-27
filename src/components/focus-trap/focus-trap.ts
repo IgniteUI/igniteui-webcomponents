@@ -4,6 +4,7 @@ import { property, state } from 'lit/decorators.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { getFocusableElements } from '#internals/utils/dom.js';
 import { addSafeEventListener } from '#internals/utils/events.js';
+import { styles as hidden } from '../../styles/common/hidden.css.js';
 
 /* blazorSuppress */
 /**
@@ -14,11 +15,14 @@ import { addSafeEventListener } from '#internals/utils/events.js';
  */
 export default class IgcFocusTrapComponent extends LitElement {
   public static readonly tagName = 'igc-focus-trap';
-  public static override styles = css`
-    :host {
-      display: contents;
-    }
-  `;
+  public static override styles = [
+    hidden,
+    css`
+      :host {
+        display: contents;
+      }
+    `,
+  ];
 
   /* blazorSuppress */
   public static register() {

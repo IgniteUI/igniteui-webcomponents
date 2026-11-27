@@ -108,10 +108,10 @@ const metadata: Meta<IgcCalendarComponent> = {
       control: 'date',
     },
     selection: {
-      type: { name: 'enum', value: ['multiple', 'single', 'range'] },
+      type: { name: 'enum', value: ['single', 'multiple', 'range'] },
       description:
         'The selection mode of the calendar: `single`, `multiple` or `range`.\nA change after the first render clears the value and the values.',
-      options: ['multiple', 'single', 'range'],
+      options: ['single', 'multiple', 'range'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'single' } },
     },
@@ -197,7 +197,7 @@ interface IgcCalendarArgs {
    * The selection mode of the calendar: `single`, `multiple` or `range`.
    * A change after the first render clears the value and the values.
    */
-  selection: 'multiple' | 'single' | 'range';
+  selection: 'single' | 'multiple' | 'range';
   /** Whether the calendar shows the week numbers. */
   showWeekNumbers: boolean;
   /** The first day of the week. */

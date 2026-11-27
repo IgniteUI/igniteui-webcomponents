@@ -442,7 +442,7 @@ export function MaskBehaviorMixin<
       this._writeFrom('user', () => this._commitMaskedValue(value));
       this.requestUpdate();
 
-      if (range.start !== this._parser.mask.length) {
+      if (range.start !== this._parser.escapedMask.length) {
         this._emitInputEvent();
       }
 

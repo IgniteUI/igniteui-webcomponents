@@ -1227,7 +1227,7 @@
         "filtering-options": "FilteringOptions<T>",
         "group-key": "Keys<T> | string | undefined",
         "group-selection": "boolean",
-        "group-sorting": "\"asc\" | \"desc\" | \"none\" ('asc' | 'desc' | 'none')",
+        "group-sorting": "'asc' | 'desc' | 'none'",
         "invalid": "boolean",
         "label": "string | undefined",
         "loading": "boolean",
@@ -1261,7 +1261,7 @@
         "groupHeaderTemplate": "ComboGroupHeaderTemplate<T>",
         "groupKey": "Keys<T> | string | undefined",
         "groupSelection": "boolean",
-        "groupSorting": "\"asc\" | \"desc\" | \"none\" ('asc' | 'desc' | 'none')",
+        "groupSorting": "'asc' | 'desc' | 'none'",
         "invalid": "boolean",
         "itemTemplate": "ComboItemTemplate<T>",
         "label": "string | undefined",
@@ -1859,7 +1859,7 @@
         "show-week-numbers": "boolean",
         "value": "Date | null",
         "values": "Date[]",
-        "week-day-format": "'long' | 'short' | 'narrow' ('long' | 'narrow' | 'short')",
+        "week-day-format": "'long' | 'short' | 'narrow'",
         "week-start": "WeekDays ('friday' | 'monday' | 'saturday' | 'sunday' | 'thursday' | 'tuesday' | 'wednesday')"
       },
       "properties": {
@@ -1877,7 +1877,7 @@
         "static tagName": "readonly string",
         "value": "Date | null",
         "values": "Date[]",
-        "weekDayFormat": "'long' | 'short' | 'narrow' ('long' | 'narrow' | 'short')",
+        "weekDayFormat": "'long' | 'short' | 'narrow'",
         "weekStart": "WeekDays ('friday' | 'monday' | 'saturday' | 'sunday' | 'thursday' | 'tuesday' | 'wednesday')"
       },
       "methods": {
@@ -2656,11 +2656,11 @@
       "class": "IgcMonthsViewComponent",
       "attributes": {
         "locale": "string",
-        "month-format": "'numeric' | '2-digit' | 'long' | 'short' | 'narrow' ('2-digit' | 'long' | 'narrow' | 'numeric' | 'short')"
+        "month-format": "'numeric' | '2-digit' | 'long' | 'short' | 'narrow'"
       },
       "properties": {
         "locale": "string",
-        "monthFormat": "'numeric' | '2-digit' | 'long' | 'short' | 'narrow' ('2-digit' | 'long' | 'narrow' | 'numeric' | 'short')",
+        "monthFormat": "'numeric' | '2-digit' | 'long' | 'short' | 'narrow'",
         "static tagName": "readonly string",
         "value": "Date"
       },
@@ -4271,7 +4271,7 @@
       "class": "IgcVirtualScrollComponent",
       "attributes": {
         "estimated-item-size": "unknown",
-        "orientation": "'vertical' | 'horizontal' ('horizontal' | 'vertical')",
+        "orientation": "'vertical' | 'horizontal'",
         "over-scan": "number"
       },
       "properties": {
@@ -4280,7 +4280,7 @@
         "itemTemplate": "VirtualScrollItemTemplate<T> | null",
         "keyFunction": "VirtualScrollKeyFunction<T> | null",
         "layoutComplete": "readonly Promise<void>",
-        "orientation": "'vertical' | 'horizontal' ('horizontal' | 'vertical')",
+        "orientation": "'vertical' | 'horizontal'",
         "overScan": "number",
         "static tagName": "readonly string"
       },

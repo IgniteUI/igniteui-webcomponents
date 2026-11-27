@@ -17,7 +17,7 @@ defineComponents(IgcTooltipComponent);
   Whether to render an arrow indicator for the tooltip.
 - `offset`: `number`. Default: `6`. Attribute: `offset`.
   The offset of the tooltip from the anchor in pixels.
-- `placement`: `'bottom' | 'top' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'left' | 'right' | 'right-start' | 'right-end' | 'left-start' | 'left-end'`. Default: `'bottom'`. Attribute: `placement`.
+- `placement`: `'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'right' | 'right-start' | 'right-end' | 'left' | 'left-start' | 'left-end'`. Default: `'bottom'`. Attribute: `placement`.
   Where to place the tooltip relative to its anchor element.
 - `scrollStrategy`: `'scroll' | 'hide' | 'close'`. Default: `'hide'`. Attribute: `scroll-strategy`.
   The behavior of the tooltip when an ancestor scroll container scrolls.

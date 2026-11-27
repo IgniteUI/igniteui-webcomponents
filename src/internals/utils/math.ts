@@ -8,6 +8,19 @@ export function clamp(number: number, min: number, max: number): number {
   return Math.max(min, Math.min(number, max));
 }
 
+/**
+ * Clamps `number` to `[min, max]`, widened to include `current`: a value outside the
+ * range only moves toward it.
+ */
+export function clampToward(
+  number: number,
+  current: number,
+  min: number,
+  max: number
+): number {
+  return clamp(number, Math.min(current, min), Math.max(current, max));
+}
+
 /** Returns the number of decimal places of the given number. */
 export function numberOfDecimals(number: number): number {
   if (!Number.isFinite(number) || Number.isInteger(number)) {

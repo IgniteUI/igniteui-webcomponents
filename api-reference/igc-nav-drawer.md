@@ -24,7 +24,7 @@ defineComponents(IgcNavDrawerComponent);
 
 ## Properties
 
-- `position`: `'bottom' | 'top' | 'start' | 'end' | 'relative'`. Default: `'start'`. Attribute: `position`, reflected.
+- `position`: `'start' | 'end' | 'top' | 'bottom' | 'relative'`. Default: `'start'`. Attribute: `position`, reflected.
   The position of the drawer.
 
   - `start` - anchored to the inline-start edge (default).

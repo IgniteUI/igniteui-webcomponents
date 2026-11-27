@@ -56,6 +56,7 @@
 |       7 | 2026-11-12 | Find-in-page and links to an element expand the collapsed items above it |
 |       8 | 2026-11-12 | The children container of a collapsed item has `aria-hidden="true"` |
 |       9 | 2026-11-20 | A selection by the user animates the checkboxes of the items that it changes, also in a cascade; a selection from code shows at once |
+|      10 | 2026-11-27 | `hidden` hides an item |
 
 ## Overview
 
@@ -383,122 +384,123 @@ module with the fixtures, the selectors and the assertion helpers the other thre
    the tree has a scrollbar.
 10. Adding and removing items recomputes the collection of visible items.
 11. An item wrapped in another element is not recognized as a child.
+12. `hidden` hides an item.
 
 ### Expand and collapse
 
-12. `tree.expand()` and `tree.collapse()` apply to every item, disabled ones included, and their overloads apply
+13. `tree.expand()` and `tree.collapse()` apply to every item, disabled ones included, and their overloads apply
     only to the passed items.
-13. A click on the expand indicator toggles the item in both directions.
-14. Setting `expanded` and calling `expand()`, `collapse()` and `toggle()` change the state from code.
-15. With `toggleNodeOnClick`, a click on the item toggles it; without it, only the indicator does.
-16. A right click does not toggle an item, and neither does a click on its checkbox.
-17. Turning `toggleNodeOnClick` on or off at runtime keeps a single toggle per indicator click.
-18. `igcItemExpanding` and `igcItemCollapsing` can be canceled.
+14. A click on the expand indicator toggles the item in both directions.
+15. Setting `expanded` and calling `expand()`, `collapse()` and `toggle()` change the state from code.
+16. With `toggleNodeOnClick`, a click on the item toggles it; without it, only the indicator does.
+17. A right click does not toggle an item, and neither does a click on its checkbox.
+18. Turning `toggleNodeOnClick` on or off at runtime keeps a single toggle per indicator click.
+19. `igcItemExpanding` and `igcItemCollapsing` can be canceled.
 
 ### Single branch expand
 
-19. With `singleBranchExpand`, only one item per level stays expanded.
-20. Setting `active` expands the path to the item and keeps the other branches as they were.
-21. Expanding through the API does not collapse the currently expanded items.
-22. Turning the property on collapses everything except the ancestors of the active item.
+20. With `singleBranchExpand`, only one item per level stays expanded.
+21. Setting `active` expands the path to the item and keeps the other branches as they were.
+22. Expanding through the API does not collapse the currently expanded items.
+23. Turning the property on collapses everything except the ancestors of the active item.
 
 ### Disabled item
 
-23. A disabled item can still be selected, activated and expanded through the API.
-24. A disabled item takes no user interaction.
-25. <kbd>→</kbd> does not move the focus when every child of the expanded item is disabled, and moves it to the
+24. A disabled item can still be selected, activated and expanded through the API.
+25. A disabled item takes no user interaction.
+26. <kbd>→</kbd> does not move the focus when every child of the expanded item is disabled, and moves it to the
     first enabled child otherwise.
-26. <kbd>↑</kbd> and <kbd>↓</kbd> skip the disabled items.
-27. <kbd>\*</kbd> expands only the enabled expandable items of the group.
+27. <kbd>↑</kbd> and <kbd>↓</kbd> skip the disabled items.
+28. <kbd>\*</kbd> expands only the enabled expandable items of the group.
 
 ### Selection tests
 
-28. All three selection modes are settable, and changing the mode clears the selection.
-29. `select()` and `deselect()` apply to all items or to the passed ones.
-30. Deleting an item keeps its selection state.
-31. In multiple mode, `selected` is settable, a click on the checkbox toggles the item and emits `igcSelection`
+29. All three selection modes are settable, and changing the mode clears the selection.
+30. `select()` and `deselect()` apply to all items or to the passed ones.
+31. Deleting an item keeps its selection state.
+32. In multiple mode, `selected` is settable, a click on the checkbox toggles the item and emits `igcSelection`
     with the new selection, and the event can be canceled. A real click on the checkbox sends no `igcChange` to
     the tree, because the item cancels the click.
-32. <kbd>Shift</kbd> + click selects the range, and in multiple mode does not select the children of the parents
+33. <kbd>Shift</kbd> + click selects the range, and in multiple mode does not select the children of the parents
     in it; with no previous selection it selects a single item.
-33. In cascade mode, selecting an item selects its children, and selecting or deselecting all children of a
+34. In cascade mode, selecting an item selects its children, and selecting or deselecting all children of a
     parent updates that parent and every ancestor.
-34. An initially selected nested item puts its ancestors into the correct state.
-35. Adding and removing children updates the state of the ancestors, including the indeterminate one.
-36. In cascade mode, <kbd>Shift</kbd> + click selects the children of the parents in the range as well.
-37. Removing a subtree reconciles the selection in a single pass and updates the ancestors; moving a subtree
+35. An initially selected nested item puts its ancestors into the correct state.
+36. Adding and removing children updates the state of the ancestors, including the indeterminate one.
+37. In cascade mode, <kbd>Shift</kbd> + click selects the children of the parents in the range as well.
+38. Removing a subtree reconciles the selection in a single pass and updates the ancestors; moving a subtree
     keeps its state.
 
 ### Navigation tests
 
-38. Connecting the tree does not move the DOM focus into it, but seeds the roving tab index on the first enabled
+39. Connecting the tree does not move the DOM focus into it, but seeds the roving tab index on the first enabled
     item, which takes focus when the user tabs in.
-39. The navigable set skips disabled items but still descends into their subtrees, and never enters a collapsed
+40. The navigable set skips disabled items but still descends into their subtrees, and never enters a collapsed
     branch.
-40. The navigable set is walked in document order, and <kbd>End</kbd> lands on its last item.
-41. When the focused item is collapsed out of view, moving forward lands on the first navigable item and moving
+41. The navigable set is walked in document order, and <kbd>End</kbd> lands on its last item.
+42. When the focused item is collapsed out of view, moving forward lands on the first navigable item and moving
     backward stays.
-42. <kbd>Home</kbd> and <kbd>End</kbd> focus and activate the first and the last item.
-43. <kbd>←</kbd> does nothing on a collapsed root item, and moves to the parent of an expanded one.
-44. <kbd>→</kbd> does nothing on an item with no children, expands a collapsed one, and moves to the first child
+43. <kbd>Home</kbd> and <kbd>End</kbd> focus and activate the first and the last item.
+44. <kbd>←</kbd> does nothing on a collapsed root item, and moves to the parent of an expanded one.
+45. <kbd>→</kbd> does nothing on an item with no children, expands a collapsed one, and moves to the first child
     of an expanded one.
-45. <kbd>↑</kbd> and <kbd>↓</kbd> move the focus and the active item, and with <kbd>Ctrl</kbd> move only the focus.
-46. <kbd>\*</kbd> expands the siblings of the focused item.
-47. <kbd>Enter</kbd> activates the focused item.
-48. <kbd>Space</kbd> only activates the item when `selection` is `none`, and also toggles the selection otherwise.
-49. <kbd>Shift</kbd> + <kbd>Space</kbd> selects the range and moves the active item.
-50. An item whose label holds tabbable elements assigns them the correct tab index on focus.
+46. <kbd>↑</kbd> and <kbd>↓</kbd> move the focus and the active item, and with <kbd>Ctrl</kbd> move only the focus.
+47. <kbd>\*</kbd> expands the siblings of the focused item.
+48. <kbd>Enter</kbd> activates the focused item.
+49. <kbd>Space</kbd> only activates the item when `selection` is `none`, and also toggles the selection otherwise.
+50. <kbd>Shift</kbd> + <kbd>Space</kbd> selects the range and moves the active item.
+51. An item whose label holds tabbable elements assigns them the correct tab index on focus.
 
 ### ARIA tests
 
-51. The tree and its items render the correct roles and attributes.
-52. `aria-expanded` follows the expansion state of an item.
-53. Selection is not advertised when `selection` is `none`, `aria-selected` follows the state otherwise, and the
+52. The tree and its items render the correct roles and attributes.
+53. `aria-expanded` follows the expansion state of an item.
+54. Selection is not advertised when `selection` is `none`, `aria-selected` follows the state otherwise, and the
     attribute is dropped when selection is turned back off.
-54. `aria-disabled` follows the disabled state.
-55. The ARIA state moves onto the focusable label element together with the role.
-56. The default state, the state with selection enabled and the state with disabled items each pass the
+55. `aria-disabled` follows the disabled state.
+56. The ARIA state moves onto the focusable label element together with the role.
+57. The default state, the state with selection enabled and the state with disabled items each pass the
     accessibility audit.
 
 ### RTL tests
 
-57. The expand indicator mirrors after the direction changes at runtime.
-58. <kbd>→</kbd> collapses and <kbd>←</kbd> expands when the direction is right to left.
+58. The expand indicator mirrors after the direction changes at runtime.
+59. <kbd>→</kbd> collapses and <kbd>←</kbd> expands when the direction is right to left.
 
 ### Host ARIA
 
-59. A delegating item copies the host label and `aria-labelledby`, keeps an own label of its delegate, removes the
+60. A delegating item copies the host label and `aria-labelledby`, keeps an own label of its delegate, removes the
     copy, and moves it to a new delegate. An item that does not delegate keeps its label.
 
 ### Items far from the view
 
-60. A collapsed item far from the view skips its rendering; an expanded item and an item in view render.
-61. A skipped item keeps the height of one row.
-62. An item renders when it scrolls into view, and the item that left the view skips its rendering again.
+61. A collapsed item far from the view skips its rendering; an expanded item and an item in view render.
+62. A skipped item keeps the height of one row.
+63. An item renders when it scrolls into view, and the item that left the view skips its rendering again.
 
 ### Content found by the browser
 
-63. A collapsed item hides its children with `hidden="until-found"` and `aria-hidden`, and a disabled one with plain
+64. A collapsed item hides its children with `hidden="until-found"` and `aria-hidden`, and a disabled one with plain
     `hidden`.
-64. A link to an item in a collapsed path expands the path from the inside out, each item with `igcItemExpanding`
+65. A link to an item in a collapsed path expands the path from the inside out, each item with `igcItemExpanding`
     and `igcItemExpanded`.
-65. A canceled `igcItemExpanding` keeps the items collapsed and their children hidden.
-66. A disabled item does not expand.
-67. With `singleBranchExpand`, the reveal collapses the other branch and keeps the path to the match expanded.
-68. With `singleBranchExpand`, the reveal keeps the expanded items in the item that it expands.
-69. With motion, the reveal expands at once, with no animation, and the scroll does not change after it.
-70. The expand animation of a user toggle starts from the height of the children.
-71. The children show during the collapse animation, and they are inert only then.
+66. A canceled `igcItemExpanding` keeps the items collapsed and their children hidden.
+67. A disabled item does not expand.
+68. With `singleBranchExpand`, the reveal collapses the other branch and keeps the path to the match expanded.
+69. With `singleBranchExpand`, the reveal keeps the expanded items in the item that it expands.
+70. With motion, the reveal expands at once, with no animation, and the scroll does not change after it.
+71. The expand animation of a user toggle starts from the height of the children.
+72. The children show during the collapse animation, and they are inert only then.
 
 ### Value state motion
 
 In the Material theme.
 
-72. A click on the checkbox of a parent in cascade selection starts transitions in the checkbox of the parent and of its
+73. A click on the checkbox of a parent in cascade selection starts transitions in the checkbox of the parent and of its
     child.
-73. A `select()` call starts no transitions in either checkbox.
-74. Space on a parent in cascade selection starts transitions in the checkbox of the parent and of its child.
-75. A `deselect()` call and a `selected` item from code start no transitions.
+74. A `select()` call starts no transitions in either checkbox.
+75. Space on a parent in cascade selection starts transitions in the checkbox of the parent and of its child.
+76. A `deselect()` call and a `selected` item from code start no transitions.
 
 ### Not covered by the suite
 

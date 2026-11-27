@@ -26,7 +26,7 @@ defineComponents(IgcSelectComponent);
   The label of the control.
 - `placeholder`: `string`. Attribute: `placeholder`.
   The placeholder text of the control.
-- `placement`: `'bottom' | 'top' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'left' | 'right' | 'right-start' | 'right-end' | 'left-start' | 'left-end'`. Default: `'bottom-start'`. Attribute: `placement`.
+- `placement`: `'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'right' | 'right-start' | 'right-end' | 'left' | 'left-start' | 'left-end'`. Default: `'bottom-start'`. Attribute: `placement`.
   The preferred placement of the select dropdown around its input.
 - `items`: `IgcSelectItemComponent[]`. Read-only. No attribute.
   Returns the items of the select component.

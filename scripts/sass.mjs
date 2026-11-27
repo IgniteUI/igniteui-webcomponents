@@ -45,8 +45,9 @@ const THEME_ENTRY_GLOB = 'src/styles/themes/{light,dark}/*.scss';
 /**
  * The base styles shared by most components, compiled once and prepended to
  * their `static styles` instead of being emitted into every component entry.
+ * `hidden` is the `hidden` rule alone, for a component without the base styles.
  */
-const COMMON_ENTRY_GLOB = 'src/styles/common/component.scss';
+const COMMON_ENTRY_GLOB = 'src/styles/common/{component,hidden}.scss';
 
 /** The global light theme entries. Their stems are the theme names. */
 const THEME_NAMES_GLOB = 'src/styles/themes/light/*.scss';

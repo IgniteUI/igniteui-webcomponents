@@ -135,6 +135,49 @@ function resolveSubpathImportsPlugin() {
 /** `import("/abs/path/module").IChipResourceStrings` -> `IChipResourceStrings` */
 const IMPORT_QUALIFIER = /import\("[^"]*"\)\./g;
 
+/** The TypeScript module of the analyzer. */
+let typescript;
+
+/** The class nodes of the analyzed modules, by `path#name`. */
+const classNodes = new Map();
+
+/** Indexes the class nodes for the plugins that read types with the checker. */
+function classIndexPlugin() {
+  return {
+    name: 'IGC - CLASS INDEX',
+
+    analyzePhase({ ts, node, moduleDoc }) {
+      typescript ??= ts;
+
+      if (ts.isClassDeclaration(node) && node.name) {
+        classNodes.set(`${moduleDoc.path}#${node.name.text}`, node);
+      }
+    },
+  };
+}
+
+/** Each declaration of the manifest that has a class node, with the node. */
+function* classDeclarations(manifest) {
+  for (const moduleDoc of manifest.modules) {
+    for (const declaration of moduleDoc.declarations ?? []) {
+      const node = classNodes.get(`${moduleDoc.path}#${declaration.name}`);
+
+      if (node) {
+        yield { declaration, node };
+      }
+    }
+  }
+}
+
+/** The symbol of `name`, through an import. */
+function resolveSymbol(checker, name) {
+  const symbol = checker.getSymbolAtLocation(name);
+
+  return symbol && symbol.flags & typescript.SymbolFlags.Alias
+    ? checker.getAliasedSymbol(symbol)
+    : symbol;
+}
+
 /**
  * The analyzer copies an inherited member as written, so a member typed with a
  * type parameter (`TGet` of `I18nMixin`) keeps that name, also under an
@@ -145,8 +188,6 @@ const IMPORT_QUALIFIER = /import\("[^"]*"\)\./g;
  * @example `unknown` -> `Date | null` for the `defaultValue` override of `igc-date-picker`
  */
 function resolveMemberTypesPlugin() {
-  let typescript;
-  const classNodes = new Map();
   const typeParameterNames = new Set();
 
   /** Whether the class declares `name` with its own type annotation. */
@@ -160,13 +201,7 @@ function resolveMemberTypesPlugin() {
   return {
     name: 'IGC - RESOLVE MEMBER TYPES',
 
-    analyzePhase({ ts, node, moduleDoc }) {
-      typescript ??= ts;
-
-      if (ts.isClassDeclaration(node) && node.name) {
-        classNodes.set(`${moduleDoc.path}#${node.name.text}`, node);
-      }
-
+    analyzePhase({ node }) {
       for (const param of node.typeParameters ?? []) {
         typeParameterNames.add(param.name.text);
       }
@@ -175,45 +210,36 @@ function resolveMemberTypesPlugin() {
     packageLinkPhase({ customElementsManifest }) {
       const checker = getTypeChecker();
 
-      for (const moduleDoc of customElementsManifest.modules) {
-        for (const declaration of moduleDoc.declarations ?? []) {
-          const node = classNodes.get(`${moduleDoc.path}#${declaration.name}`);
+      for (const { declaration, node } of classDeclarations(
+        customElementsManifest
+      )) {
+        const instanceType = checker.getTypeAtLocation(node);
 
-          if (!node) {
+        for (const [index, member] of (declaration.members ?? []).entries()) {
+          const shouldResolve =
+            typeParameterNames.has(member.type?.text) ||
+            (member.kind === 'field' && declaresTyped(node, member.name));
+
+          if (!(member.inheritedFrom && shouldResolve)) {
             continue;
           }
 
-          const instanceType = checker.getTypeAtLocation(node);
+          const property = checker.getPropertyOfType(instanceType, member.name);
 
-          for (const [index, member] of (declaration.members ?? []).entries()) {
-            const shouldResolve =
-              typeParameterNames.has(member.type?.text) ||
-              (member.kind === 'field' && declaresTyped(node, member.name));
-
-            if (!(member.inheritedFrom && shouldResolve)) {
-              continue;
-            }
-
-            const property = checker.getPropertyOfType(
-              instanceType,
-              member.name
-            );
-
-            if (!property) {
-              continue;
-            }
-
-            const text = checker
-              .typeToString(
-                checker.getTypeOfSymbolAtLocation(property, node),
-                node,
-                typescript.TypeFormatFlags.NoTruncation
-              )
-              .replaceAll(IMPORT_QUALIFIER, '');
-
-            // The analyzer shares one inherited entry between all the elements.
-            declaration.members[index] = { ...member, type: { text } };
+          if (!property) {
+            continue;
           }
+
+          const text = checker
+            .typeToString(
+              checker.getTypeOfSymbolAtLocation(property, node),
+              node,
+              typescript.TypeFormatFlags.NoTruncation
+            )
+            .replaceAll(IMPORT_QUALIFIER, '');
+
+          // The analyzer shares one inherited entry between all the elements.
+          declaration.members[index] = { ...member, type: { text } };
         }
       }
     },
@@ -260,15 +286,115 @@ function stripUndefinedDefaultsPlugin() {
  * The manifest carries `expandedType` for one consumer: the story generator reads it
  * to turn an aliased union of literals into a set of control values. Every other
  * expansion is noise or a worse form of `type.text`, so keep only literal unions.
+ *
+ * The checker orders union members by type creation, so any literal can reorder
+ * them. An inline union drops its expansion, because `type.text` is its source. An
+ * alias takes the order of its declaration.
  */
 function pruneExpandedTypesPlugin() {
   const LITERAL = /^(['"]).*\1$|^-?\d+(\.\d+)?$|^(null|undefined)$/;
 
+  const membersOf = (text) =>
+    text?.split('|').map((member) => member.trim()) ?? [];
+
   const isLiteralUnion = (text) => {
-    const members = text?.split('|').map((member) => member.trim()) ?? [];
+    const members = membersOf(text);
     return (
       members.length > 1 && members.every((member) => LITERAL.test(member))
     );
+  };
+
+  /** Strips the quotes of a string literal. */
+  const unquote = (member) => member.replace(/^(['"])(.*)\1$/, '$2');
+
+  /**
+   * The literal members of a type node in source order, through aliases,
+   * or `null` when the node is not a union of literals.
+   */
+  const declaredOrder = (checker, node) => {
+    const ts = typescript;
+
+    if (ts.isParenthesizedTypeNode(node)) {
+      return declaredOrder(checker, node.type);
+    }
+
+    if (ts.isUnionTypeNode(node)) {
+      const order = [];
+
+      for (const child of node.types) {
+        const members = declaredOrder(checker, child);
+
+        if (!members) {
+          return null;
+        }
+
+        order.push(...members);
+      }
+
+      return order;
+    }
+
+    if (ts.isLiteralTypeNode(node)) {
+      return ts.isStringLiteral(node.literal)
+        ? [node.literal.text]
+        : [node.literal.getText()];
+    }
+
+    if (node.kind === ts.SyntaxKind.UndefinedKeyword) {
+      return ['undefined'];
+    }
+
+    if (ts.isTypeReferenceNode(node) && !node.typeArguments) {
+      const alias = resolveSymbol(checker, node.typeName)?.declarations?.find(
+        ts.isTypeAliasDeclaration
+      );
+
+      if (alias && !alias.typeParameters) {
+        return declaredOrder(checker, alias.type);
+      }
+    }
+
+    // `(typeof NAMES)[number]` of a `const NAMES = [...] as const`.
+    if (
+      ts.isIndexedAccessTypeNode(node) &&
+      node.indexType.kind === ts.SyntaxKind.NumberKeyword &&
+      ts.isTypeQueryNode(node.objectType)
+    ) {
+      let initializer = resolveSymbol(checker, node.objectType.exprName)
+        ?.valueDeclaration?.initializer;
+
+      while (initializer && ts.isAsExpression(initializer)) {
+        initializer = initializer.expression;
+      }
+
+      if (
+        initializer &&
+        ts.isArrayLiteralExpression(initializer) &&
+        initializer.elements.every(ts.isStringLiteral)
+      ) {
+        return initializer.elements.map((element) => element.text);
+      }
+    }
+
+    return null;
+  };
+
+  /** The type node that declares the property `name` of a class type. */
+  const declaredTypeNode = (checker, classType, name) => {
+    const ts = typescript;
+
+    for (const declaration of checker.getPropertyOfType(classType, name)
+      ?.declarations ?? []) {
+      const typeNode = ts.isSetAccessorDeclaration(declaration)
+        ? declaration.parameters[0]?.type
+        : declaration.type;
+
+      if (typeNode) {
+        return typeNode;
+      }
+    }
+
+    return undefined;
   };
 
   return {
@@ -276,8 +402,54 @@ function pruneExpandedTypesPlugin() {
 
     moduleLinkPhase({ moduleDoc }) {
       for (const entry of moduleEntries(moduleDoc)) {
-        if (!isLiteralUnion(entry.expandedType?.text)) {
+        if (
+          !isLiteralUnion(entry.expandedType?.text) ||
+          isLiteralUnion(entry.type?.text)
+        ) {
           delete entry.expandedType;
+        }
+      }
+    },
+
+    packageLinkPhase({ customElementsManifest }) {
+      const checker = getTypeChecker();
+
+      for (const { declaration, node } of classDeclarations(
+        customElementsManifest
+      )) {
+        const classType = checker.getTypeAtLocation(node);
+
+        for (const entry of [
+          ...(declaration.members ?? []),
+          ...(declaration.attributes ?? []),
+        ]) {
+          if (!entry.expandedType) {
+            continue;
+          }
+
+          const typeNode = declaredTypeNode(
+            checker,
+            classType,
+            entry.fieldName ?? entry.name
+          );
+          const order = typeNode && declaredOrder(checker, typeNode);
+
+          if (!order) {
+            continue;
+          }
+
+          const members = membersOf(entry.expandedType.text);
+
+          // A member the declaration does not name, such as the `undefined`
+          // of an optional field, goes last.
+          const rank = (member) => {
+            const index = order.indexOf(unquote(member));
+            return index < 0 ? order.length : index;
+          };
+
+          entry.expandedType = {
+            text: members.toSorted((a, b) => rank(a) - rank(b)).join(' | '),
+          };
         }
       }
     },
@@ -291,13 +463,15 @@ export default {
   outdir: './',
   litelement: true,
   overrideModuleCreation: ({ ts, globs }) => {
-    const program = getTsProgram(ts, globs, 'tsconfig.json');
+    // The checker also reads the files of the config, so use one without specs.
+    const program = getTsProgram(ts, globs, 'scripts/tsconfig.cem.json');
     return program
       .getSourceFiles()
       .filter((sf) => globs.find((glob) => sf.fileName.includes(glob)));
   },
 
   plugins: [
+    classIndexPlugin(),
     resolveSubpathImportsPlugin(),
     typeParserPlugin({
       parseObjectTypes: 'none',

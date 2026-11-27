@@ -25,6 +25,7 @@ import {
 import { bindIf } from '#internals/utils/lit.js';
 import { all } from '#themes/tree/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
+import { styles as hidden } from '../../styles/common/hidden.css.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
@@ -69,7 +70,7 @@ import type { IgcTreeSelectionService } from './tree.selection.js';
  */
 export default class IgcTreeItemComponent extends HostAriaMixin(LitElement) {
   public static readonly tagName = TREE_ITEM_TAG;
-  public static override styles = [styles, shared];
+  public static override styles = [hidden, styles, shared];
 
   /* blazorSuppress */
   public static register() {

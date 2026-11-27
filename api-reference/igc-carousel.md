@@ -21,7 +21,7 @@ defineComponents(IgcCarouselComponent);
   Whether the indicator controls (dots) are hidden.
 - `vertical`: `boolean`. Default: `false`. Attribute: `vertical`, reflected.
   Whether the carousel has vertical alignment.
-- `indicatorsOrientation`: `'start' | 'end'`. Default: `'end'`. Attribute: `indicators-orientation`.
+- `indicatorsOrientation`: `'end' | 'start'`. Default: `'end'`. Attribute: `indicators-orientation`.
   The position of the indicator controls (dots).
 - `indicatorsLabelFormat`. Attribute: `indicators-label-format`.
   The format of the `aria-label` of the carousel indicators.

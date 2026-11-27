@@ -16,6 +16,9 @@ type CalendarDayParams = {
 };
 
 export const DAYS_IN_WEEK = 7;
+
+/** The years the user can reach. Code can set a year outside them. */
+export const YEAR_RANGE = { min: 1, max: 9999 } as const;
 const MILLISECONDS_PER_DAY = 86400000;
 const WEEKDAY_MIN = 1; // Monday
 const WEEKDAY_MAX = 5; // Friday

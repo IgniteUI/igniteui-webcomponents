@@ -17,7 +17,7 @@ defineComponents(IgcExpansionPanelComponent);
 - `disabled`: `boolean`. Default: `false`. Attribute: `disabled`, reflected.
   Whether the panel is disabled. A disabled panel does not respond to user
   interaction.
-- `indicatorPosition`: `'none' | 'start' | 'end'`. Default: `'start'`. Attribute: `indicator-position`, reflected.
+- `indicatorPosition`: `'start' | 'end' | 'none'`. Default: `'start'`. Attribute: `indicator-position`, reflected.
   The indicator position of the expansion panel.
 
 ## Methods

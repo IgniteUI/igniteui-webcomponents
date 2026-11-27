@@ -438,6 +438,25 @@ describe('Date range picker - single input', () => {
       expect(input.value).to.equal('1/15/2025 - 1/16/2025');
     });
 
+    it('keeps the start year selected when a spin narrows it', async () => {
+      picker.value = {
+        start: new Date(10_000, 0, 15),
+        end: new Date(10_001, 0, 16),
+      };
+      await elementUpdated(picker);
+
+      input.focus();
+      await elementUpdated(rangeInput);
+      rangeInput.setSelectionRange(6, 11);
+      await elementUpdated(rangeInput);
+
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(rangeInput);
+
+      expect(input.value).to.equal('01/15/9999 - 01/16/10001');
+      expect([input.selectionStart, input.selectionEnd]).to.eql([6, 10]);
+    });
+
     it('does not step anything while the cursor is in the separator', async () => {
       const eventSpy = spy(picker, 'emitEvent');
       const inputEventSpy = spy(rangeInput, 'emitEvent');

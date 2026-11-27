@@ -92,6 +92,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The `hidden` attribute hides the banner. Before, it still rendered.
 - #### Calendar, Date picker, Date range picker, Date time input
   - An ISO string with a signed six digit year, such as `+010000-01-01T00:00:00.000Z`, sets the value. `toISOString()` gives this format for dates before year 0 and after year 9999. Before, the value became `null`.
+  - While the input has focus, a year past 9999 or before year 1 shows all its digits, such as `01/01/10000` or `01/01/-0001`. An edit of another part keeps the year. Before, the extra digits pushed the other parts out of place, and an edit could change the year.
+  - You type at most four year digits. When you type in a year past 9999 or before year 1, your digits replace the whole year.
+  - A spin, <kbd>Ctrl</kbd> + <kbd>;</kbd> and an undo keep the selection on the same part when the year changes its number of digits.
+  - The calendar keeps you in the years 1 to 9999, as a year spin does. The keys stop at the first and the last date of these years. The previous and next buttons are disabled on the first and the last page.
+  - The calendar disables the dates outside the years 1 to 9999, and the years view hides the years outside them. An active date outside the range, such as one set from code, moves only toward it. Before, the calendar went past year 9999 and before year 1.
 - #### Carousel
   - The first render shows the active slide and its indicator, or the label when there are more slides than `maximumIndicatorsCount`. A navigation button at an end that `disableLoop` stops is disabled from the first render too. Before, the carousel showed these states only after the next update.
   - After the hydration of a server render, the carousel uses the projected indicators. Before, when the carousel loaded after the page, it added its default indicators and the projected indicators stayed inactive.
@@ -112,6 +117,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Date picker
   - The first render no longer logs a Lit development warning that a cached field was read before the first update.
   - The `igcInput` and `igcChange` events of slotted content, such as an input in the `suffix` slot, go on to the application and do not change the value. Before, the picker stopped them, and an `igcChange` from slotted content could change the value.
+  - `inputFormat` and `displayFormat` return the formats of the locale before the first render, as in the date range picker. Before, they returned `undefined`, so a min/max validation message that was built then showed its bound in another format.
 - #### Date picker, Date range picker
   - An editor no longer shows the invalid styles when the focus moves from it to other content of the picker, such as the other editor of a date range picker. The editors show the invalid state of the picker, together with its validation message.
   - When you clear the value and then open and close the picker before you leave it, the picker now emits `igcChange` for the clear.
@@ -140,6 +146,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### File input
   - A form reset always clears the selection and submits no files, also after code writes `defaultValue`. Before, the form submitted a file list written to `defaultValue` while the control showed no files, and a string one character per entry.
   - The selected files are submitted under the current `name`. Before, a change of `name` kept them under the old name, and a `name` set after the selection submitted no files.
+- #### Focus trap, Theme provider, Tree
+  - The `hidden` attribute hides a tree item, a focus trap and a theme provider with their content, as for the other components. Before, their own `display` style won over it, so they stayed visible.
 - #### Form controls
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
   - A change of `name` updates the `name` attribute at once, as for a native control, so the form data takes the new name. Before, a control that submits a string kept the old name until the next render. Such controls include the input, the select and a single selection combo. A `null` or `undefined` name also removes the attribute at once.
@@ -155,6 +163,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A change of `prompt` keeps the empty positions of the text. Before, it moved the characters after an empty position to the left.
   - A change of `mask` or `prompt` keeps the placeholder on an unfocused control whose value fills no position, as a value write does. Before, it showed the empty mask.
   - A value with the mask length and each literal in its place, such as the `igcChange` detail in `withFormatting` mode, keeps its positions. For example, `12-34` with the mask `00-00` shows `12-34`, and `value` in `raw` mode reads `1234`. Before, the input read the literals as typed characters and showed `12-_3`, so a two-way binding in `withFormatting` mode broke the text. A prompt character in the value shows as an empty position.
+  - When you type past the end of a mask with an escaped character, such as `(+35\9) CCC-CCC`, the input no longer emits `igcInput`. The value does not change there.
 - #### Navigation drawer
   - An item without content gets the `mini` part, as the part description says. Before, an item with neither content nor an icon did not get it.
 - #### QR code

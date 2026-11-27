@@ -14,7 +14,7 @@ defineComponents(IgcButtonGroupComponent);
   Whether all buttons in the group are disabled.
 - `alignment`: `'horizontal' | 'vertical'`. Default: `'horizontal'`. Attribute: `alignment`, reflected.
   The orientation of the buttons in the group.
-- `selection`: `'multiple' | 'single' | 'single-required'`. Default: `'single'`. Attribute: `selection`.
+- `selection`: `'single' | 'single-required' | 'multiple'`. Default: `'single'`. Attribute: `selection`.
   The selection mode of the group. A change of the mode clears the selection.
 - `selectedItems`: `string[]`. Attribute: `selected-items`.
   The values of the selected buttons. A button without a value is not in
