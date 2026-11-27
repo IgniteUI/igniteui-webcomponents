@@ -100,8 +100,8 @@ declare global {
 
 - Pass every component that the template renders to `registerComponent(Self, ...deps)`,
   directly. Do not rely on a dependency that registers it. `npm run check` verifies this.
-- `componentBase` holds the sizing, scrollbar and `[hidden]` rules that every component
-  shares. Keep it first in `styles`.
+- `componentBase` holds the sizing and `[hidden]` rules that every component shares. Keep it
+  first in `styles`. The theming controller adds the scrollbar sheet of the theme.
 - Import the theme aggregator through `#themes`, never with a relative path. The publish
   build fails on a relative import, because it bypasses the single-theme package conditions.
 - Follow the [region layout](../../../.github/CODING_GUIDELINES.md#components) and the

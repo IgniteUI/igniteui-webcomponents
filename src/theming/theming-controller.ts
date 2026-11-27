@@ -7,6 +7,7 @@ import {
 } from 'lit';
 
 import { getOrInsertComputed } from '#internals/utils/objects.js';
+import { all as scrollbars } from '#themes/scrollbar/themes/themes.js';
 import { _globalThemeListeners, getTheme } from './config.js';
 import { type ThemeContext, themeContext } from './context.js';
 import type {
@@ -71,7 +72,10 @@ function adoptsFirst(
   return true;
 }
 
-/** Returns the element styles of `ctor` followed by the shared and the theme styles. */
+/**
+ * Returns the element styles of `ctor` followed by the scrollbar, the shared
+ * and the theme styles.
+ */
 function resolveSheets(
   ctor: ElementClass,
   themes: ComponentThemes,
@@ -89,7 +93,10 @@ function resolveSheets(
     const { shared, [theme]: themed } = themes[variant];
 
     return new Set(
-      [...ctor.elementStyles, ...[shared, themed].flat()]
+      [
+        ...ctor.elementStyles,
+        ...[scrollbars[variant][theme], shared, themed].flat(),
+      ]
         .filter((style) => style !== undefined)
         .map((style) =>
           style instanceof CSSStyleSheet ? style : style.styleSheet!

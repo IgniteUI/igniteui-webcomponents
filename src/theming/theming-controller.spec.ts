@@ -7,8 +7,9 @@ import {
   oneEvent,
   unsafeStatic,
 } from '@open-wc/testing';
-import { css, LitElement, html as litHtml } from 'lit';
+import { type CSSResult, css, LitElement, html as litHtml } from 'lit';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import { all as scrollbars } from '#themes/scrollbar/themes/themes.js';
 import IgcThemeProviderComponent from '../components/theme-provider/theme-provider.js';
 import { configureTheme } from './config.js';
 import {
@@ -74,6 +75,13 @@ const mockThemes: Themes = {
     `,
   },
 };
+
+/** The scrollbar sheets that a host adopts with `theme` and `variant`, in order. */
+function scrollbarSheets(variant: 'light' | 'dark', theme: Theme) {
+  return [scrollbars[variant][theme]]
+    .flat()
+    .map((style) => (style as CSSResult).styleSheet!);
+}
 
 type ThemedTestComponentElement = LitElement & {
   themingController: ThemingController;
@@ -524,6 +532,7 @@ describe('Theming Controller', () => {
 
       expect(Array.from(root.adoptedStyleSheets)).to.have.ordered.members([
         elementSheet,
+        ...scrollbarSheets('dark', 'material'),
         mockThemes.dark.shared!.styleSheet,
         mockThemes.dark.material!.styleSheet,
         foreign,
@@ -553,6 +562,7 @@ describe('Theming Controller', () => {
         Array.from(el.shadowRoot!.adoptedStyleSheets)
       ).to.have.ordered.members([
         sheet,
+        ...scrollbarSheets('light', 'bootstrap'),
         mockThemes.light.shared!.styleSheet,
         mockThemes.light.bootstrap!.styleSheet,
       ]);
@@ -680,6 +690,7 @@ describe('Theming Controller', () => {
       expect(
         Array.from(el.shadowRoot!.adoptedStyleSheets)
       ).to.have.ordered.members([
+        ...scrollbarSheets('light', 'bootstrap'),
         mockThemes.light.shared!.styleSheet,
         base.styleSheet,
         override.styleSheet,
@@ -698,7 +709,10 @@ describe('Theming Controller', () => {
 
       expect(
         Array.from(el.shadowRoot!.adoptedStyleSheets)
-      ).to.have.ordered.members([base.styleSheet]);
+      ).to.have.ordered.members([
+        ...scrollbarSheets('dark', 'bootstrap'),
+        base.styleSheet,
+      ]);
     });
 
     it('gives the instances of a class the same sheets', async () => {

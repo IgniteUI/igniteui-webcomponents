@@ -1,4 +1,6 @@
 @use 'igniteui-theming/sass/color/presets/light/indigo' as *;
 @use '../base/indigo' as base;
-@use '../base/scrollbars';
+@use 'igniteui-theming/sass/themes/schemas/components/light/scrollbar' as *;
+@use 'styles/utilities' as utils;
 @include base.root-styles($palette, 'light');
+@include utils.scrollbar($indigo-scrollbar, '.ig-scrollbar');

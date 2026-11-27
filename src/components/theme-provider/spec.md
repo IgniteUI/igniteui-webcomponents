@@ -125,10 +125,8 @@ as a background, need an element inside the provider.
 With Sass, include the mixins of `igniteui-theming` in a selector. In a selector, `palette()`, `typography()` and
 `elevations()` set the properties on that selector instead of `:root`.
 
-The theme file sets the scrollbar colors on `:root` too, outside of these mixins. They refer to the gray palette, but a
-custom property resolves its `var()` references on the element that declares it. So the provider inherits the
-scrollbar colors of the page, and you must declare them on the provider again. All themes use gray 400 for the thumb
-and gray 100 for the track, but Indigo uses gray 200 for the track.
+The components inside the provider take the scrollbar colors of the provider theme. Each component declares its
+scrollbar tokens on its own host, so they resolve against the palette of the provider.
 
 ```scss
 @use 'igniteui-theming' as *;
@@ -140,9 +138,6 @@ igc-theme-provider.material-dark {
   @include palette($palette);
   @include typography($font-family: type.$typeface, $type-scale: type.$type-scale);
   @include elevations(elevation.$material-elevations);
-
-  --ig-scrollbar-thumb-background: var(--ig-gray-400);
-  --ig-scrollbar-track-background: var(--ig-gray-100);
 
   color: var(--ig-surface-500-contrast);
   font-family: var(--ig-font-family);
@@ -163,8 +158,7 @@ igc-theme-provider.material-dark {
 ```
 
 Without Sass, copy all the `:root` rules of the theme file into a rule for the provider, or into an `@scope` block
-with `:scope` in place of `:root`. The theme file has more than one `:root` rule, and the scrollbar colors are in a
-rule of their own.
+with `:scope` in place of `:root`. The theme file has more than one `:root` rule.
 
 #### Registration order
 
