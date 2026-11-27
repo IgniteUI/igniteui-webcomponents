@@ -1,6 +1,8 @@
 import { expect, fixture, html } from '@open-wc/testing';
+import { css } from 'lit';
 import sinon from 'sinon';
 import {
+  adoptStylesOnce,
   getDeepActiveElement,
   getFocusableElements,
   getScaleFactor,
@@ -400,6 +402,44 @@ describe('DOM utilities', () => {
       parent.append(child);
 
       expect(getVisibleAncestor(child)).to.be.null;
+    });
+  });
+
+  describe('adoptStylesOnce', () => {
+    const styles = css`
+      .adopted-once {
+        color: red;
+      }
+    `;
+
+    it('adds the styles once, before the other adopted sheets', async () => {
+      const host = await fixture<HTMLDivElement>(html`<div></div>`);
+      const root = host.attachShadow({ mode: 'open' });
+      const other = new CSSStyleSheet();
+      root.adoptedStyleSheets = [other];
+
+      adoptStylesOnce(root, styles);
+      adoptStylesOnce(root, styles);
+
+      expect(root.adoptedStyleSheets).to.have.ordered.members([
+        styles.styleSheet,
+        other,
+      ]);
+    });
+
+    it('adds a copy of the styles to the document of another window', async () => {
+      const iframe = await fixture<HTMLIFrameElement>(html`<iframe></iframe>`);
+      const doc = iframe.contentDocument!;
+
+      adoptStylesOnce(doc, styles);
+      adoptStylesOnce(doc, styles);
+
+      const [sheet] = doc.adoptedStyleSheets;
+      expect(doc.adoptedStyleSheets).lengthOf(1);
+      expect(sheet).to.not.equal(styles.styleSheet);
+      expect(sheet.cssRules[0].cssText).to.equal(
+        styles.styleSheet!.cssRules[0].cssText
+      );
     });
   });
 });

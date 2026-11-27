@@ -6,6 +6,7 @@ import {
   type ReactiveElement,
 } from 'lit';
 
+import { sheetForDocument } from '#internals/utils/dom.js';
 import { getOrInsertComputed } from '#internals/utils/objects.js';
 import { _globalThemeListeners, getTheme } from './config.js';
 import { type ThemeContext, themeContext } from './context.js';
@@ -28,6 +29,12 @@ type ElementClass = typeof ReactiveElement;
 const resolvedSheets = new WeakMap<
   ComponentThemes,
   WeakMap<ElementClass, Map<string, ReadonlySet<CSSStyleSheet>>>
+>();
+
+/** The copies of the resolved sheets for the documents of other windows. */
+const documentSheets = new WeakMap<
+  ReadonlySet<CSSStyleSheet>,
+  WeakMap<Document, ReadonlySet<CSSStyleSheet>>
 >();
 
 /** Set by the first theme provider. Until then, nothing can answer a request. */
@@ -267,12 +274,32 @@ class ThemingController implements ReactiveController {
 
   private _adoptStyles(): void {
     const root = this._host.shadowRoot!;
-    const sheets = resolveSheets(
+    const doc = root.ownerDocument;
+    const own = doc === globalThis.document;
+
+    // The document of a removed iframe has no window to adopt into.
+    if (!(own || doc.defaultView)) {
+      return;
+    }
+
+    const resolved = resolveSheets(
       this._host.constructor as ElementClass,
       this._themes,
       this._theme,
       this._variant
     );
+
+    // A host moved to the document of another window adopts copies.
+    const sheets = own
+      ? resolved
+      : getOrInsertComputed(
+          getOrInsertComputed(documentSheets, resolved, () => new WeakMap()),
+          doc,
+          () =>
+            new Set(
+              Array.from(resolved, (sheet) => sheetForDocument(sheet, doc)!)
+            )
+        );
 
     // Adopted already; the check still repairs a root whose sheets were replaced.
     if (
@@ -287,7 +314,13 @@ class ThemingController implements ReactiveController {
       (sheet) => !(sheets.has(sheet) || this._sheets.has(sheet))
     );
 
-    adoptStyles(root, [...sheets, ...foreign]);
+    // Lit's `adoptStyles` accepts only the sheets of this window.
+    if (own) {
+      adoptStyles(root, [...sheets, ...foreign]);
+    } else {
+      root.adoptedStyleSheets = [...sheets, ...foreign];
+    }
+
     this._sheets = sheets;
   }
 

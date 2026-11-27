@@ -25,6 +25,7 @@ import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { addLocaleController } from '#internals/i18n/i18n-controller.js';
 import { partMap } from '#internals/part-map.js';
+import { adoptStylesOnce } from '#internals/utils/dom.js';
 import { asNumber } from '#internals/utils/math.js';
 import { all } from '#themes/tile-manager/themes/container.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -35,6 +36,7 @@ import { parseTrackSizes } from './resize-util.js';
 import { applyLayout, serializeTiles } from './serializer.js';
 import { styles as shared } from './themes/shared/tile-manager.common.css.js';
 import { styles } from './themes/tile-manager.base.css.js';
+import { styles as transitionStyles } from './themes/view-transitions.base.css.js';
 import IgcTileComponent from './tile.js';
 import { childTiles } from './transitions.js';
 
@@ -222,6 +224,11 @@ export default class IgcTileManagerComponent extends LitElement {
         childList: true,
       },
     });
+  }
+
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    adoptStylesOnce(this.ownerDocument, transitionStyles);
   }
 
   protected override firstUpdated(): void {

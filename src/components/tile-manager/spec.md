@@ -74,6 +74,7 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |      13 | 2026-11-02 | View transition names only during a transition of the manager, a stacking context for the content of a tile, a drag target that stays while the pointer is in it |
 |      14 | 2026-11-25 | The first render shows the slotted content |
 |      15 | 2026-11-27 | Test scenarios mirror the `describe` blocks in suite order; the drag and drop, layout and input groups split into their blocks; the resize state property suite |
+|      16 | 2026-11-27 | The tile manager adds its view transition rules to the document, instead of the theme style sheets |
 
 ## Overview
 
@@ -142,16 +143,18 @@ fullscreen by default - and its content below. While dragging is enabled, a tile
 another position, and the rest of the tiles reflow around it. While resizing is enabled, adorners appear on the
 side, the bottom and the corner of a tile, and dragging them changes its span.
 
-Maximize, restore, a resize and a swap animate with a view transition. A tile that changes its size keeps its
-content at its real size while its box grows or shrinks, so the text stays sharp. Its new content fades in during
-the first 40% of the transition. The tiles that a maximized tile covers fade in place. The drag ghost stays on the
-pointer during a swap. The view transition pseudo-elements belong to the document, so the theme style sheets
-(`themes/light/*.css` and `themes/dark/*.css`) hold their rules. They select the view transition classes
-`igc-tile-resize` and `igc-tile-rtl`, and the `dragged-tile-ghost` name. Without a theme style sheet, the tiles use
-the default transition, and so does a size change in a browser without view transition classes. Only during a
-transition, the tiles of its manager have a view transition name (`tile-transition-<id>`), so the transition captures
-only them. An application that runs its own view transition gives a name to the tiles that it moves. An inline name of
-the author stays.
+Maximize, restore, a resize and a swap animate with a view transition. A tile that changes its size keeps its content
+at its real size while its box grows or shrinks, so the text stays sharp. Its new content fades in during the first
+40% of the transition. The tiles that a maximized tile covers fade in place. The drag ghost stays on the pointer
+during a swap. The view transition pseudo-elements belong to the document, so a tile manager adds their rules to the
+start of the `adoptedStyleSheets` of its own document when it connects, and a tile transition adds them again if the
+application replaced the adopted sheets. A transition runs in the document of the manager, also after a move into the
+document of another window, such as an iframe. A rule of the application in an adopted sheet overrides them with the same specificity,
+and a rule in a `<link>` or `<style>` with a higher one. They select the view transition classes `igc-tile-resize` and
+`igc-tile-rtl`, and the `dragged-tile-ghost` name. A size change in a browser without view transition classes uses the
+default transition. Only during a transition, the tiles of its manager have a view
+transition name (`tile-transition-<id>`), so the transition captures only them. An application that runs its own view
+transition gives a name to the tiles that it moves. An inline name of the author stays.
 
 ### Developer experience
 
@@ -675,6 +678,15 @@ that scrolls. The drag target stays while the pointer is in it, with no new hit
 test, and a view transition ends it. In RTL, the `resizable` directive measures the width from the inline-start edge.
 A rotation of a top-layer element is not supported.
 
+### View transition rules
+
+48. A tile manager adds the view transition rules to the document when it connects, once per document. A tile
+    transition adds them again after the application replaced the adopted style sheets.
+49. A rule of the application in an adopted sheet overrides the view transition rules with the same specificity, and
+    not with a lower one.
+50. A tile manager moved into the document of an iframe adds the view transition rules to that document, and its
+    transitions run there. Its drag ghost covers the tile and Escape cancels the drag.
+
 ## Assumptions and limitations
 
 - Only `igc-tile` elements are projected into the grid; other content is ignored.
@@ -689,6 +701,12 @@ A rotation of a top-layer element is not supported.
   recipe.
 - During a drag, the tile under the pointer stays the target while the pointer is in its box, also where an ancestor
   clips the tile.
+- A tile manager created in one window must connect and render in that window's document before it moves into the
+  document of another window, such as an iframe. A component whose first connect is in another window's document
+  throws, because Lit adopts the styles of the library's window when it creates the shadow root, and the first render
+  of a tile creates its buttons and icons. After the move, the drag and resize ghosts stay in the page of the
+  library, where the tiles render, and follow the pointer over the iframe. The styles of the iframe page do not
+  apply to the content of the drag ghost, and the iframe does not clip it.
 - The manager counts the responsive columns in JavaScript. A change of the width, or of `--min-col-width` or
   `--grid-gap` in a style sheet, applies in the next frame. Without JavaScript, as in a server render, the tiles do not
   fit into the responsive columns. When a lower count removes the page scrollbar and so adds a column, the tiles keep

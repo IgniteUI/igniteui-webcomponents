@@ -28,7 +28,7 @@ describe('View Transitions helpers', () => {
   describe('startViewTransition', () => {
     it('should start a document view transition', async () => {
       const callback = sinon.spy();
-      const transition = startViewTransition(callback);
+      const transition = startViewTransition(document, callback);
 
       expect(transition).to.be.instanceOf(ViewTransition);
       await transition.finished;
@@ -40,7 +40,7 @@ describe('View Transitions helpers', () => {
         media: '(prefers-reduced-motion: reduce)',
       });
       const callback = sinon.spy();
-      const transition = startViewTransition(callback);
+      const transition = startViewTransition(document, callback);
 
       expect(transition).to.be.instanceOf(ViewTransition);
       transition.ready.catch(() => {});
@@ -51,14 +51,14 @@ describe('View Transitions helpers', () => {
     it('should fetch the active document view transition', () => {
       expect(getActiveViewTransition()).to.be.null;
 
-      startViewTransition(sinon.spy());
+      startViewTransition(document, sinon.spy());
       expect(getActiveViewTransition()).to.be.instanceOf(ViewTransition);
     });
 
     it('should give the last started transition in a browser without `activeViewTransition`', async () => {
       await withoutActiveViewTransition(async () => {
-        const first = startViewTransition(sinon.spy());
-        const last = startViewTransition(sinon.spy());
+        const first = startViewTransition(document, sinon.spy());
+        const last = startViewTransition(document, sinon.spy());
 
         expect(getActiveViewTransition()).to.equal(last);
 
@@ -77,7 +77,7 @@ describe('View Transitions helpers', () => {
       });
 
       await withoutActiveViewTransition(async () => {
-        const transition = startViewTransition(sinon.spy());
+        const transition = startViewTransition(document, sinon.spy());
 
         expect(getActiveViewTransition()).to.be.null;
         await transition.finished;
