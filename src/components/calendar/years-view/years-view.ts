@@ -1,5 +1,5 @@
 import { property } from 'lit/decorators.js';
-import type { CalendarDay } from '#internals/date/model.js';
+import { type CalendarDay, YEAR_RANGE } from '#internals/date/model.js';
 import { blazorIndirectRender } from '#internals/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '#internals/decorators/blazorSuppressComponent.js';
 import { registerComponent } from '#internals/definitions/register.js';
@@ -63,6 +63,7 @@ export default class IgcYearsViewComponent extends IgcYearMonthViewBaseComponent
         label: `${year}`,
         selected: this._value.year === year,
         current: year === today.year,
+        hidden: year < YEAR_RANGE.min || year > YEAR_RANGE.max,
       };
     });
   }

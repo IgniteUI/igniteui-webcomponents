@@ -405,7 +405,9 @@ themes/
 
 - `src/styles/common/component.scss` holds the rules that every component shares: sizing,
   `box-sizing`, scrollbars and `[hidden]`. It compiles once, to `componentBase`. Put
-  `componentBase` first in `static styles`. Do not `@use` this file in a base file.
+  `componentBase` first in `static styles`. Do not `@use` this file in a base file. A
+  component without `componentBase` that sets a host `display` puts the `[hidden]` rule
+  alone, from `src/styles/common/hidden.css.js`, first in `static styles`.
 - Theme values come from the `igniteui-theming` schemas. `_themes.scss` digests them, and
   `var-get()` reads them. `light/[component].shared.scss` emits the full `$base` variable set.
   A light theme file emits only `diff($base, $theme)`. In dark mode, the component adopts the

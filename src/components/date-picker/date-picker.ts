@@ -224,14 +224,6 @@ export default class IgcDatePickerComponent extends I18nMixin(
     return this._calendarIconTitle;
   }
 
-  protected override get _defaultDisplayFormat(): string | undefined {
-    return this._input?.displayFormat;
-  }
-
-  protected override get _defaultInputFormat(): string | undefined {
-    return this._input?.inputFormat;
-  }
-
   protected override get _ownedEditors(): (
     | IgcDateTimeInputComponent
     | undefined

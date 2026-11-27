@@ -147,6 +147,68 @@ describe('DateTimeMaskParser', () => {
       const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
       expect(parser.formatValue(null)).to.equal('__/__/____');
     });
+
+    it('widens the year part for a year past 9999, and narrows it again', () => {
+      const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
+      const year = () => parser.getPartByType(DatePartType.Year)!;
+
+      expect(parser.formatValue(new Date(10_000, 0, 1))).to.equal(
+        '01/01/10000'
+      );
+      expect(parser.mask).to.equal('MM/dd/yyyy');
+      expect(parser.fittedFormat).to.equal('MM/dd/yyyyy');
+      expect([year().start, year().end]).to.eql([6, 11]);
+      expect(parser.parseValue('01/01/10000', true)!.getFullYear()).to.equal(
+        10_000
+      );
+
+      expect(parser.formatValue(new Date(275_760, 8, 13))).to.equal(
+        '09/13/275760'
+      );
+      expect(parser.formatValue(new Date(2026, 0, 1))).to.equal('01/01/2026');
+      expect([year().start, year().end]).to.eql([6, 10]);
+      expect(parser.formatValue(null)).to.equal('__/__/____');
+    });
+
+    it('shows a year before 1 with a sign, and keeps it through an edit', () => {
+      const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
+      const date = new Date(2000, 0, 1);
+      date.setFullYear(-1);
+
+      const masked = parser.formatValue(date);
+      expect(masked).to.equal('01/01/-0001');
+
+      const edited = parser.parseValue(
+        parser.replace(masked, '02', 0, 2).value,
+        true
+      )!;
+      expect(edited.getFullYear()).to.equal(-1);
+      expect(edited.getMonth()).to.equal(1);
+    });
+
+    it('keeps at most four typed digits in a widened year part', () => {
+      const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
+      const masked = parser.formatValue(new Date(10_000, 0, 1));
+
+      // An edit in a year from code replaces the whole part.
+      expect(parser.replace(masked, '9', 6, 6).value).to.equal('01/01/9____');
+      expect(parser.replace(masked, '98765', 6, 11).value).to.equal(
+        '01/01/9876_'
+      );
+      // An edit of another part keeps the year from code.
+      expect(parser.replace(masked, '02', 0, 2).value).to.equal('02/01/10000');
+    });
+
+    it('counts a wide year part as complete with four typed digits', () => {
+      const parser = new DateTimeMaskParser({ format: 'MM/dd/yyyy' });
+      parser.formatValue(new Date(10_000, 0, 1));
+
+      expect(parser.isComplete('01/01/2026_')).to.be.true;
+      expect(parser.parseValue('01/01/2026_', true)!.getFullYear()).to.equal(
+        2026
+      );
+      expect(parser.isComplete('01/01/202__')).to.be.false;
+    });
   });
 
   describe('Date Parsing', () => {

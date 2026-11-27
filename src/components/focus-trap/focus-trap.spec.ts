@@ -61,6 +61,12 @@ describe('Focus trap', () => {
       trap.focusLastElement();
       expect(document.activeElement).instanceOf(HTMLInputElement);
     });
+
+    it('hides its content with `hidden`', () => {
+      trap.hidden = true;
+
+      expect(trap.querySelector('button')!.checkVisibility()).to.be.false;
+    });
   });
 
   describe('Shadow DOM', () => {

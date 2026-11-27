@@ -75,7 +75,9 @@ the two bases: `dark-overrides(light.$bootstrap, $theme, $base, light.$base)` (s
   not import a per-theme sheet directly: the publish build fails, because the sheet would
   reach the bundles of the other themes.
 - The shared sizing, scrollbar and `[hidden]` rules are in `src/styles/common/component.scss`,
-  which compiles once to `componentBase`. Do not `@use` it in a base file.
+  which compiles once to `componentBase`. Do not `@use` it in a base file. A component without
+  `componentBase` that sets a host `display` takes the `[hidden]` rule alone from
+  `src/styles/common/hidden.scss`.
 
 ### 2. Document new parts or custom properties
 

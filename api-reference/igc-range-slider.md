@@ -61,7 +61,7 @@ defineComponents(IgcRangeSliderComponent);
 - `secondaryTicks`: `number`. Default: `0`. Attribute: `secondary-ticks`.
   The number of secondary ticks between two primary ticks. Without primary
   ticks, it is the total number of ticks. The default 0 shows no secondary ticks.
-- `tickOrientation`: `'start' | 'end' | 'mirror'`. Default: `'end'`. Attribute: `tick-orientation`.
+- `tickOrientation`: `'end' | 'mirror' | 'start'`. Default: `'end'`. Attribute: `tick-orientation`.
   Where the ticks are drawn: before the track (`start`), after it (`end`),
   or on both sides (`mirror`).
 - `hidePrimaryLabels`: `boolean`. Default: `false`. Attribute: `hide-primary-labels`.

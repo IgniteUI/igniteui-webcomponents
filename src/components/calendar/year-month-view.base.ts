@@ -19,6 +19,8 @@ export interface YearMonthViewCell {
   ariaLabel?: string;
   selected: boolean;
   current: boolean;
+  /** A year outside the year range: the cell keeps its place but shows nothing. */
+  hidden?: boolean;
 }
 
 /**
@@ -110,12 +112,13 @@ export abstract class IgcYearMonthViewBaseComponent extends EventEmitterMixin<Ig
     ariaLabel,
     selected,
     current,
+    hidden = false,
   }: YearMonthViewCell): TemplateResult {
     const part = this._cellPart;
     const inner = `${part}-inner`;
 
     return html`
-      <span part=${partMap({ [part]: true, selected, current })}>
+      <span part=${partMap({ [part]: true, selected, current, hidden })}>
         <span
           role="gridcell"
           data-value=${value}

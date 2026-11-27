@@ -79,6 +79,7 @@
 |      22 | 2026-11-25 | Add the edit parse, which gives a picker calendar the typed date, the previous date while the date is incomplete, or `null` for a blank mask; a strict parse reads the prompt only in the date parts, so a literal can be the prompt |
 |      23 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
 |      24 | 2026-11-25 | The first render shows the slotted content |
+|      25 | 2026-11-27 | The focused editor shows every digit of a year past 9999 or before year 1; typing keeps at most four year digits |
 
 ## Overview
 
@@ -214,8 +215,13 @@ visual states follow the conventions of the other input-like components of the l
   keeping the caret in place.
 - **Mouse wheel**: while the editor is focused, scrolling spins the part under the caret; the page does not scroll.
 - **Boundaries**: with `spinLoop` enabled - the default - a part wraps around at its boundary, so minutes go from
-  `59` to `00`; otherwise it clamps at the boundary. The year never wraps: a spin stops at year 1 and at year 9999,
-  so the year fits a `yyyy` mask. A year outside them, such as one set from code, only moves toward them.
+  `59` to `00`; otherwise it clamps at the boundary. The year never wraps: a spin stops at year 1 and at year 9999.
+  A year outside them, such as one set from code, only moves toward them.
+- **Long years**: while the editor has focus, a year past 9999 or before year 1 shows every digit, with a sign
+  before a year below 0, such as `01/01/10000` or `01/01/-0001`. The year part keeps that width while the user types.
+  Typing in such a year replaces the whole year, and the part takes at most four typed digits, which complete it. A
+  commit, a spin or <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the width for the new year, and the selection stays on the
+  same part. An undo restores the width of the text that it restores.
 - **Step**: the `delta` argument, else the `spinDelta` of the part, else `1`. A `0` counts as no value. The method
   sets the direction, so `stepDown(DatePart.Date, -1)` also steps down.
 - **Empty value**: a spin sets the current date and time, the same value as <kbd>Ctrl</kbd> + <kbd>;</kbd>, without
@@ -768,7 +774,7 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 17. Restores the mask without committing the value, and commits the restored draft on blur.
 18. Redoes a restored draft.
 19. Emits no `igcChange` when undone back to the value the editor was focused with.
-20. Keeps consecutive spins as separate steps.
+20. Keeps consecutive spins as separate steps. An undo after a spin into the year range restores the wider year.
 21. Emits `igcInput` when a step is restored.
 22. Does nothing while read-only, and drops the history when the input format changes.
 
@@ -783,71 +789,76 @@ Grouped as `Uncommitted edits - issue #1346` in the suite.
 28. `selectionStart` and `selectionEnd` report the selection.
 29. Non-filled parts get their default value on blur; an invalid date sets a `null` value on blur; a complete input
     commits its value.
+30. A year past 9999 shows every digit while the editor has focus, also through an edit of another part, and a spin
+    or <kbd>Ctrl</kbd> + <kbd>;</kbd> into the year range narrows the year part at once and keeps it selected, also
+    before another part. Typing in such a year keeps at most four digits.
 
 ### Keyboard, wheel and pointer
 
-30. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only and when
+31. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only and when
     an IME handles them.
-31. <kbd>Alt</kbd> + arrow presses are a no-op.
-32. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked, and the value
+32. <kbd>Alt</kbd> + arrow presses are a no-op.
+33. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked, and the value
     updates at once, also for a part that is not in the input format and over a keyboard draft.
-33. <kbd>Ctrl</kbd> + <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date
+34. <kbd>Ctrl</kbd> + <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date
     section, stop at each part edge in a format without separators, and skip a separator of more than one character.
-34. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
-35. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
-36. No change event is emitted while read-only.
-37. Drag enter, drag leave with and without focus, and drop behavior.
+35. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
+36. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
+37. No change event is emitted while read-only.
+38. Drag enter, drag leave with and without focus, and drop behavior.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-38. Is form associated, and is not associated on submit without a value.
-39. Is associated on submit.
-40. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call. A reset while focused
+39. Is form associated, and is not associated on submit without a value.
+40. Is associated on submit.
+41. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call. A reset while focused
     discards the typed text and shows the empty mask or the default, the next blur keeps the restored value, and a
     reset that empties the value shows the empty mask.
-41. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>
+42. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>
     submits once.
-42. Reflects the disabled state of an ancestor `fieldset`.
-43. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
+43. Reflects the disabled state of an ancestor `fieldset`.
+44. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
 [input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### defaultValue
 
-44. Form integration - correct initial state, correct submission and correct reset.
-45. Validation - fails and passes required validation, and fails and passes the min and max validation.
+45. Form integration - correct initial state, correct submission and correct reset.
+46. Validation - fails and passes required validation, and fails and passes the min and max validation.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-46. `value-missing`, `range-underflow`, `range-overflow`, `custom-error` and `invalid` render for their matching
+47. `value-missing`, `range-underflow`, `range-overflow`, `custom-error` and `invalid` render for their matching
     constraint.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-47. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+48. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     `ariaLabelledByElements`, and clicking it focuses the control. A `label` added after the first render names the
     control from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](../input/spec.md#naming-order).
 
 ### Date part and parser unit suites
 
-48. [`date-part.spec.ts`](./date-part.spec.ts) covers the part classes: the factory for every part type, `getValue`
+49. [`date-part.spec.ts`](./date-part.spec.ts) covers the part classes: the factory for every part type, `getValue`
     formatting per token, `validate` ranges - including the day validated against its month and year context - and
     `spin` for every part, with leap year adjustment, looping and clamping, and a year that never loops and moves only
-    toward the years 1 to 9999.
-49. [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) covers the parser that turns a format into a
+    toward the years 1 to 9999. A year from code can have a sign.
+50. [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) covers the parser that turns a format into a
     mask and back, including the year format normalization with its case kept, a literal that is a mask flag, the
-    century threshold, the calendar of years below 100, and UTF-16 part positions after an astral literal. The edit
+    century threshold, the calendar of years below 100, and UTF-16 part positions after an astral literal. The year
+    part widens for a year past 9999 or before year 1, keeps the sign through an edit of another part, is complete
+    with four typed digits, and narrows again for a year in the range. The edit
     parse for a picker calendar gives the date of a complete mask, the previous date for an incomplete or invalid
     date, and `null` for a blank mask. A complete mask parses strictly also when a literal is the prompt.
-50. [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) checks, for generated formats:
+51. [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) checks, for generated formats:
     a prompt read only in the parts (a prompt that is also a literal parses and edits like the default prompt),
     the `formatValue` / `parseDate` round-trip for dates from year 0 to 9999, the two-digit year range, no throw or
     invalid date for any string, the strict and the lenient value parse (a complete mask parses the same in both, a
@@ -859,11 +870,11 @@ Generated by `runExternalLabelAssociationTests`.
 
 ### Host ARIA
 
-51. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+52. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required`.
-52. The shared host combobox suite (`runHostComboboxTests`): the cases of the
+53. The shared host combobox suite (`runHostComboboxTests`): the cases of the
     [input](../input/spec.md#host-combobox-state), without the projection case.
-53. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+54. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -873,10 +884,10 @@ Generated by `runExternalLabelAssociationTests`.
 
 Generated by `runValueStateMotionTests` in the Material theme.
 
-54. A focus and an <kbd>ArrowUp</kbd> spin start transitions.
-55. A change from code starts none.
-56. A first render in the changed state starts none.
-57. With reduced motion, a focus and an <kbd>ArrowUp</kbd> spin start none.
+55. A focus and an <kbd>ArrowUp</kbd> spin start transitions.
+56. A change from code starts none.
+57. A first render in the changed state starts none.
+58. With reduced motion, a focus and an <kbd>ArrowUp</kbd> spin start none.
 
 ## Assumptions and limitations
 
@@ -890,8 +901,8 @@ Generated by `runValueStateMotionTests` in the Material theme.
   are not supported as input format tokens.
 - Any year token other than `yy` is normalized to `yyyy` for editing purposes.
 - Two-digit years below `50` resolve to the 2000s; `50` and above resolve to the 1900s.
-- A year spin stops at year 1 and at year 9999. A value set from code past year 9999 shows more digits than the
-  `yyyy` mask has.
+- The user reaches only the years 1 to 9999: a year spin stops at them, and a typed year has at most four digits.
+  Code can set a year outside them, and the focused editor shows all its digits.
 - A single-character token - `d`, `M`, `h` - yields a single editable position; use the doubled token when a
   zero-padded, two-position section is required.
 - The `mask` and `prompt` members are inherited from the shared masked editor behavior. Only `prompt` is supported

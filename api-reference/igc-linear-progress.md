@@ -13,7 +13,7 @@ defineComponents(IgcLinearProgressComponent);
 
 - `striped`: `boolean`. Default: `false`. Attribute: `striped`, reflected.
   Whether the fill of the control is striped.
-- `labelAlign`: `'bottom' | 'top' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end'`. Default: `'top-start'`. Attribute: `label-align`, reflected.
+- `labelAlign`: `'top-start' | 'top' | 'top-end' | 'bottom-start' | 'bottom' | 'bottom-end'`. Default: `'top-start'`. Attribute: `label-align`, reflected.
   The position for the default label of the control.
 - `max`: `number`. Default: `100`. Attribute: `max`.
   The maximum value of the control.

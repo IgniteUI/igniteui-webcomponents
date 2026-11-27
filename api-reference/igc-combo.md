@@ -38,7 +38,7 @@ defineComponents(IgcComboComponent);
   to `valueKey`.
 - `groupKey`: `Keys<T> | string | undefined`. Attribute: `group-key`.
   The key in the data source used to group items in the list.
-- `groupSorting`: `'none' | 'asc' | 'desc'`. Default: `'asc'`. Attribute: `group-sorting`.
+- `groupSorting`: `'asc' | 'desc' | 'none'`. Default: `'asc'`. Attribute: `group-sorting`.
   The sort order of the groups, by their group value. With `none`, the
   groups keep the order of the data source.
 - `filteringOptions`: `FilteringOptions<T>`. Attribute: `filtering-options`.

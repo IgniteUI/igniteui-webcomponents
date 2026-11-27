@@ -5,6 +5,7 @@ import { registerComponent } from '#internals/definitions/register.js';
 import { themeContext } from '#theming/context.js';
 import { enableThemeContext } from '#theming/theming-controller.js';
 import type { Theme, ThemeVariant } from '#theming/types.js';
+import { styles as hidden } from '../../styles/common/hidden.css.js';
 
 /**
  * Provides a theme to its descendant components through Lit context.
@@ -51,11 +52,14 @@ import type { Theme, ThemeVariant } from '#theming/types.js';
 export default class IgcThemeProviderComponent extends LitElement {
   public static readonly tagName = 'igc-theme-provider';
 
-  public static override styles = css`
-    :host {
-      display: contents;
-    }
-  `;
+  public static override styles = [
+    hidden,
+    css`
+      :host {
+        display: contents;
+      }
+    `,
+  ];
 
   /* blazorSuppress */
   public static register(): void {

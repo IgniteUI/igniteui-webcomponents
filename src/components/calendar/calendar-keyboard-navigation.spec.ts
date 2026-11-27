@@ -13,7 +13,7 @@ import {
   shiftKey,
   spaceBar,
 } from '#internals/controllers/key-bindings.js';
-import { CalendarDay } from '#internals/date/model.js';
+import { CalendarDay, createDate } from '#internals/date/model.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
   getCalendarDOM,
@@ -24,7 +24,7 @@ import {
   simulateClick,
   simulateKeyboard,
 } from '#internals/testing/simulate.spec.js';
-import { firstOf } from '#internals/utils/arrays.js';
+import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { asNumber } from '#internals/utils/math.js';
 import IgcCalendarComponent from './calendar.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
@@ -89,6 +89,76 @@ describe('Calendar keyboard interaction', () => {
     it('is accessible', async () => {
       await expect(daysView).lightDom.to.be.accessible();
       await expect(daysView).shadowDom.to.be.accessible();
+    });
+
+    it('stops at the last date of the year range', async () => {
+      const last = CalendarDay.from(new Date(9999, 11, 31));
+      calendar.activeDate = last.native;
+      await elementUpdated(calendar);
+
+      for (const keys of [
+        arrowRight,
+        arrowDown,
+        pageDownKey,
+        [shiftKey, pageDownKey],
+      ]) {
+        simulateKeyboard(daysView, keys);
+        await elementUpdated(calendar);
+
+        expect(last.equalTo(calendar.activeDate)).to.be.true;
+      }
+
+      const { next, previous } = getCalendarDOM(calendar).navigation;
+      expect(next.disabled).to.be.true;
+      expect(previous.disabled).to.be.false;
+
+      // The days of January 10000 that December 9999 shows are disabled.
+      const outside = CalendarDay.from(new Date(10_000, 0, 1));
+      expect(getDOMDate(outside, daysView).part.contains('disabled')).to.be
+        .true;
+    });
+
+    it('stops at the first date of the year range', async () => {
+      const first = CalendarDay.from(createDate(1, 0, 1));
+      calendar.activeDate = first.native;
+      await elementUpdated(calendar);
+
+      for (const keys of [
+        arrowLeft,
+        arrowUp,
+        pageUpKey,
+        [shiftKey, pageUpKey],
+      ]) {
+        simulateKeyboard(daysView, keys);
+        await elementUpdated(calendar);
+
+        expect(first.equalTo(calendar.activeDate)).to.be.true;
+      }
+
+      const { next, previous } = getCalendarDOM(calendar).navigation;
+      expect(previous.disabled).to.be.true;
+      expect(next.disabled).to.be.false;
+    });
+
+    it('moves an active date from code outside the year range only toward it', async () => {
+      const outside = CalendarDay.from(new Date(10_005, 2, 15));
+      calendar.activeDate = outside.native;
+      await elementUpdated(calendar);
+
+      simulateKeyboard(daysView, arrowRight);
+      await elementUpdated(calendar);
+      expect(outside.equalTo(calendar.activeDate)).to.be.true;
+
+      simulateKeyboard(daysView, arrowLeft);
+      await elementUpdated(calendar);
+      expect(outside.add('day', -1).equalTo(calendar.activeDate)).to.be.true;
+
+      const { next, previous } = getCalendarDOM(calendar).navigation;
+      expect(next.disabled).to.be.true;
+
+      simulateClick(previous);
+      await elementUpdated(calendar);
+      expect(calendar.activeDate.getMonth()).to.equal(1);
     });
 
     it('navigates to next month by pressing `PageDown`', async () => {
@@ -472,6 +542,15 @@ describe('Calendar keyboard interaction', () => {
   describe('Years view', () => {
     let yearsView: IgcYearsViewComponent;
 
+    /** The labels of the shown year cells. */
+    const yearLabels = () =>
+      Array.from(
+        yearsView.renderRoot.querySelectorAll(
+          ':not([part~="hidden"]) > [role="gridcell"]'
+        ),
+        (cell) => cell.textContent!.trim()
+      );
+
     beforeEach(async () => {
       calendar = await fixture<IgcCalendarComponent>(html`
         <igc-calendar active-view="years"></igc-calendar>
@@ -502,6 +581,34 @@ describe('Calendar keyboard interaction', () => {
       await elementUpdated(calendar);
 
       expect(next.equalTo(calendar.activeDate)).to.be.true;
+    });
+
+    it('hides the years past 9999 on the last page and stops at 9999', async () => {
+      calendar.activeDate = new Date(9995, 5, 15);
+      await elementUpdated(calendar);
+
+      expect([firstOf(yearLabels()), lastOf(yearLabels())]).to.eql([
+        '9990',
+        '9999',
+      ]);
+
+      simulateKeyboard(yearsView, pageDownKey);
+      await elementUpdated(calendar);
+      expect(calendar.activeDate.getFullYear()).to.equal(9999);
+
+      simulateKeyboard(yearsView, endKey);
+      await elementUpdated(calendar);
+      expect(calendar.activeDate.getFullYear()).to.equal(9999);
+
+      expect(getCalendarDOM(calendar).navigation.next.disabled).to.be.true;
+    });
+
+    it('hides year 0 on the first page', async () => {
+      calendar.activeDate = createDate(7, 5, 15);
+      await elementUpdated(calendar);
+
+      expect([firstOf(yearLabels()), lastOf(yearLabels())]).to.eql(['1', '14']);
+      expect(getCalendarDOM(calendar).navigation.previous.disabled).to.be.true;
     });
 
     it('navigates to the next year by pressing `ArrowRight`', async () => {

@@ -19,6 +19,7 @@ import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import {
   formatDisplayDate,
   getDateTimeFormat,
+  getLocaleDateTimeFormats,
 } from '#internals/i18n/date-formats.js';
 import type { IgcCalendarResourceStrings } from '#internals/i18n/EN/calendar.resources.js';
 import type { UnpackCustomEvent } from '#internals/mixins/event-emitter.js';
@@ -265,16 +266,6 @@ export abstract class IgcDatePickerBaseComponent<
     return this._calendarResourceStrings.calendar_select_date;
   }
 
-  /** The format the editor(s) fall back to when no display format is set. */
-  protected get _defaultDisplayFormat(): string | undefined {
-    return undefined;
-  }
-
-  /** The format the editor(s) fall back to when no input format is set. */
-  protected get _defaultInputFormat(): string | undefined {
-    return undefined;
-  }
-
   /** When a calendar selection is committed. */
   protected _commitPolicy(): CommitPolicy {
     return 'at-once';
@@ -345,7 +336,11 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   public get displayFormat(): string {
-    return (this._displayFormat ?? this._defaultDisplayFormat)!;
+    return (
+      this._displayFormat ??
+      this._inputFormat ??
+      getLocaleDateTimeFormats(this._i18nController.locale).display
+    );
   }
 
   /**
@@ -359,7 +354,10 @@ export abstract class IgcDatePickerBaseComponent<
   }
 
   public get inputFormat(): string {
-    return (this._inputFormat ?? this._defaultInputFormat)!;
+    return (
+      this._inputFormat ??
+      getLocaleDateTimeFormats(this._i18nController.locale).input
+    );
   }
 
   /**
