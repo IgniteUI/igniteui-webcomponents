@@ -13,6 +13,22 @@ export function shadowRootsIn(root: Element | ShadowRoot): ShadowRoot[] {
   });
 }
 
+/** The elements in `root` and in every shadow tree under it. */
+export function elementsIn(root: Element | ShadowRoot): Element[] {
+  return [root, ...shadowRootsIn(root)].flatMap((node) => [
+    ...node.querySelectorAll('*'),
+  ]);
+}
+
+/** Names `element` in test output as `localName[part="…"]::pseudo`. */
+export function partLabel(
+  element: Element,
+  pseudoElement?: string | null
+): string {
+  const part = element.getAttribute('part');
+  return `${element.localName}${part ? `[part="${part}"]` : ''}${pseudoElement ?? ''}`;
+}
+
 /** Returns the animations of the element and, optionally, its descendants. */
 export function getAnimationsFor(
   element: ShadowRoot | Element,
@@ -91,6 +107,38 @@ export async function hoverWithMouse(element: Element): Promise<void> {
 function centerOf(element: Element): [number, number] {
   const { x, y } = getCenterPoint(element);
   return [Math.round(x), Math.round(y)];
+}
+
+export const INTERACTION_STATES = ['idle', 'focused', 'hovered'] as const;
+
+export type InteractionState = (typeof INTERACTION_STATES)[number];
+
+/**
+ * Puts `element` in `state`, also after the states before it in
+ * `INTERACTION_STATES`. Idle moves the pointer away only when it hovers the
+ * element. Hover changes in a frame, so synchronous checks right after idle
+ * see no hover; hovered waits one frame when the hover is not there yet.
+ */
+export async function enterState(
+  state: InteractionState,
+  element: HTMLElement
+): Promise<void> {
+  if (state === 'focused') {
+    element.focus();
+    return;
+  }
+
+  element.blur();
+
+  if (state === 'hovered') {
+    await hoverWithMouse(element);
+
+    if (!element.matches(':hover')) {
+      await nextFrame();
+    }
+  } else if (element.matches(':hover')) {
+    await sendMouse({ type: 'move', position: [0, 0] });
+  }
 }
 
 /** Removes the fragment and the scroll that a link to an element left. */

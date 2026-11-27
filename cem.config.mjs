@@ -291,7 +291,8 @@ export default {
   outdir: './',
   litelement: true,
   overrideModuleCreation: ({ ts, globs }) => {
-    const program = getTsProgram(ts, globs, 'tsconfig.json');
+    // The checker also reads the files of the config, so use one without specs.
+    const program = getTsProgram(ts, globs, 'scripts/tsconfig.cem.json');
     return program
       .getSourceFiles()
       .filter((sf) => globs.find((glob) => sf.fileName.includes(glob)));

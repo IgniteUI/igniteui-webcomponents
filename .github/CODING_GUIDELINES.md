@@ -643,7 +643,8 @@ Each component has tests in `[component].spec.ts`. They cover:
   | `focus-before-render.spec.js` | `runFocusBeforeRenderTests`                                                    |
   | `helpers.spec.js`             | Animation, focus, scroll and style helpers, and `axeReflectedRelationsOptions` |
   | `motion.spec.js`              | `transitionsIn` and `withTheme`                                                |
-  | `value-state.spec.js`         | `runValueStateMotionTests`                                                     |
+  | `value-state.spec.js`         | `runValueStateMotionTests` and `instantMarksEnded`                             |
+  | `defined-tags.spec.js`        | `definedTags` and `fixtureTag`, for a check over every component               |
   | `fast-check-setup.spec.js`    | `fc` with the seed, `SLOW_PROPERTY_RUNS`, `orderedPair` and `withFixture`      |
   | `date-arbitraries.spec.js`    | Date arbitraries, wall clocks and `assumeWallClock` for date properties        |
   | `qr-decoder.spec.js`          | `prepareQrDecoder`, `readQr` for an image and `readQrMatrix` for a QR matrix   |
