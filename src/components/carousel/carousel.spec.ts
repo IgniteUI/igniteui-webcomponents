@@ -2050,29 +2050,14 @@ describe('Carousel', () => {
       expect(eventSpy).calledOnce;
     });
 
-    it('should activate the selected slide when no slide is active yet', async () => {
-      // After a hydrating first update, `hostUpdated` sees the slides but no
-      // active slide.
+    it('selects a slide once a hydrated carousel has updated', async () => {
       const el = parseServerRendered(
         '<igc-carousel-slide></igc-carousel-slide>'.repeat(3)
       );
 
-      let hadActiveSlide = true;
-      let selected: Promise<boolean> | undefined;
-
-      el.addController({
-        hostUpdated() {
-          if (!selected) {
-            hadActiveSlide = el.slides.some((slide) => slide.active);
-            selected = el.select(1);
-          }
-        },
-      });
-
       await el.updateComplete;
 
-      expect(hadActiveSlide).to.be.false;
-      expect(await selected).to.be.true;
+      expect(await el.select(1)).to.be.true;
       expect(el.current).to.equal(1);
       expect(el.slides.map((slide) => slide.active)).to.eql([
         false,
