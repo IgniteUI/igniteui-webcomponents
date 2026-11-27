@@ -424,17 +424,6 @@ export default class IgcCarouselComponent extends I18nMixin(
     }
   }
 
-  protected override update(changedProperties: PropertyValues<this>): void {
-    // From `hostUpdate` until the first render commits, a slot query reads the
-    // host children. `willUpdate` is too early.
-    if (!this.hasUpdated) {
-      this._readSlots();
-      this._activateInitialSlide();
-    }
-
-    super.update(changedProperties);
-  }
-
   /** @internal */
   public override connectedCallback(): void {
     super.connectedCallback();
@@ -454,9 +443,6 @@ export default class IgcCarouselComponent extends I18nMixin(
     await this.updateComplete;
     // Republish for consumers created after their own first render (Blazor timing).
     this._context.publish();
-
-    // A hydrating first update reads no slots. The initial slot change reads them.
-    this._activateInitialSlide();
   }
 
   protected override updated(): void {
@@ -498,14 +484,7 @@ export default class IgcCarouselComponent extends I18nMixin(
     isDefault,
     isInitial,
   }: SlotChangeCallbackParameters<InferSlotNames<typeof Slots>>): void {
-    // The first update already read the slots, except while it hydrated. After
-    // a server render, no `slotchange` may follow.
-    if (isInitial) {
-      this._readSlots();
-      return;
-    }
-
-    if (isDefault) {
+    if (isInitial || isDefault) {
       const previousSlide = this._activeSlide;
       const previousIndex = this.current;
 
@@ -514,12 +493,12 @@ export default class IgcCarouselComponent extends I18nMixin(
       if (previousSlide && !this._slides.includes(previousSlide)) {
         this._reactivateSlide(previousSlide, previousIndex);
       } else if (!this._activeSlide) {
-        // Slides came into an empty carousel after the first render, so activate one.
+        // No slide is active yet, so activate one.
         this._activateInitialSlide();
       }
     }
 
-    if (slot === 'indicator') {
+    if (isInitial || slot === 'indicator') {
       this._projectedIndicators = this._queryProjectedIndicators();
     }
   }
@@ -593,11 +572,6 @@ export default class IgcCarouselComponent extends I18nMixin(
     return this._slots.getAssignedElements('indicator', {
       selector: IgcCarouselIndicatorComponent.tagName,
     });
-  }
-
-  private _readSlots(): void {
-    this._slides = this._querySlides();
-    this._projectedIndicators = this._queryProjectedIndicators();
   }
 
   private _handleNavigationInteractionNext(): void {
@@ -849,16 +823,16 @@ export default class IgcCarouselComponent extends I18nMixin(
       index = this._slides.indexOf(slide);
     }
 
-    if (index === this.current || index === -1 || !slide) {
+    if (
+      index === this.current ||
+      index === -1 ||
+      !slide ||
+      !this._activeSlide
+    ) {
       return false;
     }
 
     const dir = animationDirection ?? (index > this.current ? 'next' : 'prev');
-
-    if (!this._activeSlide) {
-      this._activateSlide(slide);
-      return true;
-    }
 
     await this._animateSlides(slide, this._activeSlide, dir);
     return true;

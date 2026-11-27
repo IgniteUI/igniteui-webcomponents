@@ -32,7 +32,7 @@ type SlotChangeCallbackParameters<T> = {
   /** The name of the slot with the changed assigned nodes. */
   slot: T;
   isDefault: boolean;
-  /** Whether the callback runs for the first host update. */
+  /** Whether this is the call that `initial` asks for. */
   isInitial: boolean;
 };
 
@@ -41,11 +41,20 @@ type SlotControllerOptions<T> = {
   slots?: readonly T[];
   /** Callback that runs when the assigned nodes of a slot change. */
   onChange?: SlotChangeCallback<T>;
-  /** Whether `onChange` also runs once, after the first host update. */
+  /**
+   * Whether `onChange` also runs once before the first render, after
+   * `willUpdate` and the `hostUpdate` of the controllers added before this one.
+   * A controller added later runs it before the next render. After a
+   * hydration, it runs when the hydration ends. With a manual slot assignment,
+   * its queries in the first update report no content.
+   */
   initial?: boolean;
 };
 
 const DefaultSlot = '[default]';
+
+/** The `slot` of the `initial` call. */
+const InitialSlot = '<initial>';
 
 /** Returns the `name` of the slot element for a controller slot key. */
 function slotNameOf(slot: unknown): string {
@@ -71,7 +80,7 @@ class SlotController<T> implements ReactiveController {
   private readonly _host: ReactiveControllerHost & LitElement;
   private readonly _options: SlotControllerOptions<T>;
   private readonly _slotCache = new Map<T | undefined, HTMLSlotElement>();
-  private _initialized = false;
+  private _initialCallDone = false;
 
   /**
    * Set from `hostUpdate` of the first update. Until the template commits, a
@@ -87,15 +96,19 @@ class SlotController<T> implements ReactiveController {
 
   /**
    * Set during the first update of a server-rendered host. The server render
-   * has no slotted content, so until the update ends the queries report none
-   * and `slotchange` waits; otherwise both renders differ.
+   * has no slotted content, so until the update ends the queries report none;
+   * otherwise both renders differ.
    */
   private _hydrating = false;
 
   /** Whether the hydration made a query report no slot. */
   private _queryWithheld = false;
 
-  /** The `slotchange` callbacks that wait for the end of the hydration. */
+  /**
+   * The `slotchange` callbacks that wait. Set from the construction of a
+   * hydrating host until `_endHydration`, which runs the `initial` call first.
+   * It ends later than `_hydrating`, which ends with the hydrating update.
+   */
   private _pendingChanges?: SlotChangeCallbackParameters<T>[];
 
   constructor(
@@ -108,6 +121,7 @@ class SlotController<T> implements ReactiveController {
     // Lit creates the shadow root on connect, so a root in the constructor is a
     // declarative shadow root from the server. Create the controller there.
     this._hydrating = !isServer && host.shadowRoot !== null;
+    this._pendingChanges = this._hydrating ? [] : undefined;
 
     this._options = options;
   }
@@ -245,8 +259,9 @@ class SlotController<T> implements ReactiveController {
 
     const change = { slot: name, isDefault, isInitial: false };
 
-    if (this._hydrating) {
-      (this._pendingChanges ??= []).push(change);
+    // Until the hydration ends, so that the `initial` call runs first.
+    if (this._pendingChanges) {
+      this._pendingChanges.push(change);
     } else {
       this._notifyChange(change);
     }
@@ -257,10 +272,27 @@ class SlotController<T> implements ReactiveController {
     this._host.requestUpdate();
   }
 
-  /** Runs the waiting `slotchange` callbacks, and renders the slots a query missed. */
+  /** Runs the `initial` call, once. */
+  private _notifyInitial(): void {
+    if (this._options.initial && !this._initialCallDone) {
+      this._initialCallDone = true;
+      this._notifyChange({
+        slot: InitialSlot as T,
+        isDefault: false,
+        isInitial: true,
+      });
+    }
+  }
+
+  /**
+   * Runs the `initial` call and the waiting `slotchange` callbacks, and renders
+   * the slots a query missed.
+   */
   private _endHydration(): void {
-    const pending = this._pendingChanges ?? [];
+    const pending = this._pendingChanges!;
     this._pendingChanges = undefined;
+
+    this._notifyInitial();
 
     for (const change of pending) {
       this._notifyChange(change);
@@ -273,23 +305,24 @@ class SlotController<T> implements ReactiveController {
 
   /** @internal */
   public hostUpdate(): void {
-    // The server and the hydrating render have no slotted content. A manual
-    // slot assignment does not follow the `slot` attributes.
-    if (
-      isServer ||
-      this._hydrating ||
-      this._host.hasUpdated ||
-      this._host.shadowRoot?.slotAssignment === 'manual'
-    ) {
+    // The server and the hydrating render have no slotted content.
+    if (isServer || this._hydrating) {
       return;
     }
 
-    this._inFirstUpdate = true;
-    this._rootChildCount = this._host.renderRoot.childNodes.length;
-    // A render that throws commits nothing, so the flag must end too.
-    queueMicrotask(() => {
-      this._inFirstUpdate = false;
-    });
+    if (!this._host.hasUpdated) {
+      // A manual slot assignment does not follow the `slot` attributes.
+      this._inFirstUpdate = this._host.shadowRoot?.slotAssignment !== 'manual';
+      this._rootChildCount = this._host.renderRoot.childNodes.length;
+      // A render that throws commits nothing, so the flag must end too.
+      queueMicrotask(() => {
+        this._inFirstUpdate = false;
+      });
+    }
+
+    // Also for a controller added after the first update. The update is still
+    // pending, so this requests no other update.
+    this._notifyInitial();
   }
 
   /** @internal */
@@ -298,15 +331,6 @@ class SlotController<T> implements ReactiveController {
       this._hydrating = false;
       // Off the update cycle - avoids Lit's change-in-update warning.
       queueMicrotask(() => this._endHydration());
-    }
-
-    if (!this._initialized && this._options.initial) {
-      this._initialized = true;
-      this._options.onChange?.call(this._host, {
-        slot: '<initial>' as T,
-        isDefault: false,
-        isInitial: true,
-      });
     }
   }
 }

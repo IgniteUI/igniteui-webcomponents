@@ -29,17 +29,19 @@
     - [Initialization](#initialization)
     - [Methods tests](#methods-tests)
     - [Slots tests](#slots-tests)
-    - [Focus](#focus)
-    - [Click](#click)
-    - [Keyboard](#keyboard)
-    - [Automatic rotation tests](#automatic-rotation-tests)
-    - [Swipe](#swipe)
+    - [Interactions](#interactions)
+      - [Focus](#focus)
+      - [Click](#click)
+      - [Keyboard](#keyboard)
+      - [Automatic rotation tests](#automatic-rotation-tests)
+      - [Swipe](#swipe)
     - [Autoplay lifecycle](#autoplay-lifecycle)
     - [Slide and indicator integrity](#slide-and-indicator-integrity)
     - [Layout and theming](#layout-and-theming)
     - [Indicator container](#indicator-container)
     - [Hidden ancestor](#hidden-ancestor)
     - [First render](#first-render)
+    - [Animations, labels and projected indicators](#animations-labels-and-projected-indicators)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -61,6 +63,7 @@
 |       8 | 2026-10-29 | The navigation buttons have no transition, and the indicator dots transition only their border color; the active slide, the active indicator and its dot no longer set `visibility: visible`; so the carousel hides at the same time as a hidden ancestor |
 |       9 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                                                                                                                                                      |
 |      10 | 2026-11-26 | The first render shows the active slide and the indicators; a hydrated carousel uses the projected indicators |
+|      11 | 2026-11-27 | Test scenarios mirror the `Interactions` and the `Animations, labels and projected indicators` blocks |
 
 ## Overview
 
@@ -378,30 +381,32 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 
 9. The `previous-button`, `next-button` and `indicator` slots accept projected content.
 
-### Focus
+### Interactions
+
+#### Focus
 
 10. The carousel delegates focus to the active indicator, and to the previous button when the indicator container
     is not rendered.
 
-### Click
+#### Click
 
 11. A click on the next button, on the previous button and on an indicator changes the active slide.
 12. `igcSlideChanged` is emitted with the new index.
 
-### Keyboard
+#### Keyboard
 
 13. <kbd>Enter</kbd> and <kbd>Space</kbd> on the navigation buttons move to the next and the previous slide.
 14. <kbd>←</kbd>, <kbd>→</kbd>, <kbd>Home</kbd> and <kbd>End</kbd> on an indicator change the active slide, in
     both the left-to-right and the right-to-left direction.
 
-### Automatic rotation tests
+#### Automatic rotation tests
 
 15. The slides change on their own once an interval is set, and each change emits `igcSlideChanged`.
 16. The rotation pauses and resumes on `pointerenter` and `pointerleave`, and on keyboard interaction.
 17. Focusing an interactive element inside a slide pauses the rotation.
 18. With `disablePauseOnInteraction`, none of the interactions pause the rotation.
 
-### Swipe
+#### Swipe
 
 19. A swipe to the left and to the right moves to the next and the previous slide, and the two swap in a
     right-to-left context.
@@ -463,10 +468,20 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
     hydrating first update with no `slotchange`, the carousel activates the authored active slide and uses the
     projected indicators.
 
+### Animations, labels and projected indicators
+
+42. `indicatorsLabelFormat` sets the labels of the indicators.
+43. `animationType="fade"` animates only the opacity, `vertical` slides along the vertical axis, and
+    `animationType="none"` switches the slides without keyframes. A slide outside of a carousel slides horizontally.
+44. A click on a projected indicator selects its slide and emits `igcSlideChanged`.
+45. A slide that is activated and moved stays the only active slide. When a slide is activated while another is
+    removed, the last active slide stays active.
+46. The rotation stays paused while the focus moves between slotted elements.
+47. After a hydrating first update, `select()` moves to the passed slide once the update completes.
+
 ### Not covered by the suite
 
-- `animationType` is not asserted per value; the suite exercises the default `slide` animation.
-- `indicatorsOrientation` and `vertical` are covered only indirectly, through the swipe and the rendering tests.
+- `indicatorsOrientation` is covered only indirectly, through the swipe and the rendering tests.
 - Of the `locale` and `resourceStrings` properties, only the role description is covered; the labels are asserted
   against the default English values and the format properties.
 

@@ -18,6 +18,44 @@ import {
 
 type TestSlotController = SlotController<'[default]' | 'start' | 'end'>;
 
+type StartHost = LitElement & {
+  slotController: SlotController<'[default]' | 'start'>;
+};
+
+/**
+ * Defines a host with a `start` slot and a slot controller with
+ * `initial: true`, which passes the host to `onChange`.
+ */
+function defineInitialHost({
+  onChange,
+  onRender,
+  manual = false,
+}: {
+  onChange: (host: StartHost, isInitial: boolean) => void;
+  onRender?: () => void;
+  manual?: boolean;
+}): string {
+  return defineCE(
+    class extends LitElement {
+      public static override shadowRootOptions: ShadowRootInit = {
+        ...LitElement.shadowRootOptions,
+        slotAssignment: manual ? 'manual' : 'named',
+      };
+
+      public readonly slotController = addSlotController(this, {
+        slots: setSlots('start'),
+        initial: true,
+        onChange: ({ isInitial }) => onChange(this, isInitial),
+      });
+
+      protected override render() {
+        onRender?.();
+        return html`<slot name="start"></slot>`;
+      }
+    }
+  );
+}
+
 describe('Slots controller', () => {
   let tag: string;
   let instance: LitElement & {
@@ -246,6 +284,84 @@ describe('Slots controller', () => {
 
       expect(startSlot.isDefault).to.be.false;
       expect(startSlot.slot).to.equal('start');
+    });
+
+    describe('Initial call', () => {
+      it('reads the slotted content before the first render, which sees its state', async () => {
+        const log: string[] = [];
+        let starts = 0;
+        const tagName = unsafeStatic(
+          defineInitialHost({
+            onChange: (host) => {
+              starts = host.slotController.getAssignedElements('start').length;
+              log.push(`change ${starts}`);
+            },
+            onRender: () => log.push(`render ${starts}`),
+          })
+        );
+
+        await fixture(
+          html`<${tagName}><span slot="start"></span></${tagName}>`
+        );
+
+        expect(log.slice(0, 2)).to.eql(['change 1', 'render 1']);
+      });
+
+      it('reports no content with a manual slot assignment, until the host assigns it', async () => {
+        const changes: { initial: boolean; count: number }[] = [];
+        const tagName = unsafeStatic(
+          defineInitialHost({
+            manual: true,
+            onChange: (host, initial) =>
+              changes.push({
+                initial,
+                count: host.slotController.getAssignedElements('start').length,
+              }),
+          })
+        );
+
+        const host = await fixture<LitElement>(
+          html`<${tagName}><span></span></${tagName}>`
+        );
+        expect(changes).to.eql([{ initial: true, count: 0 }]);
+
+        host.renderRoot.querySelector('slot')!.assign(host.firstElementChild!);
+        await elementUpdated(host);
+
+        expect(lastOf(changes)).to.eql({ initial: false, count: 1 });
+      });
+
+      it('runs before the next render for a controller added after the first update', async () => {
+        const changes: { initial: boolean; count: number }[] = [];
+        const tagName = unsafeStatic(
+          defineCE(
+            class extends LitElement {
+              protected override render() {
+                return html`<slot name="start"></slot>`;
+              }
+            }
+          )
+        );
+        const host = await fixture<LitElement>(
+          html`<${tagName}><span slot="start"></span></${tagName}>`
+        );
+
+        const controller = addSlotController(host, {
+          slots: setSlots('start'),
+          initial: true,
+          onChange: ({ isInitial }) =>
+            changes.push({
+              initial: isInitial,
+              count: controller.getAssignedElements('start').length,
+            }),
+        });
+        expect(changes).to.be.empty;
+
+        host.requestUpdate();
+        await elementUpdated(host);
+
+        expect(changes).to.eql([{ initial: true, count: 1 }]);
+      });
     });
   });
 
@@ -678,6 +794,33 @@ describe('Slots controller', () => {
 
       renders = [];
       await settle(parseDeclarative(queryingTag));
+      expect(renders).lengthOf(2);
+    });
+
+    it('runs the initial call after the hydration, before its slotchange callbacks', async () => {
+      const calls: { initial: boolean; pending: boolean; content: boolean }[] =
+        [];
+      const tag = defineInitialHost({
+        onChange: (host, initial) =>
+          calls.push({
+            initial,
+            pending: host.isUpdatePending,
+            content: host.slotController.hasAssignedElements('start'),
+          }),
+        onRender: () => renders.push(false),
+      });
+
+      await settle(parseDeclarative(tag, '<span slot="start"></span>'));
+
+      expect(firstOf(calls)).to.eql({
+        initial: true,
+        pending: false,
+        content: true,
+      });
+      const later = calls.slice(1).map(({ initial }) => initial);
+      expect(later).not.to.be.empty;
+      expect(later).not.to.include(true);
+      // The hydrating render, and the one that the initial call requests.
       expect(renders).lengthOf(2);
     });
   });

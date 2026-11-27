@@ -329,6 +329,10 @@ private readonly _slots = addSlotController(this, {
   no content. In the first render, a query also reports content for a slot that the template
   does not render, and a flattened query does not return fallback content.
 
+  A handler that must keep state, such as a list of child components, sets `initial: true`. The
+  handler then also runs once before the first render, after `willUpdate()`, and its queries see
+  the slotted content. After a hydration, that call runs when the hydration ends.
+
 ## Shadow DOM and CSS Parts
 
 - All components use an open shadow root.
