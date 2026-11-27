@@ -52,7 +52,7 @@ class AsyncContextConsumer<
 > implements ReactiveController {
   protected _host: Host;
   protected _options: AsyncContextOptions<T>;
-  protected _consumer?: ContextConsumer<T, Host>;
+  protected readonly _consumer: ContextConsumer<T, Host>;
   /**
    * The set of the document at connect time. A move to another document
    * changes `ownerDocument` before the disconnect.
@@ -63,16 +63,27 @@ class AsyncContextConsumer<
     this._host = host;
     this._options = options;
 
+    // Added first, so the retry waits before the consumer asks.
     this._host.addController(this);
+
+    // Asks at each connect. Not in `hostConnected`: the host also connects a
+    // controller added while it connects, so the consumer would ask twice.
+    this._consumer = new ContextConsumer(host, {
+      context: options.context,
+      callback: (value, dispose) => {
+        this._waiting?.delete(this._retry);
+        this._options.callback?.(value, dispose);
+      },
+      subscribe: true,
+    });
   }
 
   public get value(): ContextType<T> | undefined {
-    return this._consumer?.value;
+    return this._consumer.value;
   }
 
   private readonly _retry: Retry = ({ context, contextTarget }) => {
     if (
-      this._consumer &&
       context === this._options.context &&
       mayReach(this._host, contextTarget)
     ) {
@@ -80,30 +91,14 @@ class AsyncContextConsumer<
     }
   };
 
-  // The consumer survives a disconnect, and a reconnect can land during the
-  // await, so the guard runs on both sides of it.
-  public async hostConnected(): Promise<void> {
+  /** Waits for a late provider until the consumer gets the context. */
+  public hostConnected(): void {
     this._waiting = getOrInsertComputed(
       waiting,
       this._host.ownerDocument,
       createWaiting
     );
     this._waiting.add(this._retry);
-
-    if (this._consumer) {
-      return;
-    }
-
-    await this._host.updateComplete;
-
-    this._consumer ??= new ContextConsumer(this._host, {
-      context: this._options.context,
-      callback: (value, dispose) => {
-        this._waiting?.delete(this._retry);
-        this._options.callback?.(value, dispose);
-      },
-      subscribe: true,
-    });
   }
 
   public hostDisconnected(): void {
