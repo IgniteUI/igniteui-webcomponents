@@ -97,7 +97,7 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   }
 
   public override disconnectedCallback(): void {
-    releaseTabIndex(this);
+    releaseTabIndex(this, this);
     super.disconnectedCallback();
   }
 
@@ -108,7 +108,7 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
       return;
     }
 
-    claimTabIndex(this, group.isTabStop(this) ? null : '-1');
+    claimTabIndex(this, group.isTabStop(this) ? null : '-1', this);
   }
 
   protected override updated(changedProperties: PropertyValues<this>): void {

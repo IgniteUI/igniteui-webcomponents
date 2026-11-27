@@ -16,10 +16,7 @@ import {
 import { addSlotController, setSlots } from '#internals/controllers/slot.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { isEmpty } from '#internals/utils/arrays.js';
-import {
-  normalizedTextContent,
-  releaseTabIndex,
-} from '#internals/utils/dom.js';
+import { normalizedTextContent } from '#internals/utils/dom.js';
 import { all } from '#themes/list/themes/item.js';
 import { addThemingController } from '#theming/theming-controller.js';
 import { styles as componentBase } from '../../styles/common/component.css.js';
@@ -101,11 +98,6 @@ export default class IgcListItemComponent extends LitElement {
   }
 
   //#region Lit lifecycle methods
-
-  public override disconnectedCallback(): void {
-    releaseTabIndex(this);
-    super.disconnectedCallback();
-  }
 
   protected override willUpdate(): void {
     // The context changes with no property, so this runs on each update.

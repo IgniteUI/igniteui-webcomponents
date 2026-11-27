@@ -58,6 +58,7 @@ This directory hosts three public components: [`igc-list`](#igc-list), [`igc-lis
 |       8 | 2026-11-26 | Grid navigation (`navigation="grid"`) for items that hold controls |
 |       9 | 2026-11-26 | A grid control that removes itself leaves the focus on its row; slotted content with `hidden` does not render |
 |      10 | 2026-11-26 | The focus ring shows only in a list with navigation and uses the system highlight color in forced colors mode; an element that becomes focusable in a grid row leaves the tab order |
+|      11 | 2026-11-27 | In a grid, a control with a composite role is one control, entered at its own tab stop, also after a change of its role; native radios are entered at the checked radio; a control that turns up with no mutation leaves the tab order when its row takes the focus; a focused control that can no longer take the focus gives it to its row |
 
 ## Overview
 
@@ -236,14 +237,22 @@ the selection. In a list with keyboard navigation, `selected` is also the state 
 - The list sets `tabindex="-1"` on the controls of the items, and gives the app its own value back when the mode
   changes or a control leaves the list. For a component that renders its control in its shadow root, such as
   `igc-button` or `igc-checkbox`, the value goes on the component. Controls that arrive later, and elements that
-  become focusable through `href`, `tabindex` or `contenteditable`, are handled too.
+  become focusable through `href`, `tabindex`, `contenteditable` or `role`, are handled too. A control that turns up
+  with no change in the DOM of the row, such as a custom element that is defined after it joins the row, leaves the
+  tab order when its row takes the focus.
 - Left and Right reach the controls in the order of the layout: the `start` area, the title and subtitle, the
   content, then the `end` area. A control that is disabled, inert, hidden from assistive technology or does not
-  render is skipped.
+  render is skipped. A group of native radio buttons is reached at its checked radio, as Tab does.
+- When a focused control can no longer take the focus, for example because it becomes disabled, inert or hidden, the
+  focus moves to its row.
 - A click on a control bubbles to its item. Stop the propagation in the control's own `click` handler, so that the
   control does not also activate the item.
-- A list with `navigation` set, inside an item, counts as one control. Left and Right focus its tab stop item, and
-  the outer list changes nothing inside it. A nested static list is plain content.
+- An element with a composite role (`grid`, `listbox`, `menu`, `menubar`, `radiogroup`, `tablist`, `toolbar`, `tree`
+  or `treegrid`) counts as one control: for example `igc-button-group` in a single selection mode, `igc-radio-group`,
+  `igc-tabs`, or a list with `navigation` set. The list sets `tabindex="-1"` on it, which takes a component with a
+  shadow root out of the tab order as a whole, and changes nothing inside it. Left and Right focus its own tab stop:
+  the selected button, the checked radio, the selected tab, the tab stop item. A nested static list and other
+  wrappers are plain content.
 - Escape returns from a control to its item unless the control handles Escape. A control that handles it also while
   its popup is closed, such as `igc-combo`, keeps it; F2 still returns to the item.
 - Only selected items expose `aria-selected="true"`, which suits a list of actions. When the items can be selected,
@@ -292,10 +301,11 @@ With `navigation="grid"`, also:
 | Control | Other keys      | The control's own behavior.                                                               |
 
 A control that uses the arrow keys keeps all of them: a text-like `input`, `textarea`, `select`, editable content, or
-an element with the role `textbox`, `searchbox`, `combobox`, `slider`, `spinbutton`, `listbox`, `radiogroup`,
-`radio`, `menu`, `menubar`, `tablist`, `toolbar`, `tree`, `treegrid` or `grid`, also inside a shadow root or set
-through the `ElementInternals` of a library component. A nested list with `navigation` set is the exception: it
-leaves Left and Right to the row. The list also leaves alone a key that a control already handled.
+an element with the role `textbox`, `searchbox`, `combobox`, `slider`, `spinbutton` or `radio`, also inside a shadow
+root or set through the `ElementInternals` of a library component. A control with a composite role keeps only the
+arrow keys that it handles, and the others move in the grid: Up and Down move from horizontal tabs to the next row,
+and Left and Right move from a nested list to the controls of the outer row. The list also leaves alone a key that a
+control already handled.
 
 When the focused item is removed, the focus moves to the item that took its place, else to the next item that
 renders, else to the last item that renders, else to the empty list. In a grid, this also applies when a control of
@@ -483,65 +493,93 @@ Tab order:
 61. The controls of the rows have `tabindex="-1"`, and one row is the tab stop.
 62. One Tab reaches the list and the next leaves it, also from a control, in both directions (real key presses).
 63. A control that arrives later leaves the tab order once it renders.
-64. A disabled control leaves the tab order once it is enabled. So does an element that becomes focusable through
+64. A control that turns up with no mutation, a custom element that is defined after it joined the row or a control
+    that a component renders later, leaves the tab order once its row takes the focus.
+65. When Shift+Tab reaches such a control in the tab stop row, the focus stays on it (real key presses).
+66. A disabled control leaves the tab order once it is enabled. So does an element that becomes focusable through
     `href`, `tabindex` or `contenteditable`.
-65. A change of the mode gives the app its `tabindex` back.
-66. A control that leaves the list gets the app's `tabindex` back.
+67. A change of the mode gives the app its `tabindex` back.
+68. A control that leaves the list gets the app's `tabindex` back.
 
 Keyboard:
 
-67. Right moves through the controls of a row in the order of the layout, and back to the row.
-68. Left moves the other way.
-69. Left and Right are mirrored in a right-to-left list.
-70. A disabled control and a control that does not render are skipped.
-71. On a row without controls, Left and Right do nothing and the default is kept.
-72. Up, Down, Home and End move between the rows, also Up and Down from a control, and stop at the ends.
-73. Up moves from the control of a library component to the previous row (real key presses).
-74. A text field keeps all the arrow keys (real key presses).
-75. A widget with an arrow-key role keeps the arrow keys, and the default is kept.
-76. A component whose arrow-key role comes from its `ElementInternals` keeps the arrow keys.
-77. A key that a control handled stays with it.
-78. Escape and F2 return from a control to its row, also from a text field.
-79. Escape closes the open popup of an `igc-select` and leaves the focus on it; the next Escape returns to the row
+69. Right moves through the controls of a row in the order of the layout, and back to the row.
+70. Left moves the other way.
+71. Left and Right are mirrored in a right-to-left list.
+72. A disabled control and a control that does not render are skipped.
+73. On a row without controls, Left and Right do nothing and the default is kept.
+74. Up, Down, Home and End move between the rows, also Up and Down from a control, and stop at the ends.
+75. Up moves from the control of a library component to the previous row (real key presses).
+76. A text field keeps all the arrow keys (real key presses).
+77. A widget with an arrow-key role keeps the arrow keys, and the default is kept.
+78. A component whose arrow-key role comes from its `ElementInternals` keeps the arrow keys.
+79. A key that a control handled stays with it.
+80. Escape and F2 return from a control to its row, also from a text field.
+81. Escape closes the open popup of an `igc-select` and leaves the focus on it; the next Escape returns to the row
     (real key presses). A closed `igc-combo` that handles Escape keeps it, and F2 returns to the row.
-80. Enter and Space click the row, but not from a control.
-81. Type-ahead moves between the rows, but not from a control.
+82. Enter and Space click the row, but not from a control.
+83. Type-ahead moves between the rows, but not from a control.
 
 Focus:
 
-82. The row of a focused control is the tab stop.
-83. A window blur does not end the focus of a control, so the removal of its row still moves the focus.
-84. When a control removes its row, the focus moves to the next row. When a control removes itself, also one with a
+84. The row of a focused control is the tab stop.
+85. A window blur does not end the focus of a control, so the removal of its row still moves the focus.
+86. When a control removes its row, the focus moves to the next row. When a control removes itself, also one with a
     shadow root, the focus moves to its row. The removal of another control leaves the focus alone, and after the
     focus went to no element, a removal does not take it back.
+87. When a focused control becomes disabled, inert, hidden or invisible, or stops rendering, the focus moves to its
+    row. After a blur to no element, the focus stays on the page while the control can still take it.
 
 Ownership:
 
-85. The list navigates the rows and the controls inside wrapper elements.
-86. A nested list that navigates is one control: Right focuses its tab stop, Up and Down stay in it, also at its ends,
+88. The list navigates the rows and the controls inside wrapper elements.
+89. A nested list that navigates is one control: Right focuses its tab stop, Up and Down stay in it, also at its ends,
     Left returns to the outer row, and Escape returns to the outer row from inside it (real key presses). The outer
-    list writes no `tabindex` inside it. When a control of a nested grid removes itself, the focus moves to its row
-    in the nested grid.
-87. A static nested list is content: its controls are controls of the outer row.
+    list sets `tabindex="-1"` on it and writes nothing inside it. When a control of a nested grid removes itself, the
+    focus moves to its row in the nested grid.
+90. A static nested list is content: its controls are controls of the outer row.
+91. The `igc-button` elements inside a wrapper with a shadow root, and inside a static nested list, are controls of
+    the row.
+
+Composite controls:
+
+92. An `igc-button-group`, an `igc-radio-group`, an `igc-tabs` and an element with the role `toolbar` each have
+    `tabindex="-1"`, and Right and Left enter them at their own tab stop.
+93. Tab from a row with a button group and a nested list leaves the list, also after a selection change in the group
+    (real key presses).
+94. The buttons of a group in multiple mode are separate controls. They stay out of the tab order after a selection
+    change, and get their `tabindex` back when the mode changes.
+95. An empty nested list is entered as itself, and stays out of the tab order when it gets items.
+96. The tabs keep Left and Right and leave Up and Down to the grid. A toggle button of a single-selection group keeps
+    every arrow key (real key presses).
+97. Left and Right enter a group of native radios at its checked radio.
+98. The radios of an `igc-radio-group` keep every arrow key (real key presses).
+99. An element that gets a composite `role` turns into one control, and its former controls get the app's
+    `tabindex` back.
+100. A button group that switches to a multiple selection turns into separate controls, and back into one control
+     when it switches back.
+101. Left and Right skip a composite with no item that can take the focus.
+102. An app widget that is its own tab stop, such as a listbox with `aria-activedescendant`, is entered as itself, and
+     gets the app's `tabindex` back when the mode changes.
 
 Empty list:
 
-88. The `empty` content shows as a row with one cell, and the empty list is a tab stop.
-89. The focus moves to the rows that arrive while the empty list has it.
+103. The `empty` content shows as a row with one cell, and the empty list is a tab stop.
+104. The focus moves to the rows that arrive while the empty list has it.
 
 Change of the navigation:
 
-90. A grid turns into a listbox: the roles change, the item renders no cell, the controls get their `tabindex` back,
-    and Left and Right do nothing.
+105. A grid turns into a listbox: the roles change, the item renders no cell, the controls get their `tabindex` back,
+     and Left and Right do nothing.
 
 ### Value state motion
 
 Generated by `runValueStateMotionTests` in the Material theme. A hover is the user interaction that animates.
 
-91. A hover starts transitions.
-92. A change from code starts none.
-93. A first render in the changed state starts none.
-94. With reduced motion, a hover starts none.
+106. A hover starts transitions.
+107. A change from code starts none.
+108. A first render in the changed state starts none.
+109. With reduced motion, a hover starts none.
 
 ### Not covered by the suite
 
@@ -575,10 +613,14 @@ Generated by `runValueStateMotionTests` in the Material theme. A hover is the us
 - Selection state lives on the individual items; the list neither enforces nor tracks it.
 - In a listbox, an item holds no interactive content: an option exposes its content as plain text, and the list takes
   the keys of the item. Use `navigation="grid"` for items with controls.
-- In a grid, a nested list with `navigation` set keeps its own tab stop, so Tab from the outer row enters it.
-- In a grid, a control is found by its element type, or as a component whose shadow root has a focusable element.
-  A Lit component is found once it renders. Another custom element that is defined after it is added to the list is
-  found at the next change in the list.
+- In a grid, a control is found by its element type, by a composite role, or as a component whose shadow root has a
+  focusable element. A Lit component is found once it renders. A control that turns up with no change in the DOM of
+  its row, such as a custom element that is defined later, is found when its row takes the focus. When Shift+Tab
+  reaches such a control first, the focus stays on it.
+- In a grid, a composite control in the light DOM, such as a `div` with the role `toolbar`, keeps its own tab stop:
+  the `tabindex="-1"` on it does not cover its children, so Tab from the row enters it.
+- In a grid, a component that changes its role only through its `ElementInternals`, with no `role` attribute, keeps
+  the `tabindex` that the list gave it until the next change in its row. Left and Right follow the new role at once.
 - The keyboard navigation does not cover the items of an `igc-virtual-scroll` inside the list: Home, End and
   type-ahead would reach only the rendered items. Do not set `navigation` on such a list.
 - Items have no disabled state. An app that needs one sets `aria-disabled="true"` on the item and ignores its clicks.

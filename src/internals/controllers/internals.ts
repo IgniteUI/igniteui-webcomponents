@@ -326,4 +326,11 @@ export function internalsOf(
   return registry.get(element);
 }
 
+/** The role of `element`, from its attribute, else from the internals of a library component. */
+export function roleOf(element: Element): string {
+  return (
+    element.getAttribute('role') ?? internalsOf(element)?.getARIA('role') ?? ''
+  );
+}
+
 export type { ElementInternalsController };

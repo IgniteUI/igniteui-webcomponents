@@ -333,7 +333,7 @@ function isHiddenOrDisabled(element: Element): boolean {
  * Whether Tab reaches `element` as a native radio button: the checked button
  * of its group, or the first button when none is checked. Other elements pass.
  */
-function isRadioGroupStop(element: HTMLElement): boolean {
+export function isRadioGroupStop(element: HTMLElement): boolean {
   if (
     !(element instanceof HTMLInputElement) ||
     element.type !== 'radio' ||
@@ -354,16 +354,16 @@ function isRadioGroupStop(element: HTMLElement): boolean {
 }
 
 /**
- * Whether `element` can take the focus now: it renders, it is not disabled,
- * hidden from assistive technology or inert. Unlike Tab, a `.focus()` call
- * also reaches an element with `tabindex="-1"`.
+ * Whether `element` can take the focus now: it renders and is visible, it is
+ * not disabled, hidden from assistive technology or inert. Unlike Tab, a
+ * `.focus()` call also reaches an element with `tabindex="-1"`.
  */
 export function canTakeFocus(element: HTMLElement): boolean {
   return (
     !isHiddenOrDisabled(element) &&
     !element.matches(':disabled') &&
     !element.closest('[inert]') &&
-    element.checkVisibility()
+    element.checkVisibility({ visibilityProperty: true })
   );
 }
 
@@ -384,10 +384,14 @@ function isFocusable(element: HTMLElement): boolean {
 /**
  * Yields `root` and its descendants that Tab reaches, in flat-tree order.
  * Unlike {@link getTabbables}, it enters open shadow roots and goes from a
- * slot to its assigned elements.
+ * slot to its assigned elements. Like Tab, it skips the shadow tree and the
+ * slotted content of a host with `tabindex="-1"`.
  */
 export function* getFocusableElements(root: Element): Generator<HTMLElement> {
-  if (isHiddenOrDisabled(root)) {
+  if (
+    isHiddenOrDisabled(root) ||
+    (root.shadowRoot && hasNegativeTabIndex(root))
+  ) {
     return;
   }
 
@@ -409,6 +413,21 @@ export function* getFocusableElements(root: Element): Generator<HTMLElement> {
   for (const child of children) {
     yield* getFocusableElements(child);
   }
+}
+
+/** Whether `element` is in the shadow tree of `host`, also in a nested shadow root. */
+export function isInShadowTreeOf(element: Element, host: Element): boolean {
+  let root = element.getRootNode();
+
+  while (root instanceof ShadowRoot) {
+    if (root.host === host) {
+      return true;
+    }
+
+    root = root.host.getRootNode();
+  }
+
+  return false;
 }
 
 /**
@@ -466,29 +485,91 @@ export function setOrRemoveAttribute(
     : element.setAttribute(name, value);
 }
 
-/** The `tabindex` of each element before a roving focus took it over. */
-const ownTabIndexes = new WeakMap<Element, string | null>();
+type TabIndexClaims = {
+  /** The `tabindex` of the app before the first claim. */
+  appValue: string | null;
+  owners: Map<object, string | null>;
+};
 
-/**
- * Sets the `tabindex` of `element` for a roving focus, and keeps the value of
- * the app for {@link releaseTabIndex}.
- */
-export function claimTabIndex(element: Element, value: string | null): void {
-  if (!ownTabIndexes.has(element)) {
-    ownTabIndexes.set(element, element.getAttribute('tabindex'));
+const tabIndexClaims = new WeakMap<Element, TabIndexClaims>();
+
+/** The `tabindex` from the claims other than `except`: `-1` from any owner wins. */
+function resolveTabIndex(
+  { appValue, owners }: TabIndexClaims,
+  except?: object
+): string | null {
+  let value = appValue;
+
+  for (const [owner, claimed] of owners) {
+    if (owner === except) {
+      continue;
+    }
+
+    if (claimed === '-1') {
+      return claimed;
+    }
+
+    value = claimed;
   }
+
+  return value;
+}
+
+function applyTabIndex(element: Element, claims: TabIndexClaims): void {
+  const value = resolveTabIndex(claims);
 
   if (element.getAttribute('tabindex') !== value) {
     setOrRemoveAttribute(element, 'tabindex', value);
   }
 }
 
-/** Gives back the `tabindex` that `element` had before {@link claimTabIndex}. */
-export function releaseTabIndex(element: Element): void {
-  if (ownTabIndexes.has(element)) {
-    setOrRemoveAttribute(element, 'tabindex', ownTabIndexes.get(element));
-    ownTabIndexes.delete(element);
+/**
+ * Sets the `tabindex` of `element` for `owner`, such as a roving focus, and
+ * keeps the value of the app for {@link releaseTabIndex}. Several owners can
+ * claim one element, and a `-1` from any of them wins.
+ */
+export function claimTabIndex(
+  element: Element,
+  value: string | null,
+  owner: object
+): void {
+  let claims = tabIndexClaims.get(element);
+
+  if (!claims) {
+    claims = { appValue: element.getAttribute('tabindex'), owners: new Map() };
+    tabIndexClaims.set(element, claims);
   }
+
+  claims.owners.set(owner, value);
+  applyTabIndex(element, claims);
+}
+
+/**
+ * Ends the claim of `owner` on `element`. After the last claim, the element
+ * gets the `tabindex` of the app back.
+ */
+export function releaseTabIndex(element: Element, owner: object): void {
+  const claims = tabIndexClaims.get(element);
+
+  if (!claims?.owners.delete(owner)) {
+    return;
+  }
+
+  applyTabIndex(element, claims);
+
+  if (claims.owners.size === 0) {
+    tabIndexClaims.delete(element);
+  }
+}
+
+/** Whether `element` is a tab stop by its `tabindex` without the claim of `owner`. */
+export function isTabStopWithout(element: Element, owner: object): boolean {
+  const claims = tabIndexClaims.get(element);
+  const value = claims
+    ? resolveTabIndex(claims, owner)
+    : element.getAttribute('tabindex');
+
+  return Number.parseInt(value ?? '', 10) >= 0;
 }
 
 /** Returns the children of `host` that its slot named `slotName` takes. */

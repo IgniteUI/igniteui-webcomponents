@@ -32,11 +32,14 @@ import { runValueStateMotionTests } from '#internals/testing/value-state.spec.js
 import { styles as bootstrap } from '../../styles/themes/light/bootstrap.css.js';
 import { styles as indigo } from '../../styles/themes/light/indigo.css.js';
 import { configureTheme } from '../../theming/config.js';
+import IgcButtonGroupComponent from '../button-group/button-group.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import IgcComboComponent from '../combo/combo.js';
 import IgcInputComponent from '../input/input.js';
+import IgcRadioGroupComponent from '../radio-group/radio-group.js';
 import IgcSelectComponent from '../select/select.js';
+import IgcTabsComponent from '../tabs/tabs.js';
 import IgcListHeaderComponent from './list-header.js';
 import type IgcListItemComponent from './list-item.js';
 import IgcListComponent from './list.js';
@@ -962,10 +965,13 @@ describe('List', () => {
     before(() => {
       defineComponents(
         IgcButtonComponent,
+        IgcButtonGroupComponent,
         IgcCheckboxComponent,
         IgcComboComponent,
         IgcInputComponent,
-        IgcSelectComponent
+        IgcRadioGroupComponent,
+        IgcSelectComponent,
+        IgcTabsComponent
       );
     });
 
@@ -1110,6 +1116,66 @@ describe('List', () => {
         await settle();
 
         expect(button.getAttribute('tabindex')).to.equal('-1');
+      });
+
+      /** A custom element whose shadow root shows a button after `reveal()`. */
+      class LateControl extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: 'open' });
+        }
+
+        public reveal(): void {
+          this.shadowRoot!.innerHTML = '<button>Late</button>';
+        }
+      }
+
+      it('takes out a control that turns up with no mutation once its row takes the focus', async () => {
+        await createContacts();
+        const tag = `list-late-${crypto.randomUUID()}`;
+        const late = document.createElement(tag) as LateControl;
+        const shown = document.createElement(
+          defineCE(class extends LateControl {})
+        ) as LateControl;
+        items[2].append(late, shown);
+        await settle();
+
+        // Defined after it joined the row, and a control rendered later.
+        customElements.define(tag, class extends LateControl {});
+        late.reveal();
+        shown.reveal();
+        expect(late.hasAttribute('tabindex')).to.be.false;
+        expect(shown.hasAttribute('tabindex')).to.be.false;
+
+        items[2].focus();
+
+        expect(late.getAttribute('tabindex')).to.equal('-1');
+        expect(shown.getAttribute('tabindex')).to.equal('-1');
+      });
+
+      it('leaves the focus on a late control that Shift+Tab reached', async () => {
+        await createContacts(html`
+          <div>
+            <igc-list navigation="grid">
+              <igc-list-item>Kate</igc-list-item>
+              <igc-list-item>Bob</igc-list-item>
+            </igc-list>
+            <button id="after">After</button>
+          </div>
+        `);
+        const late = document.createElement(
+          defineCE(class extends LateControl {})
+        ) as LateControl;
+        items[0].append(late);
+        await settle();
+        late.reveal();
+        document.getElementById('after')!.focus();
+
+        await press('Shift+Tab');
+
+        expect(isFocused(late)).to.be.true;
+        expect(late.getAttribute('tabindex')).to.equal('-1');
+        expect(tabIndexes()).to.eql(['0', '-1']);
       });
 
       it('takes out a control once it is enabled', async () => {
@@ -1469,6 +1535,47 @@ describe('List', () => {
         expect(document.activeElement).to.equal(document.body);
       });
 
+      it('moves the focus to the row when a focused control can no longer take it', async () => {
+        const cases: [HTMLElement, () => void][] = [
+          [remove, () => (remove.disabled = true)],
+          [call, () => (call.disabled = true)],
+          [link, () => (link.hidden = true)],
+        ];
+
+        for (const [control, turnOff] of cases) {
+          control.focus();
+          turnOff();
+          await waitUntil(() => isFocused(items[0]));
+        }
+      });
+
+      it('moves the focus to the row when a focused control becomes inert or invisible', async () => {
+        const turnOffs = [
+          (button: HTMLButtonElement) => (button.inert = true),
+          (button: HTMLButtonElement) => (button.style.visibility = 'hidden'),
+          (button: HTMLButtonElement) => (button.style.display = 'none'),
+        ];
+
+        for (const turnOff of turnOffs) {
+          const button = document.createElement('button');
+          button.textContent = 'Archive';
+          items[2].append(button);
+          await settle();
+
+          button.focus();
+          turnOff(button);
+          await waitUntil(() => isFocused(items[2]));
+        }
+      });
+
+      it('leaves the focus on the page after a blur when the control can still take it', async () => {
+        remove.focus();
+        remove.blur();
+        await settle();
+
+        expect(document.activeElement).to.equal(document.body);
+      });
+
       it('leaves the focus in a nested grid to that grid', async () => {
         await create(html`
           <igc-list navigation="grid">
@@ -1532,8 +1639,9 @@ describe('List', () => {
         const nested = list.querySelector('igc-list')!;
         const button = list.querySelector('button')!;
 
+        // The tabindex on the nested list also takes its tab stop out.
         expect(tabIndexes()).to.eql(['0', '0', '-1', '-1']);
-        expect(nested.hasAttribute('tabindex')).to.be.false;
+        expect(nested.getAttribute('tabindex')).to.equal('-1');
         expect(button.getAttribute('tabindex')).to.equal('-1');
 
         row.focus();
@@ -1580,6 +1688,409 @@ describe('List', () => {
         items[0].focus();
         pressOnFocused('ArrowRight');
         expect(isFocused(button)).to.be.true;
+      });
+
+      it('finds the controls of components inside a wrapper with a shadow root', async () => {
+        const wrapper = defineCE(
+          class extends HTMLElement {
+            constructor() {
+              super();
+              this.attachShadow({ mode: 'open' }).innerHTML =
+                '<div><slot></slot></div>';
+            }
+          }
+        );
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>Kate</igc-list-item>
+          </igc-list>
+        `);
+        const button = (text: string) =>
+          Object.assign(document.createElement(IgcButtonComponent.tagName), {
+            textContent: text,
+          });
+        const [edit, share, open] = ['Edit', 'Share', 'Open'].map(button);
+        const wrap = document.createElement(wrapper);
+        const nested = document.createElement(IgcListComponent.tagName);
+        const nestedItem = document.createElement('igc-list-item');
+
+        wrap.append(edit, share);
+        nestedItem.append(open);
+        nested.append(nestedItem);
+        items[0].append(wrap, nested);
+        await settle();
+
+        expect(wrap.hasAttribute('tabindex')).to.be.false;
+        expect(nested.hasAttribute('tabindex')).to.be.false;
+
+        items[0].focus();
+
+        for (const stop of [edit, share, open, items[0]]) {
+          pressOnFocused('ArrowRight');
+          expect(isFocused(stop)).to.be.true;
+        }
+      });
+    });
+
+    describe('Composite controls', () => {
+      it('enters a control with a composite role at its own tab stop', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <igc-button-group>
+                <igc-toggle-button value="day">Day</igc-toggle-button>
+                <igc-toggle-button value="week" selected
+                  >Week</igc-toggle-button
+                >
+              </igc-button-group>
+            </igc-list-item>
+            <igc-list-item>
+              <igc-radio-group>
+                <igc-radio name="size" value="s">S</igc-radio>
+                <igc-radio name="size" value="m" checked>M</igc-radio>
+              </igc-radio-group>
+            </igc-list-item>
+            <igc-list-item>
+              <igc-tabs>
+                <igc-tab label="One"></igc-tab>
+                <igc-tab label="Two" selected></igc-tab>
+              </igc-tabs>
+            </igc-list-item>
+            <igc-list-item>
+              <div role="toolbar" aria-label="Format">
+                <button tabindex="-1">Bold</button>
+                <button>Italic</button>
+              </div>
+            </igc-list-item>
+          </igc-list>
+        `);
+        const entries = [
+          list.querySelector('[value="week"]')!,
+          list.querySelector('[value="m"]')!,
+          list.querySelector('[label="Two"]')!,
+          list.querySelector('button:not([tabindex="-1"])')!,
+        ];
+        const composites = [
+          'igc-button-group',
+          'igc-radio-group',
+          'igc-tabs',
+          '[role="toolbar"]',
+        ].map((selector) => list.querySelector(selector)!);
+
+        for (const [i, row] of items.entries()) {
+          expect(composites[i].getAttribute('tabindex')).to.equal('-1');
+
+          for (const key of ['ArrowRight', 'ArrowLeft']) {
+            row.focus();
+            pressOnFocused(key);
+            expect(isFocused(entries[i])).to.be.true;
+          }
+        }
+      });
+
+      it('takes a composite control in a shadow root out of the tab order as one', async () => {
+        await create(html`
+          <div>
+            <igc-list navigation="grid">
+              <igc-list-item>
+                <span slot="title">Kate</span>
+                <igc-button-group>
+                  <igc-toggle-button value="day">Day</igc-toggle-button>
+                  <igc-toggle-button value="week" selected
+                    >Week</igc-toggle-button
+                  >
+                </igc-button-group>
+                <igc-list navigation="listbox" aria-label="Tags">
+                  <igc-list-item>Design</igc-list-item>
+                </igc-list>
+              </igc-list-item>
+            </igc-list>
+            <button id="after">After</button>
+          </div>
+        `);
+        const week = list.querySelector('[value="week"]')!;
+
+        items[0].focus();
+        await press('Tab');
+        expect(isFocused(document.getElementById('after')!)).to.be.true;
+
+        await press('Shift+Tab');
+        expect(isFocused(items[0])).to.be.true;
+
+        // A selection inside the group keeps it out of the tab order.
+        await press('ArrowRight');
+        expect(isFocused(week)).to.be.true;
+        await press('ArrowLeft');
+        await press('Tab');
+        expect(isFocused(document.getElementById('after')!)).to.be.true;
+      });
+
+      it('keeps the buttons of a group in multiple mode out of the tab order', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <igc-button-group selection="multiple">
+                <igc-toggle-button value="bold">Bold</igc-toggle-button>
+                <igc-toggle-button value="italic">Italic</igc-toggle-button>
+              </igc-button-group>
+            </igc-list-item>
+          </igc-list>
+        `);
+        const buttons = Array.from(list.querySelectorAll('igc-toggle-button'));
+        const values = () =>
+          buttons.map((button) => button.getAttribute('tabindex'));
+
+        expect(values()).to.eql(['-1', '-1']);
+
+        items[0].focus();
+        pressOnFocused('ArrowRight');
+        expect(isFocused(buttons[0])).to.be.true;
+        pressOnFocused('ArrowRight');
+        expect(isFocused(buttons[1])).to.be.true;
+
+        buttons[0].selected = true;
+        await settle();
+        expect(values()).to.eql(['-1', '-1']);
+
+        list.navigation = 'none';
+        await settle();
+        expect(values()).to.eql([null, null]);
+      });
+
+      it('enters an empty nested list that is its own tab stop, and keeps it out of the tab order', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <span slot="title">Kate</span>
+              <igc-list navigation="listbox" aria-label="Tags"></igc-list>
+            </igc-list-item>
+          </igc-list>
+        `);
+        const nested = list.querySelector('igc-list')!;
+        expect(nested.getAttribute('tabindex')).to.equal('-1');
+
+        items[0].focus();
+        pressOnFocused('ArrowRight');
+        expect(isFocused(nested)).to.be.true;
+
+        const tag = document.createElement('igc-list-item');
+        nested.append(tag);
+        await settle();
+
+        expect(nested.getAttribute('tabindex')).to.equal('-1');
+        expect(tag.getAttribute('tabindex')).to.equal('0');
+      });
+
+      it('leaves the arrow keys that a composite does not handle to the grid', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <igc-tabs>
+                <igc-tab label="One" selected></igc-tab>
+                <igc-tab label="Two"></igc-tab>
+              </igc-tabs>
+              <igc-button-group>
+                <igc-toggle-button value="day" selected>Day</igc-toggle-button>
+                <igc-toggle-button value="week">Week</igc-toggle-button>
+              </igc-button-group>
+            </igc-list-item>
+            <igc-list-item>Bob</igc-list-item>
+          </igc-list>
+        `);
+        const [one, two] = list.querySelectorAll('igc-tab');
+        const day = list.querySelector('igc-toggle-button')!;
+
+        items[0].focus();
+        await press('ArrowRight');
+        expect(isFocused(one)).to.be.true;
+
+        // The tabs handle Left and Right, and leave Up and Down to the grid.
+        await press('ArrowRight');
+        expect(isFocused(two)).to.be.true;
+
+        await press('ArrowDown');
+        expect(isFocused(items[1])).to.be.true;
+
+        // A single-selection toggle button is a radio: it keeps every arrow key.
+        items[0].focus();
+        await press('ArrowLeft');
+        expect(isFocused(day)).to.be.true;
+
+        await press('ArrowDown');
+        expect(isFocused(day)).to.be.true;
+      });
+
+      it('leaves every arrow key to the radios of a radio group', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <igc-radio-group>
+                <igc-radio name="size" value="s" checked>S</igc-radio>
+                <igc-radio name="size" value="m">M</igc-radio>
+              </igc-radio-group>
+            </igc-list-item>
+            <igc-list-item>Bob</igc-list-item>
+          </igc-list>
+        `);
+        const [small, medium] = list.querySelectorAll('igc-radio');
+
+        items[0].focus();
+        await press('ArrowRight');
+        expect(isFocused(small)).to.be.true;
+
+        await press('ArrowDown');
+        expect(isFocused(medium)).to.be.true;
+
+        await press('ArrowLeft');
+        expect(isFocused(small)).to.be.true;
+      });
+
+      it('turns an element that gets a composite role into one control', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <div id="bar">
+                <button id="bold">Bold</button>
+                <button id="italic" tabindex="-1">Italic</button>
+              </div>
+            </igc-list-item>
+          </igc-list>
+        `);
+        const bar = list.querySelector<HTMLElement>('#bar')!;
+        const bold = list.querySelector('#bold')!;
+        const italic = list.querySelector('#italic')!;
+        expect(bold.getAttribute('tabindex')).to.equal('-1');
+
+        Object.assign(bar, { role: 'toolbar', ariaLabel: 'Format' });
+        await settle();
+
+        expect(bar.getAttribute('tabindex')).to.equal('-1');
+        expect(bold.hasAttribute('tabindex')).to.be.false;
+        expect(italic.getAttribute('tabindex')).to.equal('-1');
+
+        items[0].focus();
+        pressOnFocused('ArrowRight');
+        expect(isFocused(bold)).to.be.true;
+      });
+
+      it('turns a button group into separate controls and back when its selection changes mode', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <igc-button-group>
+                <igc-toggle-button value="day">Day</igc-toggle-button>
+                <igc-toggle-button value="week" selected
+                  >Week</igc-toggle-button
+                >
+              </igc-button-group>
+            </igc-list-item>
+          </igc-list>
+        `);
+        const group = list.querySelector(IgcButtonGroupComponent.tagName)!;
+        const [day, week] = list.querySelectorAll('igc-toggle-button');
+
+        group.selection = 'multiple';
+        await settle();
+
+        expect(group.hasAttribute('tabindex')).to.be.false;
+        expect(day.getAttribute('tabindex')).to.equal('-1');
+        expect(week.getAttribute('tabindex')).to.equal('-1');
+
+        items[0].focus();
+        pressOnFocused('ArrowRight');
+        expect(isFocused(day)).to.be.true;
+
+        group.selection = 'single';
+        await settle();
+
+        // The mode change clears the selection, so the first button is the
+        // tab stop of the group.
+        expect(group.getAttribute('tabindex')).to.equal('-1');
+        expect(day.hasAttribute('tabindex')).to.be.false;
+
+        items[0].focus();
+        pressOnFocused('ArrowRight');
+        expect(isFocused(day)).to.be.true;
+      });
+
+      it('skips a composite with no item that can take the focus', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <button>Edit</button>
+              <div role="toolbar" aria-label="Format">
+                <button disabled>Bold</button>
+              </div>
+            </igc-list-item>
+          </igc-list>
+        `);
+        const edit = list.querySelector('button')!;
+
+        items[0].focus();
+        pressOnFocused('ArrowLeft');
+        expect(isFocused(edit)).to.be.true;
+
+        pressOnFocused('ArrowRight');
+        expect(isFocused(items[0])).to.be.true;
+      });
+
+      it('enters an app widget that is its own tab stop as itself', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <div
+                role="listbox"
+                tabindex="0"
+                aria-label="Tags"
+                aria-activedescendant="design"
+              >
+                <div role="option" id="design">Design</div>
+              </div>
+            </igc-list-item>
+          </igc-list>
+        `);
+        const tags = list.querySelector<HTMLElement>('[role="listbox"]')!;
+        expect(tags.getAttribute('tabindex')).to.equal('-1');
+
+        items[0].focus();
+        pressOnFocused('ArrowRight');
+        expect(isFocused(tags)).to.be.true;
+
+        list.navigation = 'none';
+        await settle();
+        expect(tags.getAttribute('tabindex')).to.equal('0');
+      });
+
+      it('enters a group of native radios at its checked radio', async () => {
+        await create(html`
+          <igc-list navigation="grid">
+            <igc-list-item>
+              <button>Edit</button>
+              <input type="radio" name="size" value="s" aria-label="Small" />
+              <input
+                type="radio"
+                name="size"
+                value="m"
+                aria-label="Medium"
+                checked
+              />
+              <input type="radio" name="size" value="l" aria-label="Large" />
+            </igc-list-item>
+          </igc-list>
+        `);
+        const edit = list.querySelector('button')!;
+        const medium = list.querySelector<HTMLInputElement>('[value="m"]')!;
+
+        items[0].focus();
+        pressOnFocused('ArrowRight');
+        expect(isFocused(edit)).to.be.true;
+
+        pressOnFocused('ArrowRight');
+        expect(isFocused(medium)).to.be.true;
+
+        items[0].focus();
+        pressOnFocused('ArrowLeft');
+        expect(isFocused(medium)).to.be.true;
       });
     });
 

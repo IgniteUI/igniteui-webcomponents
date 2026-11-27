@@ -95,12 +95,6 @@ export default class IgcListComponent extends LitElement {
    */
   private _focused?: IgcListItemComponent;
 
-  /** A nested list that navigates counts as one control. */
-  private readonly _isWidget = (
-    element: Element
-  ): element is IgcListComponent =>
-    element instanceof IgcListComponent && element._navigable;
-
   private readonly _context: ListContext = {
     navigates: (element) => this._navigable && this._owns(element),
     roles: () => this._roles,
@@ -216,9 +210,6 @@ export default class IgcListComponent extends LitElement {
       active: () => this._isGrid,
       rows: () => this._items,
       rowOf: (node) => this._rowOf(node),
-      isWidget: this._isWidget,
-      focus: (control) =>
-        this._isWidget(control) ? control._focusTabStop() : control.focus(),
     });
 
     addSafeEventListener(this, 'keydown', this._handleTypeahead);
@@ -279,6 +270,7 @@ export default class IgcListComponent extends LitElement {
     }
 
     this._focused = item;
+    this._grid.syncCandidates(item);
 
     if (item !== this._lastFocused) {
       this._lastFocused = item;
@@ -295,17 +287,26 @@ export default class IgcListComponent extends LitElement {
     }
 
     // No `relatedTarget`: a window blur, which keeps the focus; a removal in
-    // Chromium, which the mutation handler takes; or a blur to no element.
+    // Chromium, which the mutation handler takes; a control that can no longer
+    // take the focus, such as a disabled one; or a blur to no element.
+    const control = event.target as HTMLElement;
+
     queueMicrotask(() => {
       const item = this._focused;
       const active = this._activeElement;
 
       if (
-        item?.isConnected &&
-        item.contains(event.target as Node) &&
-        !(active && item.contains(active))
+        !item?.isConnected ||
+        !item.contains(control) ||
+        (active && item.contains(active))
       ) {
-        this._focused = undefined;
+        return;
+      }
+
+      this._focused = undefined;
+
+      if (this._focusIsLost()) {
+        this._grid.recoverFocus(item, control);
       }
     });
   }
@@ -416,8 +417,7 @@ export default class IgcListComponent extends LitElement {
     const fromRow = (parent: Element): boolean => {
       const list = parent.closest(IgcListComponent.tagName)!;
       return (
-        this._rowOf(parent) === focused &&
-        (list === this || !this._isWidget(list))
+        this._rowOf(parent) === focused && (list === this || !list._navigable)
       );
     };
 
@@ -485,14 +485,17 @@ export default class IgcListComponent extends LitElement {
       this.requestUpdate();
     }
 
+    const kept = new Set(items);
+
+    for (const item of this._items) {
+      if (!kept.has(item)) {
+        releaseTabIndex(item, this);
+      }
+    }
+
     this._items = items;
     this._headers = headers;
     this._hasEmptyContent = hasEmptyContent;
-  }
-
-  /** Focuses the tab stop item, else the empty list itself. */
-  private _focusTabStop(): void {
-    (this._tabStop ?? this).focus();
   }
 
   /** Gives the tab stop to one item, else to an empty list that navigates. */
@@ -509,16 +512,16 @@ export default class IgcListComponent extends LitElement {
 
     for (const item of this._items) {
       if (navigable) {
-        claimTabIndex(item, item === this._tabStop ? '0' : '-1');
+        claimTabIndex(item, item === this._tabStop ? '0' : '-1', this);
       } else {
-        releaseTabIndex(item);
+        releaseTabIndex(item, this);
       }
     }
 
     if (navigable && isEmpty(this._items)) {
-      claimTabIndex(this, '0');
+      claimTabIndex(this, '0', this);
     } else {
-      releaseTabIndex(this);
+      releaseTabIndex(this, this);
     }
   }
 

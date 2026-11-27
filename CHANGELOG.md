@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### List
   - `navigation` turns on keyboard navigation, as in the Ignite UI for Angular list. The list stays one tab stop: Tab reaches the item focused last, else the first selected item, else the first item.
     - `listbox`: the list follows the ARIA listbox pattern. Up, Down, Home, End and typed letters move between the items, and Enter or Space dispatches a `click` on the focused item. Each item exposes its `selected` state to assistive technology.
-    - `grid`: the list follows the ARIA layout grid pattern, with one cell per item, for items that hold buttons, links or fields. The list takes those controls out of the tab order. Left and Right reach them, Up and Down move from a control to the next or previous item, and Escape or F2 returns to the item. A control that uses the arrow keys, such as a text field, keeps them.
+    - `grid`: the list follows the ARIA layout grid pattern, with one cell per item, for items that hold buttons, links or fields. The list takes those controls out of the tab order. Left and Right reach them, Up and Down move from a control to the next or previous item, and Escape or F2 returns to the item. A control that uses the arrow keys, such as a text field, keeps them. A group with its own tab stop, such as a single-selection button group, a radio group, tabs or a nested list with navigation, counts as one control and is entered at that tab stop, such as the selected button. When a focused control becomes disabled or hidden, the focus moves to its item.
     - The app keeps its own selection logic: it toggles `selected` in a `click` handler and sets `aria-multiselectable` on the list.
   - An item with a `title` is named by its title and described by its subtitle and by the header of its group. Headers are hidden from assistive technology in a list with navigation.
   - The `empty` slot renders while the list has no items, such as a "No results" message. In a list with navigation, the empty list is a tab stop, and the focus moves to the items when they arrive.
@@ -97,6 +97,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - After the hydration of a server render, the carousel uses the projected indicators. Before, when the carousel loaded after the page, it added its default indicators and the projected indicators stayed inactive.
 - #### Checkbox, Radio, Switch
   - A change of `value` no longer makes a checked control dirty, so a later `defaultChecked` still sets the checked state, as for a native checkbox or radio.
+- #### Color picker, Combo, Date picker, Date range picker, Dropdown
+  - The focus that the component moves itself, such as the Tab wrap of the dialog or the Tab order of the combo header and footer, skips the shadow tree and the slotted content of an element with `tabindex="-1"`, as Tab does. Before, it could focus an element that Tab never reaches.
 - #### Color picker
   - A color change of the user marks the picker touched, so a change that fails validation shows the invalid styles at once.
   - A value set from code while the focus is in the picker no longer emits `igcChange` when the focus leaves.
