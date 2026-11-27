@@ -481,6 +481,29 @@ describe('Draggable directive', () => {
       expect(getGhost()).is.null;
     });
 
+    it('should place the ghost over a target moved into an iframe, and cancel on Escape there', async () => {
+      const iframe = document.createElement('iframe');
+      Object.assign(iframe.style, { margin: '30px', border: '5px solid' });
+      section.append(iframe);
+
+      const dragCancel = spy();
+      renderDraggable({ cancel: dragCancel });
+      iframe.contentDocument!.body.append(instance);
+
+      simulatePointerDown(instance);
+
+      const frame = iframe.getBoundingClientRect();
+      const target = instance.getBoundingClientRect();
+      const ghost = getGhost()!.getBoundingClientRect();
+
+      expect(ghost.x).to.equal(frame.x + 5 + target.x);
+      expect(ghost.y).to.equal(frame.y + 5 + target.y);
+
+      simulateKeyboard(instance, escapeKey);
+      expect(dragCancel.called).is.true;
+      expect(getGhost()).is.null;
+    });
+
     it('should not invoke cancel when pressing Escape outside of drag operation', async () => {
       // Sanity check since the Escape key handler is a root level dynamic listener.
       const dragCancel = spy();
@@ -658,7 +681,7 @@ describe('Draggable directive', () => {
       await withoutActiveViewTransition(async () => {
         const { over, x, y } = dragOverTarget();
 
-        const transition = startViewTransition(() => {});
+        const transition = startViewTransition(document, () => {});
         await transition.ready;
         simulatePointerMove(instance, { clientX: x + 5, clientY: y });
         await transition.finished;

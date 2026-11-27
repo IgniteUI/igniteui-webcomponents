@@ -127,7 +127,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A change of the `value` or `checked` attribute keeps the control pristine, so a later `defaultValue` or `defaultChecked` still sets the value, as for a native control.
   - A change of `name` updates the `name` attribute at once, as for a native control, so the form data takes the new name. Before, a control that submits a string kept the old name until the next render. Such controls include the input, the select and a single selection combo. A `null` or `undefined` name also removes the attribute at once.
 - #### Tile manager
-  - The tile transitions are styled also with a theme compiled from Sass. The tile manager adds their rules to the document instead of the theme style sheets. [#2608](https://github.com/IgniteUI/igniteui-webcomponents/issues/2608)
+  - The tile transitions are styled also with a theme compiled from Sass. The tile manager adds their rules to the document instead of the theme style sheets. A rule in a `<link>` or `<style>` element needs a more specific selector to override them, for example `:root::view-transition-group(*.igc-tile-resize)`. A tile manager moved into an iframe runs its transitions in the iframe's document, and its drag and resize ghosts follow the pointer there. [#2608](https://github.com/IgniteUI/igniteui-webcomponents/issues/2608)
+- #### Theming
+  - A component moved into the document of another window, such as an iframe, keeps its theme styles. Before, it threw `NotAllowedError`.
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
 - #### Mask input

@@ -1323,28 +1323,53 @@ describe('Tile Manager component', () => {
           await getActiveViewTransition()?.finished;
 
           expect(document.adoptedStyleSheets).to.have.ordered.members([
-            application,
             transitionStyles.styleSheet,
+            application,
           ]);
         }
       });
     });
 
-    it('lets only a more specific rule of the application override its view transition rules', async () => {
+    it('adds its view transition rules to another document and runs its transitions there', async () => {
+      const iframe = await fixture<HTMLIFrameElement>(
+        html`<iframe style="width: 800px; height: 600px"></iframe>`
+      );
+      const doc = iframe.contentDocument!;
+      const tile = tileManager.tiles[0];
+
+      doc.body.append(tileManager);
+      simulateClick(getActionButtons(tile)[0]);
+
+      const transition = doc.activeViewTransition!;
+      const [sheet] = doc.adoptedStyleSheets;
+
+      expect(transition).to.exist;
+      expect(getActiveViewTransition()).to.be.null;
+      expect(
+        Array.from(sheet.cssRules).some((rule) =>
+          rule.cssText.includes('igc-tile-resize')
+        )
+      ).to.be.true;
+
+      await transition.finished;
+      expect(tile.maximized).to.be.true;
+
+      tileManager.remove();
+      await nextFrame();
+      await nextFrame();
+    });
+
+    it('lets a rule of the application with the same specificity override its view transition rules', async () => {
       const tile = tileManager.tiles[0];
       const application = new CSSStyleSheet();
       const zIndexes: string[] = [];
 
       await withDocumentSheets([], async () => {
-        // The rule of the application comes after the tile rules.
-        document.adoptedStyleSheets = [
-          transitionStyles.styleSheet!,
-          application,
-        ];
+        document.adoptedStyleSheets = [application];
 
         for (const selector of [
           '::view-transition-group(*)',
-          ':root::view-transition-group(*.igc-tile-resize)',
+          '::view-transition-group(*.igc-tile-resize)',
         ]) {
           application.replaceSync(`${selector} { z-index: 5; }`);
           simulateClick(getActionButtons(tile)[0]);

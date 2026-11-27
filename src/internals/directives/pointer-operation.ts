@@ -304,7 +304,18 @@ export abstract class PointerOperationDirective<
    * it is measured.
    */
   protected _getGhostOrigin(ghost: HTMLElement): Point {
-    const { left, top } = ghost.getBoundingClientRect();
+    let { left, top } = ghost.getBoundingClientRect();
+    // The pointer events of a target moved into an iframe are relative to the
+    // iframe, and the ghost stays in this page, where the tiles render.
+    const frame =
+      this._operation!.target.ownerDocument.defaultView?.frameElement;
+
+    if (frame?.ownerDocument === ghost.ownerDocument) {
+      const rect = frame.getBoundingClientRect();
+      left -= rect.left + frame.clientLeft;
+      top -= rect.top + frame.clientTop;
+    }
+
     return { x: left - this._translation.x, y: top - this._translation.y };
   }
 
@@ -369,9 +380,14 @@ export abstract class PointerOperationDirective<
     );
     element.addEventListener('pointercancel', own(this._cancel), { signal });
     element.addEventListener('contextmenu', preventDefault, { signal });
-    globalThis.addEventListener('keydown', this._handleKeydown, { signal });
 
     const doc = target.ownerDocument;
+    // The key events of an iframe go to its own window.
+    (doc.defaultView ?? globalThis).addEventListener(
+      'keydown',
+      this._handleKeydown,
+      { signal }
+    );
     const restoreTarget = guardStyles(target, {
       ...NO_SELECTION,
       'touch-action': 'none',

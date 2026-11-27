@@ -529,6 +529,54 @@ describe('Theming Controller', () => {
         foreign,
       ]);
     });
+    it('adopts copies of its style sheets in the document of another window', async () => {
+      configureTheme('bootstrap', 'light');
+
+      const tag = unsafeStatic(themedTag);
+      const el = await fixture<ThemedTestComponentElement>(
+        html`<${tag}></${tag}>`
+      );
+      const iframe = await fixture<HTMLIFrameElement>(html`<iframe></iframe>`);
+      const sheets = Array.from(el.shadowRoot!.adoptedStyleSheets);
+      const text = (sheet: CSSStyleSheet) =>
+        Array.from(sheet.cssRules, (rule) => rule.cssText).join('\n');
+
+      iframe.contentDocument!.body.append(el);
+      const moved = Array.from(el.shadowRoot!.adoptedStyleSheets);
+
+      expect(moved.map(text)).to.deep.equal(sheets.map(text));
+      expect(moved.some((sheet) => sheets.includes(sheet))).to.be.false;
+
+      iframe.remove();
+      setTimeout(() => configureTheme('material', 'dark'));
+      await oneEvent(window, CHANGE_THEME_EVENT);
+      expect(Array.from(el.shadowRoot!.adoptedStyleSheets)).to.deep.equal(
+        moved
+      );
+    });
+
+    it('adopts its style sheets of this document again when it moves back', async () => {
+      configureTheme('bootstrap', 'light');
+
+      const tag = unsafeStatic(themedTag);
+      const el = await fixture<ThemedTestComponentElement>(
+        html`<${tag}></${tag}>`
+      );
+      const iframe = await fixture<HTMLIFrameElement>(html`<iframe></iframe>`);
+      const root = el.shadowRoot!;
+      const parent = el.parentElement!;
+      const sheets = Array.from(root.adoptedStyleSheets);
+
+      // The browser drops the sheets of another document on a move.
+      root.adoptedStyleSheets.push(new CSSStyleSheet());
+      iframe.contentDocument!.body.append(el);
+      parent.append(el);
+
+      expect(Array.from(root.adoptedStyleSheets)).to.have.ordered.members(
+        sheets
+      );
+    });
+
     it('adopts a constructed style sheet of the element styles as is', async () => {
       configureTheme('bootstrap', 'light');
 

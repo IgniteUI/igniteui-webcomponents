@@ -1,5 +1,6 @@
-import { isServer } from 'lit';
+import { type CSSResult, isServer } from 'lit';
 import { asNumber, clamp, numberInRangeInclusive } from './math.js';
+import { getOrInsertComputed } from './objects.js';
 import { isDefined } from './types.js';
 
 /**
@@ -500,4 +501,55 @@ export function getVisibleAncestor(startNode: Node): HTMLElement | null {
   }
 
   return null;
+}
+
+/** The copies of each style sheet for the documents of other windows. */
+const documentSheets = new WeakMap<
+  CSSStyleSheet,
+  WeakMap<Document, CSSStyleSheet>
+>();
+
+/**
+ * Returns `sheet`, or a copy of it from the window of `doc`, which adopts only
+ * its own sheets. A document without a window, such as the one of a removed
+ * iframe, gets none.
+ */
+export function sheetForDocument(
+  sheet: CSSStyleSheet,
+  doc: Document
+): CSSStyleSheet | undefined {
+  const view = doc.defaultView;
+
+  if (!view) {
+    return undefined;
+  }
+
+  if (sheet.constructor === view.CSSStyleSheet) {
+    return sheet;
+  }
+
+  return getOrInsertComputed(
+    getOrInsertComputed(documentSheets, sheet, () => new WeakMap()),
+    doc,
+    () => {
+      const copy = new view.CSSStyleSheet();
+      copy.replaceSync(
+        Array.from(sheet.cssRules, (rule) => rule.cssText).join('\n')
+      );
+      return copy;
+    }
+  );
+}
+
+/** Adds `styles` before the other adopted sheets of `root`, unless it has them. */
+export function adoptStylesOnce(
+  root: Document | ShadowRoot,
+  styles: CSSResult
+): void {
+  const doc = (root.ownerDocument ?? root) as Document;
+  const sheet = styles.styleSheet && sheetForDocument(styles.styleSheet, doc);
+
+  if (sheet && !root.adoptedStyleSheets.includes(sheet)) {
+    root.adoptedStyleSheets.unshift(sheet);
+  }
 }

@@ -6,11 +6,12 @@ import { getPrefersReducedMotion } from './player.js';
  */
 let started: ViewTransition | null = null;
 
-/** Starts a document view transition, skipped on reduced motion. */
+/** Starts a view transition of `doc`, skipped on reduced motion. */
 export function startViewTransition(
+  doc: Document,
   callback: ViewTransitionUpdateCallback
 ): ViewTransition {
-  const transition = document.startViewTransition(callback);
+  const transition = doc.startViewTransition(callback);
 
   // A skipped transition rejects `ready`.
   transition.ready.catch(() => {});

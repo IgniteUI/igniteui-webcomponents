@@ -1,7 +1,6 @@
 // The view transitions of the tile manager. The view transition pseudo-elements
 // belong to the document, so a shadow root cannot style them. The tile manager
-// adds this sheet to the adopted style sheets of the document (see
-// `adoptTransitionStyles`).
+// adds this sheet to the adopted style sheets of its document.
 
 // A tile that changes its size (`startSizeTransition`) stays above the
 // tiles that move, come or go.
