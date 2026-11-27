@@ -67,6 +67,7 @@
 |      16 | 2026-11-25 | A change of `mask` fits the value; a masked text as the value keeps its positions; a same-value write and a `prompt` change keep the text |
 |      17 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
 |      18 | 2026-11-25 | The first render shows the slotted content |
+|      19 | 2026-11-27 | Typing past the end of a mask with an escaped character emits no `igcInput` |
 
 ## Overview
 
@@ -473,7 +474,8 @@ The groups below mirror the `describe` blocks of the suite.
 14. Focus and blur update the underlying input mask, for an empty and a non-empty value.
 15. Drag enter and drag leave, with and without focus.
 16. <kbd>Delete</kbd> and <kbd>Backspace</kbd> behavior, including skipping literals and a composing backspace.
-17. Default input behavior, composition, cut, paste, drop and browser auto-fill for a mask with literals.
+17. Default input behavior, composition, cut, paste, drop and browser auto-fill for a mask with literals. Typing past
+    the end of a mask with an escaped character emits no `igcInput`.
 
 ### Undo and redo
 

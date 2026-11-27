@@ -21,6 +21,10 @@
     flex: 1;
 }
 
+[part~='hidden'] {
+    visibility: hidden;
+}
+
 [part~='month'],
 [part~='year'],
 [part~='month-inner'],

@@ -195,7 +195,7 @@ describe('DatePart Classes', () => {
   });
 
   describe('validate', () => {
-    it('Year validates any non-negative number', () => {
+    it('Year validates any integer', () => {
       const part = createDatePart(DatePartType.Year, {
         start: 0,
         end: 4,
@@ -203,7 +203,7 @@ describe('DatePart Classes', () => {
       });
       expect(part.validate(2024)).to.be.true;
       expect(part.validate(0)).to.be.true;
-      expect(part.validate(-1)).to.be.false;
+      expect(part.validate(-1)).to.be.true;
     });
 
     it('Month validates 0-11 range', () => {

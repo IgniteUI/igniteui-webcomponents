@@ -775,6 +775,27 @@ describe('Masked input', () => {
       expect(input.value).to.equal(parser.apply(element.value));
     });
 
+    it('emits no igcInput for typing past the end of a mask with an escaped character', async () => {
+      element.mask = '(+35\\9) CCC-CCC';
+      element.value = '123456';
+      await elementUpdated(element);
+
+      element.focus();
+      await elementUpdated(element);
+      const end = input.value.length;
+      element.setSelectionRange(end, end);
+      const eventSpy = spy(element, 'emitEvent');
+
+      simulateInput(input, {
+        value: `${input.value}7`,
+        inputType: 'insertText',
+      });
+      await elementUpdated(element);
+
+      expect(eventSpy).not.calledWith('igcInput');
+      expect(element.value).to.equal('123456');
+    });
+
     it('restores the masked text after an input event without an input type', async () => {
       element.mask = '(+35\\9) CCC-CCC';
       element.value = '123456';

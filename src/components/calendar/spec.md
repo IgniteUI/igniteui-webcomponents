@@ -55,6 +55,7 @@
 |       5 | 2026-11-02 | The events of the days view stay inside the calendar.                         |
 |       6 | 2026-11-18 | An internal function brings a date into view for the pickers, and keeps the months when the date is shown |
 |       7 | 2026-11-20 | The date properties accept an ISO string with a signed six digit year |
+|       8 | 2026-11-27 | The user stays in the years 1 to 9999: the keys stop, the buttons are disabled at the ends, the dates outside are disabled and the years outside are hidden |
 
 ## Overview
 
@@ -146,6 +147,12 @@ preview the range as it is being drawn, and the second activated date completes 
 clears the range.
 
 Disabled dates are rendered as disabled and cannot be selected, but arrow key navigation still passes over them.
+
+The user stays in the years 1 to 9999. The keys stop at the first and the last date of these years. The previous and
+next buttons are disabled on the first and the last page. The calendar disables the dates outside these years, and
+the years view hides the years outside them. Code can set an active date or a value outside the range. The keys and
+the buttons then move the active date only toward the range.
+
 The header is shown for the single and multiple modes; with `multiple` selection the header is always hidden.
 
 ### Developer experience
@@ -268,7 +275,7 @@ they define the structure and the parts that the calendar re-exports:
 | ----------------- | ------------------------------------------------------------------------------------------------ |
 | `igc-days-view`   | Renders the weeks of a month as a grid, with the week numbers, the weekday labels and the date cells. Carries the selection, the disabled and special dates, the range preview and `weekDayFormat`. |
 | `igc-months-view` | Renders the twelve months of a year in rows of three, formatted through `monthFormat` and the locale. |
-| `igc-years-view`  | Renders a page of years in rows of three; the page size is `yearsPerPage`, which defaults to 15. |
+| `igc-years-view`  | Renders a page of years in rows of three; the page size is `yearsPerPage`, which defaults to 15. It hides the years outside 1 to 9999. |
 
 Each view exposes a `focusActiveDate` method and keeps a single tab stop. The days view emits
 `igcActiveDateChange` and `igcRangePreviewDateChange`, and the month and year views emit an `igcChange` carrying the
@@ -315,7 +322,7 @@ When a date cell is focused:
 Navigating past the first or last rendered day moves into the neighbouring month; with several months in view, the
 set shifts by one month and focus stays in the edge view. Disabled dates are passed over rather than skipped, and
 navigation stays put when every date in the direction of travel is disabled. Week numbers and weekday labels are
-not reachable with the arrow keys.
+not reachable with the arrow keys. No key moves the active date past the years 1 to 9999.
 
 In the months and years views the arrow keys move by one cell horizontally and by one row vertically,
 <kbd>Home</kbd> and <kbd>End</kbd> move to the first and last cell, <kbd>Page Up</kbd> and <kbd>Page Down</kbd> move
@@ -347,7 +354,7 @@ by a year or by a page of years, and <kbd>Enter</kbd> or <kbd>Space</kbd> activa
 
 `value`, `values` and `activeDate` accept `Date` objects and ISO date strings, including through their attributes.
 An ISO string can also have the signed six digit year that `toISOString()` gives outside the years 0 to 9999, such as
-`+010000-01-01`.
+`+010000-01-01`. The calendar shows such a date, but the user cannot select it or navigate to it.
 
 ### Methods
 
@@ -500,23 +507,27 @@ The groups below mirror the `describe` blocks of those suites.
     and the end of the month; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
 40. Days view - skips disabled dates, stays put when every date in the direction of travel is disabled, and when
     both weekdays and weekends are disabled.
-41. Months view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and the
+41. Days view - the keys stop at the first and the last date of the years 1 to 9999, the previous or the next button
+    is disabled there, the days of January 10000 are disabled, and an active date from code outside the range moves
+    only toward it.
+42. Months view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and the
     arrow keys navigate by month and by row; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
-42. Years view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd> and the arrow keys navigate by year and by row;
-    <kbd>Page Up</kbd> and <kbd>Page Down</kbd> move by `yearsPerPage`; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
+43. Years view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd> and the arrow keys navigate by year and by row;
+    <kbd>Page Up</kbd> and <kbd>Page Down</kbd> move by `yearsPerPage`; <kbd>Enter</kbd> and <kbd>Space</kbd> select. The
+    years view hides year 0 and the years past 9999, and <kbd>Page Down</kbd> and <kbd>End</kbd> stop at 9999.
 
 ### Year and month views
 
-43. Months view - passes the a11y audit, renders twelve months in rows of three, renders the expected parts and ARIA
+44. Months view - passes the a11y audit, renders twelve months in rows of three, renders the expected parts and ARIA
     state on a cell, marks the current month, exposes a single tab stop, follows `monthFormat` and `locale`, and
     emits `igcChange` with the activated month.
-44. Years view - passes the a11y audit, renders a page of years in rows of three, renders the expected parts and
+45. Years view - passes the a11y audit, renders a page of years in rows of three, renders the expected parts and
     ARIA state on a cell, marks the current year, follows `yearsPerPage`, and emits `igcChange` with the activated
     year.
 
 ### Helpers
 
-45. The `DateRangeDescriptor` helpers resolve the After, Before, Between, Specific, Weekday and Weekends types.
+46. The `DateRangeDescriptor` helpers resolve the After, Before, Between, Specific, Weekday and Weekends types.
 
 ### Not covered by the suites
 
@@ -529,6 +540,8 @@ There is no dedicated case for the `resourceStrings` override; the locale group 
 - The component has no time component; it selects dates only.
 - With more than one visible month, the dates outside each rendered month are always hidden, regardless of
   `hideOutsideDays`.
+- The user reaches only the years 1 to 9999. Code can set a date outside them, and the calendar shows it, but the
+  user cannot select such a date.
 
 ## Accessibility
 
@@ -540,7 +553,8 @@ There is no dedicated case for the `resourceStrings` override; the locale group 
 - Date, month and year cells carry their selected and current state, and disabled cells are announced as disabled.
 - The accessible name of a date cell is the date, followed by the `label` of each matching disabled and special
   descriptor. The special state has no ARIA equivalent, so a label is the only way to announce it.
-- The navigation buttons have accessible names resolved from the resource strings.
+- The navigation buttons have accessible names resolved from the resource strings. On the first or the last page of
+  the years 1 to 9999, the previous or the next button is disabled.
 - Week numbers and weekday labels are presentational and are not reachable with the arrow keys.
 
 ### Keyboard support

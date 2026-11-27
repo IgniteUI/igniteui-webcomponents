@@ -556,6 +556,21 @@ describe('Date Time Input component', () => {
         expect(element.value).to.be.null;
       });
 
+      it('restores a wider year after a spin into the year range', async () => {
+        element.value = new Date(10_000, 2, 3);
+        await elementUpdated(element);
+        element.setSelectionRange(6, 11);
+        await press(arrowDown);
+        expect(input.value).to.equal('03/03/9999');
+
+        await undo();
+        expect(input.value).to.equal('03/03/10000');
+
+        element.blur();
+        await elementUpdated(element);
+        expect(element.value).to.eql(new Date(10_000, 2, 3));
+      });
+
       it('commits the restored draft on blur', async () => {
         await type('10102020');
         await type('01012021');
@@ -967,6 +982,84 @@ describe('Date Time Input component', () => {
       await elementUpdated(element);
 
       expect(element.value).to.eql(new Date(2021, 2, 3));
+    });
+
+    it('shows every digit of a year past 9999 while it has focus, also through an edit', async () => {
+      element.value = new Date(10_000, 2, 3);
+      element.focus();
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('03/03/10000');
+
+      element.setSelectionRange(0, 2);
+      simulateInput(input, { value: '04', inputType: 'insertText' });
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('04/03/10000');
+
+      element.blur();
+      await elementUpdated(element);
+
+      expect(element.value).to.eql(new Date(10_000, 3, 3));
+    });
+
+    it('narrows the year part at once when a spin brings the year into the range', async () => {
+      element.value = new Date(10_000, 2, 3);
+      element.focus();
+      await elementUpdated(element);
+      element.setSelectionRange(6, 11);
+      await elementUpdated(element);
+
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('03/03/9999');
+      expect([input.selectionStart, input.selectionEnd]).to.eql([6, 10]);
+    });
+
+    it('keeps the year part selected when a spin narrows it before another part', async () => {
+      element.inputFormat = 'yyyy-MM-dd';
+      element.value = new Date(10_000, 2, 3);
+      element.focus();
+      await elementUpdated(element);
+      element.setSelectionRange(0, 5);
+      await elementUpdated(element);
+
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('9999-03-03');
+      expect([input.selectionStart, input.selectionEnd]).to.eql([0, 4]);
+    });
+
+    it('keeps the year part selected when Ctrl + ; narrows it', async () => {
+      element.value = new Date(10_000, 2, 3);
+      element.focus();
+      await elementUpdated(element);
+      element.setSelectionRange(6, 11);
+      await elementUpdated(element);
+
+      simulateKeyboard(input, [ctrlKey, ';']);
+      await elementUpdated(element);
+
+      expect(input.value).to.have.lengthOf(10);
+      expect([input.selectionStart, input.selectionEnd]).to.eql([6, 10]);
+    });
+
+    it('takes at most four typed year digits', async () => {
+      element.value = new Date(10_000, 2, 3);
+      element.focus();
+      await elementUpdated(element);
+      element.setSelectionRange(6, 11);
+      simulateInput(input, { value: '03/03/98765', inputType: 'insertText' });
+      await elementUpdated(element);
+
+      expect(input.value).to.equal('03/03/9876_');
+
+      element.blur();
+      await elementUpdated(element);
+
+      expect(element.value).to.eql(new Date(9876, 2, 3));
     });
 
     it('does not spin on an arrow key that an IME handles', async () => {

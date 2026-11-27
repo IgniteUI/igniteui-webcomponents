@@ -18,6 +18,7 @@ import {
   getLocaleWeekStart,
   getWeekDayNumber,
   rangesChanged,
+  unreachableDates,
 } from './helpers.js';
 import { selectDate } from './selection.js';
 import type {
@@ -82,6 +83,9 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
 
   @state({ hasChanged: rangesChanged })
   protected _disabledDates: DateRangeDescriptor[] = [];
+
+  /** The disabled dates and the dates outside the year range. */
+  protected _unreachableDates = unreachableDates();
 
   /* blazorSuppress */
   /**
@@ -194,6 +198,7 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
   @property({ attribute: false })
   public set disabledDates(value: DateRangeDescriptor[] | undefined) {
     this._disabledDates = value ?? [];
+    this._unreachableDates = unreachableDates(this._disabledDates);
   }
 
   public get disabledDates(): DateRangeDescriptor[] | undefined {
@@ -205,7 +210,7 @@ export class IgcCalendarBaseComponent extends I18nMixin(LitElement, i18n) {
     const selection = selectDate(
       { value: this._value, values: this._values },
       day,
-      { selection: this.selection, disabledDates: this._disabledDates }
+      { selection: this.selection, disabledDates: this._unreachableDates }
     );
 
     if (!selection) {

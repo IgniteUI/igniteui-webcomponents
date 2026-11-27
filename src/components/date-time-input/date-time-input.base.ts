@@ -297,10 +297,9 @@ export abstract class IgcDateTimeInputBaseComponent<
     }
   }
 
+  /** Also when both formats match: the parser fits its year width to the value. */
   protected override _showEditMask(): void {
-    if (this.displayFormat !== this.inputFormat) {
-      this._updateMaskDisplay();
-    }
+    this._updateMaskDisplay();
   }
 
   protected override _handleBlur(): void {
@@ -316,13 +315,9 @@ export abstract class IgcDateTimeInputBaseComponent<
     event.preventDefault();
     event.stopPropagation();
 
-    const { start, end } = this._inputSelection;
     if (this._performStep(undefined, undefined, event.deltaY > 0 ? -1 : 1)) {
       this._emitInputEvent();
     }
-
-    await this.updateComplete;
-    this.setSelectionRange(start, end);
   }
 
   // #endregion
@@ -338,7 +333,7 @@ export abstract class IgcDateTimeInputBaseComponent<
   }
 
   protected _setCurrentDateTime(): void {
-    this._editTo(this._parser.seeded(this._seedDate()));
+    this._applyStep(this._parser.seeded(this._seedDate()), false);
     this._emitInputEvent();
   }
 
@@ -387,8 +382,12 @@ export abstract class IgcDateTimeInputBaseComponent<
     return true;
   }
 
-  /** Keeps the selection. With `commit`, a focused editor also updates `value`, not only the edit. */
+  /**
+   * Keeps the selection on its parts, also when a year part changes its width. With
+   * `commit`, a focused editor also updates `value`, not only the edit.
+   */
   protected _applyStep(value: T, commit: boolean, masked?: string): void {
+    const parts = this._parser.parts;
     const { start, end } = this._inputSelection;
     this._editTo(value, masked);
 
@@ -403,7 +402,32 @@ export abstract class IgcDateTimeInputBaseComponent<
       }
     }
 
-    this.updateComplete.then(() => this._input?.setSelectionRange(start, end));
+    const follow = (position: number) => this._followParts(position, parts);
+    this.updateComplete.then(() =>
+      this.setSelectionRange(follow(start), follow(end))
+    );
+  }
+
+  /** Moves `position` from `before` to the same offset in its part of the current parts. */
+  private _followParts(
+    position: number,
+    before: ReadonlyArray<IDatePart>
+  ): number {
+    const after = this._parser.parts;
+
+    if (after === before) {
+      return position;
+    }
+
+    const index = before.findIndex((part) => position < part.end);
+
+    if (index < 0) {
+      return this._parser.emptyMask.length;
+    }
+
+    const offset = position - before[index].start;
+    const part = after[index];
+    return part.start + Math.min(offset, part.end - part.start);
   }
 
   /** Shows the editable mask when focused, else the display format. */
@@ -421,9 +445,12 @@ export abstract class IgcDateTimeInputBaseComponent<
     const masked = this._parser.formatValue(this.value);
 
     // Keep the editor text for an empty value, so a partial mask survives a re-render.
-    return masked === this._parser.emptyMask
-      ? this._maskedValue || masked
-      : masked;
+    if (masked === this._parser.emptyMask && this._maskedValue) {
+      this._parser.fitToText(this._maskedValue);
+      return this._maskedValue;
+    }
+
+    return masked;
   }
 
   /**
@@ -511,6 +538,8 @@ export abstract class IgcDateTimeInputBaseComponent<
    * at commit. See {@link _isEditing}.
    */
   protected override _commitMaskedValue(value: string): void {
+    // A restored edit can have another year width than the last formatted value.
+    this._parser.fitToText(value);
     this._maskedValue = value;
 
     if (this._focused) {
