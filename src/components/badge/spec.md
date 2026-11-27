@@ -24,7 +24,7 @@
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
   - [Test scenarios](#test-scenarios)
-    - [Default](#default)
+    - [Defaults and appearance](#defaults-and-appearance)
     - [Icon part](#icon-part)
     - [ARIA tests](#aria-tests)
     - [Not covered by the suite](#not-covered-by-the-suite)
@@ -43,6 +43,7 @@
 |       3 | 2026-10-14 | No role description on the badge                         |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.                 |
 |       5 | 2026-11-25 | The first render sets the `icon` part                    |
+|       6 | 2026-11-27 | The `Default` test scenarios are `Defaults and appearance`, as their `describe` block |
 
 ## Overview
 
@@ -205,7 +206,7 @@ None applicable.
 | ------- | --------------- |
 | `Badge` | `badge.spec.ts` |
 
-### Default
+### Defaults and appearance
 
 1. The component passes the accessibility audit and is initialized with its default values.
 2. Projected content is rendered.

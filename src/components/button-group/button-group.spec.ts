@@ -45,7 +45,7 @@ describe('Button Group', () => {
   let buttonGroup: IgcButtonGroupComponent;
   let buttons: IgcToggleButtonComponent[];
 
-  describe('', () => {
+  describe('With three buttons', () => {
     beforeEach(async () => {
       buttonGroup = await createButtonGroupComponent();
       buttons = getButtons(buttonGroup);
@@ -95,7 +95,7 @@ describe('Button Group', () => {
       });
     });
 
-    describe('Properties` Tests', () => {
+    describe('Properties Tests', () => {
       it('sets `selection` property successfully', async () => {
         buttonGroup.selection = 'multiple';
         await elementUpdated(buttonGroup);

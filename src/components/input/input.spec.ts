@@ -53,487 +53,487 @@ describe('Input component', () => {
     input = element.renderRoot.querySelector('input')!;
   }
 
-  describe('', () => {
-    describe('Default state', () => {
-      it('is initialized with the proper default values', async () => {
-        await createFixture(html`<igc-input></igc-input>`);
+  describe('Default state', () => {
+    it('is initialized with the proper default values', async () => {
+      await createFixture(html`<igc-input></igc-input>`);
 
-        expect(element.type).to.equal('text');
-        expect(element.value).to.be.empty;
-        expect(element.invalid).to.be.false;
-        expect(element.required).to.be.false;
-        expect(element.readOnly).to.be.false;
-        expect(element.disabled).to.be.false;
-        expect(element.name).to.be.undefined;
-        expect(element.pattern).to.be.undefined;
-        expect(element.label).to.be.undefined;
-        expect(element.autocomplete).to.be.undefined;
-      });
-
-      it('is accessible', async () => {
-        await createFixture(html`<igc-input label="Label"></igc-input>`);
-
-        await expect(element).to.be.accessible();
-        await expect(element).shadowDom.to.be.accessible();
-      });
-
-      it('paints the input under an earlier page layer', async () => {
-        await createFixture(html`<igc-input label="Label"></igc-input>`);
-
-        expect(isUnderPageLayer(element, input)).to.be.true;
-      });
-
-      it('material variant layout', async () => {
-        configureTheme('material');
-        await createFixture(html`<igc-input label="Label"></igc-input>`);
-
-        expect(element.renderRoot.querySelector('[part="notch"]')).to.exist;
-
-        configureTheme('bootstrap');
-        await nextFrame();
-      });
+      expect(element.type).to.equal('text');
+      expect(element.value).to.be.empty;
+      expect(element.invalid).to.be.false;
+      expect(element.required).to.be.false;
+      expect(element.readOnly).to.be.false;
+      expect(element.disabled).to.be.false;
+      expect(element.name).to.be.undefined;
+      expect(element.pattern).to.be.undefined;
+      expect(element.label).to.be.undefined;
+      expect(element.autocomplete).to.be.undefined;
     });
 
-    describe('Properties', () => {
-      it('sets the type property', async () => {
-        await createFixture(html`<igc-input type="email"></igc-input>`);
+    it('is accessible', async () => {
+      await createFixture(html`<igc-input label="Label"></igc-input>`);
 
-        expect(element.type).to.equal('email');
-        expect(input.type).to.equal('email');
-
-        element.type = 'search';
-        await elementUpdated(element);
-
-        expect(element.type).to.equal('search');
-        expect(input.type).to.equal('search');
-      });
-
-      it('sets the disabled property', async () => {
-        await createFixture(html`<igc-input disabled></igc-input>`);
-
-        expect(element.disabled).to.be.true;
-        expect(input.disabled).to.be.true;
-
-        element.disabled = false;
-        await elementUpdated(element);
-
-        expect(element.disabled).to.be.false;
-        expect(input.disabled).to.be.false;
-      });
-
-      it('sets the label property', async () => {
-        await createFixture(html`<igc-input label="Label"></igc-input>`);
-
-        expect(element.label).to.equal('Label');
-        expect(input.labels?.item(0).textContent?.trim()).to.equal('Label');
-
-        element.label = 'Changed';
-        await elementUpdated(element);
-
-        expect(element.label).to.equal('Changed');
-        expect(input.labels?.item(0).textContent?.trim()).to.equal('Changed');
-      });
-
-      it('sets the name property', async () => {
-        await createFixture(html`<igc-input name="input"></igc-input>`);
-
-        expect(element.name).to.equal('input');
-        expect(input.name).to.equal('input');
-
-        element.name = 'abcde';
-        await elementUpdated(element);
-
-        expect(element.name).to.equal('abcde');
-        expect(input.name).to.equal('abcde');
-      });
-
-      it('sets the placeholder property', async () => {
-        await createFixture(
-          html`<igc-input placeholder="placeholder"></igc-input>`
-        );
-
-        expect(element.placeholder).to.equal('placeholder');
-        expect(input.placeholder).to.equal('placeholder');
-
-        element.placeholder = 'another';
-        await elementUpdated(element);
-
-        expect(element.placeholder).to.equal('another');
-        expect(input.placeholder).to.equal('another');
-      });
-
-      it('sets the min and max properties', async () => {
-        await createFixture(
-          html`<igc-input type="number" min="3" max="6"></igc-input>`
-        );
-        expect([element.min, element.max]).to.eql([3, 6]);
-        expect([input.min, input.max]).to.eql(['3', '6']);
-
-        expect(element.checkValidity()).to.be.true;
-
-        Object.assign(element, { min: 1, max: 2, value: 8 });
-        await elementUpdated(element);
-
-        expect([element.min, element.max]).to.eql([1, 2]);
-        expect([input.min, input.max]).to.eql(['1', '2']);
-
-        expect(element.checkValidity()).to.be.false;
-      });
-
-      it('sets the minLength and maxLength properties', async () => {
-        await createFixture(
-          html`<igc-input minlength="2" maxlength="4"></igc-input>`
-        );
-
-        expect([element.minLength, element.maxLength]).to.eql([2, 4]);
-        expect([input.minLength, input.maxLength]).to.eql([2, 4]);
-        expect(element.checkValidity()).to.be.true;
-
-        Object.assign(element, { minLength: 2, maxLength: 2, value: 'a' });
-        await elementUpdated(element);
-
-        expect([element.minLength, element.maxLength]).to.eql([2, 2]);
-        expect([input.minLength, input.maxLength]).to.eql([2, 2]);
-        expect(element.checkValidity()).to.be.false;
-      });
-
-      it('sets the pattern property', async () => {
-        await createFixture(
-          html`<igc-input pattern="d{3}" value="a"></igc-input>`
-        );
-
-        expect(element.pattern).to.equal('d{3}');
-        expect(input.pattern).to.equal('d{3}');
-
-        expect(element.checkValidity()).to.be.false;
-
-        element.pattern = '';
-        await elementUpdated(element);
-
-        expect(element.pattern).to.be.empty;
-        expect(input.pattern).to.be.empty;
-
-        expect(element.checkValidity()).to.be.true;
-      });
-
-      it('sets the required property', async () => {
-        await createFixture(html`<igc-input required></igc-input>`);
-
-        expect(element.required).to.be.true;
-        expect(input.required).to.be.true;
-        expect(element.checkValidity()).to.be.false;
-
-        element.required = false;
-        await elementUpdated(element);
-
-        expect(element.required).to.be.false;
-        expect(input.required).to.be.false;
-        expect(element.checkValidity()).to.be.true;
-      });
-
-      it('keeps the required asterisk out of the accessible name', async () => {
-        await createFixture(
-          html`<igc-input required label="Email"></igc-input>`
-        );
-
-        const label = element.renderRoot.querySelector('[part="label"]')!;
-        expect(getComputedStyle(label, '::after').content).to.equal('"*" / ""');
-      });
-
-      it('sets the value property', async () => {
-        await createFixture(html`<igc-input value="123"></igc-input>`);
-
-        expect(element.value).to.equal('123');
-        expect(input.value).to.equal('123');
-
-        element.value = '';
-        await elementUpdated(element);
-
-        expect(element.value).to.be.empty;
-        expect(input.value).to.be.empty;
-      });
-
-      it('issue #1026 - passing undefined sets the underlying input value to undefined', async () => {
-        await createFixture(html`<igc-input value="a"></igc-input>`);
-
-        expect(element.value).to.equal('a');
-        expect(input.value).to.equal('a');
-
-        element.value = undefined as any;
-        await elementUpdated(element);
-
-        expect(element.value).to.be.empty;
-        expect(input.value).to.be.empty;
-      });
+      await expect(element).to.be.accessible();
+      await expect(element).shadowDom.to.be.accessible();
     });
 
-    describe('Methods', () => {
-      it('should increment/decrement value by calling stepUp/stepDown', async () => {
-        await createFixture(
-          html`<igc-input type="number" value="10" step="5"></igc-input>`
-        );
+    it('paints the input under an earlier page layer', async () => {
+      await createFixture(html`<igc-input label="Label"></igc-input>`);
 
-        element.stepUp();
-        expect(element.value).to.equal('15');
-
-        element.stepDown();
-        expect(element.value).to.equal('10');
-
-        element.stepUp(2);
-        expect(element.value).to.equal('20');
-
-        element.stepDown(2);
-        expect(element.value).to.equal('10');
-      });
-
-      it('setRangeText()', async () => {
-        await createFixture(
-          html`<igc-input value="the quick brown fox"></igc-input>`
-        );
-
-        element.setRangeText('slow', 4, 9, 'select');
-        expect(element.value).to.equal('the slow brown fox');
-      });
-
-      it('setRangeText() replaces the selection without a range', async () => {
-        await createFixture(
-          html`<igc-input value="the quick brown fox"></igc-input>`
-        );
-
-        element.setSelectionRange(4, 9);
-        element.setRangeText('slow');
-        expect(element.value).to.equal('the slow brown fox');
-
-        element.setSelectionRange(3, 3);
-        element.setRangeText(',', undefined, undefined, 'end');
-        expect(element.value).to.equal('the, slow brown fox');
-        expect([input.selectionStart, input.selectionEnd]).to.eql([4, 4]);
-      });
-
-      it('selectionStart and selectionEnd report the selection', async () => {
-        await createFixture(
-          html`<igc-input value="the quick brown fox"></igc-input>`
-        );
-
-        element.setSelectionRange(4, 9);
-        expect([element.selectionStart, element.selectionEnd]).to.eql([4, 9]);
-
-        input.setSelectionRange(2, 2);
-        expect([element.selectionStart, element.selectionEnd]).to.eql([2, 2]);
-      });
-
-      it('selectionStart and selectionEnd are null without a text selection', async () => {
-        await createFixture(html`<igc-input type="email"></igc-input>`);
-        expect([element.selectionStart, element.selectionEnd]).to.eql([
-          null,
-          null,
-        ]);
-
-        element.type = 'number';
-        await elementUpdated(element);
-        expect([element.selectionStart, element.selectionEnd]).to.eql([
-          null,
-          null,
-        ]);
-
-        element.type = 'text';
-        await elementUpdated(element);
-        expect([element.selectionStart, element.selectionEnd]).to.eql([0, 0]);
-      });
-
-      it('setSelectionRange() without arguments collapses the selection to the start', async () => {
-        await createFixture(
-          html`<igc-input value="the quick brown fox"></igc-input>`
-        );
-
-        element.setSelectionRange(4, 9);
-        element.setSelectionRange();
-        expect([input.selectionStart, input.selectionEnd]).to.eql([0, 0]);
-      });
-
-      it('the editing methods do nothing before the input renders', () => {
-        const detached = document.createElement('igc-input');
-
-        detached.setSelectionRange(1, 2);
-        detached.setRangeText('text', 0, 0);
-        expect(detached.value).to.equal('');
-
-        detached.stepUp();
-        expect(detached.value).to.equal('');
-
-        detached.stepDown();
-        expect(detached.value).to.equal('');
-      });
-
-      it('the editing methods keep the value before the input renders', () => {
-        const detached = document.createElement('igc-input');
-        detached.value = '5';
-
-        detached.setRangeText('text', 0, 0);
-        detached.stepUp();
-        detached.stepDown();
-        expect(detached.value).to.equal('5');
-      });
-
-      it('focus() and blur()', async () => {
-        await createFixture(html`<igc-input></igc-input>`);
-
-        element.focus();
-        expect(isFocused(element)).to.be.true;
-        expect(isFocused(input)).to.be.true;
-
-        element.blur();
-        expect(isFocused(element)).to.be.false;
-        expect(isFocused(input)).to.be.false;
-      });
+      expect(isUnderPageLayer(element, input)).to.be.true;
     });
 
-    describe('Events', () => {
+    it('material variant layout', async () => {
+      configureTheme('material');
+      await createFixture(html`<igc-input label="Label"></igc-input>`);
+
+      expect(element.renderRoot.querySelector('[part="notch"]')).to.exist;
+
+      configureTheme('bootstrap');
+      await nextFrame();
+    });
+  });
+
+  describe('Properties', () => {
+    it('sets the type property', async () => {
+      await createFixture(html`<igc-input type="email"></igc-input>`);
+
+      expect(element.type).to.equal('email');
+      expect(input.type).to.equal('email');
+
+      element.type = 'search';
+      await elementUpdated(element);
+
+      expect(element.type).to.equal('search');
+      expect(input.type).to.equal('search');
+    });
+
+    it('sets the disabled property', async () => {
+      await createFixture(html`<igc-input disabled></igc-input>`);
+
+      expect(element.disabled).to.be.true;
+      expect(input.disabled).to.be.true;
+
+      element.disabled = false;
+      await elementUpdated(element);
+
+      expect(element.disabled).to.be.false;
+      expect(input.disabled).to.be.false;
+    });
+
+    it('sets the label property', async () => {
+      await createFixture(html`<igc-input label="Label"></igc-input>`);
+
+      expect(element.label).to.equal('Label');
+      expect(input.labels?.item(0).textContent?.trim()).to.equal('Label');
+
+      element.label = 'Changed';
+      await elementUpdated(element);
+
+      expect(element.label).to.equal('Changed');
+      expect(input.labels?.item(0).textContent?.trim()).to.equal('Changed');
+    });
+
+    it('sets the name property', async () => {
+      await createFixture(html`<igc-input name="input"></igc-input>`);
+
+      expect(element.name).to.equal('input');
+      expect(input.name).to.equal('input');
+
+      element.name = 'abcde';
+      await elementUpdated(element);
+
+      expect(element.name).to.equal('abcde');
+      expect(input.name).to.equal('abcde');
+    });
+
+    it('sets the placeholder property', async () => {
+      await createFixture(
+        html`<igc-input placeholder="placeholder"></igc-input>`
+      );
+
+      expect(element.placeholder).to.equal('placeholder');
+      expect(input.placeholder).to.equal('placeholder');
+
+      element.placeholder = 'another';
+      await elementUpdated(element);
+
+      expect(element.placeholder).to.equal('another');
+      expect(input.placeholder).to.equal('another');
+    });
+
+    it('sets the min and max properties', async () => {
+      await createFixture(
+        html`<igc-input type="number" min="3" max="6"></igc-input>`
+      );
+      expect([element.min, element.max]).to.eql([3, 6]);
+      expect([input.min, input.max]).to.eql(['3', '6']);
+
+      expect(element.checkValidity()).to.be.true;
+
+      Object.assign(element, { min: 1, max: 2, value: 8 });
+      await elementUpdated(element);
+
+      expect([element.min, element.max]).to.eql([1, 2]);
+      expect([input.min, input.max]).to.eql(['1', '2']);
+
+      expect(element.checkValidity()).to.be.false;
+    });
+
+    it('sets the minLength and maxLength properties', async () => {
+      await createFixture(
+        html`<igc-input minlength="2" maxlength="4"></igc-input>`
+      );
+
+      expect([element.minLength, element.maxLength]).to.eql([2, 4]);
+      expect([input.minLength, input.maxLength]).to.eql([2, 4]);
+      expect(element.checkValidity()).to.be.true;
+
+      Object.assign(element, { minLength: 2, maxLength: 2, value: 'a' });
+      await elementUpdated(element);
+
+      expect([element.minLength, element.maxLength]).to.eql([2, 2]);
+      expect([input.minLength, input.maxLength]).to.eql([2, 2]);
+      expect(element.checkValidity()).to.be.false;
+    });
+
+    it('sets the pattern property', async () => {
+      await createFixture(
+        html`<igc-input pattern="d{3}" value="a"></igc-input>`
+      );
+
+      expect(element.pattern).to.equal('d{3}');
+      expect(input.pattern).to.equal('d{3}');
+
+      expect(element.checkValidity()).to.be.false;
+
+      element.pattern = '';
+      await elementUpdated(element);
+
+      expect(element.pattern).to.be.empty;
+      expect(input.pattern).to.be.empty;
+
+      expect(element.checkValidity()).to.be.true;
+    });
+
+    it('sets the required property', async () => {
+      await createFixture(html`<igc-input required></igc-input>`);
+
+      expect(element.required).to.be.true;
+      expect(input.required).to.be.true;
+      expect(element.checkValidity()).to.be.false;
+
+      element.required = false;
+      await elementUpdated(element);
+
+      expect(element.required).to.be.false;
+      expect(input.required).to.be.false;
+      expect(element.checkValidity()).to.be.true;
+    });
+
+    it('keeps the required asterisk out of the accessible name', async () => {
+      await createFixture(html`<igc-input required label="Email"></igc-input>`);
+
+      const label = element.renderRoot.querySelector('[part="label"]')!;
+      expect(getComputedStyle(label, '::after').content).to.equal('"*" / ""');
+    });
+
+    it('sets the value property', async () => {
+      await createFixture(html`<igc-input value="123"></igc-input>`);
+
+      expect(element.value).to.equal('123');
+      expect(input.value).to.equal('123');
+
+      element.value = '';
+      await elementUpdated(element);
+
+      expect(element.value).to.be.empty;
+      expect(input.value).to.be.empty;
+    });
+
+    it('issue #1026 - passing undefined sets the underlying input value to undefined', async () => {
+      await createFixture(html`<igc-input value="a"></igc-input>`);
+
+      expect(element.value).to.equal('a');
+      expect(input.value).to.equal('a');
+
+      element.value = undefined as any;
+      await elementUpdated(element);
+
+      expect(element.value).to.be.empty;
+      expect(input.value).to.be.empty;
+    });
+  });
+
+  describe('Methods', () => {
+    it('should increment/decrement value by calling stepUp/stepDown', async () => {
+      await createFixture(
+        html`<igc-input type="number" value="10" step="5"></igc-input>`
+      );
+
+      element.stepUp();
+      expect(element.value).to.equal('15');
+
+      element.stepDown();
+      expect(element.value).to.equal('10');
+
+      element.stepUp(2);
+      expect(element.value).to.equal('20');
+
+      element.stepDown(2);
+      expect(element.value).to.equal('10');
+    });
+
+    it('setRangeText()', async () => {
+      await createFixture(
+        html`<igc-input value="the quick brown fox"></igc-input>`
+      );
+
+      element.setRangeText('slow', 4, 9, 'select');
+      expect(element.value).to.equal('the slow brown fox');
+    });
+
+    it('setRangeText() replaces the selection without a range', async () => {
+      await createFixture(
+        html`<igc-input value="the quick brown fox"></igc-input>`
+      );
+
+      element.setSelectionRange(4, 9);
+      element.setRangeText('slow');
+      expect(element.value).to.equal('the slow brown fox');
+
+      element.setSelectionRange(3, 3);
+      element.setRangeText(',', undefined, undefined, 'end');
+      expect(element.value).to.equal('the, slow brown fox');
+      expect([input.selectionStart, input.selectionEnd]).to.eql([4, 4]);
+    });
+
+    it('selectionStart and selectionEnd report the selection', async () => {
+      await createFixture(
+        html`<igc-input value="the quick brown fox"></igc-input>`
+      );
+
+      element.setSelectionRange(4, 9);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([4, 9]);
+
+      input.setSelectionRange(2, 2);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([2, 2]);
+    });
+
+    it('selectionStart and selectionEnd are null without a text selection', async () => {
+      await createFixture(html`<igc-input type="email"></igc-input>`);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([
+        null,
+        null,
+      ]);
+
+      element.type = 'number';
+      await elementUpdated(element);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([
+        null,
+        null,
+      ]);
+
+      element.type = 'text';
+      await elementUpdated(element);
+      expect([element.selectionStart, element.selectionEnd]).to.eql([0, 0]);
+    });
+
+    it('setSelectionRange() without arguments collapses the selection to the start', async () => {
+      await createFixture(
+        html`<igc-input value="the quick brown fox"></igc-input>`
+      );
+
+      element.setSelectionRange(4, 9);
+      element.setSelectionRange();
+      expect([input.selectionStart, input.selectionEnd]).to.eql([0, 0]);
+    });
+
+    it('the editing methods do nothing before the input renders', () => {
+      const detached = document.createElement('igc-input');
+
+      detached.setSelectionRange(1, 2);
+      detached.setRangeText('text', 0, 0);
+      expect(detached.value).to.equal('');
+
+      detached.stepUp();
+      expect(detached.value).to.equal('');
+
+      detached.stepDown();
+      expect(detached.value).to.equal('');
+    });
+
+    it('the editing methods keep the value before the input renders', () => {
+      const detached = document.createElement('igc-input');
+      detached.value = '5';
+
+      detached.setRangeText('text', 0, 0);
+      detached.stepUp();
+      detached.stepDown();
+      expect(detached.value).to.equal('5');
+    });
+
+    it('focus() and blur()', async () => {
+      await createFixture(html`<igc-input></igc-input>`);
+
+      element.focus();
+      expect(isFocused(element)).to.be.true;
+      expect(isFocused(input)).to.be.true;
+
+      element.blur();
+      expect(isFocused(element)).to.be.false;
+      expect(isFocused(input)).to.be.false;
+    });
+  });
+
+  describe('Events', () => {
+    beforeEach(async () => {
+      await createFixture(html`<igc-input></igc-input>`);
+    });
+
+    it('emits igcInput', async () => {
+      const eventSpy = spy(element, 'emitEvent');
+
+      simulateInput(input, { value: '123' });
+      await elementUpdated(element);
+
+      expect(eventSpy).calledOnceWithExactly('igcInput', { detail: '123' });
+    });
+
+    it('emits igcChange', async () => {
+      simulateInput(input, { value: '123' });
+      await elementUpdated(element);
+
+      const eventSpy = spy(element, 'emitEvent');
+      input.dispatchEvent(new Event('change'));
+
+      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: '123' });
+    });
+
+    /**
+     * Label activation re-dispatches the click on the input. One user click
+     * must leave the shadow root once: `igc-combo` and `igc-select` toggle on it.
+     */
+    it('lets a single click escape the shadow root when the label is clicked', async () => {
+      await createFixture(html`<igc-input label="Label"></igc-input>`);
+
+      const label = element.renderRoot.querySelector('label')!;
+      const targets: Element[] = [];
+
+      element.addEventListener('click', (event) =>
+        targets.push(event.composedPath()[0] as Element)
+      );
+
+      label.click();
+      await elementUpdated(element);
+
+      expect(targets).to.eql([input]);
+      expect(isFocused(input)).to.be.true;
+    });
+  });
+
+  describe('Regressions', () => {
+    describe('issue-1066', () => {
+      const _expectedValidation = Symbol();
+      type TestBedInput = IgcInputComponent & {
+        [_expectedValidation]: boolean;
+      };
+
+      function validateInput(event: CustomEvent<string>) {
+        const element = event.target as TestBedInput;
+        expect(element.checkValidity()).to.equal(element[_expectedValidation]);
+      }
+
+      function getInternalInput(element: IgcInputComponent) {
+        return element.shadowRoot!.querySelector('input')!;
+      }
+
+      function setExpectedValidationState(
+        state: boolean,
+        element: IgcInputComponent
+      ) {
+        (element as TestBedInput)[_expectedValidation] = state;
+      }
+
+      const spec = createFormAssociatedTestBed<IgcInputComponent>(
+        html`<igc-input
+          name="input"
+          type="email"
+          required
+          @igcInput=${validateInput}
+        ></igc-input>`
+      );
+
       beforeEach(async () => {
-        await createFixture(html`<igc-input></igc-input>`);
+        await spec.setup(IgcInputComponent.tagName);
       });
 
-      it('emits igcInput', async () => {
-        const eventSpy = spy(element, 'emitEvent');
+      it('synchronously validates component', async () => {
+        const input = getInternalInput(spec.element);
 
-        simulateInput(input, { value: '123' });
-        await elementUpdated(element);
+        // Invalid email
+        setExpectedValidationState(false, spec.element);
+        simulateInput(input, { value: '1' });
+        await elementUpdated(spec.element);
 
-        expect(eventSpy).calledOnceWithExactly('igcInput', { detail: '123' });
-      });
+        // Invalid email
+        simulateInput(input, { value: '1@' });
+        await elementUpdated(spec.element);
 
-      it('emits igcChange', async () => {
-        simulateInput(input, { value: '123' });
-        await elementUpdated(element);
+        // Valid email
+        setExpectedValidationState(true, spec.element);
+        simulateInput(input, { value: '1@1' });
+        await elementUpdated(spec.element);
 
-        const eventSpy = spy(element, 'emitEvent');
-        input.dispatchEvent(new Event('change'));
-
-        expect(eventSpy).calledOnceWithExactly('igcChange', { detail: '123' });
-      });
-
-      /**
-       * Label activation re-dispatches the click on the input. One user click
-       * must leave the shadow root once: `igc-combo` and `igc-select` toggle on it.
-       */
-      it('lets a single click escape the shadow root when the label is clicked', async () => {
-        await createFixture(html`<igc-input label="Label"></igc-input>`);
-
-        const label = element.renderRoot.querySelector('label')!;
-        const targets: Element[] = [];
-
-        element.addEventListener('click', (event) =>
-          targets.push(event.composedPath()[0] as Element)
-        );
-
-        label.click();
-        await elementUpdated(element);
-
-        expect(targets).to.eql([input]);
-        expect(isFocused(input)).to.be.true;
+        // Valid email, required invalidates
+        setExpectedValidationState(false, spec.element);
+        simulateInput(input);
+        await elementUpdated(spec.element);
       });
     });
-  });
 
-  describe('issue-1066', () => {
-    const _expectedValidation = Symbol();
-    type TestBedInput = IgcInputComponent & { [_expectedValidation]: boolean };
+    describe('issue-1521', () => {
+      let input: IgcInputComponent;
 
-    function validateInput(event: CustomEvent<string>) {
-      const element = event.target as TestBedInput;
-      expect(element.checkValidity()).to.equal(element[_expectedValidation]);
-    }
+      beforeEach(async () => {
+        input = await fixture<IgcInputComponent>(html`
+          <igc-input type="number" step="0.1"></igc-input>
+        `);
+      });
 
-    function getInternalInput(element: IgcInputComponent) {
-      return element.shadowRoot!.querySelector('input')!;
-    }
+      it('', () => {
+        input.value = '1';
+        expect(input.checkValidity()).to.be.true;
 
-    function setExpectedValidationState(
-      state: boolean,
-      element: IgcInputComponent
-    ) {
-      (element as TestBedInput)[_expectedValidation] = state;
-    }
+        input.value = '1.1';
+        expect(input.checkValidity()).to.be.true;
 
-    const spec = createFormAssociatedTestBed<IgcInputComponent>(
-      html`<igc-input
-        name="input"
-        type="email"
-        required
-        @igcInput=${validateInput}
-      ></igc-input>`
-    );
+        input.value = '1.11';
+        expect(input.checkValidity()).to.be.false;
 
-    beforeEach(async () => {
-      await spec.setup(IgcInputComponent.tagName);
+        input.step = 0.01;
+        expect(input.checkValidity()).to.be.true;
+      });
     });
 
-    it('synchronously validates component', async () => {
-      const input = getInternalInput(spec.element);
+    describe('issue-1632', () => {
+      let input: IgcInputComponent;
 
-      // Invalid email
-      setExpectedValidationState(false, spec.element);
-      simulateInput(input, { value: '1' });
-      await elementUpdated(spec.element);
+      beforeEach(async () => {
+        input = await fixture(html`<igc-input></igc-input>`);
+      });
 
-      // Invalid email
-      simulateInput(input, { value: '1@' });
-      await elementUpdated(spec.element);
+      it('should not enter `invalid` state when not dirty and pristine with dynamic validator props', () => {
+        expect(input.invalid).to.be.false;
 
-      // Valid email
-      setExpectedValidationState(true, spec.element);
-      simulateInput(input, { value: '1@1' });
-      await elementUpdated(spec.element);
+        // A pristine, untouched input stays valid.
+        input.required = true;
+        expect(input.invalid).to.be.false;
 
-      // Valid email, required invalidates
-      setExpectedValidationState(false, spec.element);
-      simulateInput(input);
-      await elementUpdated(spec.element);
-    });
-  });
-
-  describe('issue-1521', () => {
-    let input: IgcInputComponent;
-
-    beforeEach(async () => {
-      input = await fixture<IgcInputComponent>(html`
-        <igc-input type="number" step="0.1"></igc-input>
-      `);
-    });
-
-    it('', () => {
-      input.value = '1';
-      expect(input.checkValidity()).to.be.true;
-
-      input.value = '1.1';
-      expect(input.checkValidity()).to.be.true;
-
-      input.value = '1.11';
-      expect(input.checkValidity()).to.be.false;
-
-      input.step = 0.01;
-      expect(input.checkValidity()).to.be.true;
-    });
-  });
-
-  describe('issue-1632', () => {
-    let input: IgcInputComponent;
-
-    beforeEach(async () => {
-      input = await fixture(html`<igc-input></igc-input>`);
-    });
-
-    it('should not enter `invalid` state when not dirty and pristine with dynamic validator props', () => {
-      expect(input.invalid).to.be.false;
-
-      // A pristine, untouched input stays valid.
-      input.required = true;
-      expect(input.invalid).to.be.false;
-
-      // A touched input becomes invalid.
-      input.focus();
-      input.blur();
-      expect(input.invalid).to.be.true;
+        // A touched input becomes invalid.
+        input.focus();
+        input.blur();
+        expect(input.invalid).to.be.true;
+      });
     });
   });
 

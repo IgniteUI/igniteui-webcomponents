@@ -32,6 +32,7 @@
     - [Form integration tests](#form-integration-tests)
     - [Icon button tests](#icon-button-tests)
     - [Host ARIA](#host-aria)
+    - [Naming](#naming)
     - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -56,6 +57,7 @@
 |      10 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                    |
 |      11 | 2026-11-11 | The form action runs after the click listeners, so a listener can cancel it; the button is the default button for <kbd>Enter</kbd> in a field |
 |      12 | 2026-11-12 | A `commandfor` set or changed while the button is detached resolves once it is attached |
+|      13 | 2026-11-27 | Test scenarios mirror the `Naming` and `Icon button tests` blocks                    |
 
 ## Overview
 
@@ -327,23 +329,34 @@ button has no `name` and no `mirrored`. Slotted content takes the size of the ic
 19. Every anchor-specific property is applied to the wrapped base element.
 20. A disabled link renders a disabled `<button>` with `role="link"`, cannot take focus, and passes the
     accessibility audit.
+21. The host `aria-expanded` and `aria-haspopup` reach the native button, and the icon button passes the
+    accessibility audit.
 
 ### Host ARIA
 
-21. The host `aria-labelledby`, `aria-describedby`, a `<label for>`, a label added later and an `igc-tooltip` name
-    and describe the native element, also as a link and a disabled link. A host `aria-label` wins over a `<label>`.
-22. The host `aria-pressed` reaches the native button, also after a change and a removal, and passes the
+22. The shared suite (`runHostAriaTests`) runs for the button and for the icon button as a link. The host
+    `aria-label`, also after a change and a removal, and `aria-labelledby` name the native element, and
+    `aria-describedby` describes it. With a host `aria-label`, the element passes the accessibility audit.
+
+### Naming
+
+23. The host `aria-labelledby` wins over a `<label>`, and the `<label>` names the native button again after its
+    removal. A `<label for>` names the native button, and a host `aria-label` wins over it.
+24. A `<label>` that is added after the render names the button on focus, and an `igc-tooltip` that anchors to the
+    button describes it.
+25. A link and a disabled link keep the host `aria-label` and `aria-describedby`. An empty `aria-label` is not
+    forwarded.
+26. The host `aria-pressed` reaches the native button, also after a change and a removal, and passes the
     accessibility audit. A link and a disabled link do not get it.
-23. The host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the native button, also after a change, a
+27. The host `aria-expanded`, `aria-haspopup` and `aria-controls` reach the native button, also after a change, a
     removal and each set of `ariaControlsElements`, and pass the accessibility audit. A link and a disabled link
-    keep them. An empty value and an `aria-controls` that references no element are not forwarded. The icon button
-    forwards `aria-expanded` and `aria-haspopup` too.
+    keep them. An empty value and an `aria-controls` that references no element are not forwarded.
 
 ### Hidden ancestor
 
-24. The button and a slotted icon hide at the same time as a hidden ancestor in each theme, at rest and after a focus or
+28. The button and a slotted icon hide at the same time as a hidden ancestor in each theme, at rest and after a focus or
     a hover: no element transitions `visibility` or sets it to `visible`.
-25. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+29. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with

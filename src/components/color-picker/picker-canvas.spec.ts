@@ -38,7 +38,7 @@ describe('Picker canvas', () => {
     canvas = await createCanvas();
   });
 
-  describe('Rendering', () => {
+  describe('Marker and color rendering', () => {
     it('renders a focusable marker', () => {
       const marker = getMarker(canvas);
       expect(marker).to.exist;

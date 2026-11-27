@@ -38,13 +38,15 @@
     - [Collapsed state integrity](#collapsed-state-integrity)
     - [Size and constraint values](#size-and-constraint-values)
     - [Gesture cancellation](#gesture-cancellation)
+    - [Interaction guards](#interaction-guards)
+    - [Home/End with opposite pane constraints](#homeend-with-opposite-pane-constraints)
     - [Nested splitters tests](#nested-splitters-tests)
     - [RTL tests](#rtl-tests)
     - [Edge scenarios](#edge-scenarios)
     - [Host ARIA](#host-aria)
     - [Localization](#localization-1)
+    - [Size properties](#size-properties)
     - [Hidden ancestor](#hidden-ancestor)
-    - [Orientation change in a theme](#orientation-change-in-a-theme)
     - [Sizing](#sizing-1)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -65,6 +67,7 @@
 |       7 | 2026-11-02 | Each pane makes a stacking context, so the focused bar stays above slotted content with any `z-index` |
 |       8 | 2026-11-19 | The bar, the drag handle and the expanders follow `--ig-size`, with small as the default. A short bar narrows the gaps around the drag handle, not the handle |
 |       9 | 2026-11-26 | The bar stays above both panes, so the whole icon box of each expander takes the pointer. The limits of the design handoff are listed |
+|      10 | 2026-11-27 | Test scenarios mirror the `Interaction guards` and `Home/End with opposite pane constraints` blocks; the orientation change in a theme moves to `Properties` |
 
 ## Overview
 
@@ -449,110 +452,121 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 7. `disableResize` and `disableCollapse` disable the corresponding interactions and hide the matching affordances.
 8. `hideDragHandle` and `hideCollapseButtons` control the visibility of those elements.
 9. `startCollapsed` and `endCollapsed` reflect and drive the collapsed state.
+10. In the Indigo theme, the bar takes the scale of a new orientation at once, with no transition.
 
 ### Methods, events and interactions
 
-10. `toggle` collapses and expands the given pane, without emitting `igcLayoutChanged`.
-11. A pointer drag resizes both panes and emits `igcResizeStart`, `igcResizing` and `igcResizeEnd` with the correct
+11. `toggle` collapses and expands the given pane, without emitting `igcLayoutChanged`.
+12. A pointer drag resizes both panes and emits `igcResizeStart`, `igcResizing` and `igcResizeEnd` with the correct
     sizes and delta.
-12. A user-driven resize or collapse emits `igcLayoutChanged` with the full layout snapshot.
-13. The collapse and expand buttons collapse and restore the panes.
-14. Only one pane can be collapsed at a time; collapsing one expands the other.
+13. A user-driven resize or collapse emits `igcLayoutChanged` with the full layout snapshot.
+14. The collapse and expand buttons collapse and restore the panes.
+15. Only one pane can be collapsed at a time; collapsing one expands the other.
+16. <kbd>Home</kbd> and <kbd>End</kbd> resize the start pane to its minimum and maximum size.
 
 ### Resizing with constraints
 
-15. Horizontal orientation - the resize is clamped by the start and end min and max sizes.
-16. Vertical orientation - the same constraints apply along the block axis.
-17. <kbd>Home</kbd> and <kbd>End</kbd> resize to the minimum and maximum of the start pane, including when the
-    opposite pane carries the binding constraint.
+17. Horizontal orientation - the resize is clamped by the start and end min and max sizes.
+18. Vertical orientation - the same constraints apply along the block axis.
 
 ### Behavior on splitter and container resize
 
-18. The panes adapt when the container size changes.
-19. Relative sizes update with the container, and absolute sizes are kept where possible.
+19. The panes adapt when the container size changes.
+20. Relative sizes update with the container, and absolute sizes are kept where possible.
 
 ### Collapsed state integrity
 
-20. The collapsed state survives resizes, orientation changes and re-renders.
-21. Setting a collapsed property to its current value is a no-op.
+21. The collapsed state survives resizes, orientation changes and re-renders.
+22. Setting a collapsed property to its current value is a no-op.
 
 ### Size and constraint values
 
-22. Values with explicit units and a unitless `0` are accepted.
-23. `auto`, other unitless values, unparsable values, negative values and percentages above 100 remove the
+23. Values with explicit units and a unitless `0` are accepted.
+24. `auto`, other unitless values, unparsable values, negative values and percentages above 100 remove the
     constraint or fall back to automatic sizing.
 
 ### Gesture cancellation
 
-24. A cancelled pointer gesture restores the sizes from before the drag.
+25. A cancelled pointer gesture restores the sizes from before the drag.
+
+### Interaction guards
+
+26. A `pointerdown` with a non-primary button does not start a drag.
+27. A second pointer does not drive a drag in progress, and the drag starts and ends once.
+28. A mouse drag captures the pointer and releases it at the end.
+29. In the Indigo theme, a collapse button on the hovered bar collapses its pane.
+30. <kbd>Home</kbd> and <kbd>End</kbd> do not resize while `disableResize` is set.
+31. A container without size reports a zero ARIA value and a value text of 0%.
+
+### Home/End with opposite pane constraints
+
+32. With a maximum size on the end pane, <kbd>Home</kbd> leaves no gap: the end pane takes its maximum size, and
+    `igcResizeEnd` reports the rendered sizes.
+33. <kbd>End</kbd> stops at the minimum size of the end pane, and the panes still fill the container.
 
 ### Nested splitters tests
 
-25. Nested splitters resize independently and do not interfere with one another.
+34. Nested splitters resize independently and do not interfere with one another.
 
 ### RTL tests
 
-26. The horizontal layout is mirrored, and the arrow key navigation is reversed accordingly.
+35. The horizontal layout is mirrored, and the arrow key navigation is reversed accordingly.
 
 ### Edge scenarios
 
-27. Rapid resize and collapse interactions settle in a consistent state.
-28. Conflicting constraints are resolved without breaking the layout. Minimums that do not fit do not limit a resize,
+36. Rapid resize and collapse interactions settle in a consistent state.
+37. Conflicting constraints are resolved without breaking the layout. Minimums that do not fit do not limit a resize,
     so no size becomes negative.
 
 ### Host ARIA
 
-29. The host `aria-label` names the bar, and a change and a removal are followed. Without a host name, the bar is
+38. The host `aria-label` names the bar, and a change and a removal are followed. Without a host name, the bar is
     named "Resize panes". The accessibility audit passes with a host label.
-30. The host `aria-labelledby` names the bar by element reference, before the host `aria-label`, and the host
+39. The host `aria-labelledby` names the bar by element reference, before the host `aria-label`, and the host
     `aria-describedby` describes it. A removal of either is followed.
 
 ### Localization
 
-31. The bar takes its default name from the strings of `locale` and from `resourceStrings`.
+40. The bar takes its default name from the strings of `locale` and from `resourceStrings`.
 
 ### Size properties
 
 [`splitter.property.spec.ts`](./splitter.property.spec.ts) runs these with fast-check.
 
-32. A size that the splitter accepts is a valid CSS `flex-basis`.
-33. Every non-negative length, and a percentage up to 100, is accepted.
-34. The minimum and maximum sizes accept the same values as the sizes.
+41. A size that the splitter accepts is a valid CSS `flex-basis`.
+42. Every non-negative length, and a percentage up to 100, is accepted.
+43. The minimum and maximum sizes accept the same values as the sizes.
 
 ### Hidden ancestor
 
-35. The splitter hides at the same time as a hidden ancestor in each theme, at rest and after a focus or a hover: no
+44. The splitter hides at the same time as a hidden ancestor in each theme, at rest and after a focus or a hover: no
     element transitions `visibility` or sets it to `visible`.
-
-### Orientation change in a theme
-
-36. In the Indigo theme, the bar takes the scale of a new orientation at once, with no transition.
 
 ### Sizing
 
-37. Without `--ig-size` the bar is 6px thick, the drag handle 4px with a 2px radius and the expanders 8px wide.
-38. At medium and large, in both orientations, the bar is 12px and 18px thick, the drag handle 6px and 8px with an
+45. Without `--ig-size` the bar is 6px thick, the drag handle 4px with a 2px radius and the expanders 8px wide.
+46. At medium and large, in both orientations, the bar is 12px and 18px thick, the drag handle 6px and 8px with an
     8px radius, centered on the bar, and the expanders 10px and 12px wide.
-39. An overridden `--ig-splitter-size` adds the same amount to the bar, the drag handle and the expanders at every
+47. An overridden `--ig-splitter-size` adds the same amount to the bar, the drag handle and the expanders at every
     size.
-40. At every size the drag handle is 48px from the icon box of each expander: 53px, 53px and 54px from the triangle.
-41. In the Indigo theme the icon box is smaller: 51px, 51px and 54px from the triangle.
-42. With a collapsed pane, the drag handle keeps its 48px margins.
-43. On a short bar, at every size and in both orientations, the drag handle keeps 25% of the bar length, the gaps to
+48. At every size the drag handle is 48px from the icon box of each expander: 53px, 53px and 54px from the triangle.
+49. In the Indigo theme the icon box is smaller: 51px, 51px and 54px from the triangle.
+50. With a collapsed pane, the drag handle keeps its 48px margins.
+51. On a short bar, at every size and in both orientations, the drag handle keeps 25% of the bar length, the gaps to
     the expanders get narrower and the expanders stay inside the bar.
-44. Without a drag handle the expander boxes are 48px apart, and on a bar too short for that they stay inside the bar.
-45. A size that makes the bar thicker drops the minimum sizes that no longer fit beside it.
-46. A fractional bar thickness counts in full against the minimum sizes.
-47. Under a scaled ancestor, the bar thickness counts at the scale of the container.
-48. In the Indigo theme, under a rotated ancestor, the minimum sizes that fit beside the idle bar stay applied.
-49. In the Indigo theme, the idle bar is 1px, 4px and 8px thick by size, 8px at large in the vertical orientation and
+52. Without a drag handle the expander boxes are 48px apart, and on a bar too short for that they stay inside the bar.
+53. A size that makes the bar thicker drops the minimum sizes that no longer fit beside it.
+54. A fractional bar thickness counts in full against the minimum sizes.
+55. Under a scaled ancestor, the bar thickness counts at the scale of the container.
+56. In the Indigo theme, under a rotated ancestor, the minimum sizes that fit beside the idle bar stay applied.
+57. In the Indigo theme, the idle bar is 1px, 4px and 8px thick by size, 8px at large in the vertical orientation and
     with an overridden `--ig-splitter-size`.
-50. In the Indigo theme, the panes give up the full thickness of the bar while the bar is idle.
-51. In the Indigo theme, the hovered bar has the thickness of the size.
-52. In both orientations and at every size, the hitbox of each expander is its icon box, centered on the triangle.
-53. In both orientations, the whole icon box of each expander takes the pointer, also where it reaches over a pane:
+58. In the Indigo theme, the panes give up the full thickness of the bar while the bar is idle.
+59. In the Indigo theme, the hovered bar has the thickness of the size.
+60. In both orientations and at every size, the hitbox of each expander is its icon box, centered on the triangle.
+61. In both orientations, the whole icon box of each expander takes the pointer, also where it reaches over a pane:
     on the idle bar, and on the hovered bar of the Indigo theme.
-54. In the Indigo theme, the bar with keyboard focus has the thickness of the size, in both orientations.
+62. In the Indigo theme, the bar with keyboard focus has the thickness of the size, in both orientations.
 
 ## Assumptions and limitations
 

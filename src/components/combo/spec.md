@@ -53,16 +53,37 @@
     - [ARIA](#aria)
     - [Host ARIA](#host-aria)
     - [Remote data](#remote-data-1)
-    - [Placeholders and loading](#placeholders-and-loading)
+      - [Placeholders and loading](#placeholders-and-loading)
+    - [A write of the same value](#a-write-of-the-same-value)
+    - [Primitive data](#primitive-data)
+    - [One record for each value](#one-record-for-each-value)
     - [Select all methods](#select-all-methods)
     - [Select-all option](#select-all-option)
     - [Group selection](#group-selection)
     - [Confirm mode](#confirm-mode-1)
     - [Form integration tests](#form-integration-tests)
+    - [Enter submission](#enter-submission)
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
     - [Disabled popup](#disabled-popup)
     - [Value state motion](#value-state-motion)
+    - [Combo data state](#combo-data-state)
+    - [Combo data requests - Next page requests](#combo-data-requests---next-page-requests)
+    - [Combo data requests - New results and appended pages](#combo-data-requests---new-results-and-appended-pages)
+    - [Combo selection - Record values](#combo-selection---record-values)
+    - [Combo selection - Record resolution](#combo-selection---record-resolution)
+    - [Combo selection - Pending selection](#combo-selection---pending-selection)
+    - [Combo selection - Selection changes](#combo-selection---selection-changes)
+    - [Combo selection - Value sync](#combo-selection---value-sync)
+    - [Combo selection - Data sync](#combo-selection---data-sync)
+    - [Combo selection - Selection version](#combo-selection---selection-version)
+    - [Combo selection properties](#combo-selection-properties)
+    - [Combo active option - Navigation intents](#combo-active-option---navigation-intents)
+    - [Combo active option - Record anchor](#combo-active-option---record-anchor)
+    - [Combo active option - Resets on close and mode change](#combo-active-option---resets-on-close-and-mode-change)
+    - [Combo active option - Activation after a search](#combo-active-option---activation-after-a-search)
+    - [Combo active option - Random operation invariants](#combo-active-option---random-operation-invariants)
+    - [Combo filter operation](#combo-filter-operation)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -113,6 +134,7 @@
 |      37 | 2026-11-20 | A selection by the user animates the option checkboxes; a value from code, a new `data`, a reused row and a value that an `igcChange` handler keeps show at once |
 |      38 | 2026-11-25 | `name` updates its attribute at once |
 |      39 | 2026-11-25 | The first render shows the slotted content |
+|      40 | 2026-11-27 | Test scenarios mirror the spec files: `Enter submission`, `A write of the same value`, `Primitive data` and `One record for each value` headings, `Placeholders and loading` under `Remote data`, one heading for each block of the unit specs |
 
 ## Overview
 
@@ -791,23 +813,35 @@ footer button, the focus moves to the main input. The closed list cannot keep th
 ## Test scenarios
 
 The suite runs in a real browser through `@web/test-runner`, with `@open-wc/testing` fixtures and assertions. It has
-four files, and the groups below follow them in this order:
+eleven files, and the groups below follow them in this order:
 
 - [`combo.spec.ts`](./combo.spec.ts): the component, the header and footer slots, the close trigger, the scroll
   strategy, theming, ARIA, and the shared suites for the external label, the host ARIA and the focus before the
   first render.
 - [`combo-remote.spec.ts`](./combo-remote.spec.ts): remote data, placeholders and loading.
-- [`combo-selection.spec.ts`](./combo-selection.spec.ts): the select-all methods and option, group selection and the
-  confirm mode.
-- [`combo-form.spec.ts`](./combo-form.spec.ts): form integration, `defaultValue` and the validation message slots.
+- [`combo-selection.spec.ts`](./combo-selection.spec.ts): a write of the same value, primitive data, one record for
+  each value, the select-all methods and option, group selection, the confirm mode and the value state motion.
+- [`combo-form.spec.ts`](./combo-form.spec.ts): form integration, <kbd>Enter</kbd> submission, `defaultValue` and the
+  validation message slots.
+- [`controllers/data.spec.ts`](./controllers/data.spec.ts): the data state, with the options, the group headers, the
+  toggle options and the placeholders.
+- [`controllers/data-requests.spec.ts`](./controllers/data-requests.spec.ts): the `igcDataRequest` requests and the
+  check for new results.
+- [`controllers/selection.spec.ts`](./controllers/selection.spec.ts): the selection model, with the pending selection
+  and the sync of `value`.
+- [`controllers/selection.property.spec.ts`](./controllers/selection.property.spec.ts): property tests of the
+  selection model over random operations.
+- [`controllers/active-option.spec.ts`](./controllers/active-option.spec.ts): the active option.
+- [`controllers/active-option.property.spec.ts`](./controllers/active-option.property.spec.ts): property tests of
+  the active option over random operations.
+- [`operations/filter.spec.ts`](./operations/filter.spec.ts): the filter operation of the local mode.
 
 The files share their data and helpers through
 [`src/internals/testing/combo.spec.ts`](../../internals/testing/combo.spec.ts). They also use
 `createFormAssociatedTestBed`, `runValidationContainerTests`, `runExternalLabelAssociationTests`,
 `runAriaProjectionTests`, `runFocusBeforeRenderTests` and the `simulate*` helpers from
-[`src/internals/testing`](../../internals/testing). The unit specs in [`controllers`](./controllers) test the data
-state, the data requests, the selection model with its sync of `value`, and the active option without a browser
-fixture.
+[`src/internals/testing`](../../internals/testing). The unit specs in [`controllers`](./controllers) and
+[`operations`](./operations) run without a browser fixture.
 
 ### Component
 
@@ -818,7 +852,7 @@ the shadow DOM through `getComboDOM()`.
 
 1. Rendering, the default state and the accessibility audit.
 2. Data binding through `data`, `valueKey`, `displayKey` and `groupKey`, also when the `data` array changes in place.
-   A new `displayKey` updates the input text. Primitive records show and toggle their selection.
+   Primitive records show their values.
 3. The empty message and the `empty` slot.
 
 #### Open, close and focus
@@ -836,11 +870,7 @@ the shadow DOM through `getComboDOM()`.
 #### Selection methods
 
 6. Single and multiple selection, with `select` and `deselect` with and without arguments.
-7. `value` and `selection` give the values and the records. A write of the same `value` requests no update and keeps
-   the pending selection, but makes the control dirty. After a new `data`, a `data` that grows in place or a new
-   `valueKey`, it gives the values their records again, also after `valueKey` changes and comes back. A `value` array
-   that changed in place and is set again syncs the selection. In single selection, a write of the cleared `value`
-   after the user types keeps the typed text, and after a blur clears the input, the same selection shows its text.
+7. `value` and `selection` give the values and the records.
 
 #### Change events
 
@@ -951,16 +981,13 @@ the shadow DOM through `getComboDOM()`.
     selection methods and a commit of the confirm mode, also in `igcChange.newValue` and `pendingValue`. It leaves
     `value` when a deselection names it, on `deselect()` without an argument, on the clear icon and on a selection
     in single selection. Each value shows one time, the clear icon shows for such values, and in the confirm mode a
-    commit applies a deselection that names one, and a cancel keeps it. A value keeps its place when it gets its
-    record, and select all puts it after the items of `data`. A repeated value selects its first record, also from a
-    click on another of its options, and each of its options shows as selected. A pending change to another option of
-    the same value commits no change.
+    commit applies a deselection that names one, and a cancel keeps it.
 32. `igcDataRequest` comes near the end of `data` with `startIndex` equal to `data.length`, also with groups. It does
     not come again until `data` grows. A new search, new results without a search, and a new opening each get their
     own request. A copy of the same records gets none. It does not come in local mode, while the list is closed, or with an
     empty `data`.
 
-### Placeholders and loading
+#### Placeholders and loading
 
 33. In remote mode, `totalItemCount` adds placeholder options after the groups. They count in `aria-setsize`, take the
     next positions, are disabled, have the name "Loading", and pass the accessibility audit. Local mode, an empty
@@ -978,114 +1005,276 @@ the shadow DOM through `getComboDOM()`.
     does not change, and the list does not move. It passes the accessibility audit. The `loading` slot replaces the
     spinner. The spinner and the skeletons get their colors from the `loading` and `placeholder` parts.
 
+### A write of the same value
+
+36. A write of the same `value` requests no update and keeps the pending selection, but makes the control dirty.
+37. After a new `data`, a `data` that grows in place or a new `valueKey`, a write gives the values their records again,
+    also after `valueKey` changes and comes back. A `value` array that changed in place and is set again syncs the
+    selection.
+38. In single selection, a write of the cleared `value` after the user types keeps the typed text, and after a blur
+    clears the input, the same selection shows its text. A new `displayKey` shows in the input text without a new
+    value.
+
+### Primitive data
+
+39. With primitive records, the list shows the selected items, and a click toggles them.
+
+### One record for each value
+
+40. A repeated value selects its first record, also from a click on another of its options, and each of its options
+    shows as selected. A click on the select-all option lists one record for each value. A pending change to another
+    option of the same value commits no change.
+41. A value keeps its place when it gets its record, and select all puts the values without a record after the items
+    of `data`. A value that a pending deselection named stays out when a new `data` gives it a record.
+
 ### Select all methods
 
-36. `selectAllItems()` and `deselectAllItems()` change only the items that the filtered list shows, also right after a
+42. `selectAllItems()` and `deselectAllItems()` change only the items that the filtered list shows, also right after a
     change of `data`, of the search text or of `filteringOptions`. They send no `igcChange`, and change nothing when the list shows no items.
     With `ignoreFilter`, they act on all the items. In single selection, `selectAllItems()` does nothing and
     `deselectAllItems()` deselects a shown item.
 
 ### Select-all option
 
-37. The option comes first in multiple selection, before the group headers, with the "Select all" text and
+43. The option comes first in multiple selection, before the group headers, with the "Select all" text and
     `aria-checked`. It is the first option in `aria-posinset` and `aria-setsize`, and it passes the accessibility
     audit. It does not show in single selection or while the list shows no items.
-38. A click selects the shown items, and a second click deselects them, with one `igcChange` each. When only some
+44. A click selects the shown items, and a second click deselects them, with one `igcChange` each. When only some
     shown items are selected, the option is not selected, its `aria-checked` is `mixed`, and its checkbox is
     indeterminate with the `indeterminate` part. A click then selects only the other shown items. A canceled `igcChange` keeps the selection. A new `value`
     while the list is open updates the option and the items.
-39. Home reaches the option, Space toggles it, and Arrow Up from it moves to the search input. A change of
+45. Home reaches the option, Space toggles it, and Arrow Up from it moves to the search input. A change of
     `showSelectAll` keeps the active item. When the change removes the active option, no option is active. A click on
     an item without a value selects only that item.
-40. With `totalItemCount` in remote mode, the option does not change the requests or the positions of the
+46. With `totalItemCount` in remote mode, the option does not change the requests or the positions of the
     placeholders. The selection methods select only the loaded items.
 
 ### Group selection
 
-41. In multiple selection, the group headers are options with a checkbox and `aria-checked`. They count in
+47. In multiple selection, the group headers are options with a checkbox and `aria-checked`. They count in
     `aria-posinset` and `aria-setsize`, and the accessibility audit passes. In single selection, they are headers
     again, and the items take their positions back.
-42. The items are one level in under the header options, and `--ig-combo-item-indent` changes the indent. The
+48. The items are one level in under the header options, and `--ig-combo-item-indent` changes the indent. The
     select-all option is at the level of the headers, and the list does not scroll sideways. Without group selection
     or `groupKey`, the items have no indent.
-43. A click on a header selects the shown items of its group, and a second click deselects them, with one `igcChange`
+49. A click on a header selects the shown items of its group, and a second click deselects them, with one `igcChange`
     each. The list stays open. With some of them selected, `aria-checked` is `mixed`, the checkbox is
     indeterminate with the `indeterminate` part, and a click selects only the others.
-44. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. A click on the
+50. Home and the arrow keys stop on the headers, Space toggles them, and Enter closes the list. A click on the
     select-all option also selects the headers. When group selection goes off, an active header stops being active.
 
 ### Confirm mode
 
-45. A click and Space change the pending selection with `igcPendingChange`. The list and `pendingValue` show it, and
+51. A click and Space change the pending selection with `igcPendingChange`. The list and `pendingValue` show it, and
     `value`, `selection` and the input text keep the selection. A canceled `igcPendingChange` keeps the pending
     selection.
-46. Enter applies the pending selection with one `igcChange` of the `commit` type with the changed items. Then it
+52. Enter applies the pending selection with one `igcChange` of the `commit` type with the changed items. Then it
     closes the list with the `enter` trigger. This also occurs in the search input and without an active option.
     Without a change, it closes the list with no `igcChange`. A canceled `igcChange` keeps the list open with the
     pending selection. A handler that changes `newValue` does not change `value`. Enter, Arrow Up and Escape of an IME
     composition in the search input keep the list open with the pending selection.
-47. Escape, Tab out of the combo, a click on the input, `hide()` and `open` set to `false` drop the pending
+53. Escape, Tab out of the combo, a click on the input, `hide()` and `open` set to `false` drop the pending
     selection, with no `igcChange`.
-48. From the moment the list opens, the selection methods change the pending selection, also with an item that `data`
+54. From the moment the list opens, the selection methods change the pending selection, also with an item that `data`
     does not hold. From the moment the list closes, they change the value. `commitSelection()` applies the pending
     selection with no events and keeps the list open. `cancelSelection()` and a new `value` replace it, and the same
     `value` keeps it.
-49. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
+55. The clear icon clears `value` and the pending selection with one `igcChange`. A new `data` keeps the pending
     selection by value, and gives records to its values in place. A value that a pending deselection removed stays
     out. A value without a record stays in
     `value`, also after a commit, and `select()` gives it a record in the input text. The select-all option and the group
     header options change the pending selection. In single selection, each change applies at once.
-50. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit
+56. The footer shows Cancel and Apply with the `combo_cancel` and `combo_apply` texts, and the accessibility audit
     passes. Footer content replaces them, and the immediate mode and single selection do not show them.
-51. Apply applies the pending selection with one `igcChange`, closes the list with the `apply` trigger, and moves the
+57. Apply applies the pending selection with one `igcChange`, closes the list with the `apply` trigger, and moves the
     focus to the main input. A canceled `igcChange` keeps the list open. Cancel drops the pending selection and closes
     the list with the `cancel` trigger.
-52. Tab moves from the list to Cancel and Apply, and Tab from Apply closes the list.
+58. Tab moves from the list to Cancel and Apply, and Tab from Apply closes the list.
 
 ### Form integration tests
 
-53. The combo is form associated, submits its selection, and resets with the form, also the input of single selection.
+59. The combo is form associated, submits its selection, and resets with the form, also the input of single selection.
     The input shows the invalid state of the combo at once. A change of `name` moves the submitted values to the new
     name.
-54. It shows the disabled state of an ancestor `fieldset`.
-55. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
+60. It shows the disabled state of an ancestor `fieldset`.
+61. It obeys the required and custom constraints, and passes the accessibility audit while a submit fails on the
     required constraint.
-56. In single selection, a real or a synthetic <kbd>Enter</kbd> with the list closed submits the form once. With the
+The form-associated mixin gives the focus after the form checks and the rules of the `invalid` event. The
+[input suite](../input/spec.md#form-validity-checks) tests them.
+
+### Enter submission
+
+62. In single selection, a real or a synthetic <kbd>Enter</kbd> with the list closed submits the form once. With the
     list open, <kbd>Enter</kbd> selects the active option and does not submit, and the next <kbd>Enter</kbd> submits.
     Multiple selection does not submit, also with a submit button. Only single selection counts as a text field. A
     slotted button gets its <kbd>Enter</kbd>, and the form does not submit.
 
-The form-associated mixin gives the focus after the form checks and the rules of the `invalid` event. The
-[input suite](../input/spec.md#form-validity-checks) tests them.
-
 ### defaultValue
 
-57. Form integration in single selection, in multiple selection, and with data that comes late. A change of the
+63. Form integration in single selection, in multiple selection, and with data that comes late. A change of the
     `value` attribute keeps the combo pristine.
-58. Validation against the default value.
+64. Validation against the default value.
 
 ### Validation message slots
 
 `runValidationContainerTests` makes these tests.
 
-59. The `value-missing`, `custom-error` and `invalid` slots show for their state.
+65. The `value-missing`, `custom-error` and `invalid` slots show for their state.
 
 ### Disabled popup
 
-60. The shared runner `runDisabledPopupTests`, with the native input as the `aria-expanded` target.
+66. The shared runner `runDisabledPopupTests`, with the native input as the `aria-expanded` target.
 
 ### Value state motion
 
 In the Material theme.
 
-61. A click on an option starts transitions in its checkbox.
-62. A click on the clear icon starts transitions in the checkboxes of the options that it clears.
-63. A `value` from code starts no transitions in the checkbox of the option.
-64. A selection by the user marks the input as a user change, in single and multiple selection.
-65. A value that a canceling `igcChange` handler sets ends the user change, in single and multiple selection.
-66. A value that an `igcChange` handler sets in multiple selection ends the user change.
-67. A value from code right after a Space selection ends the user change.
-68. A value from code right after a clear with the clear icon ends the user change.
+67. A click on an option starts transitions in its checkbox.
+68. A click on the clear icon starts transitions in the checkboxes of the options that it clears.
+69. A `value` from code starts no transitions in the checkbox of the option.
+70. A selection by the user marks the input as a user change, in single and multiple selection.
+71. A value that a canceling `igcChange` handler sets ends the user change, in single and multiple selection.
+72. A value that an `igcChange` handler sets in multiple selection ends the user change.
+73. A value from code right after a Space selection ends the user change.
+74. A value from code right after a clear with the clear icon ends the user change.
+
+### Combo data state
+
+75. The options are numbered in the order of `data`. A new `data` filters by the new text of an item, and a new
+    search term filters in the next update. Remote mode keeps all the records.
+76. A header comes before each group and is not an option. With `groupSelection`, the headers are toggle options, but
+    not in single selection. The select-all option comes first, only in multiple selection and with items. Remote
+    mode appends a placeholder for each item to load, and counts the total only as a whole number.
+77. A group header gets the items up to the next header, and the select-all option gets all the loaded items, one
+    time each. A toggle option tells whether none, some or all of its items are selected, and the select-all option
+    takes the state of all the loaded items. The toggle ranges and the shown items are limited to the filtered
+    records.
+78. The pipeline runs again when a host field that it reads changes, and not for the same fields. Remote mode reads
+    only the filter mode. The group headers get the new keys. When `data` grows, the loaded items keep their records,
+    and when the loaded items change, all the items are indexed again. The state of a toggle option is kept for one
+    version of the selection, and a new locale sorts the groups again.
+
+### Combo data requests - Next page requests
+
+79. A request for the next items comes when the window comes near the end of `data`. No request comes in local mode,
+    while the list is closed, or when `data` holds all the items, and an empty `data` waits for its first page. The
+    count covers the rendered placeholders and stops at the total.
+80. One request comes for each length of `data`, and after a reset the same length is requested again. When the list
+    opens, the sequence starts again and the check runs after the list update. When the list closes, the sequence
+    stays and no check runs. A change of other properties runs no check, and a change of the total runs the check
+    after the list update.
+81. A replaced `data` starts the sequence again. A `data` that starts with the same item, and a copy of the same
+    records, keep the sequence.
+
+### Combo data requests - New results and appended pages
+
+82. New results scroll a shown list to the top at once, and a hidden list scrolls to the top when it opens, before
+    the check. New results come after a search, also with the same first record or in a shorter `data`, and only in
+    the first `data` after the search.
+83. A page appended after a search that did not load, a copy of the same records and an appended page keep the
+    place. The check for an append compares all the old items, and the check of the first records needs a value key
+    and a previous `data`.
+84. The hint of a binder applies until the update of `data`. In local mode, new results do not move the list.
+
+### Combo selection - Record values
+
+85. The value comes from `valueKey`, or is the record, also for a nullish field. The committed selection gives its
+    values and its display text.
+86. A value without a record keeps its place, only in multiple selection. A new `valueKey` gives the records their
+    values again.
+
+### Combo selection - Record resolution
+
+87. Values and objects resolve to the records of `data`, in data order and one time each. A value that `data` repeats
+    takes its first record. The selected records and the objects that `data` does not hold come last. The pending
+    record of a value comes before the committed one, and single selection takes only the first item.
+
+### Combo selection - Pending selection
+
+88. The pending selection exists only while the list is open in the confirm mode of multiple selection. It starts as
+    a copy of the committed selection on the first read, takes the changes while the committed selection stays the
+    same, and is dropped when the list closes or on request.
+
+### Combo selection - Selection changes
+
+89. A change previews the selected values first, then the new ones, and only the new value in single selection.
+    `newValue` is computed on the first read and kept.
+90. In single selection, a selection replaces the selection, and a selection without items clears it. A toggle turns
+    on the items that are not selected, or turns all of them off when each one is selected. A toggle turns a repeated
+    value off and reads the pending selection.
+91. Select all selects all the records of `data` and keeps the selected records outside it. In the pending selection,
+    it keeps the values without a record after the records.
+92. A committed value without a record gets its record in place, from a pending change and without a pending
+    selection. Each value keeps one record, and shows as selected for each of its records.
+93. A deselection removes the named values and forgets the ones without a record. The change lists the records that
+    the pending selection adds or removes, and commits it. Without a pending selection, there is no commit.
+
+### Combo selection - Value sync
+
+94. The committed values are written after each change, but not while a selection is pending. `value` is synced with
+    the value that was written, until `data`, its length or `valueKey` changes. A change of `value` in place is seen.
+95. Single selection writes one value with one write, and keeps an array that it does not cut. A new `value` drops
+    the pending selection, and the same value keeps it. A new `data` writes nothing unless single selection cuts the
+    value, and a change to single selection cuts the value to one value.
+96. A clear while typing writes an empty value and keeps the text. A canceled change writes the selection again.
+
+### Combo selection - Data sync
+
+97. Each value gets its first record, and the records outside `data` stay. A `data` that grows in place finds its
+    records, and a replaced record is found only after the index is invalidated.
+98. A new `data` gives the pending selection the records of its values, and keeps the pending records that it does
+    not hold. A value that the pending selection dropped stays out when the new `data` gives it a record.
+99. A `data` that starts with the same keys indexes only its new items. A key that changes in place, or a new
+    `valueKey`, indexes all the items again. A value that a new `valueKey` merges gets its first record in `data`.
+
+### Combo selection - Selection version
+
+100. The version changes on each change of the selected or the pending records, and the host and the rows render. A
+     read that finds the list closed drops the pending selection without a render. A new text renders only the host.
+
+### Combo selection properties
+
+101. Over random operations, the values stay unique, each value has one record, in the order of the values, and
+     `value` stays in sync with each write. The pending selection exists only while the list is open in the confirm
+     mode, and a change of it keeps the committed values and their order.
+102. Each change previews the values that it makes, in both selection modes.
+
+### Combo active option - Navigation intents
+
+103. There is no active option at first and after the combo connects. A step goes over the group headers, which are
+     not options, and reports when no option comes in its direction.
+104. `first()` makes the first option active, which is a group header with `groupSelection`, and `last()` makes the
+     last record active, which is a placeholder in remote mode. A new index requests a host update, and each write
+     renders the rows.
+
+### Combo active option - Record anchor
+
+105. The active option follows its record to a new index and reports the move one time. None is active when its
+     record goes, or when a header stops being an option. A change of `groupSelection`, and a select-all option that
+     shows or hides, keep the active item. An active placeholder keeps its place for the item that loads there.
+
+### Combo active option - Resets on close and mode change
+
+106. There is no active option while the list is closed, or after `singleSelect` changes.
+
+### Combo active option - Activation after a search
+
+107. After a search, the first option is active in the next update, not the record that was active. A search without
+     filtering changes no records, so it requests the update. A pending search wins over the intents before the
+     update. In remote mode, a search leaves no option active. A change of `singleSelect` and a close of the list
+     drop a pending search.
+
+### Combo active option - Random operation invariants
+
+108. Over random intents and changes of `open`, `showSelectAll`, `groupSelection`, `singleSelect` and `groupKey`, the
+     active option is an option or none, and none while the list is closed. Without an intent, it follows its anchor,
+     or none is active.
+
+### Combo filter operation
+
+109. Without a search term, the input comes back as it is. The match ignores case and diacritics by default, and
+     uses `filterKey`. A change of `caseSensitive`, `matchDiacritics` or `filterKey` between passes normalizes the
+     records again.
 
 ### Not covered by the suite
 

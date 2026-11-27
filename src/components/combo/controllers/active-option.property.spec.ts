@@ -186,7 +186,7 @@ function run(start: Start, ops: Op[]): void {
 }
 
 describe('Combo active option', () => {
-  describe('Properties', () => {
+  describe('Random operation invariants', () => {
     it('is an option or none, none while closed, and follows its anchor', () => {
       fc.assert(fc.property(startArb, fc.array(opArb, { maxLength: 40 }), run));
     });

@@ -32,12 +32,14 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
   - [Test scenarios](#test-scenarios)
     - [DOM](#dom)
     - [Accessibility tests](#accessibility-tests)
+    - [Input target](#input-target)
     - [Initial selection](#initial-selection)
     - [API tests](#api-tests)
     - [Groups and headers tests](#groups-and-headers-tests)
     - [User interactions](#user-interactions)
     - [Items collection changes](#items-collection-changes)
     - [Events tests](#events-tests)
+    - [Regressions](#regressions)
     - [Detached anchor](#detached-anchor)
     - [Scroll strategy tests](#scroll-strategy-tests)
     - [Interactive content](#interactive-content)
@@ -61,6 +63,7 @@ This directory hosts four public components: [`igc-dropdown`](#igc-dropdown),
 |       7 | 2026-11-06 | `header` and `footer` slots; content that is not an item keeps its keys; Tab moves through it. Space is not bound. |
 |       8 | 2026-11-18 | <kbd>Enter</kbd> without an active item closes the list; the shared popup rules suite |
 |       9 | 2026-11-23 | The `open` description of the shared base names the disabled state of form controls; the dropdown has none |
+|      10 | 2026-11-27 | Test scenarios mirror the `Detached anchor` and `Regressions` blocks |
 
 ## Overview
 
@@ -387,7 +390,10 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
 23. `igcChange` is emitted when the selection changes through interaction.
 24. `igcOpening` and `igcClosing` are emitted and can be canceled.
 25. `igcOpened` and `igcClosed` are emitted after the transition.
-26. Issue #1123.
+
+### Regressions
+
+26. Issue #1123: a click on an element inside an item selects that item.
 
 ### Detached anchor
 

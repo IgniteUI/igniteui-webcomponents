@@ -27,12 +27,15 @@
     - [CSS Shadow parts](#css-shadow-parts)
   - [Test scenarios](#test-scenarios)
     - [Icon registry](#icon-registry)
-    - [Referential icons](#referential-icons)
+      - [Referential icons](#referential-icons)
     - [Icon broadcast service](#icon-broadcast-service)
+    - [Icon BFCache (pageshow/pagehide) handling](#icon-bfcache-pageshowpagehide-handling)
+    - [Broadcast payload serialization for cross-browser compatibility](#broadcast-payload-serialization-for-cross-browser-compatibility)
     - [Internal icons library](#internal-icons-library)
     - [Icon component tests](#icon-component-tests)
-    - [ARIA tests](#aria-tests)
-    - [Multi-theme support](#multi-theme-support)
+      - [ARIA tests](#aria-tests)
+      - [Multi-theme support](#multi-theme-support)
+      - [Integration with theme-provider](#integration-with-theme-provider)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -47,6 +50,7 @@
 |       1 | 2026-09-21 | Initial specification                                                                                                 |
 |       2 | 2026-10-02 | Hide the SVG from assistive technologies, and follow a change of the author label |
 |       3 | 2026-10-21 | API descriptions aligned with the JSDoc. |
+|       4 | 2026-11-27 | Test scenarios mirror the `Icon BFCache` and `Broadcast payload serialization` blocks; nested groups are subsections |
 
 ## Overview
 
@@ -238,7 +242,7 @@ None applicable.
 6. Stripping works through the options-object form of both registration functions, and the older
    string-collection API still registers without stripping.
 
-### Referential icons
+#### Referential icons
 
 7. Icons render by reference, the SVG is swapped when the reference changes, and a reference renders once its
    target is registered.
@@ -251,8 +255,14 @@ None applicable.
 10. No event is sent for a reference set with `external` set to false.
 11. Several broadcast services do not synchronize with one another.
 12. A peer that requests a synchronization receives the registered icons but not the non-external references.
+
+### Icon BFCache (pageshow/pagehide) handling
+
 13. The channel is disposed on `pagehide` and recreated on `pageshow`, without duplicating an existing one,
     handles messages after the recreation, and sends nothing while it is disposed.
+
+### Broadcast payload serialization for cross-browser compatibility
+
 14. The broadcast collections and references are sent as plain `Map` objects, and nested ones survive structured
     cloning.
 
@@ -268,7 +278,7 @@ None applicable.
 19. A failed registration throws a descriptive error.
 20. `mirrored` flips the icon.
 
-### ARIA tests
+#### ARIA tests
 
 21. The title of an icon is exposed as an image label.
 22. An icon with no title has no role. The SVG is `aria-hidden`, also after a change of the icon, and the host is
@@ -276,12 +286,15 @@ None applicable.
 23. The image role is kept when the host is labelled by the author, and follows a later change of `aria-label` and
     `aria-labelledby`.
 
-### Multi-theme support
+#### Multi-theme support
 
 24. References resolve per theme, fall back to the default theme, and are overridden by a reference the
     application set.
 25. An icon with no reference is returned as it is, resolution works without a theme parameter, and theme-based
     aliases apply to the default collection only.
+
+#### Integration with theme-provider
+
 26. Two theme providers resolve different icons for the same name, an icon updates when the application sets a new
     reference, and aliased and non-aliased icons coexist across themes.
 

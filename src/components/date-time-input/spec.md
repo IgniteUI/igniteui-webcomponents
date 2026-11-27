@@ -33,18 +33,33 @@
     - [CSS custom states](#css-custom-states)
     - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
-    - [Rendering and formats](#rendering-and-formats)
-    - [Uncommitted edits](#uncommitted-edits)
-    - [Undo and redo](#undo-and-redo)
-    - [Value and spinning](#value-and-spinning)
-    - [Keyboard, wheel and pointer](#keyboard-wheel-and-pointer)
+    - [With the default format](#with-the-default-format)
+      - [Rendering and formats](#rendering-and-formats)
+      - [Value and spinning](#value-and-spinning)
+      - [Keyboard, wheel and pointer](#keyboard-wheel-and-pointer)
+      - [Validity and events](#validity-and-events)
+      - [Uncommitted edits](#uncommitted-edits)
+      - [Undo and redo](#undo-and-redo)
     - [Form integration](#form-integration-1)
     - [defaultValue](#defaultvalue)
     - [Validation message slots](#validation-message-slots)
+    - [Validation messages](#validation-messages)
     - [External label association](#external-label-association)
-    - [Date part and parser unit suites](#date-part-and-parser-unit-suites)
     - [Host ARIA](#host-aria)
     - [Value state motion](#value-state-motion)
+    - [DatePart Classes - createDatePart factory](#datepart-classes---createdatepart-factory)
+    - [DatePart Classes - getValue formatting](#datepart-classes---getvalue-formatting)
+    - [DatePart Classes - validate ranges](#datepart-classes---validate-ranges)
+    - [DatePart Classes - spin of each part](#datepart-classes---spin-of-each-part)
+    - [DateTimeMaskParser - Format Parsing](#datetimemaskparser---format-parsing)
+    - [DateTimeMaskParser - Mask Application](#datetimemaskparser---mask-application)
+    - [DateTimeMaskParser - Date Formatting](#datetimemaskparser---date-formatting)
+    - [DateTimeMaskParser - Date Parsing](#datetimemaskparser---date-parsing)
+    - [DateTimeMaskParser - Edit Parsing](#datetimemaskparser---edit-parsing)
+    - [DateTimeMaskParser - Part Queries](#datetimemaskparser---part-queries)
+    - [DateTimeMaskParser - Mask Change](#datetimemaskparser---mask-change)
+    - [Date-time mask parser properties - Parsing and formatting](#date-time-mask-parser-properties---parsing-and-formatting)
+    - [Date-time mask parser properties - Part editing](#date-time-mask-parser-properties---part-editing)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -80,6 +95,7 @@
 |      23 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
 |      24 | 2026-11-25 | The first render shows the slotted content |
 |      25 | 2026-11-27 | The focused editor shows every digit of a year past 9999 or before year 1; typing keeps at most four year digits |
+|      26 | 2026-11-27 | Test scenarios mirror the `With the default format` block and its groups, the `Validation messages` block and each block of the unit suites; the unit suites move to the suite list |
 
 ## Overview
 
@@ -736,145 +752,142 @@ The component is covered by four suites in this directory, all running in a real
 | Suite | Scope |
 | ----- | ----- |
 | [`date-time-input.spec.ts`](./date-time-input.spec.ts) | The component: formats, editing, spinning, validation and form integration. |
-| [`date-part.spec.ts`](./date-part.spec.ts) | The date part classes on their own. |
-| [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) | The date-time mask parser on its own. |
-| [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) | Property-based (fuzz) tests for the parser, with generated formats, dates and input. |
+| [`date-part.spec.ts`](./date-part.spec.ts) | The date part classes on their own: the factory, the formatting, the validation ranges and the spin of each part. |
+| [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) | The date-time mask parser on its own: it turns a format into a mask and back, and gives a picker calendar the edit parse. |
+| [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) | Property-based (fuzz) tests for the parser, with generated formats, dates and input, also for the part editing. |
 
 The component suite additionally reuses `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests`, the `simulate*` helpers and `ValidityHelpers` from
-[`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks.
+[`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks, file by file in
+the order of the table.
 
-### Rendering and formats
+### With the default format
+
+The groups follow the nested `describe` blocks of `With the default format`.
+
+#### Rendering and formats
 
 1. Sets the default values correctly.
-2. Updates `inputFormat` according to the locale, with and without a value, including through the localization API.
-3. Uses `inputFormat` when no `displayFormat` is defined - issue #1114 - and uses `displayFormat` when it is.
-4. Updates the mask according to the `inputFormat` on focus when a value is set - issue #1320.
-5. Switches correctly between the predefined date formats.
-6. Has the `filled` part only while the input shows more than the placeholder or the empty mask.
+2. Has the `filled` part only while the input shows more than the placeholder or the empty mask.
+3. Updates `inputFormat` according to the locale, with and without a value, including through the localization API.
+4. Uses `inputFormat` when no `displayFormat` is defined - issue #1114 - and uses `displayFormat` when it is.
+5. Updates the mask according to the `inputFormat` on focus when a value is set - issue #1320.
+6. Emits `igcChange` on blur after an incomplete mask has been parsed - issue #1695.
+7. Switches correctly between the predefined date formats.
 
-### Uncommitted edits
+#### Value and spinning
+
+8. `clear` empties the editor.
+9. Sets the value through the attribute, the property, a string property binding, and a time-only portion.
+10. `stepUp` and `stepDown` initialize a new date when the value is empty, and spin correctly otherwise.
+11. `setRangeText` replaces the range and re-applies the mask.
+12. `selectionStart` and `selectionEnd` report the selection.
+13. Respects `spinDelta`. `stepUp` and `stepDown` switch AM/PM also while the display format differs from the input
+    format.
+
+#### Keyboard, wheel and pointer
+
+14. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
+15. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only and when
+    an IME handles them.
+16. A year past 9999 shows every digit while the editor has focus, also through an edit of another part, and a spin
+    or <kbd>Ctrl</kbd> + <kbd>;</kbd> into the year range narrows the year part at once and keeps it selected, also
+    before another part. Typing in such a year keeps at most four digits.
+17. <kbd>Alt</kbd> + arrow presses are a no-op.
+18. No change event is emitted while read-only.
+19. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked, and the value
+    updates at once, also for a part that is not in the input format and over a keyboard draft.
+20. <kbd>Ctrl</kbd> + <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date
+    section, stop at each part edge in a format without separators, and skip a separator of more than one character.
+21. An arrow key does not spin while the caret is inside a literal.
+22. Non-filled parts get their default value on blur; an invalid date sets a `null` value on blur; a complete input
+    commits its value.
+23. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
+24. Respects `spinLoop`.
+25. Drag enter, drag leave with and without focus, and drop behavior.
+
+#### Validity and events
+
+26. `min` and `max` set the validity of the value. `required` makes an empty editor invalid, but not while it is
+    disabled.
+27. The arrow keys and the mouse wheel emit `igcInput`, and a blur after a change emits `igcChange`, also after typed
+    input.
+
+#### Uncommitted edits
 
 Grouped as `Uncommitted edits - issue #1346` in the suite.
 
-7. Does not mutate `value` while typing, neither partially nor fully.
-8. Exposes the typed date through `igcInput` while `value` stays put.
-9. Re-applying an equal value while typing does not reset the mask.
-10. Emits a single `igcChange` on blur, carrying the committed value.
-11. A genuinely different value assigned while typing still wins. An empty value assigned while focused replaces the
+28. Does not mutate `value` while typing, neither partially nor fully.
+29. Exposes the typed date through `igcInput` while `value` stays put.
+30. Re-applying an equal value while typing does not reset the mask.
+31. Emits a single `igcChange` on blur, carrying the committed value.
+32. A genuinely different value assigned while typing still wins. An empty value assigned while focused replaces the
     text of the old value.
-12. Does not report a value set from code while focused, also over a typed draft.
-13. Does not report `clear()` while focused.
-14. Reports an edit against the last value set from code.
-15. Emptying the mask commits an empty value, not a date filled from the defaults.
-16. Emits `igcChange` on blur after an incomplete mask has been parsed - issue #1695.
+33. Does not report a value set from code while focused, also over a typed draft.
+34. Does not report `clear()` while focused.
+35. Reports an edit against the last value set from code.
+36. Emptying the mask commits an empty value, not a date filled from the defaults.
 
-### Undo and redo
+#### Undo and redo
 
-17. Restores the mask without committing the value, and commits the restored draft on blur.
-18. Redoes a restored draft.
-19. Emits no `igcChange` when undone back to the value the editor was focused with.
-20. Keeps consecutive spins as separate steps. An undo after a spin into the year range restores the wider year.
-21. Emits `igcInput` when a step is restored.
-22. Does nothing while read-only, and drops the history when the input format changes.
+Grouped as `Undo / redo` in the suite.
 
-### Value and spinning
-
-23. Sets the value through the attribute, the property, a string property binding, and a time-only portion.
-24. `clear` empties the editor.
-25. `stepUp` and `stepDown` initialize a new date when the value is empty, and spin correctly otherwise.
-26. Respects `spinDelta` and `spinLoop`. `stepUp` and `stepDown` switch AM/PM also while the display format differs
-    from the input format.
-27. `setRangeText` replaces the range and re-applies the mask.
-28. `selectionStart` and `selectionEnd` report the selection.
-29. Non-filled parts get their default value on blur; an invalid date sets a `null` value on blur; a complete input
-    commits its value.
-30. A year past 9999 shows every digit while the editor has focus, also through an edit of another part, and a spin
-    or <kbd>Ctrl</kbd> + <kbd>;</kbd> into the year range narrows the year part at once and keeps it selected, also
-    before another part. Typing in such a year keeps at most four digits.
-
-### Keyboard, wheel and pointer
-
-31. <kbd>Arrow Up</kbd> and <kbd>Arrow Down</kbd> spin the focused part, and are a no-op while read-only and when
-    an IME handles them.
-32. <kbd>Alt</kbd> + arrow presses are a no-op.
-33. The caret does not move away from the focused part when `stepUp` or `stepDown` are invoked, and the value
-    updates at once, also for a part that is not in the input format and over a keyboard draft.
-34. <kbd>Ctrl</kbd> + <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> navigate to the beginning and the end of a date
-    section, stop at each part edge in a format without separators, and skip a separator of more than one character.
-35. <kbd>Ctrl</kbd> + <kbd>;</kbd> sets the current date.
-36. The mouse wheel spins the part under the caret, and is a no-op without focus and while read-only.
-37. No change event is emitted while read-only.
-38. Drag enter, drag leave with and without focus, and drop behavior.
+37. Restores the mask without committing the value, and commits the restored draft on blur.
+38. Redoes a restored draft.
+39. Emits no `igcChange` when undone back to the value the editor was focused with.
+40. Keeps consecutive spins as separate steps. An undo after a spin into the year range restores the wider year.
+41. Emits `igcInput` when a step is restored.
+42. Does nothing while read-only, and drops the history when the input format changes.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-39. Is form associated, and is not associated on submit without a value.
-40. Is associated on submit.
-41. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call. A reset while focused
+43. Is form associated, and is not associated on submit without a value.
+44. Is associated on submit.
+45. Is correctly reset on form reset, and resets to the new default after a `setAttribute` call. A reset while focused
     discards the typed text and shows the empty mask or the default, the next blur keeps the restored value, and a
     reset that empties the value shows the empty mask.
-42. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>
+46. Is correctly submitted on <kbd>Enter</kbd>, and does not submit while the value is invalid. A real <kbd>Enter</kbd>
     submits once.
-43. Reflects the disabled state of an ancestor `fieldset`.
-44. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
+47. Reflects the disabled state of an ancestor `fieldset`.
+48. Fulfils the required, min, max - both as dates and as string property bindings - and custom constraints.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
 [input suite](../input/spec.md#form-validity-checks) covers them.
 
 ### defaultValue
 
-45. Form integration - correct initial state, correct submission and correct reset.
-46. Validation - fails and passes required validation, and fails and passes the min and max validation.
+49. Form integration - correct initial state, correct submission and correct reset.
+50. Validation - fails and passes required validation, and fails and passes the min and max validation.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-47. `value-missing`, `range-underflow`, `range-overflow`, `custom-error` and `invalid` render for their matching
+51. `value-missing`, `range-underflow`, `range-overflow`, `custom-error` and `invalid` render for their matching
     constraint.
+
+### Validation messages
+
+52. The validation message formats a bound as the input displays it, in the locale of the input.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-48. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+53. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     `ariaLabelledByElements`, and clicking it focuses the control. A `label` added after the first render names the
     control from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](../input/spec.md#naming-order).
 
-### Date part and parser unit suites
-
-49. [`date-part.spec.ts`](./date-part.spec.ts) covers the part classes: the factory for every part type, `getValue`
-    formatting per token, `validate` ranges - including the day validated against its month and year context - and
-    `spin` for every part, with leap year adjustment, looping and clamping, and a year that never loops and moves only
-    toward the years 1 to 9999. A year from code can have a sign.
-50. [`datetime-mask-parser.spec.ts`](./datetime-mask-parser.spec.ts) covers the parser that turns a format into a
-    mask and back, including the year format normalization with its case kept, a literal that is a mask flag, the
-    century threshold, the calendar of years below 100, and UTF-16 part positions after an astral literal. The year
-    part widens for a year past 9999 or before year 1, keeps the sign through an edit of another part, is complete
-    with four typed digits, and narrows again for a year in the range. The edit
-    parse for a picker calendar gives the date of a complete mask, the previous date for an incomplete or invalid
-    date, and `null` for a blank mask. A complete mask parses strictly also when a literal is the prompt.
-51. [`datetime-mask-parser.property.spec.ts`](./datetime-mask-parser.property.spec.ts) checks, for generated formats:
-    a prompt read only in the parts (a prompt that is also a literal parses and edits like the default prompt),
-    the `formatValue` / `parseDate` round-trip for dates from year 0 to 9999, the two-digit year range, no throw or
-    invalid date for any string, the strict and the lenient value parse (a complete mask parses the same in both, a
-    partial mask gives `null` when strict, a blank mask gives `null`), and the parts that tile the mask and agree
-    with the format-level part queries. For
-    the part editing: the step rules, the seed of an empty value, the AM/PM spin, the spin of a complete and a partial
-    mask, the default part, and part navigation that visits every part edge in order and agrees with the literal edges
-    when one character separates each part.
-
 ### Host ARIA
 
-52. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+54. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal. `required` sets `aria-required`.
-53. The shared host combobox suite (`runHostComboboxTests`): the cases of the
+55. The shared host combobox suite (`runHostComboboxTests`): the cases of the
     [input](../input/spec.md#host-combobox-state), without the projection case.
-54. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+56. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -884,10 +897,95 @@ Generated by `runExternalLabelAssociationTests`.
 
 Generated by `runValueStateMotionTests` in the Material theme.
 
-55. A focus and an <kbd>ArrowUp</kbd> spin start transitions.
-56. A change from code starts none.
-57. A first render in the changed state starts none.
-58. With reduced motion, a focus and an <kbd>ArrowUp</kbd> spin start none.
+57. A focus and an <kbd>ArrowUp</kbd> spin start transitions.
+58. A change from code starts none.
+59. A first render in the changed state starts none.
+60. With reduced motion, a focus and an <kbd>ArrowUp</kbd> spin start none.
+
+### DatePart Classes - createDatePart factory
+
+61. `createDatePart` creates the year, month, date, hours, minutes, seconds, AM/PM and literal parts, and throws for
+    an unknown part type.
+
+### DatePart Classes - getValue formatting
+
+62. `getValue` formats each part by its token: a full (`yyyy`) or a two-digit (`yy`) year, a padded month, date,
+    minutes and seconds, 24-hour (`HH`) and 12-hour (`hh`) hours, AM or PM, and the format string of a literal.
+
+### DatePart Classes - validate ranges
+
+63. `validate` accepts any integer year, also a negative one, the months 0 to 11, the dates 1 to 31 or the days of the
+    month and year of the context, the hours 0 to 23, and the minutes and seconds 0 to 59. An AM/PM part and a literal
+    always validate.
+
+### DatePart Classes - spin of each part
+
+64. The year spins up and down, adjusts the date for a leap year, stops at the years 1 and 9999 also with `spinLoop`,
+    and moves a year outside 1 to 9999 only toward that range.
+65. The month spins up and down, loops from December to January with `spinLoop`, stops at December without it, and
+    clamps the date to the last day of the target month.
+66. The date, the hours, the minutes and the seconds spin up, and the date spins down. The date and the hours loop
+    with `spinLoop`.
+67. AM/PM toggles both ways, does nothing without an AM/PM value, and restores the original date when the toggle rolls
+    over the day. A literal does nothing when spun.
+
+### DateTimeMaskParser - Format Parsing
+
+68. Parses date, time and AM/PM formats into parts with their positions.
+69. Widens a year format other than `yy` to `yyyy` in the mask and the parts, with its case kept. Keeps a literal
+    that is a mask flag, and the UTF-16 part positions after an astral literal.
+
+### DateTimeMaskParser - Mask Application
+
+70. Generates the empty mask, and applies complete, partial and time input.
+
+### DateTimeMaskParser - Date Formatting
+
+71. Formats a date with leading zeros, 24-hour time and 12-hour time with AM/PM, and gives the empty mask for a `null`
+    date.
+72. The year part widens for a year past 9999 and narrows again for a year in the range. A year before 1 shows with a
+    sign and keeps it through an edit of another part. A widened year part keeps at most four typed digits, and is
+    complete with four.
+
+### DateTimeMaskParser - Date Parsing
+
+73. Parses a date, a time and AM/PM, also an AM/PM marker in a format without hours, and gives `null` for an invalid
+    month or date.
+74. A two-digit year uses the century threshold, also for each year part by its own digits and for a partially typed
+    `yyyy` year. A four-digit year below 100 stays as typed, and uses the calendar of that year for the days of the
+    month.
+
+### DateTimeMaskParser - Edit Parsing
+
+75. The edit parse for a picker calendar gives the date of a complete mask, the previous date for an incomplete or
+    invalid date, and `null` for a blank mask. A complete mask parses strictly also when a literal is the prompt.
+
+### DateTimeMaskParser - Part Queries
+
+76. Gets the part at a caret position, tells the date parts from the time parts, and gets the first date part and a
+    part by its type.
+
+### DateTimeMaskParser - Mask Change
+
+77. A change of mask parses the date parts again.
+
+### Date-time mask parser properties - Parsing and formatting
+
+78. For generated formats: a complete mask parses the same in the strict and the lenient value parse, a partial mask
+    gives `null` when strict, and a blank mask gives `null`. The prompt is read only in the parts, so a prompt that is
+    also a literal parses and edits like the default prompt.
+79. A date from year 0 to 9999 round-trips through `formatValue` and `parseDate`, and a two-digit year resolves to the
+    1950 to 2049 range. No string throws or parses to an invalid date, and the parts tile the mask and agree with the
+    format-level part queries.
+
+### Date-time mask parser properties - Part editing
+
+80. A step uses the delta, else `spinDelta`, else 1, in the direction of the request. An empty value gets a copy of the
+    seed without a step, and AM/PM switches to the other half of the same day.
+81. A complete mask spins its date, and a partial mask gets the seed. The default part is the date, else the hours,
+    else the first part.
+82. <kbd>Ctrl</kbd> + arrow visits every part edge in order, moves to the edges of the part at the caret, and stops at
+    the literal edges when one character separates each part.
 
 ## Assumptions and limitations
 

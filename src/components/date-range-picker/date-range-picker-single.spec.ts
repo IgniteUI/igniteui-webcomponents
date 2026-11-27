@@ -98,7 +98,7 @@ describe('Date range picker - single input', () => {
   afterEach(() => {
     sinon.restore();
   });
-  describe('Properties', () => {
+  describe('Single input properties', () => {
     it('should set properties of the input correctly', async () => {
       const propsSingle = {
         required: true,
@@ -119,7 +119,7 @@ describe('Date range picker - single input', () => {
     });
   });
 
-  describe('Localization', () => {
+  describe('Single input localization', () => {
     it('should properly set displayFormat to the set of predefined formats - single input', async () => {
       const predefinedFormats = [
         { format: 'short', formattedValue: '4/14/25' },
@@ -337,7 +337,7 @@ describe('Date range picker - single input', () => {
     });
   });
 
-  describe('Methods', () => {
+  describe('Single input methods', () => {
     it('should stepUp/stepDown when input is not focused', async () => {
       picker.useTwoInputs = false;
       picker.value = {
@@ -479,7 +479,7 @@ describe('Date range picker - single input', () => {
       expect(rangeInput._uncommittedValue).to.deep.equal(picker.value);
     });
   });
-  describe('Interactions', () => {
+  describe('Single input interactions', () => {
     describe('Interactions with the inputs and the open and clear buttons', () => {
       it('cancels Escape only while open', async () => {
         expect(simulateCancelableKeydown(picker, escapeKey)).to.be.false;
@@ -956,7 +956,7 @@ describe('Date range picker - single input', () => {
       });
     });
   });
-  describe('Slots', () => {
+  describe('Single input slots', () => {
     it('should render slotted elements', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker mode="dialog">

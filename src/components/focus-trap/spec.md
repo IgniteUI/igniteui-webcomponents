@@ -42,6 +42,7 @@
 |       2 | 2026-10-26 | Flat-tree order; only rendered elements |
 |       3 | 2026-11-06 | One element per native radio group      |
 |       4 | 2026-11-27 | `hidden` hides the trap and its content  |
+|       5 | 2026-11-27 | Test scenarios mirror the `Mixed content` block |
 
 ## Overview
 

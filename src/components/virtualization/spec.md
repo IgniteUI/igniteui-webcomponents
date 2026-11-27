@@ -38,8 +38,19 @@
     - [Item elements](#item-elements)
     - [Coordinate compression tests](#coordinate-compression-tests)
     - [RTL tests](#rtl-tests)
-    - [Engine unit tests](#engine-unit-tests)
-    - [Recycle directive tests](#recycle-directive-tests)
+    - [Additional behavior](#additional-behavior)
+    - [VirtualScrollEngine - Sizes and offsets](#virtualscrollengine---sizes-and-offsets)
+    - [VirtualScrollEngine - Estimated size](#virtualscrollengine---estimated-size)
+    - [VirtualScrollEngine - Adapted estimate](#virtualscrollengine---adapted-estimate)
+    - [VirtualScrollEngine - Resizing](#virtualscrollengine---resizing)
+    - [VirtualScrollEngine - Change notifications](#virtualscrollengine---change-notifications)
+    - [VirtualScrollEngine - Visible range](#virtualscrollengine---visible-range)
+    - [VirtualScrollEngine - Alignment](#virtualscrollengine---alignment)
+    - [VirtualScrollEngine - Scroll offset resolution](#virtualscrollengine---scroll-offset-resolution)
+    - [VirtualScrollEngine - Coordinate compression](#virtualscrollengine---coordinate-compression)
+    - [Recycle directive - Keyed rendering](#recycle-directive---keyed-rendering)
+    - [Recycle directive - Detached part pool](#recycle-directive---detached-part-pool)
+    - [Recycle directive - Unbound DOM state](#recycle-directive---unbound-dom-state)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -63,6 +74,7 @@
 |       9 | 2026-11-11 | `scrollToIndex` renders the new window in the same task; a hidden list keeps its window    |
 |      10 | 2026-11-12 | A detached list updates without adopting the stylesheet, and adopts it once attached       |
 |      11 | 2026-11-13 | `scrollToIndex` on a hidden or detached list scrolls when the list shows                  |
+|      12 | 2026-11-27 | Test scenarios mirror the engine and recycle blocks one heading each; `Additional behavior` |
 
 ## Overview
 
@@ -337,11 +349,11 @@ scope, the component adopts its stylesheet again on its next update.
 
 ## Test scenarios
 
-| Suite                 | File                       |
-| --------------------- | -------------------------- |
-| `VirtualScroll`       | `virtualization.spec.ts`   |
-| `VirtualScrollEngine` | `engine.spec.ts`           |
-| `recycle directive`   | `recycle.spec.ts`          |
+| Suite                 | File                     | Scope                                                                                  |
+| --------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
+| `VirtualScroll`       | `virtualization.spec.ts` | The component in a real browser                                                        |
+| `VirtualScrollEngine` | `engine.spec.ts`         | Unit tests of the size tree, the visible range, the alignment math and the compression |
+| `recycle directive`   | `recycle.spec.ts`        | Unit tests of the keyed directive that reuses the item elements                        |
 
 ### Accessibility tests
 
@@ -422,51 +434,87 @@ scope, the component adopts its stylesheet again on its next update.
 25. The content element gets a negative `translateX` when scrolled, `igcStateChange` carries valid indices, and
     the first data item is rendered as the right-most one.
 
-### Engine unit tests
+### Additional behavior
 
-26. **Sizing**: new items take the estimate, an unsized engine reports zero, a measurement applies to the later
-    offsets, out-of-range measurements are ignored, offsets are clamped to the item count, and a range sum is
-    clamped the same way.
-27. **Estimated size**: a new estimate applies only to unmeasured items, and a measurement equal to the current
-    size still counts as a measurement.
-28. **Adapted estimate**: the average measured size replaces the estimate, the first average applies anywhere, a
-    later one waits until each item before the window is measured, the average survives a resize and a replacement,
-    a new configured estimate replaces it, only the sizes measured since then count, and a change notifies.
-29. **Resizing**: measured sizes survive an append and a removal, are discarded at and beyond the retained count
-    and marked unmeasured again, a changed estimate reaches every unmeasured item, and a matching length with
-    everything retained is a no-op.
-30. **Change notifications**: a resize, a measurement and an estimate change notify, and nothing notifies when
-    nothing changes.
-31. **Visible range**: an empty range without items or viewport, coverage of the viewport from the top, an offset
-    exactly on an item boundary, the expansion by the over-scan clamped to the item count, and measured sizes.
-32. **Alignment**: leading, centered and trailing alignment, never a negative offset, clamping to the largest
-    reachable offset, the in-view report including an item larger than the viewport, an out-of-range index, and an
-    empty tree.
-33. **Scroll offset resolution**: `start`, `center` and `end` match the alignment math, an unknown position is
-    `start`, and `nearest` keeps an item in view, aligns an item after or before the viewport to the closer edge,
-    scrolls an item larger than the viewport until it covers it, and keeps the offset on an empty tree.
-34. **Coordinate compression**: the DOM size clamped to the browser maximum and untouched below it, the mapping of
-    the DOM scroll range onto the virtual one, the end of the list at the largest DOM offset, the content offset
-    that puts the virtual position of the viewport at its leading edge, a rendered window sized by the viewport
-    rather than by the ratio,
-    the alignment slack converted into DOM space, `nearest` resolved in DOM space, and a document probed only once,
-    including from an already scrolled document.
+26. A non-positive `estimatedItemSize` falls back to the default estimate.
+27. Nullish `data` renders no items and a track of zero size.
+28. The item context passes `isFirst` and `isLast`.
+29. In the horizontal orientation, `scrollToIndex` aligns by `block` when `inline` is not set.
+30. A newer `scrollToIndex` call stops the correction of an earlier scroll.
 
-### Recycle directive tests
+### VirtualScrollEngine - Sizes and offsets
 
-35. Items render in order; the element of a key that stays is kept; a full replacement of the keys reuses every
+31. New items take the estimate, an unsized engine reports zero, a measurement applies to the later offsets,
+    out-of-range measurements are ignored, offsets are clamped to the item count, and a range sum is clamped the
+    same way.
+
+### VirtualScrollEngine - Estimated size
+
+32. A new estimate applies only to unmeasured items, and a measurement equal to the current size still counts as a
+    measurement. An estimate set before any items exist applies to the items of the next resize.
+
+### VirtualScrollEngine - Adapted estimate
+
+33. The average measured size replaces the estimate, and nothing changes without measured items. The first average
+    applies anywhere, a later one waits until each item before the window is measured, the average survives a resize
+    and a replacement, a new configured estimate replaces it, only the sizes measured since then count, and a change
+    notifies.
+
+### VirtualScrollEngine - Resizing
+
+34. Measured sizes survive an append and a removal, are discarded at and beyond the retained count and marked
+    unmeasured again, a changed estimate reaches every unmeasured item, and a matching length with everything
+    retained is a no-op.
+
+### VirtualScrollEngine - Change notifications
+
+35. A resize, a measurement and an estimate change notify, and nothing notifies when nothing changes.
+
+### VirtualScrollEngine - Visible range
+
+36. An empty range without items or viewport, coverage of the viewport from the top, an offset exactly on an item
+    boundary, the expansion by the over-scan clamped to the item count, and measured sizes.
+
+### VirtualScrollEngine - Alignment
+
+37. Leading, centered and trailing alignment, never a negative offset, clamping to the largest reachable offset, the
+    in-view report including an item larger than the viewport, an out-of-range index, and an empty tree.
+
+### VirtualScrollEngine - Scroll offset resolution
+
+38. `start`, `center` and `end` match the alignment math, an unknown position is `start`, and `nearest` keeps an
+    item in view, aligns an item after or before the viewport to the closer edge, scrolls an item larger than the
+    viewport until it covers it, and keeps the offset on an empty tree.
+
+### VirtualScrollEngine - Coordinate compression
+
+39. The DOM size clamped to the browser maximum and untouched below it, the mapping of the DOM scroll range onto the
+    virtual one, the end of the list at the largest DOM offset, the content offset that puts the virtual position of
+    the viewport at its leading edge, a rendered window sized by the viewport rather than by the ratio, the alignment
+    slack converted into DOM space, `nearest` resolved in DOM space, and a document probed only once, including from
+    an already scrolled document.
+
+### Recycle directive - Keyed rendering
+
+40. Items render in order; the element of a key that stays is kept; a full replacement of the keys reuses every
     element without a DOM move; a shift moves only the recycled elements, unless the kept elements are fewer than
     half the recycled ones.
-36. No element is created once the window has its full size, each item keeps exactly two markers, and no comment
+41. No element is created once the window has its full size, each item keeps exactly two markers, and no comment
     node leaks.
-37. Any change of keys, including reversals, shuffles, growth, shrinkage, duplicate keys and random changes, gives key
+42. Any change of keys, including reversals, shuffles, growth, shrinkage, duplicate keys and random changes, gives key
     order.
-38. A focused element in a kept item keeps the focus while the keys shift, reverse, or the other kept elements move.
-39. Removed parts disconnect their async directives; the directive takes over from and gives way to other content.
-40. **Pool**: a detached part is reused when the window grows, the pool holds at most as many parts as the window,
-    an empty window drops the pool, pooled parts disconnect their async directives and reconnect on reuse, and a
-    detached part stays in the document of the list, also after the list moves to another document.
-41. **Unbound DOM state** moves with a recycled element to the entering key, and stays with its key in a `keyed`
+43. A focused element in a kept item keeps the focus while the keys shift, reverse, or the other kept elements move.
+44. Removed parts disconnect their async directives; the directive takes over from and gives way to other content.
+
+### Recycle directive - Detached part pool
+
+45. A detached part is reused when the window grows, the pool holds at most as many parts as the window, an empty
+    window drops the pool, pooled parts disconnect their async directives and reconnect on reuse, and a detached
+    part stays in the document of the list, also after the list moves to another document.
+
+### Recycle directive - Unbound DOM state
+
+46. Unbound DOM state moves with a recycled element to the entering key, and stays with its key in a `keyed`
     template.
 
 ### Not covered by the suite

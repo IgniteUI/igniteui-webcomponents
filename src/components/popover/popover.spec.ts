@@ -1533,7 +1533,7 @@ describe('Popover', () => {
   });
 
   // floating-ui only. The native path has no positioning strategy.
-  describe('Positioning strategy [fallback]', () => {
+  describe('Fallback positioning strategy', () => {
     before(() => {
       setPopoverPositionStrategy('floating');
     });

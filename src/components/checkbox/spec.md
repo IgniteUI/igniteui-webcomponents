@@ -28,9 +28,12 @@ This directory hosts two form-associated components that share the same base imp
     - [Shared methods](#shared-methods)
     - [Shared events](#shared-events)
   - [Test scenarios](#test-scenarios)
-    - [Rendering and properties](#rendering-and-properties)
-    - [Interactions and events](#interactions-and-events)
+    - [With a label](#with-a-label)
+      - [Rendering and properties](#rendering-and-properties)
+      - [Interactions and events](#interactions-and-events)
     - [Form integration](#form-integration-1)
+    - [Synchronous validation](#synchronous-validation)
+    - [Initial checked state is submitted](#initial-checked-state-is-submitted)
     - [defaultChecked](#defaultchecked)
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
@@ -65,6 +68,7 @@ This directory hosts two form-associated components that share the same base imp
 |      13 | 2026-11-20 | Only a change by the user animates the checkbox and the switch; a change from code and the first render show at once; no transitions with reduced motion. The Material switch thumb moves with a transition, not with keyframes; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
 |      14 | 2026-11-25 | `name` updates its attribute at once |
 |      15 | 2026-11-25 | The first render shows the slotted label |
+|      16 | 2026-11-27 | Test scenarios mirror the `With a label`, `Synchronous validation` and `Initial checked state is submitted` blocks |
 
 ## Overview
 
@@ -416,7 +420,11 @@ through `@web/test-runner`, with `@open-wc/testing` fixtures and assertions, and
 
 The groups below mirror the `describe` blocks of the two suites.
 
-### Rendering and properties
+### With a label
+
+The groups follow the nested `describe` blocks of `With a label`.
+
+#### Rendering and properties
 
 Present in both suites unless noted.
 
@@ -430,75 +438,84 @@ Present in both suites unless noted.
 6. Sets the `value` property correctly.
 7. Sets the `disabled` property correctly.
 8. Correctly reports the validity status.
-9. Keeps correct focus states between light and shadow DOM.
 
-### Interactions and events
+#### Interactions and events
 
-10. Emits `igcChange` when the checked state changes.
-11. Emits the click event only once - the shadow root must not duplicate it (checkbox only).
+9. Emits `igcChange` when the checked state changes.
+10. Emits the click event only once - the shadow root must not duplicate it (checkbox only).
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`, in both suites.
 
-12. Is form associated.
-13. Is associated on submit with the default value `on`, and with a passed value - including when `checked` is set
+11. Is form associated.
+12. Is associated on submit with the default value `on`, and with a passed value - including when `checked` is set
     before the value.
-14. Is not associated on submit when it is not checked.
-15. Is correctly reset on form reset, including after a `setAttribute` and after a `toggleAttribute` call
+13. Is not associated on submit when it is not checked.
+14. Is correctly reset on form reset, including after a `setAttribute` and after a `toggleAttribute` call
     (checkbox only).
-16. Syncs the native input checked state after a form reset (checkbox only).
-17. Is correctly submitted on <kbd>Enter</kbd> in a form with a submit button, and does not submit without a submit
+15. Syncs the native input checked state after a form reset (checkbox only).
+16. Is correctly submitted on <kbd>Enter</kbd> in a form with a submit button, and does not submit without a submit
     button, while the value is invalid or when a listener on the host cancels the `keydown`. A real <kbd>Enter</kbd>
     submits once (checkbox only).
-18. Reflects the disabled state of an ancestor `fieldset`.
-19. Fulfils the required constraint - including in combination with `indeterminate` for the checkbox - and a custom
+17. Reflects the disabled state of an ancestor `fieldset`.
+18. Fulfils the required constraint - including in combination with `indeterminate` for the checkbox - and a custom
     constraint.
-20. An initial checked state is submitted (checkbox only).
-21. Validates synchronously (checkbox only).
+
+### Synchronous validation
+
+In the checkbox suite.
+
+19. A required checkbox fails the form validation and the submission, and passes both after a click checks it.
+
+### Initial checked state is submitted
+
+In the checkbox suite.
+
+20. A checkbox with the `checked` attribute submits its value.
 
 ### defaultChecked
 
 Present in both suites.
 
-22. Form integration - correct initial state, correct submission and correct reset. A change of the `checked`
+21. Form integration - correct initial state, correct submission and correct reset. A change of the `checked`
     attribute or of `value` keeps the control pristine.
-23. Validation - fails the initial validation, and passes once `defaultChecked` is updated.
+22. Validation - fails the initial validation, and passes once `defaultChecked` is updated.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests` in the checkbox suite.
 
-24. `value-missing` with `required`.
-25. `custom-error` after `setCustomValidity`.
-26. `invalid` with `required`.
+23. `value-missing` with `required`.
+24. `custom-error` after `setCustomValidity`.
+25. `invalid` with `required`.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests` in both suites.
 
-27. An external `label` bound through `for`, and a `label` wrapping the host, name the native input through
+26. An external `label` bound through `for`, and a `label` wrapping the host, name the native input through
     `ariaLabelledByElements`. A click on it focuses the input, checks the control and emits `igcChange` once.
-28. A `label` added after the first render names the input once the control gets focus.
-29. An axe audit passes with only an external `label`.
-30. A disabled control ignores a label click, and a click on the control inside a wrapping `label` changes the state
+27. A `label` added after the first render names the input once the control gets focus.
+28. An axe audit passes with only an external `label`.
+29. A disabled control ignores a label click, and a click on the control inside a wrapping `label` changes the state
     once.
-31. The host `aria-labelledby` wins over an external `label`, the host `aria-label` names the input while no label does,
+30. The host `aria-labelledby` wins over an external `label`, the host `aria-label` names the input while no label does,
     and a change of the host `aria-label` reaches the input. A change of the host `aria-labelledby` also reaches the
     input, and its removal gives the name back to the external `label`.
 
 ### Host ARIA
 
-32. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+31. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
 ### Hidden ancestor
 
-33. An unchecked, a checked and an indeterminate checkbox hide at the same time as a hidden ancestor in each theme, at
+32. An unchecked, a checked and an indeterminate checkbox hide at the same time as a hidden ancestor in each theme, at
     rest and after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
-34. An unchecked and a checked switch hide at the same time as a hidden ancestor in each theme, at rest and after a
+33. An unchecked and a checked switch hide at the same time as a hidden ancestor in each theme, at rest and after a
     focus or a hover: no element transitions `visibility` or sets it to `visible`.
-35. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+34. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -509,26 +526,26 @@ Generated by `runExternalLabelAssociationTests` in both suites.
 
 Generated by `runValueStateMotionTests` in the Material theme, for `checked`, in both suites.
 
-36. A click starts transitions. In the checkbox, they include the `stroke-dashoffset` of the check mark.
-37. A change from code starts none.
-38. A first render in the changed state starts none.
-39. With reduced motion, a click starts none.
+35. A click starts transitions. In the checkbox, they include the `stroke-dashoffset` of the check mark.
+36. A change from code starts none.
+37. A first render in the changed state starts none.
+38. With reduced motion, a click starts none.
 
 ### Indeterminate value state motion
 
 Generated by `runValueStateMotionTests` in the Material theme, for `indeterminate`, in the checkbox suite. The checkbox
 starts indeterminate, because a click is the only change of `indeterminate` that the user makes.
 
-40. A click starts transitions, also the `transform` of the mark, which only the end of the indeterminate state starts.
-41. `indeterminate = false` from code starts none.
-42. A first render in the indeterminate state starts none.
-43. With reduced motion, a click starts none.
+39. A click starts transitions, also the `transform` of the mark, which only the end of the indeterminate state starts.
+40. `indeterminate = false` from code starts none.
+41. A first render in the indeterminate state starts none.
+42. With reduced motion, a click starts none.
 
 ### First render
 
 Present in both suites.
 
-44. The first render shows the slotted label.
+43. The first render shows the slotted label.
 
 ### Not covered by the suites
 
@@ -539,6 +556,7 @@ The focus after the form checks and the `invalid` event rules come from the form
 - The axe audit runs only in the external label configuration, and neither suite covers the keyboard focus ring
   behavior.
 - The `indeterminate` property has no dedicated rendering case; it appears only in the required-constraint test.
+- No case checks the focus states between the light and the shadow DOM.
 ## Assumptions and limitations
 
 - While a change from code shows at once, the control turns off every transition in its shadow tree and on its

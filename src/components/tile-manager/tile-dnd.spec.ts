@@ -111,7 +111,7 @@ describe('Tile drag and drop', () => {
     `;
   }
 
-  describe('Default', () => {
+  describe('Default drag mode', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(createTileManager());
     });
@@ -1286,7 +1286,7 @@ describe('Tile drag and drop', () => {
     });
   });
 
-  describe('Special scenarios', () => {
+  describe('Drag guards', () => {
     beforeEach(async () => {
       tileManager = await fixture<IgcTileManagerComponent>(
         createTileManager('tile')

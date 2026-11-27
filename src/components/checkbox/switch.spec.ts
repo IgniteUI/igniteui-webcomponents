@@ -35,121 +35,126 @@ describe('Switch', () => {
     ],
   };
 
-  describe('', () => {
+  describe('With a label', () => {
     beforeEach(async () => {
       element = await fixture(html`<igc-switch>${label}</igc-switch>`);
       input = element.renderRoot.querySelector('input') as HTMLInputElement;
     });
 
-    it('should initialize switch component with default values', async () => {
-      expect(input.id).to.equal('switch-1');
-      expect(element.name).to.be.undefined;
-      expect(input.name).to.be.empty;
-      expect(element.value).to.be.undefined;
-      expect(input.value).to.equal('on');
-      expect(element.checked).to.be.false;
-      expect(input.checked).to.be.false;
-      expect(element.invalid).to.be.false;
-      expect(element.disabled).to.be.false;
-      expect(input.disabled).to.be.false;
-      expect(element.labelPosition).to.equal('after');
-    });
+    describe('Rendering and properties', () => {
+      it('should initialize switch component with default values', async () => {
+        expect(input.id).to.equal('switch-1');
+        expect(element.name).to.be.undefined;
+        expect(input.name).to.be.empty;
+        expect(element.value).to.be.undefined;
+        expect(input.value).to.equal('on');
+        expect(element.checked).to.be.false;
+        expect(input.checked).to.be.false;
+        expect(element.invalid).to.be.false;
+        expect(element.disabled).to.be.false;
+        expect(input.disabled).to.be.false;
+        expect(element.labelPosition).to.equal('after');
+      });
 
-    it('should render a switch component successfully', async () => {
-      await expect(element).shadowDom.to.be.accessible();
-      await expect(element).to.be.accessible();
-    });
+      it('should render a switch component successfully', async () => {
+        await expect(element).shadowDom.to.be.accessible();
+        await expect(element).to.be.accessible();
+      });
 
-    it('paints the control under an earlier page layer', async () => {
-      try {
-        configureTheme('material');
-        element.checked = true;
+      it('paints the control under an earlier page layer', async () => {
+        try {
+          configureTheme('material');
+          element.checked = true;
+          await elementUpdated(element);
+
+          const control =
+            element.renderRoot.querySelector('[part~="control"]')!;
+
+          expect(isUnderPageLayer(element, control)).to.be.true;
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+
+      it('should set the switch name property correctly', async () => {
+        const name = 'fruit';
+
+        element.name = name;
         await elementUpdated(element);
 
-        const control = element.renderRoot.querySelector('[part~="control"]')!;
+        expect(input).dom.to.equal(`<input name="${name}"/>`, DIFF_OPTIONS);
+      });
 
-        expect(isUnderPageLayer(element, control)).to.be.true;
-      } finally {
-        configureTheme('bootstrap');
-      }
+      it('should set the switch label position correctly', async () => {
+        element.labelPosition = 'before';
+        await elementUpdated(element);
+
+        expect(element).dom.to.equal(
+          `<igc-switch label-position="before">${label}</igc-switch>`
+        );
+
+        element.labelPosition = 'after';
+        await elementUpdated(element);
+
+        expect(element).dom.to.equal(
+          `<igc-switch label-position="after">${label}</igc-switch>`
+        );
+      });
+
+      it('should set the switch value property correctly', async () => {
+        const value = 'apple';
+
+        element.value = value;
+        await elementUpdated(element);
+
+        expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
+      });
+
+      it('should correctly report validity status', () => {
+        element.required = true;
+        expect(element.reportValidity()).to.be.false;
+
+        element.checked = true;
+        expect(element.reportValidity()).to.be.true;
+
+        element.checked = false;
+        element.required = false;
+        expect(element.reportValidity()).to.be.true;
+      });
+
+      it('should set the switch disabled property correctly', async () => {
+        const DIFF_OPTIONS = {
+          ignoreAttributes: [
+            'id',
+            'part',
+            'aria-checked',
+            'aria-labelledby',
+            'tabindex',
+            'type',
+          ],
+        };
+
+        element.disabled = true;
+        await elementUpdated(element);
+
+        expect(input).dom.to.equal('<input disabled />', DIFF_OPTIONS);
+
+        element.disabled = false;
+        await elementUpdated(element);
+
+        expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
+      });
     });
 
-    it('should set the switch name property correctly', async () => {
-      const name = 'fruit';
+    describe('Interactions and events', () => {
+      it('should emit igcChange event when the switch checked state changes', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.click();
 
-      element.name = name;
-      await elementUpdated(element);
-
-      expect(input).dom.to.equal(`<input name="${name}"/>`, DIFF_OPTIONS);
-    });
-
-    it('should set the switch label position correctly', async () => {
-      element.labelPosition = 'before';
-      await elementUpdated(element);
-
-      expect(element).dom.to.equal(
-        `<igc-switch label-position="before">${label}</igc-switch>`
-      );
-
-      element.labelPosition = 'after';
-      await elementUpdated(element);
-
-      expect(element).dom.to.equal(
-        `<igc-switch label-position="after">${label}</igc-switch>`
-      );
-    });
-
-    it('should set the switch value property correctly', async () => {
-      const value = 'apple';
-
-      element.value = value;
-      await elementUpdated(element);
-
-      expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
-    });
-
-    it('should correctly report validity status', () => {
-      element.required = true;
-      expect(element.reportValidity()).to.be.false;
-
-      element.checked = true;
-      expect(element.reportValidity()).to.be.true;
-
-      element.checked = false;
-      element.required = false;
-      expect(element.reportValidity()).to.be.true;
-    });
-
-    it('should set the switch disabled property correctly', async () => {
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-checked',
-          'aria-labelledby',
-          'tabindex',
-          'type',
-        ],
-      };
-
-      element.disabled = true;
-      await elementUpdated(element);
-
-      expect(input).dom.to.equal('<input disabled />', DIFF_OPTIONS);
-
-      element.disabled = false;
-      await elementUpdated(element);
-
-      expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
-    });
-
-    it('should emit igcChange event when the switch checked state changes', async () => {
-      const eventSpy = spy(element, 'emitEvent');
-      element.click();
-
-      await elementUpdated(element);
-      expect(eventSpy).calledWithExactly('igcChange', {
-        detail: { checked: true, value: undefined },
+        await elementUpdated(element);
+        expect(eventSpy).calledWithExactly('igcChange', {
+          detail: { checked: true, value: undefined },
+        });
       });
     });
   });

@@ -916,64 +916,69 @@ describe('Tile resize', () => {
     });
   });
 
-  // A `dir` attribute and a CSS `direction` both make the layout right-to-left.
-  for (const [label, rtl] of [
-    ['dir', (content: unknown) => html`<div dir="rtl">${content}</div>`],
-    [
-      'CSS direction',
-      (content: unknown) => html`<div style="direction: rtl">${content}</div>`,
-    ],
-  ] as const) {
-    describe(`Right-to-left (${label})`, () => {
-      beforeEach(async () => {
-        const container = await fixture<HTMLElement>(rtl(createTileManager()));
-        tileManager = container.querySelector('igc-tile-manager')!;
-        firstTile = firstOf(getTiles());
-        tileManagerStyles = getComputedStyle(
-          tileManager.shadowRoot!.querySelector('[part~="base"]')!
-        );
-        columnSize =
-          Number.parseFloat(firstOf(getColumns())) +
-          Number.parseFloat(tileManagerStyles.gap);
-      });
-
-      it('places the side and corner handles on the inline-end edge', () => {
-        const DOM = getTileDOM(firstTile);
-        const { left } = firstTile.getBoundingClientRect();
-
-        for (const adorner of [DOM.adorners.side, DOM.adorners.corner]) {
-          const rect = adorner.getBoundingClientRect();
-          expect(rect.left).to.be.lessThan(left);
-          expect(rect.right).to.be.greaterThan(left);
-        }
-      });
-
-      it('grows the tile toward the inline end', async () => {
-        const DOM = getTileDOM(firstTile);
-        const tileRect = firstTile.getBoundingClientRect();
-
-        simulatePointerDown(DOM.adorners.side);
-        await elementUpdated(firstTile);
-
-        simulatePointerMove(DOM.adorners.side, {
-          clientX: tileRect.right - columnSize * 1.75,
+  describe('Right-to-left resize', () => {
+    // A `dir` attribute and a CSS `direction` both make the layout right-to-left.
+    for (const [label, rtl] of [
+      ['dir', (content: unknown) => html`<div dir="rtl">${content}</div>`],
+      [
+        'CSS direction',
+        (content: unknown) =>
+          html`<div style="direction: rtl">${content}</div>`,
+      ],
+    ] as const) {
+      describe(label, () => {
+        beforeEach(async () => {
+          const container = await fixture<HTMLElement>(
+            rtl(createTileManager())
+          );
+          tileManager = container.querySelector('igc-tile-manager')!;
+          firstTile = firstOf(getTiles());
+          tileManagerStyles = getComputedStyle(
+            tileManager.shadowRoot!.querySelector('[part~="base"]')!
+          );
+          columnSize =
+            Number.parseFloat(firstOf(getColumns())) +
+            Number.parseFloat(tileManagerStyles.gap);
         });
-        await elementUpdated(firstTile);
 
-        const ghostRect = DOM.ghostElement.getBoundingClientRect();
-        expect(ghostRect.width).to.be.greaterThan(tileRect.width);
-        expect(ghostRect.right).to.be.approximately(tileRect.right, 1);
+        it('places the side and corner handles on the inline-end edge', () => {
+          const DOM = getTileDOM(firstTile);
+          const { left } = firstTile.getBoundingClientRect();
 
-        simulateLostPointerCapture(DOM.adorners.side);
-        await viewTransitionComplete();
+          for (const adorner of [DOM.adorners.side, DOM.adorners.corner]) {
+            const rect = adorner.getBoundingClientRect();
+            expect(rect.left).to.be.lessThan(left);
+            expect(rect.right).to.be.greaterThan(left);
+          }
+        });
 
-        const resized = firstTile.getBoundingClientRect();
-        expect(firstTile.colSpan).to.equal(2);
-        expect(resized.right).to.be.approximately(tileRect.right, 1);
-        expect(resized.left).to.be.lessThan(tileRect.left);
+        it('grows the tile toward the inline end', async () => {
+          const DOM = getTileDOM(firstTile);
+          const tileRect = firstTile.getBoundingClientRect();
+
+          simulatePointerDown(DOM.adorners.side);
+          await elementUpdated(firstTile);
+
+          simulatePointerMove(DOM.adorners.side, {
+            clientX: tileRect.right - columnSize * 1.75,
+          });
+          await elementUpdated(firstTile);
+
+          const ghostRect = DOM.ghostElement.getBoundingClientRect();
+          expect(ghostRect.width).to.be.greaterThan(tileRect.width);
+          expect(ghostRect.right).to.be.approximately(tileRect.right, 1);
+
+          simulateLostPointerCapture(DOM.adorners.side);
+          await viewTransitionComplete();
+
+          const resized = firstTile.getBoundingClientRect();
+          expect(firstTile.colSpan).to.equal(2);
+          expect(resized.right).to.be.approximately(tileRect.right, 1);
+          expect(resized.left).to.be.lessThan(tileRect.left);
+        });
       });
-    });
-  }
+    }
+  });
 });
 
 function getTileDOM(tile: IgcTileComponent) {

@@ -40,7 +40,7 @@ function setup(overrides: Partial<FakeComboHost> = {}) {
 }
 
 describe('Combo active option', () => {
-  describe('Intents', () => {
+  describe('Navigation intents', () => {
     it('has no active option at first and after the combo connects', () => {
       const { active } = setup();
 
@@ -124,7 +124,7 @@ describe('Combo active option', () => {
     });
   });
 
-  describe('Anchor', () => {
+  describe('Record anchor', () => {
     it('follows its record to a new index, and reports the move once', () => {
       const { host, active, update, name } = setup();
 
@@ -228,7 +228,7 @@ describe('Combo active option', () => {
     });
   });
 
-  describe('Resets', () => {
+  describe('Resets on close and mode change', () => {
     it('has no active option while the list is closed', () => {
       const { host, active, update } = setup();
 
@@ -259,7 +259,7 @@ describe('Combo active option', () => {
     });
   });
 
-  describe('Search', () => {
+  describe('Activation after a search', () => {
     it('makes the first option active in the next update, not the record it had', () => {
       // #France, Paris, #Germany, Berlin, Hamburg after the search.
       const { state, active, update, name } = setup({ groupKey: 'country' });

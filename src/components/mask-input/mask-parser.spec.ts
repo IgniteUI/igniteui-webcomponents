@@ -9,205 +9,207 @@ describe('Mask parser', () => {
     parser = new MaskParser();
   });
 
-  it('default mask', () => {
-    expect(parser.apply()).to.equal('__________');
-  });
+  describe('Masks, prompts, flags and values', () => {
+    it('default mask', () => {
+      expect(parser.apply()).to.equal('__________');
+    });
 
-  it('custom mask', () => {
-    parser.mask = '####/##/##';
+    it('custom mask', () => {
+      parser.mask = '####/##/##';
 
-    expect(parser.apply()).to.equal('____/__/__');
-  });
+      expect(parser.apply()).to.equal('____/__/__');
+    });
 
-  it('mask validation', () => {
-    parser.mask = '';
-    expect(parser.apply()).to.equal('__________');
-  });
+    it('mask validation', () => {
+      parser.mask = '';
+      expect(parser.apply()).to.equal('__________');
+    });
 
-  it('default prompt character', () => {
-    parser.mask = 'CCCC-CCC';
-    expect(parser.apply()).to.equal('____-___');
-  });
+    it('default prompt character', () => {
+      parser.mask = 'CCCC-CCC';
+      expect(parser.apply()).to.equal('____-___');
+    });
 
-  it('custom prompt character', () => {
-    parser.mask = 'CCCC-CCC';
-    parser.prompt = '*';
+    it('custom prompt character', () => {
+      parser.mask = 'CCCC-CCC';
+      parser.prompt = '*';
 
-    expect(parser.apply()).to.equal('****-***');
-  });
+      expect(parser.apply()).to.equal('****-***');
+    });
 
-  it('prompt character validation', () => {
-    parser.mask = 'CCCC-CCCC';
-    parser.prompt = '';
+    it('prompt character validation', () => {
+      parser.mask = 'CCCC-CCCC';
+      parser.prompt = '';
 
-    expect(parser.apply()).to.equal('____-____');
+      expect(parser.apply()).to.equal('____-____');
 
-    parser.prompt = '$$';
-    expect(parser.apply()).to.equal('$$$$-$$$$');
-  });
+      parser.prompt = '$$';
+      expect(parser.apply()).to.equal('$$$$-$$$$');
+    });
 
-  it('digits or whitespace', () => {
-    parser.mask = '999999';
-    expect(parser.apply('555 555')).to.equal('555 55');
-  });
+    it('digits or whitespace', () => {
+      parser.mask = '999999';
+      expect(parser.apply('555 555')).to.equal('555 55');
+    });
 
-  it('sign and digits', () => {
-    parser.mask = '####-### ## ## ##';
-    expect(parser.apply('+359884190854')).to.equal('+359-884 19 08 54');
-  });
+    it('sign and digits', () => {
+      parser.mask = '####-### ## ## ##';
+      expect(parser.apply('+359884190854')).to.equal('+359-884 19 08 54');
+    });
 
-  it('letters or whitespace (ascii)', () => {
-    parser.mask = 'LL??LL??';
-    expect(parser.apply('AB 2CD E')).to.equal('AB _CD E');
-  });
+    it('letters or whitespace (ascii)', () => {
+      parser.mask = 'LL??LL??';
+      expect(parser.apply('AB 2CD E')).to.equal('AB _CD E');
+    });
 
-  it('letters (unicode)', () => {
-    parser.mask = 'LLLLLL!';
-    expect(parser.apply('Работи')).to.equal('Работи!');
-  });
+    it('letters (unicode)', () => {
+      parser.mask = 'LLLLLL!';
+      expect(parser.apply('Работи')).to.equal('Работи!');
+    });
 
-  it('any keyboard input', () => {
-    parser.mask = '&&&.CCC';
-    expect(parser.apply(' =% p]')).to.equal('_=%. p]');
-  });
+    it('any keyboard input', () => {
+      parser.mask = '&&&.CCC';
+      expect(parser.apply(' =% p]')).to.equal('_=%. p]');
+    });
 
-  it('mask escape sequences', () => {
-    parser.mask = 'CCCC-\\C-CCC';
-    expect(parser.apply()).to.equal('____-C-___');
+    it('mask escape sequences', () => {
+      parser.mask = 'CCCC-\\C-CCC';
+      expect(parser.apply()).to.equal('____-C-___');
 
-    parser.mask = '\\# \\(###)-###';
-    expect(parser.apply('123456')).to.equal('# \\(123)-456');
+      parser.mask = '\\# \\(###)-###';
+      expect(parser.apply('123456')).to.equal('# \\(123)-456');
 
-    parser.mask = '\\C\\C-CCCC-CCC-\\9\\9';
-    expect(parser.apply('ABCD99')).to.equal('CC-ABCD-99_-99');
-  });
+      parser.mask = '\\C\\C-CCCC-CCC-\\9\\9';
+      expect(parser.apply('ABCD99')).to.equal('CC-ABCD-99_-99');
+    });
 
-  it('keeps the positions of a masked text', () => {
-    parser.mask = '00-00';
+    it('keeps the positions of a masked text', () => {
+      parser.mask = '00-00';
 
-    expect(parser.isMaskedText('12-34')).to.be.true;
-    expect(parser.apply('12-34')).to.equal('12-34');
-    expect(parser.apply('1_-34')).to.equal('1_-34');
-    expect(parser.apply('1a-34')).to.equal('1_-34');
-    // A masked text keeps its UTF-16 positions, also for an astral character.
-    expect(parser.apply('😀-34')).to.equal('__-34');
+      expect(parser.isMaskedText('12-34')).to.be.true;
+      expect(parser.apply('12-34')).to.equal('12-34');
+      expect(parser.apply('1_-34')).to.equal('1_-34');
+      expect(parser.apply('1a-34')).to.equal('1_-34');
+      // A masked text keeps its UTF-16 positions, also for an astral character.
+      expect(parser.apply('😀-34')).to.equal('__-34');
 
-    // The text of another mask, or a raw value, is input.
-    expect(parser.isMaskedText('12/34')).to.be.false;
-    expect(parser.apply('12/34')).to.equal('12-_3');
-    expect(parser.isMaskedText('1234')).to.be.false;
+      // The text of another mask, or a raw value, is input.
+      expect(parser.isMaskedText('12/34')).to.be.false;
+      expect(parser.apply('12/34')).to.equal('12-_3');
+      expect(parser.isMaskedText('1234')).to.be.false;
 
-    parser.mask = 'CC-CC';
-    expect(parser.apply('ab-c')).to.equal('ab--c');
+      parser.mask = 'CC-CC';
+      expect(parser.apply('ab-c')).to.equal('ab--c');
 
-    // Without literals, the mask length is enough.
-    parser.mask = 'CCC';
-    expect(parser.isMaskedText('a_c')).to.be.true;
-    expect(parser.apply('a_c')).to.equal('a_c');
-  });
+      // Without literals, the mask length is enough.
+      parser.mask = 'CCC';
+      expect(parser.isMaskedText('a_c')).to.be.true;
+      expect(parser.apply('a_c')).to.equal('a_c');
+    });
 
-  it('reads the raw value of a masked text only', () => {
-    parser.mask = '00-00';
+    it('reads the raw value of a masked text only', () => {
+      parser.mask = '00-00';
 
-    expect(parser.rawValue('1_-34')).to.equal('134');
-    expect(parser.rawValue('1a-34')).to.equal('1a34');
-    expect(parser.rawValue('12345')).to.equal('12345');
-  });
+      expect(parser.rawValue('1_-34')).to.equal('134');
+      expect(parser.rawValue('1a-34')).to.equal('1a34');
+      expect(parser.rawValue('12345')).to.equal('12345');
+    });
 
-  it('reads a masked text with the prompt that it was written with', () => {
-    parser.mask = 'CC_CC';
-    parser.prompt = '*';
+    it('reads a masked text with the prompt that it was written with', () => {
+      parser.mask = 'CC_CC';
+      parser.prompt = '*';
 
-    // The literal `_` stays, and a `*` of the input is a character.
-    expect(parser.apply('1___4', '_')).to.equal('1*_*4');
-    expect(parser.apply('**_*4', '_')).to.equal('**_*4');
-    expect(parser.apply('**_*4')).to.equal('**_*4');
-  });
+      // The literal `_` stays, and a `*` of the input is a character.
+      expect(parser.apply('1___4', '_')).to.equal('1*_*4');
+      expect(parser.apply('**_*4', '_')).to.equal('**_*4');
+      expect(parser.apply('**_*4')).to.equal('**_*4');
+    });
 
-  it('validates mask pattern rules', () => {
-    const validate = (string: string) =>
-      parser.isValidString(parser.apply(string));
+    it('validates mask pattern rules', () => {
+      const validate = (string: string) =>
+        parser.isValidString(parser.apply(string));
 
-    parser.mask = '000 [000]';
+      parser.mask = '000 [000]';
 
-    // Invalid: 121 [2__]
-    expect(validate('1212')).to.be.false;
+      // Invalid: 121 [2__]
+      expect(validate('1212')).to.be.false;
 
-    // Valid: 121 [233] (3) dropped from `apply`
-    expect(validate('1212333')).to.be.true;
+      // Valid: 121 [233] (3) dropped from `apply`
+      expect(validate('1212333')).to.be.true;
 
-    // Valid: 121 [233]
-    expect(validate('121233')).to.be.true;
+      // Valid: 121 [233]
+      expect(validate('121233')).to.be.true;
 
-    parser.mask = '000 [999]';
+      parser.mask = '000 [999]';
 
-    // Valid: 121 [___]
-    expect(validate('121')).to.be.true;
+      // Valid: 121 [___]
+      expect(validate('121')).to.be.true;
 
-    parser.mask = '00\\0 [999]';
+      parser.mask = '00\\0 [999]';
 
-    // Valid: 110 [___]
-    expect(validate('11')).to.be.true;
+      // Valid: 110 [___]
+      expect(validate('11')).to.be.true;
 
-    // Invalid: __0 [___]
-    expect(validate('aa')).to.be.false;
+      // Invalid: __0 [___]
+      expect(validate('aa')).to.be.false;
 
-    // Invalid 1_0 [___]
-    expect(validate('1')).to.be.false;
+      // Invalid 1_0 [___]
+      expect(validate('1')).to.be.false;
 
-    parser.mask = '(99) (0)';
-    expect(validate('')).to.be.false;
+      parser.mask = '(99) (0)';
+      expect(validate('')).to.be.false;
 
-    parser.mask = '(99) (9)';
-    expect(validate('')).to.be.true;
-  });
+      parser.mask = '(99) (9)';
+      expect(validate('')).to.be.true;
+    });
 
-  it('apply', () => {
-    parser.mask = '(000) 0000-000';
-    parser.prompt = '*';
-    expect(parser.apply('1234')).to.equal('(123) 4***-***');
-  });
+    it('apply', () => {
+      parser.mask = '(000) 0000-000';
+      parser.prompt = '*';
+      expect(parser.apply('1234')).to.equal('(123) 4***-***');
+    });
 
-  it('parse', () => {
-    parser.mask = '#.##';
-    expect(parser.parse('3.14')).to.equal('314');
+    it('parse', () => {
+      parser.mask = '#.##';
+      expect(parser.parse('3.14')).to.equal('314');
 
-    parser.mask = '##-##';
-    expect(parser.parse('-----')).to.equal('----');
+      parser.mask = '##-##';
+      expect(parser.parse('-----')).to.equal('----');
 
-    parser.mask = '+35\\9 999999';
-    expect(parser.parse('+359 123456')).to.equal('123456');
+      parser.mask = '+35\\9 999999';
+      expect(parser.parse('+359 123456')).to.equal('123456');
 
-    parser.mask = 'LLLL (\\and) LLL';
-    expect(parser.parse('QWER (and) TYY')).to.equal('QWERTYY');
-  });
+      parser.mask = 'LLLL (\\and) LLL';
+      expect(parser.parse('QWER (and) TYY')).to.equal('QWERTYY');
+    });
 
-  it('replace', () => {
-    const value = '432#!';
-    parser.mask = '(###) CCC';
-    const result = parser.replace(parser.apply(), value, 0, value.length);
-    expect(result.value).to.equal('(432) #!_');
-  });
+    it('replace', () => {
+      const value = '432#!';
+      parser.mask = '(###) CCC';
+      const result = parser.replace(parser.apply(), value, 0, value.length);
+      expect(result.value).to.equal('(432) #!_');
+    });
 
-  it('replace (invalid start)', () => {
-    const value = 'ak47';
-    parser.mask = '####';
-    const result = parser.replace(parser.apply(), value, 0, value.length);
-    expect(result.value).to.equal('47__');
-  });
+    it('replace (invalid start)', () => {
+      const value = 'ak47';
+      parser.mask = '####';
+      const result = parser.replace(parser.apply(), value, 0, value.length);
+      expect(result.value).to.equal('47__');
+    });
 
-  it('replace (invalid end)', () => {
-    const value = '87af';
-    parser.mask = '(###)';
-    const result = parser.replace(parser.apply(), value, 0, value.length);
-    expect(result.value).to.equal('(87_)');
-  });
+    it('replace (invalid end)', () => {
+      const value = '87af';
+      parser.mask = '(###)';
+      const result = parser.replace(parser.apply(), value, 0, value.length);
+      expect(result.value).to.equal('(87_)');
+    });
 
-  it('replace with IME numbers and a number mask', () => {
-    const value = '１９８７afE';
-    parser.mask = '######';
-    const result = parser.replace(parser.apply(), value, 0, value.length);
-    expect(result.value).to.equal('1987__');
+    it('replace with IME numbers and a number mask', () => {
+      const value = '１９８７afE';
+      parser.mask = '######';
+      const result = parser.replace(parser.apply(), value, 0, value.length);
+      expect(result.value).to.equal('1987__');
+    });
   });
 
   describe('Unicode digit normalization', () => {

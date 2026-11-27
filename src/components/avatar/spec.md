@@ -23,7 +23,7 @@
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
   - [Test scenarios](#test-scenarios)
-    - [Default](#default)
+    - [Defaults, shape and image](#defaults-shape-and-image)
     - [ARIA tests](#aria-tests)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -40,6 +40,7 @@
 |       2 | 2026-10-01 | A badge goes next to the avatar, not inside it |
 |       3 | 2026-10-14 | No role description on the avatar              |
 |       4 | 2026-10-21 | API descriptions aligned with the JSDoc.       |
+|       5 | 2026-11-27 | The `Default` test scenarios are `Defaults, shape and image`, as their `describe` block |
 
 ## Overview
 
@@ -192,7 +193,7 @@ None applicable.
 | -------- | ---------------- |
 | `Avatar` | `avatar.spec.ts` |
 
-### Default
+### Defaults, shape and image
 
 1. The component passes the accessibility audit and is initialized with its default values.
 2. The `shape` property is applied.

@@ -21,7 +21,7 @@ describe('Calendar selection', () => {
     return { selection, disabledDates };
   }
 
-  describe('Single', () => {
+  describe('Single selection', () => {
     it('selects a date', () => {
       const next = selectDate(empty, day(10), options('single'))!;
 
@@ -44,7 +44,7 @@ describe('Calendar selection', () => {
     });
   });
 
-  describe('Multiple', () => {
+  describe('Multiple selection', () => {
     it('adds a date, keeping the dates sorted', () => {
       let state = selectDate(empty, day(10), options('multiple'))!;
       state = selectDate(state, day(4), options('multiple'))!;
@@ -72,7 +72,7 @@ describe('Calendar selection', () => {
     });
   });
 
-  describe('Range', () => {
+  describe('Range selection', () => {
     it('starts a range with a single date', () => {
       const next = selectDate(empty, day(10), options('range'))!;
 
