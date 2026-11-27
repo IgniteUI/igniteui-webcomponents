@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- #### List
+  - `navigation` turns on keyboard navigation, as in the Ignite UI for Angular list. The list stays one tab stop: Tab reaches the item focused last, else the first selected item, else the first item.
+    - `listbox`: the list follows the ARIA listbox pattern. Up, Down, Home, End and typed letters move between the items, and Enter or Space dispatches a `click` on the focused item. Each item exposes its `selected` state to assistive technology.
+    - `grid`: the list follows the ARIA layout grid pattern, with one cell per item, for items that hold buttons, links or fields. The list takes those controls out of the tab order. Left and Right reach them, Up and Down move from a control to the next or previous item, and Escape or F2 returns to the item. A control that uses the arrow keys, such as a text field, keeps them. A group with its own tab stop, such as a single-selection button group, a radio group, tabs or a nested list with navigation, counts as one control and is entered at that tab stop, such as the selected button. When a focused control becomes disabled or hidden, the focus moves to its item.
+    - The app keeps its own selection logic: it toggles `selected` in a `click` handler and sets `aria-multiselectable` on the list.
+  - An item with a `title` is named by its title and described by its subtitle and by the header of its group. Headers are hidden from assistive technology in a list with navigation.
+  - The `empty` slot renders while the list has no items, such as a "No results" message. In a list with navigation, the empty list is a tab stop, and the focus moves to the items when they arrive.
+  - When the focused item is removed, the focus moves to the next item.
 - #### QR code
   - `dot-style`, `square-style` and `corner-dot-style` take `squircle`, a square with soft corners.
   - `corner-dot-style` sets the shape of the inner corner dots. When you do not set it, the inner corner dots use `dot-style`, as before.
@@ -76,8 +84,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The first render shows at once. The selected indicator does not slide in from the start of the strip, and the selected header does not fade in. This also applies when the tabs show later than they render. A selection change after that still animates.
 
 ### Fixed
+- #### All components
+  - Slotted content with the `hidden` attribute does not render, such as a link in the `start` slot of a list item or the `actions` of a banner. Before, a component that sets `display` on its slotted content still showed it. `hidden="until-found"` keeps its box, so find-in-page can reach it.
 - #### Badge, Chat, Checkbox, Chip, Circular progress, Combo, Date picker, Date range picker, Date time input, Dialog, Expansion panel, File input, Input, Linear progress, Mask input, Navigation drawer, Radio, Rating, Select, Stepper, Switch, Textarea, Tile manager, Tooltip
   - The first render shows the slotted content, such as a checkbox label, the `prefixed` part of an input or the `icon` part of a badge. Before, it showed only after the next update.
+- #### Banner
+  - The `hidden` attribute hides the banner. Before, it still rendered.
 - #### Calendar, Date picker, Date range picker, Date time input
   - An ISO string with a signed six digit year, such as `+010000-01-01T00:00:00.000Z`, sets the value. `toISOString()` gives this format for dates before year 0 and after year 9999. Before, the value became `null`.
   - While the input has focus, a year past 9999 or before year 1 shows all its digits, such as `01/01/10000` or `01/01/-0001`. An edit of another part keeps the year. Before, the extra digits pushed the other parts out of place, and an edit could change the year.
@@ -90,6 +102,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - After the hydration of a server render, the carousel uses the projected indicators. Before, when the carousel loaded after the page, it added its default indicators and the projected indicators stayed inactive.
 - #### Checkbox, Radio, Switch
   - A change of `value` no longer makes a checked control dirty, so a later `defaultChecked` still sets the checked state, as for a native checkbox or radio.
+- #### Color picker, Combo, Date picker, Date range picker, Dropdown
+  - The focus that the component moves itself, such as the Tab wrap of the dialog or the Tab order of the combo header and footer, skips the shadow tree and the slotted content of an element with `tabindex="-1"`, as Tab does. Before, it could focus an element that Tab never reaches.
 - #### Color picker
   - A color change of the user marks the picker touched, so a change that fails validation shows the invalid styles at once.
   - A value set from code while the focus is in the picker no longer emits `igcChange` when the focus leaves.
@@ -139,6 +153,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - A change of `name` updates the `name` attribute at once, as for a native control, so the form data takes the new name. Before, a control that submits a string kept the old name until the next render. Such controls include the input, the select and a single selection combo. A `null` or `undefined` name also removes the attribute at once.
 - #### Input, Textarea
   - `stepUp()`, `stepDown()` and `setRangeText()` no longer clear the value when you call them before the first render.
+- #### List
+  - The `hidden` attribute hides a list item and a list header. Before, they still rendered.
 - #### Mask input
   - The submitted value is `value`. A change of `valueMode`, `mask` or `prompt` updates it and the validity at once, also when the `value` attribute comes before `value-mode` or `mask`. Before, the form kept the old text, `badInput` could stay set for a valid value, and the attribute order could submit the raw text in `withFormatting` mode.
   - A formatted value that you empty submits nothing. Before, the form submitted the empty mask, such as `__-__`.

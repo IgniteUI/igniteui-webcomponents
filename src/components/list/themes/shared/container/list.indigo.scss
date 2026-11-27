@@ -1,5 +1,6 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
+@use '../focus-ring' as *;
 
 $theme: $indigo;
 
@@ -8,3 +9,5 @@ $theme: $indigo;
 
     gap: rem(4px);
 }
+
+@include focus-ring(2px);

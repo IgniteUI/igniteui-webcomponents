@@ -1,5 +1,6 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
+@use '../focus-ring' as *;
 
 $theme: $base;
 
@@ -9,3 +10,5 @@ $theme: $base;
     background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');
 }
+
+@include focus-ring(1px, var-get($theme, 'item-focus-outline-color'));

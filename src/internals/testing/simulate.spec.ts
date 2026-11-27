@@ -37,6 +37,16 @@ export function simulateBlur(node: Element): void {
   node.dispatchEvent(new FocusEvent('blur'));
 }
 
+/**
+ * Dispatches a bubbling `focusout` without `relatedTarget`, as when the window
+ * loses the focus and the element keeps it.
+ */
+export function simulateFocusOut(node: Element): void {
+  node.dispatchEvent(
+    new FocusEvent('focusout', { bubbles: true, composed: true })
+  );
+}
+
 export function simulatePointerDown(
   node: Element,
   options?: PointerEventInit,
@@ -181,14 +191,16 @@ export async function simulateBackspaceOver(
  * Simulates keyboard interaction on a given element node.
  *
  * @param times - how many times to simulate keydown with the passed key(s). Defaults to 1.
+ * @param options.repeat - whether each keydown is an auto-repeat of a held key.
  */
 export function simulateKeyboard(
   node: Element,
   key: string | string[],
-  times = 1
+  times = 1,
+  { repeat = false }: { repeat?: boolean } = {}
 ): void {
   const { keys, modifiers } = parseKeys(key);
-  const eventOptions: Record<string, boolean> = {};
+  const eventOptions: Record<string, boolean> = { repeat };
 
   for (const each of modifiers) {
     eventOptions[MODIFIER_EVENT_KEYS[each]] = true;

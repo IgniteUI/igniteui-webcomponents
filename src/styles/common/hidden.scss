@@ -4,3 +4,8 @@
 [hidden]:not([hidden='until-found' i]) {
     display: none !important;
 }
+
+// A rule of its own: a selector that an engine rejects drops its whole rule.
+::slotted([hidden]:not([hidden='until-found' i])) {
+    display: none !important;
+}

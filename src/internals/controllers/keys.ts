@@ -18,6 +18,7 @@ export const endKey = 'End' as const;
 export const pageUpKey = 'PageUp' as const;
 export const pageDownKey = 'PageDown' as const;
 export const tabKey = 'Tab' as const;
+export const f2Key = 'F2' as const;
 
 export const altKey = 'Alt' as const;
 export const ctrlKey = 'Control' as const;

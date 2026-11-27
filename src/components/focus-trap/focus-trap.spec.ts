@@ -1,4 +1,10 @@
-import { expect, fixture, html } from '@open-wc/testing';
+import {
+  defineCE,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
+} from '@open-wc/testing';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import IgcButtonComponent from '../button/button.js';
 import IgcCalendarComponent from '../calendar/calendar.js';
@@ -149,6 +155,35 @@ describe('Focus trap', () => {
 
       trap.focusLastElement();
       expect(document.activeElement?.textContent).to.equal('Fourth');
+    });
+  });
+
+  describe('Hosts with tabindex="-1"', () => {
+    it('leaves out the shadow tree and the slotted content of a host with tabindex="-1"', async () => {
+      const panel = unsafeStatic(
+        defineCE(
+          class extends HTMLElement {
+            constructor() {
+              super();
+              this.attachShadow({ mode: 'open' }).innerHTML =
+                '<button>Inner</button><slot></slot>';
+            }
+          }
+        )
+      );
+      trap = await fixture(html`
+        <igc-focus-trap>
+          <${panel} tabindex="-1"><button>Slotted</button></${panel}>
+          <div>
+            <${panel} tabindex="-1"><button>Nested</button></${panel}>
+          </div>
+          <button>Kept</button>
+        </igc-focus-trap>
+      `);
+
+      expect(
+        trap.focusableElements.map((element) => element.textContent)
+      ).to.eql(['Kept']);
     });
   });
 });

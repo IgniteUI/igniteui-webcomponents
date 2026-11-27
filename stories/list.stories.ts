@@ -5,17 +5,23 @@ import {
   IgcCheckboxComponent,
   IgcIconButtonComponent,
   IgcIconComponent,
+  IgcInputComponent,
   IgcLinearProgressComponent,
   IgcListComponent,
   IgcSwitchComponent,
   defineComponents,
 } from 'igniteui-webcomponents';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { addMonths, formatDate, today } from './story-dates.js';
 import { type MaterialIconName, registerMaterialIcons } from './story-icons.js';
-import { plural, renderInto, storyStyles } from './story.js';
+import {
+  disableStoryControls,
+  dollars,
+  plural,
+  renderInto,
+  storyStyles,
+} from './story.js';
 
 defineComponents(
   IgcAvatarComponent,
@@ -23,6 +29,7 @@ defineComponents(
   IgcCheckboxComponent,
   IgcIconButtonComponent,
   IgcIconComponent,
+  IgcInputComponent,
   IgcLinearProgressComponent,
   IgcListComponent,
   IgcSwitchComponent
@@ -35,14 +42,20 @@ registerMaterialIcons(
   'call-made',
   'call-missed',
   'call-received',
+  'delete',
   'description',
   'done-all',
   'email',
   'folder',
+  'headset-mic',
+  'keyboard',
   'lock',
+  'minus',
   'movie',
   'music-note',
   'notifications',
+  'plus',
+  'videocam',
   'visibility',
   'volume-up'
 );
@@ -59,13 +72,53 @@ const metadata: Meta<IgcListComponent> = {
       },
     },
   },
+  argTypes: {
+    navigation: {
+      type: { name: 'enum', value: ['none', 'listbox', 'grid'] },
+      description:
+        'The keyboard navigation of the list.\n\n- `none`: a static list. Its items are not focusable.\n- `listbox`: the list is one tab stop. The arrow keys, Home, End and typed\n  letters move between the items, and Enter or Space clicks the focused\n  item. An item holds no interactive content.\n- `grid`: as `listbox`, for items that hold controls. Left and Right move\n  between an item and its controls, and Escape or F2 returns to the item.\n  A control that uses the arrow keys, such as a text field, keeps them.\n\nThe app owns the selection: it toggles `selected` on the items and sets\n`aria-multiselectable="true"` on the list for a multiple selection. In a\ngrid, an item that is not selected exposes its state only with\n`aria-multiselectable`.',
+      options: ['none', 'listbox', 'grid'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'none' } },
+    },
+  },
+  args: { navigation: 'none' },
 };
 
 export default metadata;
 
-type Story = StoryObj;
+interface IgcListArgs {
+  /**
+   * The keyboard navigation of the list.
+   *
+   * - `none`: a static list. Its items are not focusable.
+   * - `listbox`: the list is one tab stop. The arrow keys, Home, End and typed
+   *   letters move between the items, and Enter or Space clicks the focused
+   *   item. An item holds no interactive content.
+   * - `grid`: as `listbox`, for items that hold controls. Left and Right move
+   *   between an item and its controls, and Escape or F2 returns to the item.
+   *   A control that uses the arrow keys, such as a text field, keeps them.
+   *
+   * The app owns the selection: it toggles `selected` on the items and sets
+   * `aria-multiselectable="true"` on the list for a multiple selection. In a
+   * grid, an item that is not selected exposes its state only with
+   * `aria-multiselectable`.
+   */
+  navigation: 'none' | 'listbox' | 'grid';
+}
+type Story = StoryObj<IgcListArgs>;
 
 // endregion
+
+// A list with navigation sets its roles through ElementInternals, which axe
+// does not read, so axe sees a grid cell or the empty option without its
+// parent. See `axeListInternalsRolesOptions` in the spec helpers.
+metadata.parameters = {
+  ...metadata.parameters,
+  a11y: {
+    config: { rules: [{ id: 'aria-required-parent', enabled: false }] },
+  },
+};
 
 const styles = html`
   ${storyStyles}
@@ -112,30 +165,10 @@ const styles = html`
       min-width: 0;
     }
 
-    .ls-tickets igc-list-item:has(.ls-open:focus-visible) {
-      outline: 2px solid var(--ig-primary-500);
-      outline-offset: -2px;
-    }
-
-    .ls-open {
-      padding: 0;
-      border: 0;
-      background: none;
-      color: inherit;
-      font: inherit;
-      text-align: start;
+    .ls-tickets igc-list-item,
+    .ls-storage igc-list-item,
+    .ls-assignee igc-list-item {
       cursor: pointer;
-    }
-
-    .ls-open:focus-visible {
-      outline: none;
-    }
-
-    /* The button covers the whole row. The item host has position: relative. */
-    .ls-open::after {
-      content: '';
-      position: absolute;
-      inset: 0;
     }
 
     .ls-preview {
@@ -193,6 +226,30 @@ const styles = html`
       font-variant-numeric: tabular-nums;
     }
 
+    .ls-cart,
+    .ls-assignee {
+      display: grid;
+      gap: 0.75rem;
+      max-width: 36rem;
+    }
+
+    .ls-cart :is(h3, p),
+    .ls-assignee :is(h3, p) {
+      margin: 0;
+    }
+
+    .ls-quantity {
+      min-width: 1.5rem;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ls-empty {
+      display: block;
+      padding: 1rem;
+      text-align: center;
+    }
+
     @media (max-width: 40rem) {
       .ls-tickets {
         grid-template-columns: minmax(0, 1fr);
@@ -232,13 +289,17 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'The recent calls of a phone application. Each item fills the slots of `igc-list-item`: the avatar goes in `start`, the name in `title`, the kind and the time of the call in `subtitle`, and the call button in `end`. The list has the `list` role and the items have the `listitem` role, so a screen reader announces the number of calls. The avatar repeats the name, so it has `aria-hidden="true"`, and each call button names the person. The color of the missed call icon is not the only sign, because the subtitle also says "Missed". Use the size toolbar of Storybook to change `--ig-size`, which sets the padding of the items.',
+          'The recent calls of a phone application. Each item fills the slots of `igc-list-item`: the avatar goes in `start`, the name in `title`, the kind and the time of the call in `subtitle`, and the call button in `end`. The list has the `list` role and the items have the `listitem` role, so a screen reader announces the number of calls. The avatar repeats the name, so it has `aria-hidden="true"`, and each call button names the person. The color of the missed call icon is not the only sign, because the subtitle also says "Missed". Set `navigation` to `grid` in the controls: the list becomes one tab stop, Up and Down move between the calls, Right reaches the call button, and Left or Escape returns to the call. Use the size toolbar of Storybook to change `--ig-size`, which sets the padding of the items.',
       },
     },
   },
-  render: () => html`
+  render: ({ navigation }) => html`
     ${styles}
-    <igc-list class="ls-panel" aria-label="Recent calls">
+    <igc-list
+      class="ls-panel"
+      navigation=${navigation}
+      aria-label="Recent calls"
+    >
       ${calls.map(({ name, initials, kind, time }) => {
         const { icon, label } = callKinds[kind];
 
@@ -334,11 +395,12 @@ const settingGroups: {
 ];
 
 export const Settings: Story = {
+  argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'The settings page of a chat application. An `igc-list-header` starts each group of settings. The header has the `listitem` role, so a screen reader reads it and counts it with the settings. It holds a heading, so a screen reader user can go from group to group by heading. Each setting puts a native `label` in the `title` slot and a switch in the `end` slot. The `for` attribute of the label points to the switch, so the label names the switch, and a click on the label toggles it. The sounds depend on the push notifications: when the push notifications are off, the sounds switch is `disabled`, and its subtitle tells why.',
+          'The settings page of a chat application. The list is static: each switch is a stop of the Tab key, as in a form. An `igc-list-header` starts each group of settings. The header has the `listitem` role, so a screen reader reads it and counts it with the settings. It holds a heading, so a screen reader user can go from group to group by heading. Each setting puts a native `label` in the `title` slot and a switch in the `end` slot. The `for` attribute of the label points to the switch, so the label names the switch, and a click on the label toggles it. The sounds depend on the push notifications: when the push notifications are off, the sounds switch is `disabled`, and its subtitle tells why.',
       },
     },
   },
@@ -454,11 +516,12 @@ const openTickets: Ticket[] = [
 ];
 
 export const Tickets: Story = {
+  argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'The queue of a support desk, with the selected ticket on the right. The list does not manage a selection: the application sets `selected` on the item of the open ticket, and a CSS rule on `igc-list-item[selected]` adds a colored edge. `selected` only changes the style, and the `listitem` role has no selected state. So the subject of each ticket is a native button with `aria-current="true"` on the open ticket. A pseudo-element stretches the button over the whole row, so a click anywhere in the row opens the ticket, and the row shows the focus ring. The list has no keyboard navigation of its own, so the Tab key moves from button to button. The start of the message goes in the default slot, under the title and the subtitle. The `content` part gets `min-width: 0`, so the message can end with an ellipsis. Resolve a ticket to remove it from the queue: the next ticket opens.',
+          'The queue of a support desk, with the open ticket on the right. The list has `navigation="listbox"`, so it is one stop of the Tab key: Up, Down, Home, End and the first letters of a subject move between the tickets, and Enter or Space opens the focused one. The list owns no selection. A `click` handler opens the ticket and sets `selected` on its item, so the item exposes `aria-selected="true"`, and a CSS rule on `igc-list-item[selected]` adds a colored edge. The subject in the `title` slot names each ticket, and the subtitle describes it, so a screen reader does not read the whole preview on each move. "Urgent" shows as an icon in the `end` slot, and the subtitle says it in hidden text, because the `end` slot is not read. The start of the message goes in the default slot. The `content` part gets `min-width: 0`, so the message can end with an ellipsis. Resolve a ticket to remove it from the queue: the next ticket opens.',
       },
     },
   },
@@ -490,7 +553,7 @@ export const Tickets: Story = {
     const story = renderInto(
       () => html`
         <div class="ls-tickets">
-          <igc-list aria-label="Open tickets">
+          <igc-list navigation="listbox" aria-label="Open tickets">
             ${repeat(
               tickets,
               ({ id }) => id,
@@ -498,33 +561,35 @@ export const Tickets: Story = {
                 const selected = ticket === current;
 
                 return html`
-                  <igc-list-item ?selected=${selected}>
+                  <igc-list-item
+                    ?selected=${selected}
+                    @click=${() => open(ticket)}
+                  >
                     <igc-avatar
                       slot="start"
                       shape="circle"
                       initials=${ticket.initials}
                       aria-hidden="true"
                     ></igc-avatar>
-                    <button
-                      slot="title"
-                      class="ls-open"
-                      aria-current=${ifDefined(selected ? 'true' : undefined)}
-                      @click=${() => open(ticket)}
-                    >
-                      ${ticket.subject}
-                    </button>
+                    <span slot="title">${ticket.subject}</span>
                     <span slot="subtitle">
-                      ${ticket.customer} · ${ticket.received}
+                      ${ticket.customer} ·
+                      ${ticket.received}${
+                        ticket.urgent
+                          ? html`<span class="sr-only">(urgent)</span>`
+                          : ''
+                      }
                     </span>
                     <span class="ls-preview muted">${ticket.message}</span>
                     ${
                       ticket.urgent
                         ? html`
-                            <span slot="end" class="ls-urgent">
-                              <igc-icon
-                                name="alert-error"
-                                aria-hidden="true"
-                              ></igc-icon>
+                            <span
+                              slot="end"
+                              class="ls-urgent"
+                              aria-hidden="true"
+                            >
+                              <igc-icon name="alert-error"></igc-icon>
                               Urgent
                             </span>
                           `
@@ -619,11 +684,12 @@ const otherFiles = 3.4;
 const gigabytes = (size: number) => `${size.toFixed(1)} GB`;
 
 export const FreeUpSpace: Story = {
+  argTypes: disableStoryControls(metadata),
   parameters: {
     docs: {
       description: {
         story:
-          'The storage page of a cloud drive, which lists the largest files. Each item has a checkbox and an icon in the `start` slot, and a native `label` for the checkbox in the `title` slot, so a click on the name selects the file. The application sets `selected` on the item of each checked file, so the selected rows stand out. The summary counts the selected files and their size, and Delete removes them. The progress bar shows the used storage, and `aria-labelledby` gives it a name.',
+          'The storage page of a cloud drive, which lists the largest files. The list has `navigation="listbox"` and `aria-multiselectable="true"`, so a screen reader reads each file as selected or not selected. A click on a file, or Enter or Space on the focused file, toggles its `selected` state in a `click` handler of the application. The checkbox in the `start` slot only shows that state: it is `inert`, so it is no stop of the Tab key and is not read, and a click on it reaches the item. The size goes in the subtitle, which describes the item. The summary counts the selected files and their size, and Delete removes them. The progress bar shows the used storage, and `aria-labelledby` gives it a name.',
       },
     },
   },
@@ -652,7 +718,7 @@ export const FreeUpSpace: Story = {
 
       // A disabled button cannot keep the focus.
       (
-        story.host!.querySelector<HTMLElement>('igc-checkbox') ??
+        story.host!.querySelector<HTMLElement>('igc-list-item') ??
         story.host!.querySelector<HTMLElement>('#ls-storage-heading')!
       ).focus();
     };
@@ -674,7 +740,11 @@ export const FreeUpSpace: Story = {
             variant=${used / quota > 0.9 ? 'danger' : 'primary'}
             hide-label
           ></igc-linear-progress>
-          <igc-list aria-label="Largest files">
+          <igc-list
+            navigation="listbox"
+            aria-label="Largest files"
+            aria-multiselectable="true"
+          >
             ${repeat(
               files,
               ({ id }) => id,
@@ -682,27 +752,25 @@ export const FreeUpSpace: Story = {
                 const selected = checked.has(id);
 
                 return html`
-                  <igc-list-item ?selected=${selected}>
+                  <igc-list-item
+                    ?selected=${selected}
+                    @click=${() => toggle(id, !selected)}
+                  >
                     <igc-checkbox
                       slot="start"
-                      id="ls-file-${id}"
+                      inert
                       .checked=${selected}
-                      @igcChange=${({
-                        detail,
-                      }: CustomEvent<{ checked: boolean }>) =>
-                        toggle(id, detail.checked)}
                     ></igc-checkbox>
                     <igc-icon
                       slot="start"
                       name=${icon}
                       aria-hidden="true"
                     ></igc-icon>
-                    <label slot="title" for="ls-file-${id}">${name}</label>
-                    <span slot="subtitle">
-                      Last opened
+                    <span slot="title">${name}</span>
+                    <span slot="subtitle" class="ls-size">
+                      ${gigabytes(size)} · Last opened
                       ${formatDate(opened, { month: 'short', year: 'numeric' })}
                     </span>
-                    <span slot="end" class="ls-size">${gigabytes(size)}</span>
                   </igc-list-item>
                 `;
               }
@@ -721,6 +789,214 @@ export const FreeUpSpace: Story = {
             </igc-button>
           </div>
           <p class="muted" role="status">${status}</p>
+        </section>
+      `;
+    });
+
+    return html`${styles}
+      <div ${story.mount}></div>`;
+  },
+};
+
+type CartLine = {
+  id: string;
+  name: string;
+  icon: MaterialIconName;
+  price: number;
+  quantity: number;
+};
+
+const cartLines: CartLine[] = [
+  {
+    id: 'keyboard',
+    name: 'Wireless keyboard',
+    icon: 'keyboard',
+    price: 79,
+    quantity: 1,
+  },
+  {
+    id: 'headset',
+    name: 'Noise-cancelling headset',
+    icon: 'headset-mic',
+    price: 149,
+    quantity: 1,
+  },
+  { id: 'webcam', name: '4K webcam', icon: 'videocam', price: 99, quantity: 2 },
+];
+
+const maxQuantity = 10;
+
+export const Cart: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The cart of an online store. Each item holds Decrease, Increase and Remove buttons, so the list has `navigation="grid"`: each item is a row, and the list takes the buttons out of the order of the Tab key. Tab reaches one row and the next Tab leaves the cart. Up and Down move between the rows, also from a button. Right goes from the row to Decrease, Increase and Remove, and Left goes back; Escape or F2 returns to the row. The buttons stay enabled at the lowest and the highest quantity, because a focused button that becomes disabled loses the focus; the status line reads the limit instead. The subtitle holds the quantity, so a screen reader reads it with the row. Only selected items expose `aria-selected`, and the cart selects none, so a screen reader reads no selected state. When Remove takes a row away, the focus moves to the next row. The `empty` slot shows a message once the cart is empty, and the empty list takes the focus.',
+      },
+    },
+  },
+  render: () => {
+    let lines = cartLines.map((line) => ({ ...line }));
+    let status = '';
+
+    const changeQuantity = (line: CartLine, step: number) => {
+      const quantity = Math.min(maxQuantity, Math.max(1, line.quantity + step));
+
+      status =
+        quantity === line.quantity
+          ? `${line.name} stays at ${quantity}, the ${step < 0 ? 'lowest' : 'highest'} quantity.`
+          : `Quantity of ${line.name}: ${quantity}.`;
+      line.quantity = quantity;
+      story.update();
+    };
+
+    const remove = (line: CartLine) => {
+      lines = lines.filter((each) => each !== line);
+      status = lines.length
+        ? `${line.name} is removed. ${plural(lines.length, 'product')} in the cart.`
+        : `${line.name} is removed. The cart is empty.`;
+      story.update();
+    };
+
+    const story = renderInto(() => {
+      const total = lines.reduce(
+        (sum, { price, quantity }) => sum + price * quantity,
+        0
+      );
+
+      return html`
+        <section class="ls-cart" aria-labelledby="ls-cart-heading">
+          <h3 id="ls-cart-heading">Cart</h3>
+          <igc-list navigation="grid" aria-label="Products in the cart">
+            ${repeat(
+              lines,
+              ({ id }) => id,
+              (line) => html`
+                <igc-list-item>
+                  <igc-icon
+                    slot="start"
+                    name=${line.icon}
+                    aria-hidden="true"
+                  ></igc-icon>
+                  <span slot="title">${line.name}</span>
+                  <span slot="subtitle" class="ls-size">
+                    Quantity ${line.quantity} · ${dollars.format(line.price)}
+                    each · ${dollars.format(line.price * line.quantity)}
+                  </span>
+                  <igc-icon-button
+                    slot="end"
+                    variant="flat"
+                    name="minus"
+                    aria-label="Decrease the quantity of ${line.name}"
+                    @click=${() => changeQuantity(line, -1)}
+                  ></igc-icon-button>
+                  <span slot="end" class="ls-quantity" aria-hidden="true">
+                    ${line.quantity}
+                  </span>
+                  <igc-icon-button
+                    slot="end"
+                    variant="flat"
+                    name="plus"
+                    aria-label="Increase the quantity of ${line.name}"
+                    @click=${() => changeQuantity(line, 1)}
+                  ></igc-icon-button>
+                  <igc-icon-button
+                    slot="end"
+                    variant="flat"
+                    name="delete"
+                    aria-label="Remove ${line.name}"
+                    @click=${() => remove(line)}
+                  ></igc-icon-button>
+                </igc-list-item>
+              `
+            )}
+            <span slot="empty" class="ls-empty muted">Your cart is empty.</span>
+          </igc-list>
+          <p class="ls-row">
+            <span>Total</span>
+            <span class="ls-size">${dollars.format(total)}</span>
+          </p>
+          <p class="muted" role="status">${status}</p>
+        </section>
+      `;
+    });
+
+    return html`${styles}
+      <div ${story.mount}></div>`;
+  },
+};
+
+const teammates = [
+  { name: 'Ana Silva', initials: 'AS', team: 'Billing' },
+  { name: 'Ben Carter', initials: 'BC', team: 'Mobile apps' },
+  { name: 'Chloé Martin', initials: 'CM', team: 'Billing' },
+  { name: 'Dev Patel', initials: 'DP', team: 'Accounts' },
+  { name: 'Hana Kim', initials: 'HK', team: 'Mobile apps' },
+  { name: 'Jonas Weber', initials: 'JW', team: 'Accounts' },
+];
+
+export const Assignee: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Assign a support ticket to a teammate. The search field filters the list by name or team. The list has `navigation="listbox"`: Tab moves from the search field to the list, the arrow keys and the first letters of a name move between the teammates, and Enter or Space assigns the focused one. The `empty` slot shows a message while no teammate matches. The message renders in the list, so a screen reader reads it as the only option when the empty list gets the focus.',
+      },
+    },
+  },
+  render: () => {
+    let query = '';
+    let assignee = '';
+
+    const story = renderInto(() => {
+      const term = query.trim().toLocaleLowerCase();
+      const matches = teammates.filter(({ name, team }) =>
+        `${name} ${team}`.toLocaleLowerCase().includes(term)
+      );
+
+      return html`
+        <section class="ls-assignee" aria-labelledby="ls-assignee-heading">
+          <h3 id="ls-assignee-heading">Assign T-1042</h3>
+          <igc-input
+            type="search"
+            label="Find a teammate"
+            @igcInput=${({ detail }: CustomEvent<string>) => {
+              query = detail;
+              story.update();
+            }}
+          ></igc-input>
+          <igc-list navigation="listbox" aria-label="Teammates">
+            ${repeat(
+              matches,
+              ({ name }) => name,
+              ({ name, initials, team }) => html`
+                <igc-list-item
+                  ?selected=${name === assignee}
+                  @click=${() => {
+                    assignee = name;
+                    story.update();
+                  }}
+                >
+                  <igc-avatar
+                    slot="start"
+                    shape="circle"
+                    initials=${initials}
+                    aria-hidden="true"
+                  ></igc-avatar>
+                  <span slot="title">${name}</span>
+                  <span slot="subtitle">${team}</span>
+                </igc-list-item>
+              `
+            )}
+            <span slot="empty" class="ls-empty muted">
+              No teammate matches "${query.trim()}".
+            </span>
+          </igc-list>
+          <p role="status">
+            ${assignee ? `Assigned to ${assignee}.` : 'Not assigned yet.'}
+          </p>
         </section>
       `;
     });

@@ -1,4 +1,5 @@
 @use 'styles/utilities' as *;
+@use '../focus-ring' as *;
 
 :host {
     padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
@@ -20,3 +21,5 @@
 [part='end'] {
     gap: sizable(rem(4px), rem(6px), rem(8px));
 }
+
+@include focus-ring(2px);

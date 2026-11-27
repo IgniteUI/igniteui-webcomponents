@@ -21,7 +21,7 @@ import { cancelDeferredFocus, deferFocus } from '#internals/deferred-focus.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { HostAriaMixin } from '#internals/mixins/host-aria.js';
 import { partMap } from '#internals/part-map.js';
-import { setOrRemoveAttribute } from '#internals/utils/dom.js';
+import { claimTabIndex, releaseTabIndex } from '#internals/utils/dom.js';
 import { bindIf } from '#internals/utils/lit.js';
 import { all } from '#themes/button-group/themes/button.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -58,8 +58,6 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   private get _group(): ButtonGroupContext['instance'] | undefined {
     return this._context.value?.instance;
   }
-
-  private _ownTabIndex?: string | null;
 
   @query('[part~="toggle"]', true)
   private readonly _nativeButton?: HTMLButtonElement;
@@ -99,7 +97,7 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
   }
 
   public override disconnectedCallback(): void {
-    this._releaseTabIndex();
+    releaseTabIndex(this, this);
     super.disconnectedCallback();
   }
 
@@ -110,22 +108,7 @@ export default class IgcToggleButtonComponent extends HostAriaMixin(
       return;
     }
 
-    if (this._ownTabIndex === undefined) {
-      this._ownTabIndex = this.getAttribute('tabindex');
-    }
-
-    setOrRemoveAttribute(this, 'tabindex', group.isTabStop(this) ? null : '-1');
-  }
-
-  /** Restores the `tabindex` that the group took over. */
-  private _releaseTabIndex(): void {
-    if (this._ownTabIndex === undefined) {
-      return;
-    }
-
-    setOrRemoveAttribute(this, 'tabindex', this._ownTabIndex);
-
-    this._ownTabIndex = undefined;
+    claimTabIndex(this, group.isTabStop(this) ? null : '-1', this);
   }
 
   protected override updated(changedProperties: PropertyValues<this>): void {

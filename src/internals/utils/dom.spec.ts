@@ -1,15 +1,19 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import {
+  canTakeFocus,
+  claimTabIndex,
   getDeepActiveElement,
   getFocusableElements,
   getScaleFactor,
   getVisibleAncestor,
   hasNegativeTabIndex,
   isAssignedTo,
+  isTabStopWithout,
   iterNodes,
   normalizedTextContent,
   pointToFraction,
+  releaseTabIndex,
   resolveCssLength,
   roundByDPR,
   setOrRemoveAttribute,
@@ -380,6 +384,81 @@ describe('DOM utilities', () => {
       `);
 
       expect(ids(root)).to.eql(['a', 'b']);
+    });
+
+    it('skips the shadow tree and slotted content of a host with tabindex="-1", also as the root', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <span id="skipped" tabindex="-1"
+            ><button id="slotted">A</button></span
+          >
+          <span id="kept"><button id="shown">B</button></span>
+        </div>
+      `);
+
+      for (const host of root.querySelectorAll('span')) {
+        host.attachShadow({
+          mode: 'open',
+        }).innerHTML = `<button id="${host.id}-inner">Inner</button><slot></slot>`;
+      }
+
+      expect(ids(root)).to.eql(['kept-inner', 'shown']);
+      expect(ids(root.querySelector('#skipped')!)).to.eql([]);
+    });
+  });
+
+  describe('canTakeFocus', () => {
+    it('is false for an element that is disabled, inert, not rendered or invisible', async () => {
+      const root = await fixture<HTMLElement>(html`
+        <div>
+          <button id="shown">Shown</button>
+          <button disabled>Disabled</button>
+          <div inert><button>Inert</button></div>
+          <button style="display: none">Not rendered</button>
+          <button style="visibility: hidden">Invisible</button>
+        </div>
+      `);
+      const buttons = Array.from(root.querySelectorAll('button'));
+
+      expect(buttons.map(canTakeFocus)).to.eql([
+        true,
+        false,
+        false,
+        false,
+        false,
+      ]);
+    });
+  });
+
+  describe('claimTabIndex', () => {
+    it('lets a -1 from any owner win, and gives the app its value back after the last release', () => {
+      const element = document.createElement('div');
+      const [outer, inner] = [{}, {}];
+      element.setAttribute('tabindex', '2');
+
+      claimTabIndex(element, '0', inner);
+      expect(element.getAttribute('tabindex')).to.equal('0');
+
+      claimTabIndex(element, '-1', outer);
+      expect(element.getAttribute('tabindex')).to.equal('-1');
+      expect(isTabStopWithout(element, outer)).to.be.true;
+      expect(isTabStopWithout(element, inner)).to.be.false;
+
+      releaseTabIndex(element, outer);
+      expect(element.getAttribute('tabindex')).to.equal('0');
+
+      releaseTabIndex(element, inner);
+      expect(element.getAttribute('tabindex')).to.equal('2');
+    });
+
+    it('changes nothing for an owner without a claim', () => {
+      const element = document.createElement('div');
+      claimTabIndex(element, '-1', element);
+
+      releaseTabIndex(element, {});
+
+      expect(element.getAttribute('tabindex')).to.equal('-1');
+      expect(isTabStopWithout(element, element)).to.be.false;
     });
   });
 

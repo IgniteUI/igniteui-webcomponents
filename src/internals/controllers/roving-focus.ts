@@ -33,7 +33,7 @@ type RovingFocusControllerOptions<T extends Element> = {
   current?: () => T | null | undefined;
   /** Moves the focus to `item`. The host owns any side effects. */
   focusItem: (item: T) => void;
-  /** Runs with the current item on Enter and on Space. */
+  /** Runs with the current item on Enter and on Space, once per press. */
   activateItem?: (item: T) => void;
   /** Whether ArrowLeft and ArrowRight navigate. Defaults to `true`. */
   horizontal?: RovingFocusAxis;
@@ -41,6 +41,8 @@ type RovingFocusControllerOptions<T extends Element> = {
   vertical?: RovingFocusAxis;
   /** Whether Home and End jump to the first and last item. Default `true`. */
   homeEnd?: boolean;
+  /** Whether the arrow moves wrap around the ends. Default `true`. */
+  wrap?: boolean;
   /**
    * How arrow navigation treats a nullish current item:
    * - `skip` - do nothing (default)
@@ -56,8 +58,9 @@ type RovingFocusControllerOptions<T extends Element> = {
  * Implements the roving keyboard navigation of the container components.
  *
  * @remarks
- * Moves wrap over a flat list, and the horizontal axis follows the writing
- * direction. A hierarchy, such as the tree, needs its own navigation.
+ * Moves wrap over a flat list unless `wrap` is `false`, and the horizontal
+ * axis follows the writing direction. A hierarchy, such as the tree, needs its
+ * own navigation.
  */
 class RovingFocusController<T extends Element> {
   private readonly _host: RovingFocusHost;
@@ -102,7 +105,8 @@ class RovingFocusController<T extends Element> {
     }
 
     if (activateItem) {
-      bindings.setActivateHandler(() => this._activate());
+      // A held key activates once, also when the arrows repeat.
+      bindings.setActivateHandler(() => this._activate(), { repeat: false });
     }
   }
 
@@ -123,12 +127,17 @@ class RovingFocusController<T extends Element> {
       return;
     }
 
-    // An item outside the set gives -1, so the move wraps in from an edge.
+    // An item outside the set gives -1, so the move wraps in from an edge,
+    // also without `wrap`.
     const index = current ? items.indexOf(current) : -1;
     const direction = rtlAware && !isLTR(this._host) ? -delta : delta;
-    const next = wrap(0, items.length - 1, index + direction);
+    const target = index + direction;
 
-    this._focus(items[next]);
+    this._focus(
+      this._options.wrap === false && index > -1
+        ? items[target]
+        : items[wrap(0, items.length - 1, target)]
+    );
   }
 
   private _activate(): void {

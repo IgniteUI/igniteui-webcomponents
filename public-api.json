@@ -203,6 +203,7 @@
     "IgcVirtualScrollComponentEventMap",
     "InputType",
     "LinearProgressLabelAlign",
+    "ListNavigation",
     "MaskInputValueMode",
     "NavDrawerPosition",
     "NotificationPositioning",
@@ -2503,8 +2504,11 @@
     },
     "igc-list": {
       "class": "IgcListComponent",
-      "attributes": {},
+      "attributes": {
+        "navigation": "ListNavigation ('grid' | 'listbox' | 'none')"
+      },
       "properties": {
+        "navigation": "ListNavigation ('grid' | 'listbox' | 'none')",
         "static tagName": "readonly string"
       },
       "methods": {
@@ -2512,7 +2516,8 @@
       },
       "events": {},
       "slots": [
-        ""
+        "",
+        "empty"
       ],
       "cssParts": [],
       "cssProperties": []

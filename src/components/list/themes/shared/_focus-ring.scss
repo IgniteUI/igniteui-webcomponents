@@ -1,0 +1,26 @@
+@use 'styles/utilities' as *;
+
+/// The focus ring of an item that a list navigates, and of an empty list that
+/// holds the tab stop. It is inset, so the next item cannot cover it. With
+/// `$color`, it also sets the ring of forced colors mode, which is thicker than
+/// the ring of a selected item. Without `$color`, only the width changes.
+@mixin focus-ring($width, $color: null) {
+    :host(:state(navigable):focus-visible) {
+        @if $color {
+            outline: rem($width) solid $color;
+        } @else {
+            outline-width: rem($width);
+        }
+
+        outline-offset: rem(-$width);
+    }
+
+    @if $color {
+        @media (forced-colors: active) {
+            :host(:state(navigable):focus-visible) {
+                outline: rem(2px) solid Highlight;
+                outline-offset: rem(-2px);
+            }
+        }
+    }
+}

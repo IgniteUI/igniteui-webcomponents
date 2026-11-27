@@ -1,5 +1,6 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
+@use '../focus-ring' as *;
 
 $theme: $material;
 
@@ -110,3 +111,5 @@ $theme: $material;
         color: var-get($theme, 'item-action-color-selected');
     }
 }
+
+@include focus-ring(1px, var-get($theme, 'item-focus-outline-color'));

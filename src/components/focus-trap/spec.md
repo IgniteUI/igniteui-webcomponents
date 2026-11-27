@@ -27,6 +27,7 @@
     - [Light DOM](#light-dom)
     - [Shadow DOM](#shadow-dom)
     - [Mixed content](#mixed-content)
+    - [Hosts with tabindex="-1"](#hosts-with-tabindex-1)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -42,6 +43,7 @@
 |       2 | 2026-10-26 | Flat-tree order; only rendered elements |
 |       3 | 2026-11-06 | One element per native radio group      |
 |       4 | 2026-11-27 | `hidden` hides the trap and its content  |
+|       5 | 2026-11-27 | No content of a host with `tabindex="-1"` |
 
 ## Overview
 
@@ -119,8 +121,9 @@ The content is projected into the default slot. The trap is active unless `disab
 slot to its assigned elements, so a projected custom element contributes what it renders. Content-editable elements
 are part of the set as well. A hidden, inert, disabled or `aria-hidden` element leaves out its subtree. An element
 that is not rendered or has `visibility: hidden` is left out, and so is a host that delegates the focus: its inner
-controls are in the set instead. From a group of native radio buttons, only the button that Tab reaches is in the
-set: the checked button, or the first button when none is checked.
+controls are in the set instead. A host with `tabindex="-1"` leaves out its shadow tree and its slotted content, as
+Tab skips them. From a group of native radio buttons, only the button that Tab reaches is in the set: the checked
+button, or the first button when none is checked.
 
 #### Moving the focus
 
@@ -200,6 +203,10 @@ None applicable.
 
 8. A mix of light DOM, shadow DOM and content-editable elements gives the correct focusable set, and the first and
    the last element of it are focused correctly.
+
+### Hosts with tabindex="-1"
+
+9. A host with `tabindex="-1"`, as a child of the trap or deeper, leaves out its shadow tree and its slotted content.
 
 ### Not covered by the suite
 
