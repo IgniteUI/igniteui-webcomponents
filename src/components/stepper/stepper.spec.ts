@@ -2,6 +2,11 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import {
+  parseServerRendered,
+  readFirstUpdate,
+  waitForHydration,
+} from '#internals/testing/first-render.spec.js';
+import {
   allowMotion,
   isUnderPageLayer,
 } from '#internals/testing/helpers.spec.js';
@@ -1527,6 +1532,57 @@ describe('Stepper', () => {
       ).to.equal('1');
 
       stepperEl.remove();
+    });
+  });
+
+  describe('First render and hydration', () => {
+    it('knows its steps and the active step before the first render', async () => {
+      const host = document.createElement(IgcStepperComponent.tagName);
+
+      for (let i = 0; i < 3; i++) {
+        const step = document.createElement(IgcStepComponent.tagName);
+        step.active = i === 1;
+        host.append(step);
+      }
+
+      const state = await readFirstUpdate(host, () => ({
+        steps: host.steps.length,
+        active: host.steps.map((step) => step.active),
+        count: host.style.getPropertyValue('--steps-count'),
+      }));
+
+      expect(state).to.eql({
+        steps: 3,
+        active: [false, true, false],
+        count: '3',
+      });
+    });
+
+    it('marks only the authored active step as visited on load', async () => {
+      const host = await fixture<IgcStepperComponent>(html`
+        <igc-stepper>
+          <igc-step invalid><span slot="title">Invalid</span></igc-step>
+          <igc-step active><span slot="title">Active</span></igc-step>
+        </igc-stepper>
+      `);
+
+      const { headerContainer } = getStepDOM(host.steps[0]).parts;
+
+      // An invalid step shows its error state only after a visit.
+      expect(headerContainer.part.contains('invalid')).to.be.false;
+    });
+
+    it('finds its steps and activates one once a hydrated stepper has updated', async () => {
+      const host = parseServerRendered(
+        IgcStepperComponent.tagName,
+        '<igc-step><span slot="title">1</span></igc-step><igc-step active><span slot="title">2</span></igc-step>'
+      );
+
+      await waitForHydration(host);
+
+      expect(host.steps).to.have.lengthOf(2);
+      expect(host.steps.map((step) => step.active)).to.eql([false, true]);
+      expect(host.style.getPropertyValue('--steps-count')).to.equal('2');
     });
   });
 });

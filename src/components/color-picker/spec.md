@@ -31,13 +31,61 @@
     - [CSS custom properties](#css-custom-properties)
     - [CSS custom states](#css-custom-states)
   - [Test scenarios](#test-scenarios)
-    - [Component suite](#component-suite)
-    - [Picker canvas](#picker-canvas)
-    - [Color model and parsing](#color-model-and-parsing)
-    - [Converters](#converters)
+    - [Default](#default)
+    - [ARIA](#aria)
+    - [Localization](#localization-1)
+    - [Scroll strategy](#scroll-strategy)
+    - [API](#api-1)
+    - [Empty value](#empty-value)
+    - [Color value input](#color-value-input)
+    - [igcChange](#igcchange)
+    - [Color channels](#color-channels)
+    - [Inner events](#inner-events)
+    - [Swatches](#swatches-1)
+    - [Copy and EyeDropper](#copy-and-eyedropper)
+    - [Open and close](#open-and-close)
+    - [Input mode](#input-mode)
+    - [Rendering](#rendering)
+    - [Form associated](#form-associated)
+    - [Touched state](#touched-state)
+    - [defaultValue](#defaultvalue)
+    - [Initial format](#initial-format)
+    - [Value state motion](#value-state-motion)
+    - [Validation](#validation)
+    - [Validation message slots](#validation-message-slots)
+    - [External label association](#external-label-association)
+    - [Default mode trigger](#default-mode-trigger)
+    - [ARIA projection](#aria-projection)
     - [Host ARIA](#host-aria)
     - [Disabled popup](#disabled-popup)
-    - [Value state motion](#value-state-motion)
+    - [Picker canvas - Marker and color rendering](#picker-canvas---marker-and-color-rendering)
+    - [Picker canvas - Keyboard interaction](#picker-canvas---keyboard-interaction)
+    - [Picker canvas - Pointer interaction](#picker-canvas---pointer-interaction)
+    - [ColorModel - constructor and factory methods](#colormodel---constructor-and-factory-methods)
+    - [ColorModel - Color string parsing](#colormodel---color-string-parsing)
+    - [ColorModel - RGB property setters](#colormodel---rgb-property-setters)
+    - [ColorModel - HSL property setters](#colormodel---hsl-property-setters)
+    - [ColorModel - HSV property setters](#colormodel---hsv-property-setters)
+    - [ColorModel - alpha property](#colormodel---alpha-property)
+    - [ColorModel - asString](#colormodel---asstring)
+    - [ColorModel - color space conversions](#colormodel---color-space-conversions)
+    - [ColorModel - Extreme values and conversion drift](#colormodel---extreme-values-and-conversion-drift)
+    - [ColorModel - HSL and HSV factories and hex parsing](#colormodel---hsl-and-hsv-factories-and-hex-parsing)
+    - [ColorModel - Clone, equality and tuple methods](#colormodel---clone-equality-and-tuple-methods)
+    - [Color strings - parseColor](#color-strings---parsecolor)
+    - [Color strings - isValidColor](#color-strings---isvalidcolor)
+    - [Color strings - tryParseColor](#color-strings---tryparsecolor)
+    - [Color converters - rgb -> hex](#color-converters---rgb---hex)
+    - [Color converters - rgb -> hsl](#color-converters---rgb---hsl)
+    - [Color converters - rgb -> hsv](#color-converters---rgb---hsv)
+    - [Color converters - hsl -> hsv](#color-converters---hsl---hsv)
+    - [Color converters - hsv -> hsl](#color-converters---hsv---hsl)
+    - [Color converters - hsl -> rgb](#color-converters---hsl---rgb)
+    - [Color converters - hsv -> rgb](#color-converters---hsv---rgb)
+    - [Color converters - Color space round-trips](#color-converters---color-space-round-trips)
+    - [Color properties - Color converters](#color-properties---color-converters)
+    - [Color properties - Color parsing](#color-properties---color-parsing)
+    - [Color properties - Color model](#color-properties---color-model)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -68,6 +116,7 @@
 |      18 | 2026-11-23 | A disabled picker stays closed; the shared disabled popup suite |
 |      19 | 2026-11-20 | In input mode, a color that the user picks animates the input; a value from code shows at once |
 |      20 | 2026-11-25 | `name` updates its attribute at once |
+|      21 | 2026-11-27 | Test scenarios mirror the `describe` blocks: one group per component block, and `<suite> - <block>` groups for the unit suites |
 
 ## Overview
 
@@ -443,80 +492,184 @@ The component is covered by six suites in this directory, all running in a real 
 | Suite | Scope |
 | ----- | ----- |
 | [`color-picker.spec.ts`](./color-picker.spec.ts) | The component. |
-| [`picker-canvas.spec.ts`](./picker-canvas.spec.ts) | The internal gradient canvas. |
-| [`model.spec.ts`](./model.spec.ts) | The color model. |
-| [`common.spec.ts`](./common.spec.ts) | Color string parsing and validation. |
-| [`converters.spec.ts`](./converters.spec.ts) | The color space converters. |
+| [`picker-canvas.spec.ts`](./picker-canvas.spec.ts) | The internal gradient canvas: the marker, the keyboard and the pointer. |
+| [`model.spec.ts`](./model.spec.ts) | The color model: construction and factory methods, `parse`, the RGB, HSL and HSV setters, the alpha channel, `asString` in each format, the color space conversions, the utility methods and the edge cases. |
+| [`common.spec.ts`](./common.spec.ts) | Color string parsing and validation: `parseColor`, `isValidColor` and `tryParseColor`. |
+| [`converters.spec.ts`](./converters.spec.ts) | The conversions between RGB, HSL, HSV and hex, in both directions, including round-trips. |
 | [`color.property.spec.ts`](./color.property.spec.ts) | Property-based (fuzz) tests for the converters, the parser and the model. |
 
 The component suite reuses `createFormAssociatedTestBed`, `runValidationContainerTests`,
 `runExternalLabelAssociationTests`, `runAriaProjectionTests` and the `simulate*` helpers from
-[`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks.
+[`src/internals/testing`](../../internals/testing). The groups below mirror the `describe` blocks. A group of a unit
+suite is titled `<suite> - <block>`.
 
-### Component suite
+### Default
 
-1. Default state and rendering. The focus ring of the anchor is painted under an earlier page layer with `z-index: 1`.
-2. ARIA - the anchor semantics, the labels of the sliders and controls, and the described-by relation.
-3. Localization - the English defaults, the strings of `locale`, a global locale change, the input mode prefix and
-   a single override through `resourceStrings`.
-4. Scroll strategy - the `hide`, `scroll` and `close` behaviors of the anchored picker.
-5. API - the public properties and methods.
-6. Empty value - the checkered anchor, the empty serialized value, and clearing through the inputs.
-7. Color value input - typing a color string, reverting an invalid one and clearing on an empty one.
-8. `igcChange` - emitted once when focus leaves the component and the user changed the value. A value set from code
-   while focus is inside emits nothing, and neither does a color that returns to the reported one in another format.
-9. Color channels, including the alpha input.
-10. Inner events - the `igcInput` of the alpha input, the color value input and the input anchor, the open and close
-    events of the format select, and the `igcColorPicked` of the canvas do not reach a listener on the picker.
-11. Swatches - rendering the grid and applying a swatch. A swatch click while disabled changes nothing.
-12. Copy and eye dropper, in environments with and without platform support. An eye dropper pick that ends after
-    the picker is disabled changes nothing.
-13. Open and close - the pointer, keyboard and outside-click paths. A closed picker does not cancel <kbd>Escape</kbd>. An
-    <kbd>Escape</kbd> that an IME handles keeps the picker open.
-14. Input mode - the anchor input, its label and its prefix.
-15. Rendering of the picker surface rows, and the direction of the slider tracks in LTR and RTL.
-16. Form association, the touched state, `defaultValue`, the initial format, and validation. In input mode, the text
-    input shows the invalid state of the picker at once.
-17. Validation message slots, generated by `runValidationContainerTests`.
-18. External label association and ARIA projection, generated by `runExternalLabelAssociationTests` and
-    `runAriaProjectionTests`.
+1. The picker renders and passes the accessibility audit closed, open, and open with the alpha row.
+2. The focus ring of the anchor is painted under an earlier page layer with `z-index: 1`.
+
+### ARIA
+
+3. The open popover is a dialog named "Color picker", and the anchor points at it through `aria-haspopup="dialog"`
+   and `aria-controls`.
+4. Without helper content, the helper text describes the anchor. In button mode, the anchor lists the helper text
+   before the host description, also after the first render.
+5. The anchor reflects the open state through `aria-expanded`.
+6. The canvas marker gets the saturation and value of the current color. Without a value, the canvas paints the hue
+   that the hue slider points at, the alpha ramp and the canvas marker start at white, and the marker starts at the
+   white corner.
+7. The alpha field is a text field that its `<label>` labels, not a `spinbutton`.
+
+### Localization
+
+8. The labels are the English strings by default, take the strings of `locale`, and follow a change of the global
+   locale.
+9. The prefix button of the input mode and the color value input take their labels from the locale.
+10. `resourceStrings` overrides a single string.
+
+### Scroll strategy
+
+11. With `scroll`, the picker stays open when its container scrolls. With `close`, it closes and emits `igcClosing` and
+    `igcClosed`.
+
+### API
+
+12. `toggle()` opens and closes the picker.
+
+### Empty value
+
+13. The value is empty by default, and the anchor is checkered while the value is empty.
+14. An empty string, `null` and `undefined` revert the value to empty.
+
+### Color value input
+
+15. A valid color string commits, an invalid one reverts the input, and an empty one clears the value.
+16. The placeholder hints the notation of the active format: `#rrggbb`, `rgb(r g b)` or `hsl(h s% l%)`.
+
+### igcChange
+
+17. `igcChange` is emitted when focus leaves the component and the user changed the value.
+18. A value set from code while focus is inside, an unchanged value, a focus move inside the component or to slotted
+    content, and a change of the format alone emit nothing.
+19. A color change together with a format change emits the value in the new format. A color that returns to the
+    reported one in another format emits nothing.
+
+### Color channels
+
+20. The hue slider and the alpha slider update the color. An alpha slider move that keeps the alpha emits no
+    `igcInput`.
+21. The alpha input updates the alpha and shows it as a percentage. The caret stays in front of the `%` suffix,
+    non-digits are stripped, the value is clamped to 100, and an emptied input reverts on commit. The arrow keys step
+    the alpha, leave the caret in place, stop it at the `%`, and hold at the bounds without a new event.
+22. While `showAlpha` is off, an arrow key on the hue slider is not cancelled.
+23. The hue and alpha sliders follow a color change from elsewhere.
+24. A canvas pick sets the HSV saturation and value and keeps the hue. The canvas marker takes the selected color and
+    stays opaque at any alpha.
+25. The format select changes the format and the color value input.
+
+### Inner events
+
+26. The `igcInput` of the alpha input, the color value input and the input anchor, the open and close events of the
+    format select, and the `igcColorPicked` of the canvas do not reach a listener on the picker.
+
+### Swatches
+
+27. No swatches render by default. A swatch renders and applies its color on click, whatever its accessible name.
+28. A swatch click while disabled changes nothing.
+
+### Copy and EyeDropper
+
+29. The copy action writes the value to the clipboard.
+30. Without the `EyeDropper` API, the eye dropper button is disabled. With it, the button picks a color, and a pick
+    that ends after the picker is disabled changes nothing and emits no `igcInput`.
+
+### Open and close
+
+31. A click on the anchor opens and closes the picker with the opening and closing events.
+32. <kbd>Escape</kbd> closes the picker and focuses the anchor. A closed picker does not cancel <kbd>Escape</kbd>, and
+    an <kbd>Escape</kbd> that an IME handles keeps the picker open.
+33. <kbd>Alt</kbd> + <kbd>Arrow Down</kbd> opens and <kbd>Alt</kbd> + <kbd>Arrow Up</kbd> closes the picker. A disabled
+    picker ignores the keys.
+
+### Input mode
+
+34. The anchor is an input instead of a button, and its swatch preview has the orientation of the button anchor. While
+    empty, the input hints the notation of the active format, and its label stays floated while the picker is open.
+35. The prefix swatch is a keyboard operable button that opens the picker. It carries the open state (the text input
+    does not) and reflects `disabled`.
+36. The anchor input commits a color, returns to the empty state when cleared, and takes the `required` and invalid
+    state of the picker.
+
+### Rendering
+
+37. The label renders only in the default mode with `label` set. The input mode renders no label element.
+38. The button anchor reflects `disabled`. The alpha row renders only with `showAlpha`, and `hideFormats` hides the
+    format select.
+39. The slider tracks run in the direction of the ranges in LTR, and in RTL from an ancestor or from the host `dir`.
+
+### Form associated
+
+40. The picker is form associated, submits nothing without a value, and submits its value under its name.
+41. A form reset clears the value, and in input mode also the anchor input.
+42. In input mode, the anchor input shows the invalid state of the picker at once.
+43. A disabled ancestor disables the picker. The required and custom constraints fail and then pass.
+
+### Touched state
+
+44. Focus that leaves the picker marks it touched. A user change that fails validation shows the invalid styles at
+    once, and a form reset clears them.
+
+### defaultValue
+
+45. The picker starts pristine with its `defaultValue`, submits it, and restores it on a form reset.
+
+### Initial format
+
+46. A `value` attribute before or after the `format` attribute is serialized in the format.
+47. With a `defaultValue` set before the format, the picker stays pristine, submits the value in the format, and
+    restores the value in the format on a form reset.
+
+### Value state motion
+
+In input mode.
+
+48. A typed color marks the anchor input as a user change.
+49. A value from code right after it ends the user change, so the input shows it at once.
+
+### Validation
+
+50. `required` fails without a value and passes with a `defaultValue`, and the picker stays pristine.
 
 The focus after the form checks and the `invalid` event rules come from the form-associated mixin. The
 [input suite](../input/spec.md#form-validity-checks) covers them.
 
-### Picker canvas
+### Validation message slots
 
-18. Rendering of the gradient and the marker, with the marker label and the format of its value text.
-19. Keyboard interaction - the arrow keys move the marker and update the saturation and value.
-20. Pointer interaction - dragging sets the saturation and value.
+51. The `valueMissing`, `customError` and `invalid` slots, generated by `runValidationContainerTests`.
 
-### Color model and parsing
+### External label association
 
-21. `ColorModel` - construction and factory methods, `parse`, the RGB, HSL and HSV setters, the alpha channel,
-    `asString` in each format, the color space conversions, the utility methods and the edge cases.
-22. `parseColor` - hex, rgb/rgba, hsl/hsla and named color parsing, a null context, and the edge cases.
-23. `isValidColor` - accepting valid strings and rejecting invalid ones.
+Generated by `runExternalLabelAssociationTests` in input mode, with the native input of the anchor.
 
-### Converters
+52. An external `label` bound through `for`, and a `label` wrapping the host, label the native input. A `label` added
+    after the first render labels it from the first focus, and an axe audit passes with only an external `label`.
+53. The host `aria-labelledby` and `aria-label` name the native input, an external `label` wins over `aria-label`, and
+    the name follows a change and a removal of the host attributes.
 
-24. The conversions between RGB, HSL, HSV and hex, in both directions, including round-trips. The saturation stays
-    finite for a tiny saturation at full value.
+### Default mode trigger
 
-### Color properties
+54. The same shared suite in the default mode, with the trigger button as the control.
 
-25. Converters - the exact hex round-trip, the HSL and HSV round-trips, HSL to RGB directly and through HSV, and
-    every converted channel in range.
-26. Parsing - `parseColor` never throws and returns channels in range. A string that is not a color gives opaque black
-    and an empty model. A model string in each format parses back to the same color.
-27. Model - every color space stays in range for any sequence of channel writes, and a clone equals its source.
+### ARIA projection
+
+55. Generated by `runAriaProjectionTests` in input mode: the anchor input takes the host semantics with
+    `aria-haspopup="dialog"`, and the helper text describes it.
 
 ### Host ARIA
 
-28. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+56. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
-29. In button mode, the anchor lists the helper text before the host description, also after the first
-    render.
-30. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+57. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -524,14 +677,152 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 ### Disabled popup
 
-31. The shared runner `runDisabledPopupTests`, with the anchor as the `aria-expanded` target.
+58. The shared runner `runDisabledPopupTests`, with the anchor as the `aria-expanded` target.
 
-### Value state motion
+### Picker canvas - Marker and color rendering
 
-In input mode.
+59. The marker is focusable and is a slider named "Saturation and value", from 0 to 100. `aria-valuenow` is the
+    saturation, and `aria-valuetext` announces both axes in the format of `markerValueFormat`. `markerLabel`
+    overrides the name.
+60. `getMarkerDimensions()` returns half the marker size, and zero before the marker renders. `x` and `y` set the
+    marker position.
+61. `currentColor` sets the host color, and `markerColor` fills the marker. Without `markerColor`, the marker has no
+    fill.
 
-32. A typed color marks the anchor input as a user change.
-33. A value from code right after it ends the user change, so the input shows it at once.
+### Picker canvas - Keyboard interaction
+
+62. The arrow keys move the marker and emit `igcColorPicked` with rounded percentages of the canvas size. At the
+    boundaries, the marker stops and no event is emitted.
+
+### Picker canvas - Pointer interaction
+
+63. A pointer down and a pointer move drag the marker. A lost pointer capture ends the drag and focuses the marker,
+    and a pointer down of a button other than the main one does nothing.
+64. `igcColorPicked` does not bubble.
+65. A drag measures the canvas once, not once per move, and a drag after a resize measures it again.
+
+### ColorModel - constructor and factory methods
+
+66. `default()` creates opaque black. `empty()` creates an empty color at the origin of the saturation and value
+    plane. A channel write clears the empty state, a clone keeps it, and an empty color does not equal a color that is
+    not empty.
+67. The constructor takes the RGB channels and an alpha, and clamps the alpha from 0 to 1.
+
+### ColorModel - Color string parsing
+
+68. `parse` reads hex colors (also with alpha), rgb, rgba and named colors. An empty or whitespace string gives an
+    empty color.
+
+### ColorModel - RGB property setters
+
+69. Each RGB setter updates its channel, clamps it from 0 to 255, and updates the HSL and HSV values.
+
+### ColorModel - HSL property setters
+
+70. The hue, saturation and lightness setters update their channels and clamp them (hue from 0 to 360, the others
+    from 0 to 100), and update the RGB values.
+
+### ColorModel - HSV property setters
+
+71. The value setter updates the value, clamps it from 0 to 100, and updates the RGB and HSL values.
+
+### ColorModel - alpha property
+
+72. `alpha` reads and writes the alpha, clamped from 0 to 1.
+
+### ColorModel - asString
+
+73. The `hex`, `rgb` and `hsl` formats leave out the alpha when it is 1, write it when it is less than 1, and write it
+    on request. The hex format writes black and white, and the rgb and hsl formats round their channels.
+
+### ColorModel - color space conversions
+
+74. A color stays the same through the conversions between the spaces, and grayscale and pure colors convert
+    correctly.
+
+### ColorModel - Extreme values and conversion drift
+
+75. Black has every channel at 0. White has full RGB channels, no saturation, and full lightness and value.
+    Repeated writes of the HSL channels do not change the serialized strings.
+
+### ColorModel - HSL and HSV factories and hex parsing
+
+76. `fromHSL` and `fromHSV` create colors, also with an alpha, and `fromHSV` wraps a negative or out of range hue.
+77. `parse` reads a hex string with or without a leading hash, with surrounding spaces and in short form. It reads four
+    hex digits as `#RGBA`, and gives an empty color for a string that is not a color.
+
+### ColorModel - Clone, equality and tuple methods
+
+78. `clone()` gives an independent copy, and `equals()` compares the channels and the alpha.
+79. `toRGB()`, `toHSL()` and `toHSV()` return tuples, and a change of the array given to the constructor does not
+    change the color.
+
+### Color strings - parseColor
+
+80. A null context, an invalid color and an empty string give opaque black.
+81. A context that serializes a color as 8-digit hex gives its alpha, and a serialization without hex digits gives
+    black.
+82. Hex colors parse with 6, 3 and 8 digits and without a hash. rgb and rgba (with spaces and a zero alpha), the named
+    colors red, white, black and transparent, and hsl and hsla parse too.
+83. An invalid string and a malformed hex color give opaque black, and the result has a `value` tuple and an `alpha`.
+
+### Color strings - isValidColor
+
+84. Valid hex, rgb, rgba and named colors pass. Invalid colors, empty or whitespace strings and a null context fail.
+
+### Color strings - tryParseColor
+
+85. A valid color parses with one validation (four writes of `fillStyle`). An invalid color, an empty string and a
+    null context give `null`.
+
+### Color converters - rgb -> hex
+
+86. The primaries and grayscale convert, and out of range channels are rounded and clamped.
+
+### Color converters - rgb -> hsl
+
+87. Known colors convert.
+
+### Color converters - rgb -> hsv
+
+88. Red, green and blue dominant colors convert, and achromatic colors have no hue and no saturation.
+
+### Color converters - hsl -> hsv
+
+89. Colors at or below 50% lightness and above it convert, and the saturation and value stay in range across the
+    sweep.
+
+### Color converters - hsv -> hsl
+
+90. Known colors convert, and the saturation stays finite for a tiny saturation at full value.
+
+### Color converters - hsl -> rgb
+
+91. Known colors convert, and achromatic colors convert to gray.
+
+### Color converters - hsv -> rgb
+
+92. Known colors convert.
+
+### Color converters - Color space round-trips
+
+93. RGB to HSV to RGB, RGB to HSL to RGB, and HSL to HSV to HSL keep the color across the hue sweep. The HSL and HSV
+    conversions of one color agree on the hue.
+
+### Color properties - Color converters
+
+94. Integer channels round-trip through hex exactly, and colors round-trip through HSL and HSV. HSL converts to the
+    same color directly and through HSV, an HSV hue converts the same after any number of full turns, and every
+    converted channel stays in range.
+
+### Color properties - Color parsing
+
+95. `parseColor` never throws and returns channels in range for any string. A string that is not a color gives opaque
+    black and an empty model. A model string in each format parses back to the same color.
+
+### Color properties - Color model
+
+96. Every color space stays in range for any sequence of channel writes, and a clone equals its source.
 
 ## Assumptions and limitations
 

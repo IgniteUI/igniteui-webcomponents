@@ -133,12 +133,17 @@ class StepperState {
   /** Sets the linear mode and marks the steps up to the active one as visited. */
   public setVisitedState(value: boolean): void {
     const activeIndex = this._steps.indexOf(this._activeStep!);
-    this.linear = value;
 
     for (const [index, step] of this._steps.entries()) {
       this.set(step, 'visited', index <= activeIndex);
     }
 
+    this.setLinear(value);
+  }
+
+  /** Sets the linear mode and applies its linear-disabled state. */
+  public setLinear(value: boolean): void {
+    this.linear = value;
     this.setLinearState();
   }
 

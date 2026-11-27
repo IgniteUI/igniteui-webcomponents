@@ -2680,7 +2680,7 @@ describe('Slider component', () => {
     });
   });
 
-  describe('defaultValue', () => {
+  describe('Default value', () => {
     describe('Form integration', () => {
       const spec = createFormAssociatedTestBed<IgcSliderComponent>(
         html`<igc-slider name="slider" .defaultValue=${3}></igc-slider>`

@@ -20,7 +20,7 @@ defineComponents(IgcVirtualScrollComponent);
   Compared by reference: a mutation in place (`data.push(...)`) causes no
   update. Assign a new array instead. The `igcDataRequest` flow also
   expects a new array.
-- `orientation`: `'horizontal' | 'vertical'`. Default: `'vertical'`. Attribute: `orientation`, reflected.
+- `orientation`: `'vertical' | 'horizontal'`. Default: `'vertical'`. Attribute: `orientation`, reflected.
   The scroll axis of the component.
 - `overScan`: `number`. Default: `2`. Attribute: `over-scan`.
   Number of extra items to render beyond the visible area of the viewport.

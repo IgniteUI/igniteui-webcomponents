@@ -2061,28 +2061,30 @@ describe('Select', () => {
     });
   });
 
-  describe('issue-1123', () => {
-    beforeEach(async () => {
-      select = await fixture<IgcSelectComponent>(html`
-        <igc-select>
-          <igc-select-item value="Orange"
-            ><span id="click-target">Orange</span></igc-select-item
-          >
-          <igc-select-item value="Apple"><span>Apple</span></igc-select-item>
-          <igc-select-item value="Banana">Banana</igc-select-item>
-          <igc-select-item value="Mango">Mango</igc-select-item>
-        </igc-select>
-      `);
-    });
+  describe('Regressions', () => {
+    describe('issue-1123', () => {
+      beforeEach(async () => {
+        select = await fixture<IgcSelectComponent>(html`
+          <igc-select>
+            <igc-select-item value="Orange"
+              ><span id="click-target">Orange</span></igc-select-item
+            >
+            <igc-select-item value="Apple"><span>Apple</span></igc-select-item>
+            <igc-select-item value="Banana">Banana</igc-select-item>
+            <igc-select-item value="Mango">Mango</igc-select-item>
+          </igc-select>
+        `);
+      });
 
-    it('', async () => {
-      await openSelect();
+      it('', async () => {
+        await openSelect();
 
-      const inner = document.getElementById('click-target')!;
-      simulateClick(inner);
-      await elementUpdated(select);
+        const inner = document.getElementById('click-target')!;
+        simulateClick(inner);
+        await elementUpdated(select);
 
-      expect(select.value).to.equal('Orange');
+        expect(select.value).to.equal('Orange');
+      });
     });
   });
 

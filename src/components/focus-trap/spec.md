@@ -41,6 +41,8 @@
 |       1 | 2026-09-21 | Initial specification |
 |       2 | 2026-10-26 | Flat-tree order; only rendered elements |
 |       3 | 2026-11-06 | One element per native radio group      |
+|       4 | 2026-11-27 | `hidden` hides the trap and its content  |
+|       5 | 2026-11-27 | Test scenarios mirror the `Mixed content` block |
 
 ## Overview
 
@@ -187,16 +189,17 @@ None applicable.
 1. The component reports the correct number of focusable elements.
 2. `focused` reflects whether the focus is inside the trap.
 3. `focusFirstElement()` and `focusLastElement()` focus the expected elements.
+4. `hidden` hides the content of the trap.
 
 ### Shadow DOM
 
-4. The focusable elements of a projected component with a shadow root are counted.
-5. `focused` reflects the focus inside a shadow root.
-6. The first and the last element are focused correctly across the shadow boundary.
+5. The focusable elements of a projected component with a shadow root are counted.
+6. `focused` reflects the focus inside a shadow root.
+7. The first and the last element are focused correctly across the shadow boundary.
 
 ### Mixed content
 
-7. A mix of light DOM, shadow DOM and content-editable elements gives the correct focusable set, and the first and
+8. A mix of light DOM, shadow DOM and content-editable elements gives the correct focusable set, and the first and
    the last element of it are focused correctly.
 
 ### Not covered by the suite

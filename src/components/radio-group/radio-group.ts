@@ -49,6 +49,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   private readonly _slots = addSlotController(this, {
     slots: Slots,
     onChange: this._syncRadios,
+    initial: true,
   });
 
   private _defaultValue!: string;
@@ -135,14 +136,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     });
   }
 
-  protected override firstUpdated(): void {
-    this._syncRadios();
-  }
-
-  /**
-   * Syncs the radios after the first render and on each slot change. A radio without
-   * the group name forms a group of its own.
-   */
+  /** A radio without the group name forms a group of its own. */
   private _syncRadios(): void {
     const radios = this._radios;
 

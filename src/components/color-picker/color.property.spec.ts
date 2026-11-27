@@ -59,7 +59,7 @@ function expectInRange(values: number[], max: number[]) {
 describe('Color properties', () => {
   const ctx = getContext();
 
-  describe('Converters', () => {
+  describe('Color converters', () => {
     it('round-trips integer channels through hex exactly', () => {
       fc.assert(
         fc.property(fc.tuple(byte, byte, byte), (value) => {
@@ -128,7 +128,7 @@ describe('Color properties', () => {
     });
   });
 
-  describe('Parsing', () => {
+  describe('Color parsing', () => {
     it('never throws and returns channels in range for any string', () => {
       fc.assert(
         fc.property(colorString, (value) => {
@@ -180,7 +180,7 @@ describe('Color properties', () => {
     });
   });
 
-  describe('Model', () => {
+  describe('Color model', () => {
     it('keeps every color space in range for any sequence of writes', () => {
       fc.assert(
         fc.property(fc.array(operation, { maxLength: 10 }), (operations) => {

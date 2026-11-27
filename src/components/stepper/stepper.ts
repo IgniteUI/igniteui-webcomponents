@@ -113,6 +113,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
   private readonly _slots = addSlotController(this, {
     slots: Slots,
     onChange: this._handleSlotChange,
+    initial: true,
   });
 
   private get _isHorizontal(): boolean {
@@ -244,7 +245,12 @@ export default class IgcStepperComponent extends EventEmitterMixin<IgcStepperCom
 
   protected override update(properties: PropertyValues<this>): void {
     if (properties.has('linear')) {
-      this._state.setVisitedState(this.linear);
+      // The first render visits only the active step.
+      if (this.hasUpdated) {
+        this._state.setVisitedState(this.linear);
+      } else {
+        this._state.setLinear(this.linear);
+      }
     }
 
     if (

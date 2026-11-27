@@ -67,462 +67,474 @@ describe('Rating component', () => {
 
   const getBoundingRect = (el: Element) => el.getBoundingClientRect();
 
-  describe('', () => {
+  describe('Without attributes', () => {
     beforeEach(async () => {
       el = await fixture<IgcRatingComponent>(html`<igc-rating></igc-rating>`);
     });
 
-    it('is initialized with the proper default values', async () => {
-      expect(el.max).to.equal(5);
-      expect(el.hasAttribute('disabled')).to.be.false;
-      expect(el.hasAttribute('hover')).to.be.false;
-      expect(el.hasAttribute('readonly')).to.be.false;
-      expect(el.name).to.be.undefined;
-      expect(el.label).to.be.undefined;
-    });
+    describe('Defaults and rendering', () => {
+      it('is initialized with the proper default values', async () => {
+        expect(el.max).to.equal(5);
+        expect(el.hasAttribute('disabled')).to.be.false;
+        expect(el.hasAttribute('hover')).to.be.false;
+        expect(el.hasAttribute('readonly')).to.be.false;
+        expect(el.name).to.be.undefined;
+        expect(el.label).to.be.undefined;
+      });
 
-    it('is initialized correctly with passed attributes', async () => {
-      const value = 10;
-      const max = 10;
-      const name = 'rating';
-      const label = 'Test rating';
+      it('is initialized correctly with passed attributes', async () => {
+        const value = 10;
+        const max = 10;
+        const name = 'rating';
+        const label = 'Test rating';
 
-      el = await fixture<IgcRatingComponent>(
-        html`<igc-rating
-          value=${value}
-          max=${max}
-          name=${name}
-          label=${label}
-        ></igc-rating>`
-      );
+        el = await fixture<IgcRatingComponent>(
+          html`<igc-rating
+            value=${value}
+            max=${max}
+            name=${name}
+            label=${label}
+          ></igc-rating>`
+        );
 
-      expect(el.value).to.equal(value);
-      expect(el.max).to.equal(max);
-      expect(el.name).to.equal(name);
-      expect(el.label).to.equal(label);
-    });
+        expect(el.value).to.equal(value);
+        expect(el.max).to.equal(max);
+        expect(el.name).to.equal(name);
+        expect(el.label).to.equal(label);
+      });
 
-    it('value is truncated based on default `max`', async () => {
-      el = await fixture<IgcRatingComponent>(
-        html`<igc-rating value="55"></igc-rating>`
-      );
-      expect(el.max).to.equal(5);
-      expect(el.value).to.equal(5);
-    });
+      it('value is truncated based on default `max`', async () => {
+        el = await fixture<IgcRatingComponent>(
+          html`<igc-rating value="55"></igc-rating>`
+        );
+        expect(el.max).to.equal(5);
+        expect(el.value).to.equal(5);
+      });
 
-    it('value is truncated if greater than `max` attribute', async () => {
-      const value = 15;
-      const max = 10;
-      const name = 'rating';
-      const label = 'Test rating';
+      it('value is truncated if greater than `max` attribute', async () => {
+        const value = 15;
+        const max = 10;
+        const name = 'rating';
+        const label = 'Test rating';
 
-      el = await fixture<IgcRatingComponent>(
-        html`<igc-rating
-          value=${value}
-          max=${max}
-          name=${name}
-          label=${label}
-        ></igc-rating>`
-      );
+        el = await fixture<IgcRatingComponent>(
+          html`<igc-rating
+            value=${value}
+            max=${max}
+            name=${name}
+            label=${label}
+          ></igc-rating>`
+        );
 
-      expect(el.value).not.to.equal(value);
-      expect(el.value).to.equal(max);
-      expect(el.max).to.equal(max);
-      expect(el.name).to.equal(name);
-      expect(el.label).to.equal(label);
-    });
+        expect(el.value).not.to.equal(value);
+        expect(el.value).to.equal(max);
+        expect(el.max).to.equal(max);
+        expect(el.name).to.equal(name);
+        expect(el.label).to.equal(label);
+      });
 
-    it('out of bounds value is normalized', async () => {
-      el.max = 10;
-      el.value = 20;
-      el.step = 10;
-      await elementUpdated(el);
+      it('out of bounds value is normalized', async () => {
+        el.max = 10;
+        el.value = 20;
+        el.step = 10;
+        await elementUpdated(el);
 
-      expect(el.value).to.equal(10);
-      expect(el.step).to.equal(1);
+        expect(el.value).to.equal(10);
+        expect(el.step).to.equal(1);
 
-      el.value = -10;
-      el.step = -1;
-      await elementUpdated(el);
+        el.value = -10;
+        el.step = -1;
+        await elementUpdated(el);
 
-      expect(el.value).to.equal(0);
-      expect(el.step).to.equal(0.001);
-    });
+        expect(el.value).to.equal(0);
+        expect(el.step).to.equal(0.001);
+      });
 
-    it('it is accessible', async () => {
-      el.label = 'Rating';
-      await elementUpdated(el);
-      await expect(el).to.be.accessible();
-    });
+      it('it is accessible', async () => {
+        el.label = 'Rating';
+        await elementUpdated(el);
+        await expect(el).to.be.accessible();
+      });
 
-    it('has appropriately set ARIA attributes', async () => {
-      const label = 'Test Rating';
+      it('has appropriately set ARIA attributes', async () => {
+        const label = 'Test Rating';
 
-      el.label = label;
-      el.max = 10;
-      await elementUpdated(el);
+        el.label = label;
+        el.max = 10;
+        await elementUpdated(el);
 
-      expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal('0');
-      expect(getRatingWrapper(el).getAttribute('aria-valuemax')).to.equal('10');
+        expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal(
+          '0'
+        );
+        expect(getRatingWrapper(el).getAttribute('aria-valuemax')).to.equal(
+          '10'
+        );
 
-      expect(el.shadowRoot!.querySelector('[part="label"]')?.textContent).to.eq(
-        label
-      );
+        expect(
+          el.shadowRoot!.querySelector('[part="label"]')?.textContent
+        ).to.eq(label);
 
-      el.value = 7;
-      await elementUpdated(el);
-      expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal('7');
-    });
+        el.value = 7;
+        await elementUpdated(el);
+        expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal(
+          '7'
+        );
+      });
 
-    it('correctly reflects value-format', async () => {
-      el.value = 3;
-      await elementUpdated(el);
+      it('correctly reflects value-format', async () => {
+        el.value = 3;
+        await elementUpdated(el);
 
-      expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
-        '3 of 5'
-      );
+        expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
+          '3 of 5'
+        );
 
-      el.valueFormat = 'You have selected {0}';
-      el.max = 9;
-      el.value = 6;
+        el.valueFormat = 'You have selected {0}';
+        el.max = 9;
+        el.value = 6;
 
-      await elementUpdated(el);
+        await elementUpdated(el);
 
-      expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
-        'You have selected 6'
-      );
+        expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
+          'You have selected 6'
+        );
 
-      el.valueFormat = 'Selected {0} of {1}';
-      el.step = 0.1;
-      el.value = 5.2;
-      await elementUpdated(el);
+        el.valueFormat = 'Selected {0} of {1}';
+        el.step = 0.1;
+        el.value = 5.2;
+        await elementUpdated(el);
 
-      expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
-        'Selected 5.2 of 9'
-      );
-    });
+        expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
+          'Selected 5.2 of 9'
+        );
+      });
 
-    it('correctly renders default symbols', async () => {
-      const rating = await fixture<IgcRatingComponent>(
-        html`<igc-rating max="10"></igc-rating>`
-      );
-      const symbols = getRatingSymbols(rating);
+      it('correctly renders default symbols', async () => {
+        const rating = await fixture<IgcRatingComponent>(
+          html`<igc-rating max="10"></igc-rating>`
+        );
+        const symbols = getRatingSymbols(rating);
 
-      expect(symbols.length).to.equal(10);
+        expect(symbols.length).to.equal(10);
 
-      symbols.forEach((symbol) => {
-        expect(symbol.offsetParent).to.be.ok;
-        expect(symbol.getClientRects()).to.not.be.empty;
+        symbols.forEach((symbol) => {
+          expect(symbol.offsetParent).to.be.ok;
+          expect(symbol.getClientRects()).to.not.be.empty;
+        });
+      });
+
+      it('renders no default symbols in the first render with projected symbols', async () => {
+        const rating = document.createElement(IgcRatingComponent.tagName);
+        rating.append(
+          document.createElement(IgcRatingSymbolComponent.tagName),
+          document.createElement(IgcRatingSymbolComponent.tagName)
+        );
+
+        const defaults = await readFirstUpdate(
+          rating,
+          () => getRatingSymbols(rating).length
+        );
+
+        expect(defaults).to.equal(0);
+      });
+
+      it('correctly renders either default or projected symbols', async () => {
+        const renderCustomSymbols = () => html`
+          <igc-rating-symbol>🐝</igc-rating-symbol>
+          <igc-rating-symbol>🐝</igc-rating-symbol>
+          <igc-rating-symbol>🐝</igc-rating-symbol>
+        `;
+        const renderRating = (custom = false) => html`
+          <igc-rating> ${custom ? renderCustomSymbols() : nothing} </igc-rating>
+        `;
+        let rating = await fixture<IgcRatingComponent>(renderRating());
+
+        expect(getProjectedSymbols(rating)).to.be.empty;
+        const symbols = getRatingSymbols(rating);
+
+        expect(symbols).to.have.lengthOf(rating.max);
+        symbols.forEach((symbol) => {
+          expect(symbol.offsetParent).to.be.ok;
+          expect(symbol.getClientRects()).to.not.be.empty;
+        });
+
+        fixtureCleanup();
+        rating = await fixture<IgcRatingComponent>(renderRating(true));
+
+        expect(getProjectedSymbols(rating)).to.have.lengthOf(3);
+        getRatingSymbols(rating).forEach((symbol) => {
+          expect(symbol.offsetParent).to.be.null;
+          expect(symbol.getClientRects()).to.be.empty;
+        });
+      });
+
+      it('correctly renders symbols passed through igc-rating-symbol', async () => {
+        const projected = await fixture<IgcRatingComponent>(
+          html`<igc-rating>
+            <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
+            <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
+            <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
+          </igc-rating>`
+        );
+
+        expect(projected.max).to.equal(3);
+
+        for (const symbol of getProjectedSymbols(projected)) {
+          expect(symbol.textContent).to.eq('🐝');
+        }
+      });
+
+      it('sets max value correctly when igc-rating-symbols are projected', async () => {
+        const projected = await fixture<IgcRatingComponent>(
+          html`<igc-rating>
+            <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
+            <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
+            <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
+          </igc-rating>`
+        );
+
+        expect(projected.max).to.equal(3);
+
+        projected.max = 10;
+        await elementUpdated(projected);
+
+        expect(projected.max).to.equal(3);
       });
     });
 
-    it('renders no default symbols in the first render with projected symbols', async () => {
-      const rating = document.createElement(IgcRatingComponent.tagName);
-      rating.append(
-        document.createElement(IgcRatingSymbolComponent.tagName),
-        document.createElement(IgcRatingSymbolComponent.tagName)
-      );
+    describe('Interaction', () => {
+      it('correctly reflects stepUp calls', async () => {
+        el.step = 0.5;
+        el.stepUp();
+        await elementUpdated(el);
 
-      const defaults = await readFirstUpdate(
-        rating,
-        () => getRatingSymbols(rating).length
-      );
-
-      expect(defaults).to.equal(0);
-    });
-
-    it('correctly renders either default or projected symbols', async () => {
-      const renderCustomSymbols = () => html`
-        <igc-rating-symbol>🐝</igc-rating-symbol>
-        <igc-rating-symbol>🐝</igc-rating-symbol>
-        <igc-rating-symbol>🐝</igc-rating-symbol>
-      `;
-      const renderRating = (custom = false) => html`
-        <igc-rating> ${custom ? renderCustomSymbols() : nothing} </igc-rating>
-      `;
-      let rating = await fixture<IgcRatingComponent>(renderRating());
-
-      expect(getProjectedSymbols(rating)).to.be.empty;
-      const symbols = getRatingSymbols(rating);
-
-      expect(symbols).to.have.lengthOf(rating.max);
-      symbols.forEach((symbol) => {
-        expect(symbol.offsetParent).to.be.ok;
-        expect(symbol.getClientRects()).to.not.be.empty;
+        expect(el.value).to.equal(0.5);
+        el.stepUp(3);
+        await elementUpdated(el);
+        expect(el.value).to.equal(2);
       });
 
-      fixtureCleanup();
-      rating = await fixture<IgcRatingComponent>(renderRating(true));
+      it('correctly reflects stepDown calls', async () => {
+        el.step = 0.5;
+        el.value = 5;
+        await elementUpdated(el);
 
-      expect(getProjectedSymbols(rating)).to.have.lengthOf(3);
-      getRatingSymbols(rating).forEach((symbol) => {
-        expect(symbol.offsetParent).to.be.null;
-        expect(symbol.getClientRects()).to.be.empty;
+        el.stepDown(5);
+        await elementUpdated(el);
+        expect(el.value).to.equal(2.5);
       });
-    });
 
-    it('correctly renders symbols passed through igc-rating-symbol', async () => {
-      const projected = await fixture<IgcRatingComponent>(
-        html`<igc-rating>
-          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
-          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
-          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
-        </igc-rating>`
-      );
+      it('correctly updates value on click', async () => {
+        const eventSpy = spy(el, 'emitEvent');
+        const symbol = getRatingSymbols(el).item(2);
+        const { x, width } = getBoundingRect(symbol);
+        simulateClick(symbol, { clientX: x + width / 2 });
 
-      expect(projected.max).to.equal(3);
+        expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
+        expect(el.value).to.equal(3);
+      });
 
-      for (const symbol of getProjectedSymbols(projected)) {
-        expect(symbol.textContent).to.eq('🐝');
-      }
-    });
+      it('correctly updates value on click [precision != 1]', async () => {
+        const eventSpy = spy(el, 'emitEvent');
+        el.step = 0.5;
+        await elementUpdated(el);
 
-    it('sets max value correctly when igc-rating-symbols are projected', async () => {
-      const projected = await fixture<IgcRatingComponent>(
-        html`<igc-rating>
-          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
-          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
-          <igc-rating-symbol slot="symbol">🐝</igc-rating-symbol>
-        </igc-rating>`
-      );
+        const symbol = getRatingSymbols(el).item(2);
+        const { x, width } = getBoundingRect(symbol);
+        simulateClick(symbol, { clientX: x + width / 4 });
 
-      expect(projected.max).to.equal(3);
+        expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 2.5 });
+        expect(el.value).to.equal(2.5);
+      });
 
-      projected.max = 10;
-      await elementUpdated(projected);
+      it('rounds correctly to the next step, when the step is different than 1', async () => {
+        const eventSpy = spy(el, 'emitEvent');
+        el.step = 0.4;
+        await elementUpdated(el);
 
-      expect(projected.max).to.equal(3);
-    });
+        const symbol = getRatingSymbols(el).item(0);
+        const { x, width } = getBoundingRect(symbol);
+        simulateClick(symbol, { clientX: x + width * 0.55 });
 
-    it('correctly reflects stepUp calls', async () => {
-      el.step = 0.5;
-      el.stepUp();
-      await elementUpdated(el);
+        expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 0.8 });
+        expect(el.value).to.equal(0.8);
+      });
 
-      expect(el.value).to.equal(0.5);
-      el.stepUp(3);
-      await elementUpdated(el);
-      expect(el.value).to.equal(2);
-    });
+      it('issue-1548 - Inaccurate value calculation when precision == 1', async () => {
+        const eventSpy = spy(el, 'emitEvent');
 
-    it('correctly reflects stepDown calls', async () => {
-      el.step = 0.5;
-      el.value = 5;
-      await elementUpdated(el);
+        const symbol = getRatingSymbols(el).item(2);
+        const { x, width } = getBoundingRect(symbol);
+        simulateClick(symbol, { clientX: x + width / 4 });
 
-      el.stepDown(5);
-      await elementUpdated(el);
-      expect(el.value).to.equal(2.5);
-    });
+        expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
+        expect(el.value).to.equal(3);
+      });
 
-    it('correctly updates value on click', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-      const symbol = getRatingSymbols(el).item(2);
-      const { x, width } = getBoundingRect(symbol);
-      simulateClick(symbol, { clientX: x + width / 2 });
+      it('correctly reflects hover state', async () => {
+        const eventSpy = spy(el, 'emitEvent');
+        el.value = 2;
+        el.hoverPreview = true;
+        await elementUpdated(el);
+        const symbol = getRatingSymbols(el).item(2);
+        const { x, width } = getBoundingRect(symbol);
+        simulatePointerMove(symbol, { clientX: x + width / 2 });
 
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
-      expect(el.value).to.equal(3);
-    });
+        expect(eventSpy).calledOnceWithExactly('igcHover', { detail: 3 });
+        expect(el.value).to.equal(2);
+      });
 
-    it('correctly updates value on click [precision != 1]', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-      el.step = 0.5;
-      await elementUpdated(el);
+      it('does not reset value if the same rating value is clicked with allow-reset = false', async () => {
+        const eventSpy = spy(el, 'emitEvent');
+        const symbol = getRatingSymbols(el).item(4);
+        const { x, width } = getBoundingRect(symbol);
 
-      const symbol = getRatingSymbols(el).item(2);
-      const { x, width } = getBoundingRect(symbol);
-      simulateClick(symbol, { clientX: x + width / 4 });
+        el.value = 5;
+        await elementUpdated(el);
+        simulateClick(symbol, { clientX: x + width / 2 });
 
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 2.5 });
-      expect(el.value).to.equal(2.5);
-    });
+        expect(el.value).to.equal(5);
+        expect(eventSpy).not.to.be.called;
+      });
 
-    it('rounds correctly to the next step, when the step is different than 1', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-      el.step = 0.4;
-      await elementUpdated(el);
+      it('correctly resets value if the same rating value is clicked with allow-reset = true', async () => {
+        const eventSpy = spy(el, 'emitEvent');
+        const symbol = getRatingSymbols(el).item(4);
+        const { x, width } = getBoundingRect(symbol);
 
-      const symbol = getRatingSymbols(el).item(0);
-      const { x, width } = getBoundingRect(symbol);
-      simulateClick(symbol, { clientX: x + width * 0.55 });
+        el.value = 5;
+        el.allowReset = true;
+        await elementUpdated(el);
 
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 0.8 });
-      expect(el.value).to.equal(0.8);
-    });
+        simulateClick(symbol, { clientX: x + width / 2 });
 
-    it('issue-1548 - Inaccurate value calculation when precision == 1', async () => {
-      const eventSpy = spy(el, 'emitEvent');
+        expect(el.value).to.equal(0);
+        expect(eventSpy).to.have.been.calledOnceWith('igcChange', {
+          detail: 0,
+        });
+      });
 
-      const symbol = getRatingSymbols(el).item(2);
-      const { x, width } = getBoundingRect(symbol);
-      simulateClick(symbol, { clientX: x + width / 4 });
+      it('does nothing on click if disabled', async () => {
+        const eventSpy = spy(el, 'emitEvent');
+        el.disabled = true;
+        await elementUpdated(el);
 
-      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
-      expect(el.value).to.equal(3);
-    });
+        getRatingSymbols(el).item(3).click();
+        expect(eventSpy).to.not.called;
+        expect(el.value).to.equal(0);
+      });
 
-    it('correctly reflects hover state', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-      el.value = 2;
-      el.hoverPreview = true;
-      await elementUpdated(el);
-      const symbol = getRatingSymbols(el).item(2);
-      const { x, width } = getBoundingRect(symbol);
-      simulatePointerMove(symbol, { clientX: x + width / 2 });
+      it('does nothing on click if readonly', async () => {
+        const eventSpy = spy(el, 'emitEvent');
+        el.readOnly = true;
+        await elementUpdated(el);
 
-      expect(eventSpy).calledOnceWithExactly('igcHover', { detail: 3 });
-      expect(el.value).to.equal(2);
-    });
+        getRatingSymbols(el).item(3).click();
+        await elementUpdated(el);
 
-    it('does not reset value if the same rating value is clicked with allow-reset = false', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-      const symbol = getRatingSymbols(el).item(4);
-      const { x, width } = getBoundingRect(symbol);
+        expect(eventSpy).to.not.be.called;
+        expect(el.value).to.equal(0);
+      });
 
-      el.value = 5;
-      await elementUpdated(el);
-      simulateClick(symbol, { clientX: x + width / 2 });
+      it('does nothing on keyboard interaction if readonly', async () => {
+        const eventSpy = spy(el, 'emitEvent');
+        el.readOnly = true;
+        await elementUpdated(el);
 
-      expect(el.value).to.equal(5);
-      expect(eventSpy).not.to.be.called;
-    });
+        simulateKeyboard(el, arrowRight);
+        await elementUpdated(el);
 
-    it('correctly resets value if the same rating value is clicked with allow-reset = true', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-      const symbol = getRatingSymbols(el).item(4);
-      const { x, width } = getBoundingRect(symbol);
+        expect(eventSpy).to.not.be.called;
+        expect(el.value).to.equal(0);
+      });
 
-      el.value = 5;
-      el.allowReset = true;
-      await elementUpdated(el);
+      it('correctly increments rating value with arrow keys', async () => {
+        el.value = 3;
+        await elementUpdated(el);
 
-      simulateClick(symbol, { clientX: x + width / 2 });
+        simulateKeyboard(el, arrowRight);
+        expect(el.value).to.equal(4);
 
-      expect(el.value).to.equal(0);
-      expect(eventSpy).to.have.been.calledOnceWith('igcChange', { detail: 0 });
-    });
+        simulateKeyboard(el, arrowUp);
+        expect(el.value).to.equal(5);
 
-    it('does nothing on click if disabled', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-      el.disabled = true;
-      await elementUpdated(el);
+        simulateKeyboard(el, arrowRight);
+        expect(el.value).to.equal(5);
+      });
 
-      getRatingSymbols(el).item(3).click();
-      expect(eventSpy).to.not.called;
-      expect(el.value).to.equal(0);
-    });
+      it('correctly increments rating value with arrow keys (RTL)', async () => {
+        el.dir = 'rtl';
+        el.value = 3;
+        await elementUpdated(el);
 
-    it('does nothing on click if readonly', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-      el.readOnly = true;
-      await elementUpdated(el);
+        simulateKeyboard(el, arrowLeft);
+        expect(el.value).to.equal(4);
 
-      getRatingSymbols(el).item(3).click();
-      await elementUpdated(el);
+        simulateKeyboard(el, arrowUp);
+        expect(el.value).to.equal(5);
 
-      expect(eventSpy).to.not.be.called;
-      expect(el.value).to.equal(0);
-    });
+        simulateKeyboard(el, arrowLeft);
+        expect(el.value).to.equal(5);
+      });
 
-    it('does nothing on keyboard interaction if readonly', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-      el.readOnly = true;
-      await elementUpdated(el);
+      it('correctly decrements rating value with arrow keys', async () => {
+        el.value = 2;
+        await elementUpdated(el);
 
-      simulateKeyboard(el, arrowRight);
-      await elementUpdated(el);
+        simulateKeyboard(el, arrowLeft);
+        expect(el.value).to.equal(1);
 
-      expect(eventSpy).to.not.be.called;
-      expect(el.value).to.equal(0);
-    });
+        simulateKeyboard(el, arrowDown);
+        expect(el.value).to.equal(0);
 
-    it('correctly increments rating value with arrow keys', async () => {
-      el.value = 3;
-      await elementUpdated(el);
+        simulateKeyboard(el, arrowLeft);
+        expect(el.value).to.equal(0);
+      });
 
-      simulateKeyboard(el, arrowRight);
-      expect(el.value).to.equal(4);
+      it('correctly decrements rating value with arrow keys (RTL)', async () => {
+        el.dir = 'rtl';
+        el.value = 2;
+        await elementUpdated(el);
 
-      simulateKeyboard(el, arrowUp);
-      expect(el.value).to.equal(5);
+        simulateKeyboard(el, arrowRight);
+        expect(el.value).to.equal(1);
 
-      simulateKeyboard(el, arrowRight);
-      expect(el.value).to.equal(5);
-    });
+        simulateKeyboard(el, arrowDown);
+        expect(el.value).to.equal(0);
 
-    it('correctly increments rating value with arrow keys (RTL)', async () => {
-      el.dir = 'rtl';
-      el.value = 3;
-      await elementUpdated(el);
+        simulateKeyboard(el, arrowRight);
+        expect(el.value).to.equal(0);
+      });
 
-      simulateKeyboard(el, arrowLeft);
-      expect(el.value).to.equal(4);
+      it('sets min/max rating value on Home/End keys', async () => {
+        el.max = 10;
+        el.value = 5;
+        await elementUpdated(el);
 
-      simulateKeyboard(el, arrowUp);
-      expect(el.value).to.equal(5);
+        simulateKeyboard(el, homeKey);
+        expect(el.value).to.equal(1);
 
-      simulateKeyboard(el, arrowLeft);
-      expect(el.value).to.equal(5);
-    });
+        simulateKeyboard(el, endKey);
+        expect(el.value).to.equal(10);
+      });
 
-    it('correctly decrements rating value with arrow keys', async () => {
-      el.value = 2;
-      await elementUpdated(el);
+      it('should not emit a change event if the value is unchanged', async () => {
+        const eventSpy = spy(el, 'emitEvent');
+        el.value = 5;
 
-      simulateKeyboard(el, arrowLeft);
-      expect(el.value).to.equal(1);
+        await elementUpdated(el);
 
-      simulateKeyboard(el, arrowDown);
-      expect(el.value).to.equal(0);
+        simulateKeyboard(el, arrowRight);
+        expect(eventSpy).to.not.be.calledOnce;
+      });
 
-      simulateKeyboard(el, arrowLeft);
-      expect(el.value).to.equal(0);
-    });
+      it('sets step to 1 if in single selection mode', async () => {
+        el.step = 0.1;
+        el.single = true;
 
-    it('correctly decrements rating value with arrow keys (RTL)', async () => {
-      el.dir = 'rtl';
-      el.value = 2;
-      await elementUpdated(el);
-
-      simulateKeyboard(el, arrowRight);
-      expect(el.value).to.equal(1);
-
-      simulateKeyboard(el, arrowDown);
-      expect(el.value).to.equal(0);
-
-      simulateKeyboard(el, arrowRight);
-      expect(el.value).to.equal(0);
-    });
-
-    it('sets min/max rating value on Home/End keys', async () => {
-      el.max = 10;
-      el.value = 5;
-      await elementUpdated(el);
-
-      simulateKeyboard(el, homeKey);
-      expect(el.value).to.equal(1);
-
-      simulateKeyboard(el, endKey);
-      expect(el.value).to.equal(10);
-    });
-
-    it('should not emit a change event if the value is unchanged', async () => {
-      const eventSpy = spy(el, 'emitEvent');
-      el.value = 5;
-
-      await elementUpdated(el);
-
-      simulateKeyboard(el, arrowRight);
-      expect(eventSpy).to.not.be.calledOnce;
-    });
-
-    it('sets step to 1 if in single selection mode', async () => {
-      el.step = 0.1;
-      el.single = true;
-
-      await elementUpdated(el);
-      expect(el.step).to.equal(1);
+        await elementUpdated(el);
+        expect(el.step).to.equal(1);
+      });
     });
   });
 
@@ -585,7 +597,7 @@ describe('Rating component', () => {
     });
   });
 
-  describe('defaultValue', () => {
+  describe('Default value', () => {
     describe('Form integration', () => {
       const spec = createFormAssociatedTestBed<IgcRatingComponent>(html`
         <igc-rating name="rating" .defaultValue=${3}></igc-rating>

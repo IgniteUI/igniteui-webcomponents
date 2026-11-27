@@ -80,7 +80,7 @@ function committedThenOpen(...records: City[]) {
 }
 
 describe('Combo selection', () => {
-  describe('Values', () => {
+  describe('Record values', () => {
     it('reads the value from valueKey, or uses the record', () => {
       const keyed = setup();
       const plain = setup({ valueKey: undefined });
@@ -145,7 +145,7 @@ describe('Combo selection', () => {
     });
   });
 
-  describe('Resolve', () => {
+  describe('Record resolution', () => {
     it('resolves values and objects to the records of data in data order, one time each', () => {
       const { selection } = setup();
 
@@ -246,7 +246,7 @@ describe('Combo selection', () => {
     });
   });
 
-  describe('Changes', () => {
+  describe('Selection changes', () => {
     it('previews the selected values first, then the new ones', () => {
       const { selection } = setup();
 
@@ -581,7 +581,7 @@ describe('Combo selection', () => {
     });
   });
 
-  describe('Sync', () => {
+  describe('Data sync', () => {
     it('gives each value its first record and keeps the records outside data', () => {
       const copy = { ...sofia };
       const { selection } = setup({ data: [sofia, plovdiv, copy] });
@@ -717,7 +717,7 @@ describe('Combo selection', () => {
     });
   });
 
-  describe('Version', () => {
+  describe('Selection version', () => {
     it('changes on each change of the selected or the pending records, and renders the host and the rows', () => {
       const { host, selection, state } = confirming();
       let version = selection.version;

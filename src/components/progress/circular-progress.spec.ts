@@ -392,7 +392,7 @@ describe('Circular progress component', () => {
     });
   });
 
-  describe('Accessibility', () => {
+  describe('ARIA state', () => {
     const getARIA = <T extends keyof ARIAMixin>(name: T) =>
       internalsOf(progress)?.getARIA(name);
 

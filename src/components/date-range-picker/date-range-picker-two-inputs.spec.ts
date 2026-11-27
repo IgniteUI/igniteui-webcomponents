@@ -142,7 +142,7 @@ describe('Date range picker - two inputs', () => {
     calendar = picker.renderRoot.querySelector(IgcCalendarComponent.tagName)!;
   });
 
-  describe('Rendering and initialization', () => {
+  describe('Two inputs rendering and initialization', () => {
     it('should be successfully initialized with value', async () => {
       const expectedValue = { start: today.native, end: tomorrow.native };
       picker = await fixture<IgcDateRangePickerComponent>(
@@ -155,7 +155,7 @@ describe('Date range picker - two inputs', () => {
       checkSelectedRange(picker, expectedValue);
     });
   });
-  describe('Properties', () => {
+  describe('Two inputs properties', () => {
     it('should set properties of the inputs correctly', async () => {
       const props = {
         disabled: true,
@@ -199,7 +199,7 @@ describe('Date range picker - two inputs', () => {
       }
     });
   });
-  describe('Localization', () => {
+  describe('Two inputs localization', () => {
     it('should properly set displayFormat to the set of predefined formats', async () => {
       const predefinedFormats = ['short', 'medium', 'long', 'full'];
 
@@ -280,7 +280,7 @@ describe('Date range picker - two inputs', () => {
     });
   });
 
-  describe('Interactions', () => {
+  describe('Two inputs interactions', () => {
     describe('Selection via the calendar', () => {
       it('should swap the selected dates after input if the end is earlier than the start', async () => {
         const eventSpy = spy(picker, 'emitEvent');
@@ -766,7 +766,7 @@ describe('Date range picker - two inputs', () => {
       });
     });
   });
-  describe('Slots', () => {
+  describe('Two inputs slots', () => {
     it('should render slotted elements', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker use-two-inputs>

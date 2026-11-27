@@ -30,99 +30,101 @@ describe('Avatar', () => {
     defineComponents(IgcAvatarComponent);
   });
 
-  it('passes the a11y audit', async () => {
-    const el = await fixture<IgcAvatarComponent>(
-      html`<igc-avatar></igc-avatar>`
-    );
+  describe('Defaults, shape and image', () => {
+    it('passes the a11y audit', async () => {
+      const el = await fixture<IgcAvatarComponent>(
+        html`<igc-avatar></igc-avatar>`
+      );
 
-    await expect(el).shadowDom.to.be.accessible();
-    await expect(el).to.be.accessible();
-  });
+      await expect(el).shadowDom.to.be.accessible();
+      await expect(el).to.be.accessible();
+    });
 
-  it('should initialize avatar component with default values', async () => {
-    const el = await fixture<IgcAvatarComponent>(
-      html`<igc-avatar></igc-avatar>`
-    );
-    expect(el.shape).to.equal('square');
-  });
+    it('should initialize avatar component with default values', async () => {
+      const el = await fixture<IgcAvatarComponent>(
+        html`<igc-avatar></igc-avatar>`
+      );
+      expect(el.shape).to.equal('square');
+    });
 
-  it('should set avatar shape correctly', async () => {
-    const el = await fixture<IgcAvatarComponent>(
-      html`<igc-avatar shape="square"></igc-avatar>`
-    );
+    it('should set avatar shape correctly', async () => {
+      const el = await fixture<IgcAvatarComponent>(
+        html`<igc-avatar shape="square"></igc-avatar>`
+      );
 
-    expect(el.shape).to.equal('square');
+      expect(el.shape).to.equal('square');
 
-    el.shape = 'rounded';
-    await elementUpdated(el);
-    expect(el).dom.to.equal(
-      `<igc-avatar shape="rounded"></igc-avatar>`,
-      DIFF_OPTIONS
-    );
+      el.shape = 'rounded';
+      await elementUpdated(el);
+      expect(el).dom.to.equal(
+        `<igc-avatar shape="rounded"></igc-avatar>`,
+        DIFF_OPTIONS
+      );
 
-    el.shape = 'circle';
-    await elementUpdated(el);
-    expect(el).dom.to.equal(
-      `<igc-avatar shape="circle"></igc-avatar>`,
-      DIFF_OPTIONS
-    );
-  });
+      el.shape = 'circle';
+      await elementUpdated(el);
+      expect(el).dom.to.equal(
+        `<igc-avatar shape="circle"></igc-avatar>`,
+        DIFF_OPTIONS
+      );
+    });
 
-  it('should fallback to initials avatar when no image is provided', async () => {
-    const el = await fixture<IgcAvatarComponent>(
-      html`<igc-avatar initials="ab"></igc-avatar>`
-    );
+    it('should fallback to initials avatar when no image is provided', async () => {
+      const el = await fixture<IgcAvatarComponent>(
+        html`<igc-avatar initials="ab"></igc-avatar>`
+      );
 
-    expect(el.src).to.be.undefined;
-    expect(el).shadowDom.to.equal(
-      `<div part="base">
-      <span part="initials">ab</span>
-      </div>`
-    );
-  });
+      expect(el.src).to.be.undefined;
+      expect(el).shadowDom.to.equal(
+        `<div part="base">
+        <span part="initials">ab</span>
+        </div>`
+      );
+    });
 
-  it('should render the image alongside the initials until it fails to load', async () => {
-    const el = await fixture<IgcAvatarComponent>(
-      html`<igc-avatar initials="ab" src=${BrokenImage}></igc-avatar>`
-    );
+    it('should render the image alongside the initials until it fails to load', async () => {
+      const el = await fixture<IgcAvatarComponent>(
+        html`<igc-avatar initials="ab" src=${BrokenImage}></igc-avatar>`
+      );
 
-    expect(getImage(el)).to.exist;
+      expect(getImage(el)).to.exist;
 
-    await waitUntil(
-      () => getImage(el) === null,
-      'The avatar did not drop the image after a load error'
-    );
+      await waitUntil(
+        () => getImage(el) === null,
+        'The avatar did not drop the image after a load error'
+      );
 
-    expect(el).shadowDom.to.equal(
-      `<div part="base">
-      <span part="initials">ab</span>
-      </div>`
-    );
-  });
+      expect(el).shadowDom.to.equal(
+        `<div part="base">
+        <span part="initials">ab</span>
+        </div>`
+      );
+    });
 
-  it('should retry rendering the image when the source changes after an error', async () => {
-    const el = await fixture<IgcAvatarComponent>(
-      html`<igc-avatar src=${BrokenImage}></igc-avatar>`
-    );
+    it('should retry rendering the image when the source changes after an error', async () => {
+      const el = await fixture<IgcAvatarComponent>(
+        html`<igc-avatar src=${BrokenImage}></igc-avatar>`
+      );
 
-    await waitUntil(() => getImage(el) === null);
+      await waitUntil(() => getImage(el) === null);
 
-    el.src = ValidImage;
-    await elementUpdated(el);
+      el.src = ValidImage;
+      await elementUpdated(el);
 
-    expect(getImage(el)?.src).to.equal(ValidImage);
-  });
+      expect(getImage(el)?.src).to.equal(ValidImage);
+    });
 
-  it('should mark the image as decorative when no alt text is provided', async () => {
-    const el = await fixture<IgcAvatarComponent>(
-      html`<igc-avatar src=${ValidImage}></igc-avatar>`
-    );
+    it('should mark the image as decorative when no alt text is provided', async () => {
+      const el = await fixture<IgcAvatarComponent>(
+        html`<igc-avatar src=${ValidImage}></igc-avatar>`
+      );
 
-    expect(getImage(el)!.getAttribute('alt')).to.equal('');
+      expect(getImage(el)!.getAttribute('alt')).to.equal('');
 
-    el.alt = 'John Doe';
-    await elementUpdated(el);
-    expect(getImage(el)!.getAttribute('alt')).to.equal('John Doe');
+      el.alt = 'John Doe';
+      await elementUpdated(el);
+      expect(getImage(el)!.getAttribute('alt')).to.equal('John Doe');
+    });
   });
 
   describe('ARIA', () => {

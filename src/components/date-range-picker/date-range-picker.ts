@@ -9,10 +9,7 @@ import { convertToDateRange } from '#internals/date/converters.js';
 import { blazorAdditionalDependencies } from '#internals/decorators/blazorAdditionalDependencies.js';
 import { shadowOptions } from '#internals/decorators/shadow-options.js';
 import { registerComponent } from '#internals/definitions/register.js';
-import {
-  getDateTimeFormat,
-  getLocaleDateTimeFormats,
-} from '#internals/i18n/date-formats.js';
+import { getDateTimeFormat } from '#internals/i18n/date-formats.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { createFormValueState } from '#internals/mixins/forms/form-value.js';
 import { I18nMixin } from '#internals/mixins/i18n.js';
@@ -285,14 +282,6 @@ export default class IgcDateRangePickerComponent extends I18nMixin(
         : (value?.[key] ?? null);
 
     return { value: { start: end('start'), end: end('end') } };
-  }
-
-  protected override get _defaultDisplayFormat(): string | undefined {
-    return this._inputFormat ?? getLocaleDateTimeFormats(this.locale).display;
-  }
-
-  protected override get _defaultInputFormat(): string | undefined {
-    return getLocaleDateTimeFormats(this.locale).input;
   }
 
   protected override _formatValidationValue(

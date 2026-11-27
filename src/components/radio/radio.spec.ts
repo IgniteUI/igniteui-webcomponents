@@ -54,7 +54,7 @@ describe('Radio Component', () => {
     ],
   };
 
-  describe('', () => {
+  describe('With a label', () => {
     beforeEach(async () => {
       radio = await fixture<IgcRadioComponent>(
         html`<igc-radio>${label}</igc-radio>`
@@ -62,186 +62,192 @@ describe('Radio Component', () => {
       input = radio.renderRoot.querySelector('input')!;
     });
 
-    it('is initialized with the proper default values', async () => {
-      expect(input.id).to.equal('radio-1');
-      expect(radio.name).to.be.undefined;
-      expect(input.name).to.equal('');
-      expect(radio.value).to.be.undefined;
-      expect(input.value).to.equal('on');
-      expect(radio.checked).to.equal(false);
-      expect(input.checked).to.equal(false);
-      expect(radio.invalid).to.equal(false);
-      expect(radio.disabled).to.equal(false);
-      expect(input.disabled).to.equal(false);
-      expect(radio.required).to.equal(false);
-      expect(input.required).to.equal(false);
-      expect(radio.labelPosition).to.equal('after');
-    });
+    describe('Rendering and properties', () => {
+      it('is initialized with the proper default values', async () => {
+        expect(input.id).to.equal('radio-1');
+        expect(radio.name).to.be.undefined;
+        expect(input.name).to.equal('');
+        expect(radio.value).to.be.undefined;
+        expect(input.value).to.equal('on');
+        expect(radio.checked).to.equal(false);
+        expect(input.checked).to.equal(false);
+        expect(radio.invalid).to.equal(false);
+        expect(radio.disabled).to.equal(false);
+        expect(input.disabled).to.equal(false);
+        expect(radio.required).to.equal(false);
+        expect(input.required).to.equal(false);
+        expect(radio.labelPosition).to.equal('after');
+      });
 
-    it('renders a radio element successfully', async () => {
-      await expect(radio).shadowDom.to.be.accessible();
-    });
+      it('renders a radio element successfully', async () => {
+        await expect(radio).shadowDom.to.be.accessible();
+      });
 
-    it('paints the control under an earlier page layer, also in a horizontal group', async () => {
-      const control = (el: IgcRadioComponent) =>
-        el.renderRoot.querySelector('[part~="control"]')!;
+      it('paints the control under an earlier page layer, also in a horizontal group', async () => {
+        const control = (el: IgcRadioComponent) =>
+          el.renderRoot.querySelector('[part~="control"]')!;
 
-      expect(isUnderPageLayer(radio, control(radio))).to.be.true;
+        expect(isUnderPageLayer(radio, control(radio))).to.be.true;
 
-      const group = await fixture<IgcRadioGroupComponent>(
-        html`<igc-radio-group alignment="horizontal"
-          ><igc-radio>${label}</igc-radio></igc-radio-group
-        >`
-      );
-      const grouped = group.querySelector(IgcRadioComponent.tagName)!;
+        const group = await fixture<IgcRadioGroupComponent>(
+          html`<igc-radio-group alignment="horizontal"
+            ><igc-radio>${label}</igc-radio></igc-radio-group
+          >`
+        );
+        const grouped = group.querySelector(IgcRadioComponent.tagName)!;
 
-      expect(isUnderPageLayer(group, control(grouped))).to.be.true;
-    });
+        expect(isUnderPageLayer(group, control(grouped))).to.be.true;
+      });
 
-    it('sets label position properly', async () => {
-      radio.labelPosition = 'before';
-      await elementUpdated(radio);
-      expect(radio).dom.to.equal(
-        `<igc-radio label-position="before">${label}</igc-radio>`
-      );
+      it('sets label position properly', async () => {
+        radio.labelPosition = 'before';
+        await elementUpdated(radio);
+        expect(radio).dom.to.equal(
+          `<igc-radio label-position="before">${label}</igc-radio>`
+        );
 
-      radio.labelPosition = 'after';
-      await elementUpdated(radio);
-      expect(radio).dom.to.equal(
-        `<igc-radio label-position="after">${label}</igc-radio>`
-      );
-    });
+        radio.labelPosition = 'after';
+        await elementUpdated(radio);
+        expect(radio).dom.to.equal(
+          `<igc-radio label-position="after">${label}</igc-radio>`
+        );
+      });
 
-    it('sets the name property successfully', async () => {
-      const name = 'fruit';
+      it('sets the name property successfully', async () => {
+        const name = 'fruit';
 
-      radio.name = name;
-      expect(radio.name).to.equal(name);
+        radio.name = name;
+        expect(radio.name).to.equal(name);
 
-      await elementUpdated(radio);
-      expect(input).dom.to.equal(`<input name="${name}"/>`, DIFF_OPTIONS);
-    });
+        await elementUpdated(radio);
+        expect(input).dom.to.equal(`<input name="${name}"/>`, DIFF_OPTIONS);
+      });
 
-    it('sets the value property successfully', async () => {
-      const value = 'apple';
+      it('sets the value property successfully', async () => {
+        const value = 'apple';
 
-      radio.value = value;
-      expect(radio.value).to.equal(value);
+        radio.value = value;
+        expect(radio.value).to.equal(value);
 
-      await elementUpdated(radio);
-      expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
-    });
+        await elementUpdated(radio);
+        expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
+      });
 
-    it('sets the disabled property successfully', async () => {
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-checked',
-          'aria-labelledby',
-          'tabindex',
-          'type',
-        ],
-      };
+      it('sets the disabled property successfully', async () => {
+        const DIFF_OPTIONS = {
+          ignoreAttributes: [
+            'id',
+            'part',
+            'aria-checked',
+            'aria-labelledby',
+            'tabindex',
+            'type',
+          ],
+        };
 
-      radio.disabled = true;
-      expect(radio.disabled).to.be.true;
-      await elementUpdated(radio);
-      expect(input).dom.to.equal('<input disabled />', DIFF_OPTIONS);
+        radio.disabled = true;
+        expect(radio.disabled).to.be.true;
+        await elementUpdated(radio);
+        expect(input).dom.to.equal('<input disabled />', DIFF_OPTIONS);
 
-      radio.disabled = false;
-      expect(radio.disabled).to.be.false;
-      await elementUpdated(radio);
+        radio.disabled = false;
+        expect(radio.disabled).to.be.false;
+        await elementUpdated(radio);
 
-      expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
-    });
+        expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
+      });
 
-    it('sets the required property successfully', async () => {
-      radio.required = true;
-      expect(radio.required).to.be.true;
-      await elementUpdated(radio);
-      expect(input).dom.to.equal('<input required />', DIFF_OPTIONS);
+      it('sets the required property successfully', async () => {
+        radio.required = true;
+        expect(radio.required).to.be.true;
+        await elementUpdated(radio);
+        expect(input).dom.to.equal('<input required />', DIFF_OPTIONS);
 
-      radio.required = false;
-      expect(radio.required).to.be.false;
-      await elementUpdated(radio);
+        radio.required = false;
+        expect(radio.required).to.be.false;
+        await elementUpdated(radio);
 
-      expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
-    });
-
-    it('should emit igcChange event when radio is checked', async () => {
-      const eventSpy = spy(radio, 'emitEvent');
-      radio.click();
-
-      await elementUpdated(radio);
-      expect(eventSpy).calledWithExactly('igcChange', {
-        detail: {
-          checked: true,
-          value: undefined,
-        },
+        expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
       });
     });
 
-    it('it should not emit igcChange event on already checked radio', async () => {
-      const eventSpy = spy(radio, 'emitEvent');
+    describe('Interactions and events', () => {
+      it('should emit igcChange event when radio is checked', async () => {
+        const eventSpy = spy(radio, 'emitEvent');
+        radio.click();
 
-      radio.click();
-      await elementUpdated(radio);
-      expect(eventSpy.getCalls()).lengthOf(1);
+        await elementUpdated(radio);
+        expect(eventSpy).calledWithExactly('igcChange', {
+          detail: {
+            checked: true,
+            value: undefined,
+          },
+        });
+      });
 
-      radio.click();
-      await elementUpdated(radio);
-      expect(eventSpy.getCalls()).lengthOf(1);
-    });
+      it('it should not emit igcChange event on already checked radio', async () => {
+        const eventSpy = spy(radio, 'emitEvent');
 
-    it('should be able to use external elements as label', async () => {
-      const labelId = 'my-label';
-      const radio = await fixture<IgcRadioComponent>(
-        html`<igc-radio aria-labelledby=${labelId}></igc-radio>
-          <span id=${labelId}>My Label</span>`
-      );
-      const input = radio.renderRoot.querySelector('input') as HTMLInputElement;
+        radio.click();
+        await elementUpdated(radio);
+        expect(eventSpy.getCalls()).lengthOf(1);
 
-      // An IDREF does not cross the shadow boundary. The host binds the
-      // element by reference.
-      expect(radio.getAttribute('aria-labelledby')).to.equal(labelId);
-      expect(input.ariaLabelledByElements).to.eql([
-        document.getElementById(labelId),
-      ]);
-    });
+        radio.click();
+        await elementUpdated(radio);
+        expect(eventSpy.getCalls()).lengthOf(1);
+      });
 
-    it('should emit click event only once', async () => {
-      const eventSpy = spy(radio, 'click');
+      it('should be able to use external elements as label', async () => {
+        const labelId = 'my-label';
+        const radio = await fixture<IgcRadioComponent>(
+          html`<igc-radio aria-labelledby=${labelId}></igc-radio>
+            <span id=${labelId}>My Label</span>`
+        );
+        const input = radio.renderRoot.querySelector(
+          'input'
+        ) as HTMLInputElement;
 
-      radio.addEventListener('click', eventSpy);
-      simulateClick(radio);
+        // An IDREF does not cross the shadow boundary. The host binds the
+        // element by reference.
+        expect(radio.getAttribute('aria-labelledby')).to.equal(labelId);
+        expect(input.ariaLabelledByElements).to.eql([
+          document.getElementById(labelId),
+        ]);
+      });
 
-      await elementUpdated(radio);
-      expect(eventSpy.callCount).to.equal(1);
-    });
+      it('should emit click event only once', async () => {
+        const eventSpy = spy(radio, 'click');
 
-    it('should update the validity state of the group when a single radio is validated', async () => {
-      const radios = Array.from(
-        (
-          await fixture(html`
-            <div>
-              <igc-radio required name="radio" value="1">1</igc-radio>
-              <igc-radio name="radio" value="1">2</igc-radio>
-              <igc-radio name="radio" value="1">3</igc-radio>
-            </div>
-          `)
-        ).querySelectorAll(IgcRadioComponent.tagName)
-      );
+        radio.addEventListener('click', eventSpy);
+        simulateClick(radio);
 
-      // Initial render - invalid state but no styles applied
-      expect(radios.every((radio) => radio.invalid)).to.be.false;
+        await elementUpdated(radio);
+        expect(eventSpy.callCount).to.equal(1);
+      });
 
-      expect(firstOf(radios).reportValidity()).to.be.false;
-      expect(radios.every((radio) => radio.invalid)).to.be.true;
+      it('should update the validity state of the group when a single radio is validated', async () => {
+        const radios = Array.from(
+          (
+            await fixture(html`
+              <div>
+                <igc-radio required name="radio" value="1">1</igc-radio>
+                <igc-radio name="radio" value="1">2</igc-radio>
+                <igc-radio name="radio" value="1">3</igc-radio>
+              </div>
+            `)
+          ).querySelectorAll(IgcRadioComponent.tagName)
+        );
 
-      firstOf(radios).checked = true;
-      expect(firstOf(radios).reportValidity()).to.be.true;
-      expect(radios.every((radio) => radio.invalid)).to.be.false;
+        // Initial render - invalid state but no styles applied
+        expect(radios.every((radio) => radio.invalid)).to.be.false;
+
+        expect(firstOf(radios).reportValidity()).to.be.false;
+        expect(radios.every((radio) => radio.invalid)).to.be.true;
+
+        firstOf(radios).checked = true;
+        expect(firstOf(radios).reportValidity()).to.be.true;
+        expect(radios.every((radio) => radio.invalid)).to.be.false;
+      });
     });
   });
 
@@ -451,24 +457,26 @@ describe('Radio Component', () => {
     });
   });
 
-  describe('issue-1122', () => {
-    const spec = createFormAssociatedTestBed<IgcRadioComponent>(
-      html`<igc-radio name="selection" value="1" required></igc-radio>`
-    );
+  describe('Regressions', () => {
+    describe('issue-1122', () => {
+      const spec = createFormAssociatedTestBed<IgcRadioComponent>(
+        html`<igc-radio name="selection" value="1" required></igc-radio>`
+      );
 
-    beforeEach(async () => {
-      await spec.setup(IgcRadioComponent.tagName);
-    });
+      beforeEach(async () => {
+        await spec.setup(IgcRadioComponent.tagName);
+      });
 
-    it('synchronously validates component', () => {
-      expect(spec.form.checkValidity()).to.be.false;
-      spec.assertSubmitFails();
+      it('synchronously validates component', () => {
+        expect(spec.form.checkValidity()).to.be.false;
+        spec.assertSubmitFails();
 
-      spec.reset();
+        spec.reset();
 
-      spec.element.click();
-      expect(spec.form.checkValidity()).to.be.true;
-      spec.assertSubmitPasses();
+        spec.element.click();
+        expect(spec.form.checkValidity()).to.be.true;
+        spec.assertSubmitPasses();
+      });
     });
   });
 

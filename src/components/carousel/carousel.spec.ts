@@ -21,6 +21,11 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
+import {
+  parseServerRendered,
+  readFirstUpdate,
+  waitForHydration,
+} from '#internals/testing/first-render.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   allowMotion,
@@ -91,6 +96,14 @@ describe('Carousel', () => {
       )}
     </igc-carousel>
   `;
+
+  function parseCarousel(children: string): IgcCarouselComponent {
+    return parseServerRendered(
+      IgcCarouselComponent.tagName,
+      children,
+      '<slot name="indicator"></slot><slot></slot>'
+    );
+  }
 
   let carousel: IgcCarouselComponent;
   let slides: IgcCarouselSlideComponent[];
@@ -406,6 +419,178 @@ describe('Carousel', () => {
 
       expect(carousel.total).to.equal(4);
       expect(carousel.current).to.equal(3);
+    });
+  });
+
+  describe('First render', () => {
+    function createHost({
+      slides = 3,
+      activeIndex = -1,
+      indicators = 0,
+    } = {}): IgcCarouselComponent {
+      const host = document.createElement(IgcCarouselComponent.tagName);
+
+      for (let i = 0; i < indicators; i++) {
+        host.append(
+          document.createElement(IgcCarouselIndicatorComponent.tagName)
+        );
+      }
+
+      for (let i = 0; i < slides; i++) {
+        const slide = document.createElement(IgcCarouselSlideComponent.tagName);
+        slide.active = i === activeIndex;
+        host.append(slide);
+      }
+
+      return host;
+    }
+
+    function getDefaultIndicators(
+      host: IgcCarouselComponent
+    ): IgcCarouselIndicatorComponent[] {
+      return Array.from(
+        host.renderRoot.querySelectorAll(IgcCarouselIndicatorComponent.tagName)
+      );
+    }
+
+    function getDisabledButtons(host: IgcCarouselComponent): boolean[] {
+      return Array.from(
+        host.renderRoot.querySelectorAll(IgcButtonComponent.tagName),
+        (button) => button.disabled
+      );
+    }
+
+    it('shows the authored active slide and its indicator', async () => {
+      const host = createHost({ activeIndex: 1 });
+
+      const state = await readFirstUpdate(host, () => ({
+        current: host.current,
+        slides: host.slides.map((slide) => slide.active),
+        indicators: getDefaultIndicators(host).map((dot) => dot.active),
+      }));
+
+      expect(state.current).to.equal(1);
+      expect(state.slides).to.eql([false, true, false]);
+      expect(state.indicators).to.eql([false, true, false]);
+    });
+
+    it('activates the first slide when none is active', async () => {
+      const host = createHost();
+
+      const slides = await readFirstUpdate(host, () =>
+        host.slides.map((slide) => slide.active)
+      );
+
+      expect(slides).to.eql([true, false, false]);
+    });
+
+    it('shows the label when the slides outnumber `maximumIndicatorsCount`', async () => {
+      const host = createHost();
+      host.maximumIndicatorsCount = 2;
+
+      const state = await readFirstUpdate(host, () => ({
+        label: host.renderRoot
+          .querySelector('[part~="label"]')
+          ?.textContent?.trim(),
+        indicators: getDefaultIndicators(host).length,
+      }));
+
+      expect(state.label).to.equal('1 of 3');
+      expect(state.indicators).to.equal(0);
+    });
+
+    it('disables both navigation buttons of a single slide with `disableLoop`', async () => {
+      const host = createHost({ slides: 1 });
+      host.disableLoop = true;
+
+      const disabled = await readFirstUpdate(host, () =>
+        getDisabledButtons(host)
+      );
+
+      expect(disabled).to.eql([true, true]);
+    });
+
+    it('disables the next button at an authored active last slide with `disableLoop`', async () => {
+      const host = createHost({ activeIndex: 2 });
+      host.disableLoop = true;
+
+      const disabled = await readFirstUpdate(host, () =>
+        getDisabledButtons(host)
+      );
+
+      expect(disabled).to.eql([false, true]);
+    });
+
+    it('renders no default indicators next to projected ones', async () => {
+      const host = createHost({ slides: 2, indicators: 2 });
+
+      const count = await readFirstUpdate(
+        host,
+        () => getDefaultIndicators(host).length
+      );
+
+      expect(count).to.equal(0);
+    });
+
+    it('gives the projected indicators their state before their first render', async () => {
+      const host = createHost({ slides: 2, indicators: 2, activeIndex: 1 });
+      const indicator = host.querySelectorAll(
+        IgcCarouselIndicatorComponent.tagName
+      )[1];
+
+      // The carousel sets the state of an indicator in its own `updated()`,
+      // which runs before the first update of the indicator.
+      let state: Record<string, unknown> | undefined;
+      const reader = {
+        hostUpdated: () => {
+          indicator.removeController(reader);
+          state = {
+            active: indicator.active,
+            index: indicator.index,
+            controls: indicator.getAttribute('aria-controls'),
+          };
+        },
+      };
+
+      indicator.addController(reader);
+      await fixture(host);
+
+      expect(state).to.eql({
+        active: true,
+        index: 1,
+        controls: host.slides[1].id,
+      });
+    });
+
+    it('activates the authored active slide after a hydrating first update', async () => {
+      const host = parseCarousel(
+        '<igc-carousel-slide></igc-carousel-slide><igc-carousel-slide active></igc-carousel-slide>'
+      );
+      await waitForHydration(host);
+
+      expect(host.current).to.equal(1);
+      expect(host.slides.map((slide) => slide.active)).to.eql([false, true]);
+      expect(getDefaultIndicators(host).map((dot) => dot.active)).to.eql([
+        false,
+        true,
+      ]);
+    });
+
+    it('reads the projected indicators after a hydrating first update', async () => {
+      const host = parseCarousel(
+        `${'<igc-carousel-indicator></igc-carousel-indicator>'.repeat(2)}<igc-carousel-slide></igc-carousel-slide><igc-carousel-slide active></igc-carousel-slide>`
+      );
+      await waitForHydration(host);
+
+      const projected = Array.from(
+        host.querySelectorAll(IgcCarouselIndicatorComponent.tagName)
+      );
+
+      expect(getDefaultIndicators(host)).to.be.empty;
+      expect(projected.map((indicator) => indicator.active)).to.eql([
+        false,
+        true,
+      ]);
     });
   });
 
@@ -1850,34 +2035,14 @@ describe('Carousel', () => {
       expect(eventSpy).calledOnce;
     });
 
-    it('should activate the selected slide when no slide is active yet', async () => {
-      const el = document.createElement(IgcCarouselComponent.tagName);
+    it('selects a slide once a hydrated carousel has updated', async () => {
+      const el = parseCarousel(
+        '<igc-carousel-slide></igc-carousel-slide>'.repeat(3)
+      );
 
-      for (const _ of [0, 1, 2]) {
-        el.appendChild(
-          document.createElement(IgcCarouselSlideComponent.tagName)
-        );
-      }
-
-      // `select` runs right after the first render, before the carousel
-      // activates its initial slide.
-      let hadActiveSlide = true;
-      let selected: Promise<boolean> | undefined;
-
-      el.addController({
-        hostUpdated() {
-          if (!selected) {
-            hadActiveSlide = el.slides.some((slide) => slide.active);
-            selected = el.select(1);
-          }
-        },
-      });
-
-      document.body.appendChild(el);
       await el.updateComplete;
 
-      expect(hadActiveSlide).to.be.false;
-      expect(await selected).to.be.true;
+      expect(await el.select(1)).to.be.true;
       expect(el.current).to.equal(1);
       expect(el.slides.map((slide) => slide.active)).to.eql([
         false,
@@ -1902,8 +2067,8 @@ describe('Carousel', () => {
     </igc-carousel>`
   );
 
-  // The first render has no focusable element: the indicators come after the
-  // carousel finds its slides.
+  // With `hide-navigation`, the indicators are the only focusable elements, and
+  // each one sets its tab index in its own first update.
   runFocusBeforeRenderTests(
     html`<igc-carousel hide-navigation>
       <igc-carousel-slide>1</igc-carousel-slide>

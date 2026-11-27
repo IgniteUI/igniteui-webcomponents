@@ -33,10 +33,12 @@
     - [Value resolution](#value-resolution)
     - [Range ARIA](#range-aria)
     - [Thumb label](#thumb-label)
+    - [Tick labels](#tick-labels)
     - [Form integration tests](#form-integration-tests)
     - [Default value](#default-value)
     - [External label association](#external-label-association)
     - [Host ARIA](#host-aria)
+    - [Focus](#focus)
     - [Hidden ancestor](#hidden-ancestor)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -62,6 +64,7 @@
 |      11 | 2026-11-18 | A change of the user that fails validation shows the invalid styles at once |
 |      12 | 2026-11-25 | `name` updates its attribute at once |
 |      13 | 2026-11-25 | The `defaultValue` row has the JSDoc wording |
+|      14 | 2026-11-27 | Test scenarios mirror the `Default value` block; TOC lists every scenario heading |
 
 ## Overview
 

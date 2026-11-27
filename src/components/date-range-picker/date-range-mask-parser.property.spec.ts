@@ -83,185 +83,195 @@ function textOf(
 }
 
 describe('Date range mask parser properties', () => {
-  it('round-trips a range through formatValue and parseDateRange', () => {
-    fc.assert(
-      fc.property(options, date, date, (opts, start, end) => {
-        assumeWallClock(opts.format, start);
-        assumeWallClock(opts.format, end);
-
-        const parser = new DateRangeMaskParser(opts);
-        const masked = parser.formatValue({ start, end });
-        const parsed = parser.parseDateRange(masked);
-
-        expect(masked).to.have.lengthOf(parser.emptyMask.length);
-        expect(parsed?.start, masked).to.be.an.instanceOf(Date);
-        expect(parsed?.end, masked).to.be.an.instanceOf(Date);
-        expect(parser.formatValue(parsed)).to.equal(masked);
-      })
-    );
-  });
-
-  it('parses each side like a single date parser', () => {
-    fc.assert(
-      fc.property(options, date, date, (opts, start, end) => {
-        const parser = new DateRangeMaskParser(opts);
-        const single = new DateTimeMaskParser({ format: opts.format });
-        const parsed = parser.parseDateRange(
-          parser.formatValue({ start, end })
-        );
-
-        expect(parsed!.start!.getTime()).to.equal(
-          single.parseDate(single.formatValue(start))!.getTime()
-        );
-        expect(parsed!.end!.getTime()).to.equal(
-          single.parseDate(single.formatValue(end))!.getTime()
-        );
-      })
-    );
-  });
-
-  it('gives a strict parse only when both ends are complete, and a lenient parse of each end', () => {
-    fc.assert(
-      fc.property(
-        options,
-        date,
-        date,
-        textKind,
-        textKind,
-        (opts, start, end, startKind, endKind) => {
+  describe('Parsing and formatting', () => {
+    it('round-trips a range through formatValue and parseDateRange', () => {
+      fc.assert(
+        fc.property(options, date, date, (opts, start, end) => {
           assumeWallClock(opts.format, start);
           assumeWallClock(opts.format, end);
 
           const parser = new DateRangeMaskParser(opts);
-          const single = new DateTimeMaskParser({ format: opts.format });
-          const startText = textOf(single, start, startKind);
-          const endText = textOf(single, end, endKind);
-          const masked = startText + parser.separator + endText;
-          const strict = parser.parseValue(masked, true);
-          const lenient = parser.parseValue(masked, false);
-          const ends = {
-            start: single.parseDate(startText),
-            end: single.parseDate(endText),
-          };
+          const masked = parser.formatValue({ start, end });
+          const parsed = parser.parseDateRange(masked);
 
-          // A blank end parses to the defaults, but a blank range is empty.
-          if (startKind === 'blank' && endKind === 'blank') {
-            expect(lenient, masked).to.be.null;
-          } else {
-            expect(lenient, masked).to.deep.equal(
-              ends.start || ends.end ? ends : null
-            );
-          }
+          expect(masked).to.have.lengthOf(parser.emptyMask.length);
+          expect(parsed?.start, masked).to.be.an.instanceOf(Date);
+          expect(parsed?.end, masked).to.be.an.instanceOf(Date);
+          expect(parser.formatValue(parsed)).to.equal(masked);
+        })
+      );
+    });
 
-          if (startKind === 'full' && endKind === 'full') {
-            expect(parser.formatValue(strict), masked).to.equal(masked);
-            expect(strict, masked).to.deep.equal(lenient);
-          } else {
-            expect(strict, masked).to.be.null;
-          }
-        }
-      )
-    );
-  });
-
-  it('parses an edit by end: a complete end, the previous end while incomplete, and no end while blank', () => {
-    const optionalDate = fc.option(date, { nil: null });
-
-    fc.assert(
-      fc.property(
-        options,
-        date,
-        date,
-        textKind,
-        textKind,
-        optionalDate,
-        optionalDate,
-        (opts, start, end, startKind, endKind, previousStart, previousEnd) => {
-          assumeWallClock(opts.format, start);
-          assumeWallClock(opts.format, end);
-
+    it('parses each side like a single date parser', () => {
+      fc.assert(
+        fc.property(options, date, date, (opts, start, end) => {
           const parser = new DateRangeMaskParser(opts);
           const single = new DateTimeMaskParser({ format: opts.format });
-          const startText = textOf(single, start, startKind);
-          const endText = textOf(single, end, endKind);
-          const masked = startText + parser.separator + endText;
+          const parsed = parser.parseDateRange(
+            parser.formatValue({ start, end })
+          );
 
-          const expectedEnd = (
-            text: string,
-            kind: TextKind,
-            previous: Date | null
-          ) =>
-            kind === 'full'
-              ? single.parseDate(text)
-              : kind === 'partial'
-                ? previous
-                : null;
+          expect(parsed!.start!.getTime()).to.equal(
+            single.parseDate(single.formatValue(start))!.getTime()
+          );
+          expect(parsed!.end!.getTime()).to.equal(
+            single.parseDate(single.formatValue(end))!.getTime()
+          );
+        })
+      );
+    });
 
-          const ends = {
-            start: expectedEnd(startText, startKind, previousStart),
-            end: expectedEnd(endText, endKind, previousEnd),
-          };
+    it('gives a strict parse only when both ends are complete, and a lenient parse of each end', () => {
+      fc.assert(
+        fc.property(
+          options,
+          date,
+          date,
+          textKind,
+          textKind,
+          (opts, start, end, startKind, endKind) => {
+            assumeWallClock(opts.format, start);
+            assumeWallClock(opts.format, end);
 
-          expect(
-            parser.parseEdit(masked, {
-              start: previousStart,
-              end: previousEnd,
-            }),
-            masked
-          ).to.deep.equal(ends.start || ends.end ? ends : null);
-        }
-      )
-    );
-  });
+            const parser = new DateRangeMaskParser(opts);
+            const single = new DateTimeMaskParser({ format: opts.format });
+            const startText = textOf(single, start, startKind);
+            const endText = textOf(single, end, endKind);
+            const masked = startText + parser.separator + endText;
+            const strict = parser.parseValue(masked, true);
+            const lenient = parser.parseValue(masked, false);
+            const ends = {
+              start: single.parseDate(startText),
+              end: single.parseDate(endText),
+            };
 
-  it('lays out the two dates around the separator', () => {
-    fc.assert(
-      fc.property(looseOptions, looseOptions, (initial, next) => {
-        const parser = new DateRangeMaskParser(initial);
-        parser.mask = next.format;
+            // A blank end parses to the defaults, but a blank range is empty.
+            if (startKind === 'blank' && endKind === 'blank') {
+              expect(lenient, masked).to.be.null;
+            } else {
+              expect(lenient, masked).to.deep.equal(
+                ends.start || ends.end ? ends : null
+              );
+            }
 
-        const single = new DateTimeMaskParser({ format: next.format });
-        const separatorStart = single.emptyMask.length;
-        const separatorEnd = separatorStart + parser.separator.length;
-
-        expect(parser.emptyMask).to.equal(
-          single.emptyMask + parser.separator + single.emptyMask
-        );
-
-        for (const part of parser.parts) {
-          if (part.position === DateRangePosition.Start) {
-            expect(part.end).to.be.at.most(separatorStart);
-          } else {
-            expect(part.start).to.be.at.least(separatorEnd);
-            expect(part.end).to.be.at.most(parser.emptyMask.length);
+            if (startKind === 'full' && endKind === 'full') {
+              expect(parser.formatValue(strict), masked).to.equal(masked);
+              expect(strict, masked).to.deep.equal(lenient);
+            } else {
+              expect(strict, masked).to.be.null;
+            }
           }
-        }
+        )
+      );
+    });
 
-        const dateParts = parser.parts.filter(
-          (part) => part.type !== DatePartType.Literal
-        );
-        expect(dateParts).to.have.lengthOf(
-          2 *
-            single.parts.filter((part) => part.type !== DatePartType.Literal)
-              .length
-        );
-      })
-    );
-  });
+    it('parses an edit by end: a complete end, the previous end while incomplete, and no end while blank', () => {
+      const optionalDate = fc.option(date, { nil: null });
 
-  it('never throws and returns valid dates for any string', () => {
-    const masked = fc.string({ unit: 'grapheme', maxLength: 50 });
+      fc.assert(
+        fc.property(
+          options,
+          date,
+          date,
+          textKind,
+          textKind,
+          optionalDate,
+          optionalDate,
+          (
+            opts,
+            start,
+            end,
+            startKind,
+            endKind,
+            previousStart,
+            previousEnd
+          ) => {
+            assumeWallClock(opts.format, start);
+            assumeWallClock(opts.format, end);
 
-    fc.assert(
-      fc.property(looseOptions, masked, (opts, value) => {
-        const parser = new DateRangeMaskParser(opts);
-        const parsed = parser.parseDateRange(parser.apply(value));
+            const parser = new DateRangeMaskParser(opts);
+            const single = new DateTimeMaskParser({ format: opts.format });
+            const startText = textOf(single, start, startKind);
+            const endText = textOf(single, end, endKind);
+            const masked = startText + parser.separator + endText;
 
-        for (const side of [parsed?.start, parsed?.end]) {
-          expect(!side || isValidDate(side)).to.be.true;
-        }
-      })
-    );
+            const expectedEnd = (
+              text: string,
+              kind: TextKind,
+              previous: Date | null
+            ) =>
+              kind === 'full'
+                ? single.parseDate(text)
+                : kind === 'partial'
+                  ? previous
+                  : null;
+
+            const ends = {
+              start: expectedEnd(startText, startKind, previousStart),
+              end: expectedEnd(endText, endKind, previousEnd),
+            };
+
+            expect(
+              parser.parseEdit(masked, {
+                start: previousStart,
+                end: previousEnd,
+              }),
+              masked
+            ).to.deep.equal(ends.start || ends.end ? ends : null);
+          }
+        )
+      );
+    });
+
+    it('lays out the two dates around the separator', () => {
+      fc.assert(
+        fc.property(looseOptions, looseOptions, (initial, next) => {
+          const parser = new DateRangeMaskParser(initial);
+          parser.mask = next.format;
+
+          const single = new DateTimeMaskParser({ format: next.format });
+          const separatorStart = single.emptyMask.length;
+          const separatorEnd = separatorStart + parser.separator.length;
+
+          expect(parser.emptyMask).to.equal(
+            single.emptyMask + parser.separator + single.emptyMask
+          );
+
+          for (const part of parser.parts) {
+            if (part.position === DateRangePosition.Start) {
+              expect(part.end).to.be.at.most(separatorStart);
+            } else {
+              expect(part.start).to.be.at.least(separatorEnd);
+              expect(part.end).to.be.at.most(parser.emptyMask.length);
+            }
+          }
+
+          const dateParts = parser.parts.filter(
+            (part) => part.type !== DatePartType.Literal
+          );
+          expect(dateParts).to.have.lengthOf(
+            2 *
+              single.parts.filter((part) => part.type !== DatePartType.Literal)
+                .length
+          );
+        })
+      );
+    });
+
+    it('never throws and returns valid dates for any string', () => {
+      const masked = fc.string({ unit: 'grapheme', maxLength: 50 });
+
+      fc.assert(
+        fc.property(looseOptions, masked, (opts, value) => {
+          const parser = new DateRangeMaskParser(opts);
+          const parsed = parser.parseDateRange(parser.apply(value));
+
+          for (const side of [parsed?.start, parsed?.end]) {
+            expect(!side || isValidDate(side)).to.be.true;
+          }
+        })
+      );
+    });
   });
 
   describe('Part editing', () => {

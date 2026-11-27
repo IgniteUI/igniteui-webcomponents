@@ -28,10 +28,12 @@
     - [CSS custom states](#css-custom-states)
     - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
-    - [Rendering and properties](#rendering-and-properties)
-    - [Interactions and events](#interactions-and-events)
+    - [With a label](#with-a-label)
+      - [Rendering and properties](#rendering-and-properties)
+      - [Interactions and events](#interactions-and-events)
     - [Form integration](#form-integration-1)
     - [defaultChecked](#defaultchecked)
+    - [Regressions](#regressions)
     - [Group membership](#group-membership)
     - [Group form state](#group-form-state)
     - [Validation message slots](#validation-message-slots)
@@ -66,6 +68,7 @@
 |      13 | 2026-11-20 | Only a change by the user animates the radio, also the radio that a user check unchecks; a change from code and the first render show at once; no transitions with reduced motion; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
 |      14 | 2026-11-25 | `name` updates its attribute at once |
 |      15 | 2026-11-25 | The first render shows the slotted label |
+|      16 | 2026-11-27 | Test scenarios mirror the `With a label` and `Regressions` blocks |
 
 ## Overview
 
@@ -367,99 +370,107 @@ The suite lives in [`radio.spec.ts`](./radio.spec.ts). It runs in a real browser
 
 The groups below mirror the `describe` blocks of the suite.
 
-### Rendering and properties
+### With a label
+
+The groups follow the nested `describe` blocks of `With a label`.
+
+#### Rendering and properties
 
 1. Is initialized with the proper default values.
 2. Renders a radio element successfully, compared against a DOM snapshot. The control is painted under an earlier page
    layer with `z-index: 1`, also in a horizontal radio group.
 3. Sets the `labelPosition` property properly.
 4. Sets the `name`, `value`, `disabled` and `required` properties successfully.
-5. Keeps correct focus states between light and shadow DOM.
-6. Can use external elements as a label.
 
-### Interactions and events
+#### Interactions and events
 
-7. Emits `igcChange` when the radio is checked.
-8. Does not emit `igcChange` for an already checked radio.
-9. Emits the click event only once - the shadow root must not duplicate it.
-10. Validating a single radio updates the validity state of the whole group.
+5. Emits `igcChange` when the radio is checked.
+6. Does not emit `igcChange` for an already checked radio.
+7. Can use external elements as a label: the host `aria-labelledby` reaches the native input through
+   `ariaLabelledByElements`.
+8. Emits the click event only once - the shadow root must not duplicate it.
+9. Validating a single radio updates the validity state of the whole group.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-11. Is form associated, and is not associated on submit when it is not checked.
-12. Is associated on submit with the default value `on` - including when `checked` is set first - and with a passed
+10. Is form associated, and is not associated on submit when it is not checked.
+11. Is associated on submit with the default value `on` - including when `checked` is set first - and with a passed
     value.
-13. Is correctly reset on form reset, resets to a new default after a `setAttribute` call, and does not restore a
+12. Is correctly reset on form reset, resets to a new default after a `setAttribute` call, and does not restore a
     checked state whose attribute was removed before the reset.
-14. Is correctly submitted on <kbd>Enter</kbd> in a form with a submit button, and does not submit without a submit
+13. Is correctly submitted on <kbd>Enter</kbd> in a form with a submit button, and does not submit without a submit
     button, while the value is invalid or when a listener on the host cancels the `keydown`.
-15. Reflects the disabled state of an ancestor `fieldset`.
-16. Fulfils the required and custom constraints.
-17. Issue #1122 - the component validates synchronously.
+14. Reflects the disabled state of an ancestor `fieldset`.
+15. Fulfils the required and custom constraints.
 
 ### defaultChecked
 
-18. Form integration - correct initial state, correct submission, correct reset, and preserving the pristine state of
+16. Form integration - correct initial state, correct submission, correct reset, and preserving the pristine state of
     the siblings on a form reset. A change of `value` keeps the radio pristine.
+
+### Regressions
+
+17. Issue #1122: the radio validates synchronously. A required radio fails the form validation and the submission,
+    and passes both right after a click checks it.
 
 ### Group membership
 
-19. Restores the tab stop when the checked radio is removed, and keeps the checked radio as the sole tab stop when
+18. Restores the tab stop when the checked radio is removed, and keeps the checked radio as the sole tab stop when
     another one is removed.
-20. Restores the tab stop when the checked radio moves to another group, by `name` and by form owner.
-21. Drops a radio that has left the group from a synchronous read, and joins the new group of a radio on a
+19. Restores the tab stop when the checked radio moves to another group, by `name` and by form owner.
+20. Drops a radio that has left the group from a synchronous read, and joins the new group of a radio on a
     synchronous read.
-22. Keeps the group reachable when the checked radio is disabled.
-23. Derives the tab stop from the default state on a form reset.
-24. Keeps same-name radios of two different forms in separate groups.
-25. Moves a radio to the group of its new form owner.
+21. Keeps the group reachable when the checked radio is disabled.
+22. Derives the tab stop from the default state on a form reset.
+23. Keeps same-name radios of two different forms in separate groups.
+24. Moves a radio to the group of its new form owner.
 
 ### Group form state
 
-26. A radio that leaves the group by `name` or by removal takes its `required` constraint with it, and a required radio
+25. A radio that leaves the group by `name` or by removal takes its `required` constraint with it, and a required radio
     that joins applies it to the group, at once. A checked radio that leaves a required group makes the group invalid.
     A removed radio has the state of a group of its own.
-27. A form reset validates the whole group at once.
-28. A disabled checked radio fulfils the required constraint of its group.
-29. A checked radio that joins a group by connect, `name` or form owner unchecks the other radios, at once.
-30. A radio that its group unchecks stays pristine and takes a new default. Each radio keeps the default of its
+26. A form reset validates the whole group at once.
+27. A disabled checked radio fulfils the required constraint of its group.
+28. A checked radio that joins a group by connect, `name` or form owner unchecks the other radios, at once.
+29. A radio that its group unchecks stays pristine and takes a new default. Each radio keeps the default of its
     `checked` attribute.
-31. `checkValidity` and `reportValidity` emit `invalid` in DOM order from any radio of the group.
+30. `checkValidity` and `reportValidity` emit `invalid` in DOM order from any radio of the group.
 
 ### Validation message slots
 
 Generated by `runValidationContainerTests`.
 
-32. `value-missing` with `required`.
-33. `custom-error` after `setCustomValidity`.
-34. `invalid` with `required`.
+31. `value-missing` with `required`.
+32. `custom-error` after `setCustomValidity`.
+33. `invalid` with `required`.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-35. An external `label` bound through `for`, and a `label` wrapping the host, name the native input through
+34. An external `label` bound through `for`, and a `label` wrapping the host, name the native input through
     `ariaLabelledByElements`. A click on it focuses the input, checks the control and emits `igcChange` once.
-36. A `label` added after the first render names the input once the control gets focus.
-37. An axe audit passes with only an external `label`.
-38. A disabled control ignores a label click, and a click on the control inside a wrapping `label` changes the state
+35. A `label` added after the first render names the input once the control gets focus.
+36. An axe audit passes with only an external `label`.
+37. A disabled control ignores a label click, and a click on the control inside a wrapping `label` changes the state
     once.
-39. The host `aria-labelledby` wins over an external `label`, the host `aria-label` names the input while no label does,
+38. The host `aria-labelledby` wins over an external `label`, the host `aria-label` names the input while no label does,
     and a change of the host `aria-label` reaches the input. A change of the host `aria-labelledby` also reaches the
     input, and its removal gives the name back to the external `label`.
 
 ### Host ARIA
 
-40. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+39. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
 ### Hidden ancestor
 
-41. An unchecked and a checked radio in a group hide at the same time as a hidden ancestor in each theme, at rest and
+40. An unchecked and a checked radio in a group hide at the same time as a hidden ancestor in each theme, at rest and
     after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
-42. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+41. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -469,14 +480,14 @@ Generated by `runExternalLabelAssociationTests`.
 
 Generated by `runValueStateMotionTests` in the Material theme.
 
-43. A click starts transitions, also the `transform` of the dot.
-44. A change from code starts none.
-45. A first render in the changed state starts none.
-46. With reduced motion, a click starts none.
+42. A click starts transitions, also the `transform` of the dot.
+43. A change from code starts none.
+44. A first render in the changed state starts none.
+45. With reduced motion, a click starts none.
 
 ### First render
 
-47. The first render shows the slotted label.
+46. The first render shows the slotted label.
 
 ### Not covered by the suite
 
@@ -485,7 +496,7 @@ The focus after the form checks and the `invalid` event rules come from the form
 
 The arrow key navigation between radios is covered from the group side, in
 [`radio-group.spec.ts`](../radio-group/radio-group.spec.ts), not in this suite. The suite runs the axe audit only in
-the external label configuration.
+the external label configuration. No case checks the focus states between the light and the shadow DOM.
 ## Assumptions and limitations
 
 - While a change from code shows at once, the control turns off every transition in its shadow tree and on its

@@ -1,30 +1,17 @@
 import { expect, fixture, html, nextFrame } from '@open-wc/testing';
-import { resetMouse, sendMouse } from '@web/test-runner-commands';
+import { resetMouse } from '@web/test-runner-commands';
 import type { TemplateResult } from 'lit';
 import { configureTheme } from '#theming/config.js';
 import { THEMES } from '#theming/types.js';
-import { allowMotion, shadowRootsIn } from './helpers.spec.js';
-
-const STATES = ['idle', 'focused', 'hovered'] as const;
-
-function label(element: Element | null, pseudoElement?: string | null): string {
-  return `${element?.localName}[part="${element?.getAttribute('part')}"]${pseudoElement ?? ''}`;
-}
-
-async function enter(
-  state: (typeof STATES)[number],
-  element: HTMLElement
-): Promise<void> {
-  if (state === 'focused') {
-    element.focus();
-  } else if (state === 'hovered') {
-    const { left, top, width, height } = element.getBoundingClientRect();
-    await sendMouse({
-      type: 'move',
-      position: [Math.round(left + width / 2), Math.round(top + height / 2)],
-    });
-  }
-}
+import {
+  allowMotion,
+  elementsIn,
+  enterState,
+  INTERACTION_STATES,
+  partLabel,
+  shadowRootsIn,
+} from './helpers.spec.js';
+import { instantMarksEnded } from './value-state.spec.js';
 
 function visibilityTransitionsIn(container: HTMLElement): string[] {
   const animations = [
@@ -40,15 +27,14 @@ function visibilityTransitionsIn(container: HTMLElement): string[] {
     )
     .map(({ effect }) => {
       const { target, pseudoElement } = effect as KeyframeEffect;
-      return label(target, pseudoElement);
+      return partLabel(target!, pseudoElement);
     });
 }
 
 function visibleElementsIn(container: HTMLElement): string[] {
-  return [container, ...shadowRootsIn(container)]
-    .flatMap((root) => Array.from(root.querySelectorAll('*')))
+  return elementsIn(container)
     .filter((element) => getComputedStyle(element).visibility !== 'hidden')
-    .map((element) => label(element));
+    .map((element) => partLabel(element));
 }
 
 /**
@@ -64,13 +50,14 @@ export function runHiddenAncestorTests(template: TemplateResult): void {
     after(() => configureTheme('bootstrap'));
 
     for (const theme of THEMES) {
-      for (const state of STATES) {
+      for (const state of INTERACTION_STATES) {
         it(`hides at once with a hidden ancestor in the ${theme} theme (${state})`, async () => {
           configureTheme(theme);
           const container = await fixture<HTMLElement>(
             html`<div>${template}</div>`
           );
-          await enter(state, container.firstElementChild as HTMLElement);
+          await instantMarksEnded(container);
+          await enterState(state, container.firstElementChild as HTMLElement);
           await nextFrame();
 
           container.style.visibility = 'hidden';

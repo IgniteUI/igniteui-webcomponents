@@ -34,13 +34,19 @@
     - [Initialization](#initialization)
     - [Slots tests](#slots-tests)
     - [Templates](#templates)
-    - [Click](#click)
-    - [Drag and drop](#drag-and-drop)
-    - [Keyboard](#keyboard)
+    - [Interactions](#interactions)
+      - [Click](#click)
+      - [Drag and drop](#drag-and-drop)
+      - [Keyboard](#keyboard)
     - [Events tests](#events-tests)
+      - [Inner events](#inner-events)
+      - [Links](#links)
+    - [Attachments, focus and names](#attachments-focus-and-names)
+    - [Rendering cost](#rendering-cost)
+    - [Automatic scrolling](#automatic-scrolling)
+      - [Messages far from the view](#messages-far-from-the-view)
     - [Adopted root styles](#adopted-root-styles)
     - [Hydration](#hydration)
-    - [Links](#links)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -65,6 +71,7 @@
 |      11 | 2026-11-06 | The <kbd>Enter</kbd> that commits an IME composition does not send the message |
 |      12 | 2026-11-12 | A message far from the view skips its rendering; the list also follows the bottom when it grows |
 |      13 | 2026-11-25 | The first render shows the slotted content |
+|      14 | 2026-11-27 | Test scenarios mirror the `describe` blocks in suite order: `Interactions`, `Inner events`, `Attachments, focus and names` and `Rendering cost` |
 
 ## Overview
 
@@ -483,18 +490,22 @@ The component exposes a part for every region it renders. The main groups are:
 13. The `message`, `messageHeader`, `messageContent` and `messageActions` renderers are used.
 14. The typing indicator and the text area renderers are used.
 
-### Click
+### Interactions
+
+The groups follow the nested `describe` blocks of `Interactions`.
+
+#### Click
 
 15. The send button appends the composed message to the list.
 16. A click on a suggestion sends it as a message.
 17. The remove button of an attachment chip removes it, and removing every attachment disables the send button.
 18. The like and dislike actions toggle their state, and the copy action copies the message.
 
-### Drag and drop
+#### Drag and drop
 
 19. Files are dropped into the composer, filtered by the types listed in `acceptedFiles`.
 
-### Keyboard
+#### Keyboard
 
 20. <kbd>Enter</kbd> in the focused text area sends the composed message. The <kbd>Enter</kbd> that commits an IME
     composition, also after `compositionend` with the `keyCode` 229, does not send and is not canceled.
@@ -502,71 +513,100 @@ The component exposes a part for every region it renders. The main groups are:
 ### Events tests
 
 21. `igcAttachmentClick`, `igcInputFocus`, `igcInputBlur`, `igcInputChange` and `igcMessageReact` are emitted.
-22. `igcTypingChange` is emitted for the start and the stop of typing, is emitted after a message is sent, is not
-    emitted for <kbd>Tab</kbd>, and its stop is deferred when `stopTypingDelay` grows while the timer runs.
-23. `igcMessageCreated` and the attachment change event can be canceled. The `igcInput` and `igcChange` of the text
-    area (real typing and a blur) and the `igcRemove` of an attachment chip do not reach a listener on the chat.
-
-### Adopted root styles
-
-24. `adoptRootStyles` adopts the document stylesheets when set and skips them when not, and re-applies them after
-    a theme change.
-25. Toggling the option in both directions adopts and removes the styles, including over several toggles.
-26. Stylesheets added to the document afterwards are adopted, including one appended empty and populated later,
-    and one populated through the CSSOM on the next synchronization.
-27. Removing a stylesheet from the document removes its adopted copy, the component styles are not dropped by the
-    adoption, and reconnecting the host re-adopts the document styles.
-
-### Hydration
-
-28. An input that hydrates an empty declarative shadow root keeps its first render empty, to match the server
-    render, and renders the composer on the next update.
-29. A message that hydrates an empty declarative shadow root keeps its first render empty, to match the server
-    render, and renders the message on the next update. A chat that hydrates renders its slotted suggestions on the
-    next update.
-
-### Attachments and focus
-
-30. The file picker and a drop attach only the files that `acceptedFiles` allows and that are not attached yet, and
-    emit no `igcAttachmentAdded` when no file remains.
-31. An attachment with an image MIME type in `type` renders as an image.
-32. The header of an attachment is in the tab order, and <kbd>Enter</kbd> and <kbd>Space</kbd> on it emit
+22. The header of an attachment is in the tab order, and <kbd>Enter</kbd> and <kbd>Space</kbd> on it emit
     `igcAttachmentClick`. <kbd>Enter</kbd> and <kbd>Space</kbd> from inside a custom `attachmentHeader` do not
     activate the header.
+23. `igcTypingChange` is emitted for the start and the stop of typing, is emitted after a message is sent, is not
+    emitted for <kbd>Tab</kbd>, and its stop is deferred when `stopTypingDelay` grows while the timer runs.
+24. `igcMessageCreated` and the attachment change event can be canceled.
+
+#### Inner events
+
+25. The `igcInput` and `igcChange` of the text area (real typing and a blur) and the `igcRemove` of an attachment chip
+    do not reach a listener on the chat.
+
+#### Links
+
+26. A plain click or <kbd>Enter</kbd> on a link in a message, also an SVG link with `xlink:href`, emits
+    `igcNavigate` on the chat, with the message and the absolute URL. The event does not bubble. When the application cancels it, the chat cancels the click.
+27. A click with a modifier key, a link with another target, `download` or a URL that does not parse, a click that
+    cannot be canceled and a click that the content already canceled emit no event.
+28. A link outside the messages, a link around the chat and a link in a chat in a message, also in its header, emit
+    no event on the chat. The chat in the message emits the event of its own message link.
+
+### Attachments, focus and names
+
+29. A `draftMessage` without attachments gets an empty list of attachments, and a custom `resourceStrings` renames
+    the suggestions header.
+30. The text area, the attach button, the file input, the send button, the attachments list and the remove button of
+    an attachment chip are named by the resource strings, and a change of `resourceStrings` renames them.
+31. A custom `suggestionPrefix` renderer replaces the default prefix, and the default prefix stays when `renderers`
+    does not override it.
+32. `scrollToMessage()` scrolls the message into view, and does nothing without messages.
 33. `focusInput()` focuses the text area, and does nothing when a custom `input` renderer replaces it. In a new chat,
-    it waits for the first render, and in a server-rendered chat, for the render after the hydration. A
-    disconnected chat does not wait.
+    it waits for the first render. A disconnected chat does not wait.
+34. <kbd>Enter</kbd> in an empty text area sends no message.
+35. The attach button opens the file picker. The file picker and a drop attach only the files that `acceptedFiles`
+    allows and that are not attached yet, and emit no `igcAttachmentAdded` when no file remains. Without
+    `acceptedFiles`, a drop accepts any file.
+36. A drag without data transfer does not mark the drop zone as dragging, and the dragging state stays until the
+    pointer leaves the drop zone.
+37. Typing stops after the default `stopTypingDelay`.
+38. One tooltip shows the name of an action button on hover and on focus.
+39. The message actions are named by the resource strings, like and dislike expose `aria-pressed`, and a change of
+    `resourceStrings` renames them.
+40. An active dislike toggles back to inactive, `regenerate` emits its reaction, an unknown action button emits an
+    empty reaction, and a click in the actions area outside of a button emits no reaction.
+41. The copy action copies the message text with its attachments, and only the attachments of a message without
+    text. A failed copy shows no toast and leaves no rejection.
+42. An image attachment renders from its file, an image attachment without a source renders an empty `src`, and an
+    attachment with an image MIME type in `type` renders as an image. A name without an extension and an attachment
+    without a name render the generic file icon.
+43. A message and an attachment without a `message` render no container.
+
+### Rendering cost
+
+44. The messages render again only when an option that they read changes.
+45. One object URL is created per attached file, and it is revoked when the attachment is removed.
+46. When `igcAttachmentAdded` is canceled, the object URLs of the new attachments are revoked, but the URL of a file
+    that was already sent is kept.
+47. A sent image renders with the URL of its attachment, with no new object URL.
+48. The list scrolls to the bottom only when content is added.
 
 ### Automatic scrolling
 
-34. The list follows the newest message while it is at the bottom, keeps its position after the user scrolls up,
+49. The list follows the newest message while it is at the bottom, keeps its position after the user scrolls up,
     also when the user scrolls up before a queued scroll runs, and follows again after the user scrolls back to the
     bottom.
-35. A new message of the current user, also with a reply after it in the same update, and a new `messages` array
+50. A new message of the current user, also with a reply after it in the same update, and a new `messages` array
     without the previous last message, scroll the list to the bottom. So do slotted suggestions that appear while the
     list is at the bottom.
 
 #### Messages far from the view
 
-36. A message far from the view skips its rendering, and a message at the bottom renders.
-37. With a long history of messages of different heights, the list ends at the bottom, also after a new long message.
-38. A scroll of the user between two scrolls to the bottom stops the follow; the list does not go back down.
+51. A message far from the view skips its rendering, and a message at the bottom renders.
+52. With a long history of messages of different heights, the list ends at the bottom, also after a new long message.
+53. A scroll of the user between two scrolls to the bottom stops the follow; the list does not go back down.
 
-### Names
+### Adopted root styles
 
-39. The message actions are named by the resource strings, like and dislike expose `aria-pressed`, and a change of
-    `resourceStrings` renames them.
-40. The text area, the attach button, the file input, the send button, the attachments list and the remove button of
-    an attachment chip are named by the resource strings, and a change of `resourceStrings` renames them.
+54. `adoptRootStyles` adopts the document stylesheets when set and skips them when not, and re-applies them after
+    a theme change.
+55. Toggling the option in both directions adopts and removes the styles, including over several toggles.
+56. Stylesheets added to the document afterwards are adopted, including one appended empty and populated later,
+    and one populated through the CSSOM on the next synchronization.
+57. Removing a stylesheet from the document removes its adopted copy, the component styles are not dropped by the
+    adoption, and reconnecting the host re-adopts the document styles.
 
-### Links
+### Hydration
 
-41. A plain click or <kbd>Enter</kbd> on a link in a message, also an SVG link with `xlink:href`, emits
-    `igcNavigate` on the chat, with the message and the absolute URL. The event does not bubble. When the application cancels it, the chat cancels the click.
-42. A click with a modifier key, a link with another target, `download` or a URL that does not parse, a click that
-    cannot be canceled and a click that the content already canceled emit no event.
-43. A link outside the messages, a link around the chat and a link in a chat in a message, also in its header, emit
-    no event on the chat. The chat in the message emits the event of its own message link.
+58. An input that hydrates an empty declarative shadow root keeps its first render empty, to match the server
+    render, and renders the composer on the next update.
+59. A message that hydrates an empty declarative shadow root keeps its first render empty, to match the server
+    render, and renders the message on the next update. A chat that hydrates renders its slotted suggestions on the
+    next update.
+60. `focusInput()` on an input that hydrates waits for its render, also when the call comes between its hydration
+    renders.
 
 ### Not covered by the suite
 

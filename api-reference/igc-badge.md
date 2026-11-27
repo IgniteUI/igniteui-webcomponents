@@ -14,7 +14,7 @@ defineComponents(IgcBadgeComponent);
   The type (style variant) of the badge.
 - `outlined`: `boolean`. Default: `false`. Attribute: `outlined`, reflected.
   Whether the badge has an outline.
-- `shape`: `'square' | 'rounded'`. Default: `'rounded'`. Attribute: `shape`, reflected.
+- `shape`: `'rounded' | 'square'`. Default: `'rounded'`. Attribute: `shape`, reflected.
   The shape of the badge.
 - `dot`: `boolean`. Default: `false`. Attribute: `dot`, reflected.
   Whether the badge renders as a small dot without content.

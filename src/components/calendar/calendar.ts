@@ -14,13 +14,13 @@ import {
   pageUpKey,
   shiftKey,
 } from '#internals/controllers/key-bindings.js';
-import { CalendarDay } from '#internals/date/model.js';
+import { CalendarDay, YEAR_RANGE } from '#internals/date/model.js';
 import { registerComponent } from '#internals/definitions/register.js';
 import { EventEmitterMixin } from '#internals/mixins/event-emitter.js';
 import { partMap } from '#internals/part-map.js';
 import { firstOf, lastOf } from '#internals/utils/arrays.js';
 import { getElementFromPath } from '#internals/utils/events.js';
-import { clamp } from '#internals/utils/math.js';
+import { clamp, clampToward } from '#internals/utils/math.js';
 import { formatString } from '#internals/utils/strings.js';
 import { all } from '#themes/calendar/themes/calendar.js';
 import { addThemingController } from '#theming/theming-controller.js';
@@ -34,7 +34,9 @@ import {
   isDateInRanges,
   isDatePartBefore,
   MONTHS_PER_ROW,
+  monthIndex,
   monthOffset,
+  YEAR_RANGE_DAYS,
   YEARS_PER_PAGE,
   YEARS_PER_ROW,
 } from './helpers.js';
@@ -422,7 +424,27 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   private _navigate(delta: -1 | 1): void {
-    this._activeDate = this._pageDate(delta);
+    this._activeDate = this._keepInYearRange(this._pageDate(delta));
+  }
+
+  /** Whether a page in the direction of `delta` shows more of the year range. */
+  private _canPage(delta: -1 | 1): boolean {
+    const { min, max } = YEAR_RANGE;
+
+    if (this._isDayView) {
+      const months = this._getActiveDates();
+      const { first, last } = YEAR_RANGE_DAYS;
+
+      return delta < 0
+        ? monthIndex(firstOf(months)!) > monthIndex(first)
+        : monthIndex(lastOf(months)!) < monthIndex(last);
+    }
+
+    const { start, end } = getYearRange(
+      this._activeDate,
+      this._isYearView ? YEARS_PER_PAGE : 1
+    );
+    return delta < 0 ? start > min : end < max;
   }
 
   /** Opens `view`. From the days view, the month at `viewIndex` becomes the active one. */
@@ -481,16 +503,42 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
    */
   private _getNextEnabledDate(start: CalendarDay, delta: -1 | 1): CalendarDay {
     const disabled = this._disabledDates;
-    let current = start;
+    let current = this._keepInYearRange(start);
 
     for (let i = 0; i <= MAX_DISABLED_DATE_SKIP; i++) {
       if (!isDateInRanges(current, disabled)) {
         return current;
       }
-      current = current.add('day', delta);
+
+      const next = this._keepInYearRange(current.add('day', delta));
+
+      // A disabled edge date of the year range: no date is left to try.
+      if (next.equalTo(current)) {
+        break;
+      }
+
+      current = next;
     }
 
     return this._activeDate;
+  }
+
+  /**
+   * Keeps `target` in the year range. An active date outside it, such as one set
+   * from code, only moves toward it.
+   */
+  private _keepInYearRange(target: CalendarDay): CalendarDay {
+    const { first, last } = YEAR_RANGE_DAYS;
+    const time = clampToward(
+      target.timestamp,
+      this._activeDate.timestamp,
+      first.timestamp,
+      last.timestamp
+    );
+
+    return time === target.timestamp
+      ? target
+      : CalendarDay.from(new Date(time));
   }
 
   /** Makes the first enabled date from `start` the active one and focuses it. */
@@ -510,6 +558,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
       <button
         part=${part}
         aria-label=${this._getNavigationLabel(delta)}
+        ?disabled=${!this._canPage(delta)}
         @click=${() => this._navigate(delta)}
       >
         <igc-icon
@@ -761,7 +810,7 @@ export default class IgcCalendarComponent extends EventEmitterMixin<
               (idx === this._activeDaysViewIndex ? date : date.set({ date: 1 }))
                 .native
             }
-            .disabledDates=${this._disabledDates}
+            .disabledDates=${this._unreachableDates}
             .hideLeadingDays=${this.hideOutsideDays || idx !== 0}
             .hideTrailingDays=${this.hideOutsideDays || idx !== length}
             .locale=${this.locale}

@@ -29,14 +29,27 @@
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
   - [Test scenarios](#test-scenarios)
-    - [Rendering](#rendering)
-    - [Locale](#locale)
-    - [Interactions](#interactions)
-    - [Show a date](#show-a-date)
-    - [Selection model](#selection-model)
-    - [Keyboard navigation](#keyboard-navigation)
-    - [Year and month views](#year-and-month-views)
-    - [Helpers](#helpers)
+    - [Calendar Rendering - DOM](#calendar-rendering---dom)
+    - [Calendar Rendering - Properties and active date](#calendar-rendering---properties-and-active-date)
+    - [Calendar Rendering - Change detection](#calendar-rendering---change-detection)
+    - [Calendar Rendering - Locale](#calendar-rendering---locale)
+    - [Calendar interactions - Selection, navigation and disabled dates](#calendar-interactions---selection-navigation-and-disabled-dates)
+    - [Calendar interactions - Show a date](#calendar-interactions---show-a-date)
+    - [Calendar interactions - Inner events](#calendar-interactions---inner-events)
+    - [Calendar keyboard interaction - Focus state](#calendar-keyboard-interaction---focus-state)
+    - [Calendar keyboard interaction - Days view](#calendar-keyboard-interaction---days-view)
+    - [Calendar keyboard interaction - Months view](#calendar-keyboard-interaction---months-view)
+    - [Calendar keyboard interaction - Years view](#calendar-keyboard-interaction---years-view)
+    - [Calendar keyboard interaction - Multiple visible months](#calendar-keyboard-interaction---multiple-visible-months)
+    - [Calendar selection - Single selection](#calendar-selection---single-selection)
+    - [Calendar selection - Multiple selection](#calendar-selection---multiple-selection)
+    - [Calendar selection - Range selection](#calendar-selection---range-selection)
+    - [Calendar selection - Disabled dates](#calendar-selection---disabled-dates)
+    - [Year and month calendar views - Months view](#year-and-month-calendar-views---months-view)
+    - [Year and month calendar views - Years view](#year-and-month-calendar-views---years-view)
+    - [Calendar helpers - DateRange descriptors](#calendar-helpers---daterange-descriptors)
+    - [Calendar helpers - createDateConstraints](#calendar-helpers---createdateconstraints)
+    - [Calendar helpers - getViewElement](#calendar-helpers---getviewelement)
     - [Not covered by the suites](#not-covered-by-the-suites)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -55,6 +68,8 @@
 |       5 | 2026-11-02 | The events of the days view stay inside the calendar.                         |
 |       6 | 2026-11-18 | An internal function brings a date into view for the pickers, and keeps the months when the date is shown |
 |       7 | 2026-11-20 | The date properties accept an ISO string with a signed six digit year |
+|       8 | 2026-11-27 | The user stays in the years 1 to 9999: the keys stop, the buttons are disabled at the ends, the dates outside are disabled and the years outside are hidden |
+|       9 | 2026-11-27 | Test scenarios mirror each `describe` block of the six suites: one heading for each block, not for each file |
 
 ## Overview
 
@@ -146,6 +161,12 @@ preview the range as it is being drawn, and the second activated date completes 
 clears the range.
 
 Disabled dates are rendered as disabled and cannot be selected, but arrow key navigation still passes over them.
+
+The user stays in the years 1 to 9999. The keys stop at the first and the last date of these years. The previous and
+next buttons are disabled on the first and the last page. The calendar disables the dates outside these years, and
+the years view hides the years outside them. Code can set an active date or a value outside the range. The keys and
+the buttons then move the active date only toward the range.
+
 The header is shown for the single and multiple modes; with `multiple` selection the header is always hidden.
 
 ### Developer experience
@@ -268,7 +289,7 @@ they define the structure and the parts that the calendar re-exports:
 | ----------------- | ------------------------------------------------------------------------------------------------ |
 | `igc-days-view`   | Renders the weeks of a month as a grid, with the week numbers, the weekday labels and the date cells. Carries the selection, the disabled and special dates, the range preview and `weekDayFormat`. |
 | `igc-months-view` | Renders the twelve months of a year in rows of three, formatted through `monthFormat` and the locale. |
-| `igc-years-view`  | Renders a page of years in rows of three; the page size is `yearsPerPage`, which defaults to 15. |
+| `igc-years-view`  | Renders a page of years in rows of three; the page size is `yearsPerPage`, which defaults to 15. It hides the years outside 1 to 9999. |
 
 Each view exposes a `focusActiveDate` method and keeps a single tab stop. The days view emits
 `igcActiveDateChange` and `igcRangePreviewDateChange`, and the month and year views emit an `igcChange` carrying the
@@ -315,7 +336,7 @@ When a date cell is focused:
 Navigating past the first or last rendered day moves into the neighbouring month; with several months in view, the
 set shifts by one month and focus stays in the edge view. Disabled dates are passed over rather than skipped, and
 navigation stays put when every date in the direction of travel is disabled. Week numbers and weekday labels are
-not reachable with the arrow keys.
+not reachable with the arrow keys. No key moves the active date past the years 1 to 9999.
 
 In the months and years views the arrow keys move by one cell horizontally and by one row vertically,
 <kbd>Home</kbd> and <kbd>End</kbd> move to the first and last cell, <kbd>Page Up</kbd> and <kbd>Page Down</kbd> move
@@ -347,7 +368,7 @@ by a year or by a page of years, and <kbd>Enter</kbd> or <kbd>Space</kbd> activa
 
 `value`, `values` and `activeDate` accept `Date` objects and ISO date strings, including through their attributes.
 An ISO string can also have the signed six digit year that `toISOString()` gives outside the years 0 to 9999, such as
-`+010000-01-01`.
+`+010000-01-01`. The calendar shows such a date, but the user cannot select it or navigate to it.
 
 ### Methods
 
@@ -420,20 +441,23 @@ with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
 | ----- | ----- |
-| [`calendar-rendering.spec.ts`](./calendar-rendering.spec.ts) | DOM, public API and locale-driven rendering. |
-| [`calendar.interaction.spec.ts`](./calendar.interaction.spec.ts) | Pointer interaction, selection and disabled dates. |
-| [`calendar-keyboard-navigation.spec.ts`](./calendar-keyboard-navigation.spec.ts) | Keyboard navigation in all three views. |
+| [`calendar-rendering.spec.ts`](./calendar-rendering.spec.ts) | DOM, properties and the active date, change detection, and locale-driven rendering. |
+| [`calendar.interaction.spec.ts`](./calendar.interaction.spec.ts) | Pointer interaction, selection and disabled dates, showing a date, and the inner events of the days view. |
+| [`calendar-keyboard-navigation.spec.ts`](./calendar-keyboard-navigation.spec.ts) | Keyboard navigation in all three views, the focus state and more than one visible month. |
 | [`selection.spec.ts`](./selection.spec.ts) | The selection model, independent of the DOM. |
 | [`year-month-views.spec.ts`](./year-month-views.spec.ts) | The months and years views on their own. |
-| [`helpers.spec.ts`](./helpers.spec.ts) | The date range descriptor helpers. |
+| [`helpers.spec.ts`](./helpers.spec.ts) | The date range descriptor helpers, `createDateConstraints` and `getViewElement`. |
 
-The groups below mirror the `describe` blocks of those suites.
+The groups below mirror the `describe` blocks of those suites, file by file in the order of the table.
 
-### Rendering
+### Calendar Rendering - DOM
 
 1. Passes the a11y audit, including issue #1636 - a week of hidden days.
 2. Renders the calendar successfully, compared against a DOM snapshot.
 3. Renders the `title` and `header-date` slots.
+
+### Calendar Rendering - Properties and active date
+
 4. Enables `hideOutsideDays`.
 5. Applies the vertical orientation part.
 6. Enables and disables `hideHeader`, and changes the header orientation.
@@ -454,69 +478,121 @@ The groups below mirror the `describe` blocks of those suites.
     labels of several descriptors without duplicates, adds nothing for a descriptor without a label, and adds no
     special label to a date of an adjacent month.
 
-### Locale
+### Calendar Rendering - Change detection
 
-18. Derives the week start from the locale when `week-start` is not set, and prefers an explicit `week-start`.
-19. Re-aligns the days grid when the locale changes at run time.
-20. Renders the header date in the field order of the locale.
-21. Orders the month and year navigation buttons per locale.
+18. A write of the current `activeDate`, `values` or `specialDates` requests no update.
+19. A render with the same state does not update the days views, and a changed value still updates them.
 
-### Interactions
+### Calendar Rendering - Locale
 
-22. Is accessible (axe audit).
-23. Sets `value` and `values` through attributes and through string property bindings.
-24. Clicking the previous and next buttons navigates in the days, months and years views.
-25. Single selection, including a date outside the current month, and issue #1443.
-26. Multiple selection.
-27. Starting and cancelling a range selection, and starting and completing one.
-28. Emits `igcActiveDateChange` when the active date is selected, and `igcRangePreviewDateChange` during a range
-    preview. Neither event reaches a listener on the calendar.
-29. Switches to the month of the activated navigation button.
-30. Moves focus along when a date outside the rendered month is selected, and keeps it in place otherwise.
-31. Disables dates for every `DateRangeType` - Before, After, Between, Specific, Weekdays and Weekends - including
+20. Derives the week start from the locale when `week-start` is not set, and prefers an explicit `week-start`.
+21. Re-aligns the days grid when the locale changes at run time.
+22. Renders the header date in the field order of the locale.
+23. Orders the month and year navigation buttons per locale.
+
+### Calendar interactions - Selection, navigation and disabled dates
+
+24. Is accessible (axe audit).
+25. Sets `value` and `values` through attributes and through string property bindings.
+26. Clicking the previous and next buttons navigates in the days, months and years views.
+27. Single selection, including a date outside the current month, and issue #1443.
+28. Multiple selection.
+29. Starting and cancelling a range selection, and starting and completing one.
+30. The days view emits `igcActiveDateChange` when the active date is selected, and `igcRangePreviewDateChange`
+    during a range preview.
+31. Switches to the month of the activated navigation button.
+32. Moves focus along when a date outside the rendered month is selected, and keeps it in place otherwise.
+33. Disables dates for every `DateRangeType` - Before, After, Between, Specific, Weekdays and Weekends - including
     equal boundaries, an inverted range, overlapping ranges and multiple descriptors.
-32. Does not select disabled dates in range selection, and creates no range when the selection is `multiple`.
+34. Does not select disabled dates in range selection, and creates no range when the selection is `multiple`.
+35. A click on the selected date emits no `igcChange`, and a click on a disabled date or on a week number does not
+    change the selection.
+36. The range preview clears when the range is complete, starts only from a day, also under an element with
+    `data-value`, and marks a previewed date before the range start as its first date.
 
-### Show a date
+### Calendar interactions - Show a date
 
-33. Shows a date with more than one visible month: a date in a shown month keeps the months and makes its month the
+37. Shows a date with more than one visible month: a date in a shown month keeps the months and makes its month the
     active view, a date that is not shown goes in the first month, and `first` always puts it in the first month.
 
-### Selection model
+### Calendar interactions - Inner events
 
-34. Single - selects a date, does not change when the selected date is activated again, and leaves the dates of the
-    other modes alone.
-35. Multiple - adds a date keeping the collection sorted, removes an already selected date, and does not mutate the
-    input.
-36. Range - starts a range from one date, expands it over every covered date, handles a backwards selection, clears
-    on re-activating the start, restarts from a completed range, and leaves disabled dates out.
-37. Disabled dates are never selected, while the dates around them are.
+38. The `igcActiveDateChange` and `igcRangePreviewDateChange` events of the days view do not reach a listener on the
+    calendar.
 
-### Keyboard navigation
+### Calendar keyboard interaction - Focus state
 
-38. Focus is retained when switching to the months and to the years view.
-39. Days view - is accessible; <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and their <kbd>Shift</kbd> variants move by
-    month and by year; the arrow keys move by day and by week; <kbd>Home</kbd> and <kbd>End</kbd> move to the start
-    and the end of the month; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
-40. Days view - skips disabled dates, stays put when every date in the direction of travel is disabled, and when
-    both weekdays and weekends are disabled.
-41. Months view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and the
-    arrow keys navigate by month and by row; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
-42. Years view - is accessible; <kbd>Home</kbd>, <kbd>End</kbd> and the arrow keys navigate by year and by row;
-    <kbd>Page Up</kbd> and <kbd>Page Down</kbd> move by `yearsPerPage`; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
+39. Focus is retained when switching to the months and to the years view.
 
-### Year and month views
+### Calendar keyboard interaction - Days view
 
-43. Months view - passes the a11y audit, renders twelve months in rows of three, renders the expected parts and ARIA
-    state on a cell, marks the current month, exposes a single tab stop, follows `monthFormat` and `locale`, and
-    emits `igcChange` with the activated month.
-44. Years view - passes the a11y audit, renders a page of years in rows of three, renders the expected parts and
-    ARIA state on a cell, marks the current year, follows `yearsPerPage`, and emits `igcChange` with the activated
-    year.
+40. Is accessible; <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and their <kbd>Shift</kbd> variants move by month and by
+    year; the arrow keys move by day and by week; <kbd>Home</kbd> and <kbd>End</kbd> move to the start and the end of
+    the month; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
+41. Skips disabled dates, stays put when every date in the direction of travel is disabled, and when both weekdays and
+    weekends are disabled.
+42. The keys stop at the first and the last date of the years 1 to 9999, the previous or the next button is disabled
+    there, the days of January 10000 are disabled, and an active date from code outside the range moves only toward
+    it.
 
-### Helpers
+### Calendar keyboard interaction - Months view
 
-45. The `DateRangeDescriptor` helpers resolve the After, Before, Between, Specific, Weekday and Weekends types.
+43. Is accessible; <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>Page Up</kbd>, <kbd>Page Down</kbd> and the arrow keys
+    navigate by month and by row; <kbd>Enter</kbd> and <kbd>Space</kbd> select.
+
+### Calendar keyboard interaction - Years view
+
+44. Is accessible; <kbd>Home</kbd>, <kbd>End</kbd> and the arrow keys navigate by year and by row; <kbd>Page Up</kbd>
+    and <kbd>Page Down</kbd> move by `yearsPerPage`; <kbd>Enter</kbd> and <kbd>Space</kbd> select. The years view hides
+    year 0 and the years past 9999, and <kbd>Page Down</kbd> and <kbd>End</kbd> stop at 9999.
+
+### Calendar keyboard interaction - Multiple visible months
+
+45. With two visible months, an arrow key that leaves the month of the active view moves the active view along, and
+    back. The active view stays while the arrow key stays in its month.
+
+### Calendar selection - Single selection
+
+46. Selects a date, does not change when the selected date is activated again, and leaves the dates of the other modes
+    alone.
+
+### Calendar selection - Multiple selection
+
+47. Adds a date keeping the collection sorted, removes an already selected date, and does not mutate the input.
+
+### Calendar selection - Range selection
+
+48. Starts a range from one date, expands it over every covered date, handles a backwards selection, clears on
+    re-activating the start, restarts from a completed range, and leaves disabled dates out.
+
+### Calendar selection - Disabled dates
+
+49. Disabled dates are never selected, while the dates around them are.
+
+### Year and month calendar views - Months view
+
+50. Passes the a11y audit, renders twelve months in rows of three, renders the expected parts and ARIA state on a
+    cell, marks the current month, exposes a single tab stop, follows `monthFormat` and `locale`, and emits `igcChange`
+    with the activated month.
+
+### Year and month calendar views - Years view
+
+51. Passes the a11y audit, renders a page of years in rows of three, renders the expected parts and ARIA state on a
+    cell, marks the current year, follows `yearsPerPage`, and emits `igcChange` with the activated year.
+
+### Calendar helpers - DateRange descriptors
+
+52. The `DateRangeDescriptor` helpers resolve the After, Before, Between, Specific, Weekday and Weekends types.
+    Weekdays and Weekends ignore a date range, and an unknown descriptor type disables nothing.
+
+### Calendar helpers - createDateConstraints
+
+53. Returns no constraints without `min`, `max` and disabled dates, and turns `min` and `max` into Before and After
+    descriptors ahead of the other descriptors.
+
+### Calendar helpers - getViewElement
+
+54. Returns the value of the activated view element, and -1 when the event path holds no view element.
 
 ### Not covered by the suites
 
@@ -529,6 +605,8 @@ There is no dedicated case for the `resourceStrings` override; the locale group 
 - The component has no time component; it selects dates only.
 - With more than one visible month, the dates outside each rendered month are always hidden, regardless of
   `hideOutsideDays`.
+- The user reaches only the years 1 to 9999. Code can set a date outside them, and the calendar shows it, but the
+  user cannot select such a date.
 
 ## Accessibility
 
@@ -540,7 +618,8 @@ There is no dedicated case for the `resourceStrings` override; the locale group 
 - Date, month and year cells carry their selected and current state, and disabled cells are announced as disabled.
 - The accessible name of a date cell is the date, followed by the `label` of each matching disabled and special
   descriptor. The special state has no ARIA equivalent, so a label is the only way to announce it.
-- The navigation buttons have accessible names resolved from the resource strings.
+- The navigation buttons have accessible names resolved from the resource strings. On the first or the last page of
+  the years 1 to 9999, the previous or the next button is disabled.
 - Week numbers and weekday labels are presentational and are not reachable with the arrow keys.
 
 ### Keyboard support

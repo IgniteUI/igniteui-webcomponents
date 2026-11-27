@@ -35,7 +35,7 @@ defineComponents(IgcTextareaComponent);
   The placeholder text of the control.
 - `readOnly`: `boolean`. Default: `false`. Attribute: `readonly`, reflected.
   Whether the control is read-only.
-- `resize`: `'vertical' | 'none' | 'auto'`. Default: `'vertical'`. Attribute: `resize`.
+- `resize`: `'vertical' | 'auto' | 'none'`. Default: `'vertical'`. Attribute: `resize`.
   How the user can resize the control.
   With `auto`, the height of the control fits its content and the resize handle is hidden.
 - `rows`: `number`. Default: `3`. Attribute: `rows`.

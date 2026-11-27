@@ -26,7 +26,7 @@ interface MaskOptionsInternal {
 }
 
 /** The masked value and the caret position after `replace`. */
-type MaskReplaceResult = {
+export type MaskReplaceResult = {
   value: string;
   end: number;
 };

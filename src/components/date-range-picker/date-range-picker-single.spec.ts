@@ -98,7 +98,7 @@ describe('Date range picker - single input', () => {
   afterEach(() => {
     sinon.restore();
   });
-  describe('Properties', () => {
+  describe('Single input properties', () => {
     it('should set properties of the input correctly', async () => {
       const propsSingle = {
         required: true,
@@ -119,7 +119,7 @@ describe('Date range picker - single input', () => {
     });
   });
 
-  describe('Localization', () => {
+  describe('Single input localization', () => {
     it('should properly set displayFormat to the set of predefined formats - single input', async () => {
       const predefinedFormats = [
         { format: 'short', formattedValue: '4/14/25' },
@@ -337,7 +337,7 @@ describe('Date range picker - single input', () => {
     });
   });
 
-  describe('Methods', () => {
+  describe('Single input methods', () => {
     it('should stepUp/stepDown when input is not focused', async () => {
       picker.useTwoInputs = false;
       picker.value = {
@@ -438,6 +438,25 @@ describe('Date range picker - single input', () => {
       expect(input.value).to.equal('1/15/2025 - 1/16/2025');
     });
 
+    it('keeps the start year selected when a spin narrows it', async () => {
+      picker.value = {
+        start: new Date(10_000, 0, 15),
+        end: new Date(10_001, 0, 16),
+      };
+      await elementUpdated(picker);
+
+      input.focus();
+      await elementUpdated(rangeInput);
+      rangeInput.setSelectionRange(6, 11);
+      await elementUpdated(rangeInput);
+
+      simulateKeyboard(input, arrowDown);
+      await elementUpdated(rangeInput);
+
+      expect(input.value).to.equal('01/15/9999 - 01/16/10001');
+      expect([input.selectionStart, input.selectionEnd]).to.eql([6, 10]);
+    });
+
     it('does not step anything while the cursor is in the separator', async () => {
       const eventSpy = spy(picker, 'emitEvent');
       const inputEventSpy = spy(rangeInput, 'emitEvent');
@@ -460,7 +479,7 @@ describe('Date range picker - single input', () => {
       expect(rangeInput._uncommittedValue).to.deep.equal(picker.value);
     });
   });
-  describe('Interactions', () => {
+  describe('Single input interactions', () => {
     describe('Interactions with the inputs and the open and clear buttons', () => {
       it('cancels Escape only while open', async () => {
         expect(simulateCancelableKeydown(picker, escapeKey)).to.be.false;
@@ -937,7 +956,7 @@ describe('Date range picker - single input', () => {
       });
     });
   });
-  describe('Slots', () => {
+  describe('Single input slots', () => {
     it('should render slotted elements', async () => {
       picker = await fixture<IgcDateRangePickerComponent>(
         html`<igc-date-range-picker mode="dialog">

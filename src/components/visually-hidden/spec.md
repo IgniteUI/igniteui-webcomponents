@@ -36,6 +36,7 @@
 | Version | Date       | Notes                 |
 | ------: | ---------- | --------------------- |
 |       1 | 2026-09-21 | Initial specification |
+|       2 | 2026-11-27 | Test scenarios mirror the `VisuallyHidden default` block. |
 
 ## Overview
 
@@ -152,9 +153,9 @@ None applicable.
 
 ## Test scenarios
 
-| Suite            | File                      |
-| ---------------- | ------------------------- |
-| `VisuallyHidden` | `visually-hidden.spec.ts` |
+| Suite                    | File                      |
+| ------------------------ | ------------------------- |
+| `VisuallyHidden default` | `visually-hidden.spec.ts` |
 
 ### Default
 

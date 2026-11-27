@@ -133,7 +133,7 @@ describe('Color converters', () => {
     });
   });
 
-  describe('round-trips', () => {
+  describe('Color space round-trips', () => {
     it('rgb -> hsv -> rgb preserves the color across the hue sweep', () => {
       for (const h of hues) {
         for (const s of [20, 60, 100]) {

@@ -5,6 +5,7 @@ import {
   escapeMaskFlags,
   type MaskOptions,
   MaskParser,
+  type MaskReplaceResult,
 } from '../mask-input/mask-parser.js';
 import {
   createDatePart,
@@ -63,11 +64,11 @@ const CENTURY_THRESHOLD = 50;
 const CENTURY_BASE = 2000;
 
 /**
- * Applies the century threshold to a year of one or two typed digits. Keeps a year of
- * three or four typed digits.
+ * Applies the century threshold to a year of one or two typed digits. Keeps a longer
+ * or a negative year.
  */
 function resolveYear(year: number, typed: string): number {
-  if (typed.length > 2) {
+  if (typed.length > 2 || year < 0) {
     return year;
   }
 
@@ -112,11 +113,25 @@ function toMaskFormat(dateFormat: string): string {
   return result;
 }
 
-/** Widens each year run, except `yy`, to four characters. Keeps the case of the run. */
-function normalizeYearFormat(format: string): string {
+/** The width of a long year run before a fit. */
+const YEAR_WIDTH = 4;
+
+/** Sets each year run, except `yy`, to `width` characters. Keeps the case of the run. */
+function setYearWidth(format: string, width = YEAR_WIDTH): string {
   return format.replace(/y+|Y+/g, (run) =>
-    run.length === 2 ? run : run[0].repeat(4)
+    run.length === 2 ? run : run[0].repeat(width)
   );
+}
+
+/** The width that shows the year of `date`: four digits or more, and a sign below year 0. */
+function yearWidthOf(date: Date | null): number {
+  if (!isValidDate(date)) {
+    return YEAR_WIDTH;
+  }
+
+  const year = date.getFullYear();
+  const digits = Math.max(YEAR_WIDTH, `${Math.abs(year)}`.length);
+  return year < 0 ? digits + 1 : digits;
 }
 
 function hasPartOf(format: string, types: ReadonlySet<DatePartType>): boolean {
@@ -204,13 +219,21 @@ export abstract class DateFormatMaskParser<
     );
   }
 
-  /** Whether no date/time position is a prompt. A literal can match the prompt. */
+  /**
+   * Whether no date/time position is a prompt. A literal can match the prompt. A widened
+   * year part is complete at four digits.
+   */
   public isComplete(masked: string): boolean {
-    return this.parts.every(
-      (part) =>
-        part.type === DatePartType.Literal ||
-        !masked.substring(part.start, part.end).includes(this.prompt)
-    );
+    return this.parts.every((part) => {
+      if (part.type === DatePartType.Literal) {
+        return true;
+      }
+
+      return part.type === DatePartType.Year &&
+        part.end - part.start > YEAR_WIDTH
+        ? this._typedPart(masked, part).length >= YEAR_WIDTH
+        : !masked.substring(part.start, part.end).includes(this.prompt);
+    });
   }
 
   /** Whether the format contains a day, month or year part. */
@@ -255,6 +278,60 @@ export abstract class DateFormatMaskParser<
   /** Formats a value into the editable mask. */
   public abstract formatValue(value: V | null): string;
 
+  /** Fits the long year runs to a text in this format, such as a restored edit. */
+  public abstract fitToText(masked: string): void;
+
+  /**
+   * Replaces as typing does. The user types at most four year digits: an edit in a
+   * widened year part that holds a year from code replaces the whole part, and the
+   * part keeps only its first four typed characters.
+   */
+  public override replace(
+    masked: string,
+    value: string,
+    start: number,
+    end: number
+  ): MaskReplaceResult {
+    const reach = Math.max(end, start + value.length);
+    const edited = this.parts.filter(
+      (part) =>
+        part.type === DatePartType.Year &&
+        part.end - part.start > YEAR_WIDTH &&
+        start < part.end &&
+        reach > part.start
+    );
+    let text = masked || this.emptyMask;
+
+    for (const part of edited) {
+      if (this._typedPart(text, part).length > YEAR_WIDTH) {
+        text = this._fillPart(text, part, () => this.prompt);
+      }
+    }
+
+    const result = super.replace(text, value, start, end);
+
+    for (const part of edited) {
+      let typed = 0;
+      result.value = this._fillPart(result.value, part, (char) =>
+        char !== this.prompt && ++typed > YEAR_WIDTH ? this.prompt : char
+      );
+    }
+
+    return result;
+  }
+
+  /** `masked` with each character of `part` mapped by `fill`. */
+  private _fillPart(
+    masked: string,
+    part: T,
+    fill: (char: string) => string
+  ): string {
+    const chars = masked.substring(part.start, part.end).split('').map(fill);
+    return (
+      masked.slice(0, part.start) + chars.join('') + masked.slice(part.end)
+    );
+  }
+
   /** The part at a caret position, or `undefined` in a literal. */
   public abstract partAt(position: number): R | undefined;
 
@@ -298,10 +375,13 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
   Date,
   DatePart
 > {
+  /** The width of the long year runs. No initializer: the base constructor parses first. */
+  private _yearWidth?: number;
+
   constructor(options?: MaskOptions) {
     super({
       ...options,
-      format: normalizeYearFormat(options?.format || DEFAULT_DATETIME_FORMAT),
+      format: setYearWidth(options?.format || DEFAULT_DATETIME_FORMAT),
     });
   }
 
@@ -311,7 +391,32 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
 
   /** Sets the date format. Widens each year format, except `yy`, to four characters. */
   public override set mask(value: string) {
-    super.mask = value && normalizeYearFormat(value);
+    super.mask = value && setYearWidth(value);
+  }
+
+  /** `mask`, with the long year runs as wide as the last fitted year. */
+  public get fittedFormat(): string {
+    return setYearWidth(this.mask, this._yearWidth);
+  }
+
+  public override fitToText(masked: string): void {
+    const runs = this.mask.match(/y{4}|Y{4}/g)?.length ?? 0;
+    const extra = masked.length - this.mask.length;
+
+    if (runs && extra >= 0 && extra % runs === 0) {
+      this._fitYearWidth(YEAR_WIDTH + extra / runs);
+    }
+  }
+
+  private _fitYearWidth(width: number): void {
+    if (width !== (this._yearWidth ?? YEAR_WIDTH)) {
+      this._yearWidth = width;
+      this._parseMaskLiterals();
+    }
+  }
+
+  protected override _toMaskFormat(format: string): string {
+    return super._toMaskFormat(setYearWidth(format, this._yearWidth));
   }
 
   //#region Date Format Parsing
@@ -323,7 +428,7 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
     let position = 0;
 
     // Iterate by UTF-16 code unit, like the mask positions.
-    for (const char of this.mask.split('')) {
+    for (const char of this.fittedFormat.split('')) {
       const type = FORMAT_CHAR_TO_DATE_PART.get(char);
 
       // A part runs only while the same format character repeats - 'MM' is one part,
@@ -416,14 +521,15 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
         datePart.type === DatePartType.Month;
 
       const typed = this._typedPart(masked, datePart);
-      const value = clamp(
-        asNumber(typed),
-        isMonthOrDate ? 1 : 0,
-        Number.MAX_SAFE_INTEGER
-      );
 
       parts[datePart.type] =
-        datePart.type === DatePartType.Year ? resolveYear(value, typed) : value;
+        datePart.type === DatePartType.Year
+          ? resolveYear(asNumber(typed), typed)
+          : clamp(
+              asNumber(typed),
+              isMonthOrDate ? 1 : 0,
+              Number.MAX_SAFE_INTEGER
+            );
     }
 
     return parts;
@@ -484,7 +590,10 @@ export class DateTimeMaskParser extends DateFormatMaskParser<
 
   //#region Date Formatting
 
+  /** Fits the year runs to `date` first, so the parts match the text. */
   public override formatValue(date: Date | null): string {
+    this._fitYearWidth(yearWidthOf(date));
+
     return date
       ? this.parts.map((part) => part.getValue(date)).join('')
       : this.emptyMask;

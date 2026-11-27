@@ -30,9 +30,10 @@
     - [CSS custom states](#css-custom-states)
     - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
-    - [Properties](#properties)
-    - [File type layout](#file-type-layout)
-    - [Events](#events-1)
+    - [File Input component](#file-input-component)
+      - [Properties](#properties)
+      - [File type layout](#file-type-layout)
+      - [Events](#events-1)
     - [Form integration](#form-integration-1)
     - [Validation message slots](#validation-message-slots)
     - [External label association](#external-label-association)
@@ -63,6 +64,7 @@
 |      13 | 2026-11-25 | `name` updates its attribute at once |
 |      14 | 2026-11-25 | `defaultValue` is always `null`; a file list or a string written to it no longer survives a form reset |
 |      15 | 2026-11-25 | The first render shows the slotted content |
+|      16 | 2026-11-27 | Test scenarios mirror the `File Input component` block; its groups are subsections |
 
 ## Overview
 
@@ -408,7 +410,11 @@ The suite lives in [`file-input.spec.ts`](./file-input.spec.ts). It runs in a re
 
 The groups below mirror the `describe` blocks of the suite.
 
-### Properties
+### File Input component
+
+The groups follow the nested `describe` blocks of `File Input component`.
+
+#### Properties
 
 1. Sets the `multiple` property.
 2. Sets the `accept` property.
@@ -418,13 +424,13 @@ The groups below mirror the `describe` blocks of the suite.
 6. Shows the folder name, not the file names, for a folder selection, and keeps the `webkitRelativePath` of each file.
 7. Resets the file selection when an empty string is assigned to `value`.
 
-### File type layout
+#### File type layout
 
 8. Renders the publicly documented parts - the browse button and the file names wrapper.
 9. Renders the slotted `file-selector-text` and `file-missing-text` contents.
 10. Truncates overflowing file names with an ellipsis instead of growing the control, in each of the four themes.
 
-### Events
+#### Events
 
 11. Emits `igcChange` when a file is selected.
 12. Emits `igcCancel` when the picker dialog is dismissed.

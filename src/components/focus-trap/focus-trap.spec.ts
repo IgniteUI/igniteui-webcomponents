@@ -61,6 +61,12 @@ describe('Focus trap', () => {
       trap.focusLastElement();
       expect(document.activeElement).instanceOf(HTMLInputElement);
     });
+
+    it('hides its content with `hidden`', () => {
+      trap.hidden = true;
+
+      expect(trap.querySelector('button')!.checkVisibility()).to.be.false;
+    });
   });
 
   describe('Shadow DOM', () => {
@@ -118,7 +124,7 @@ describe('Focus trap', () => {
     });
   });
 
-  describe('Mix of Light/Shadow and content editable elements', () => {
+  describe('Mixed content', () => {
     beforeEach(async () => {
       trap = await fixture(html`
         <igc-focus-trap>

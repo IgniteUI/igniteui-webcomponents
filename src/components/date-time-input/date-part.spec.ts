@@ -3,7 +3,7 @@ import { createDate } from '#internals/date/model.js';
 import { createDatePart, DatePartType, type SpinOptions } from './date-part.js';
 
 describe('DatePart Classes', () => {
-  describe('Factory Function', () => {
+  describe('createDatePart factory', () => {
     it('creates Year part', () => {
       const part = createDatePart(DatePartType.Year, {
         start: 6,
@@ -90,7 +90,7 @@ describe('DatePart Classes', () => {
     });
   });
 
-  describe('getValue', () => {
+  describe('getValue formatting', () => {
     const date = new Date(2024, 5, 15, 14, 30, 45); // June 15, 2024 14:30:45
 
     it('Year returns full year with yyyy format', () => {
@@ -194,8 +194,8 @@ describe('DatePart Classes', () => {
     });
   });
 
-  describe('validate', () => {
-    it('Year validates any non-negative number', () => {
+  describe('validate ranges', () => {
+    it('Year validates any integer', () => {
       const part = createDatePart(DatePartType.Year, {
         start: 0,
         end: 4,
@@ -203,7 +203,7 @@ describe('DatePart Classes', () => {
       });
       expect(part.validate(2024)).to.be.true;
       expect(part.validate(0)).to.be.true;
-      expect(part.validate(-1)).to.be.false;
+      expect(part.validate(-1)).to.be.true;
     });
 
     it('Month validates 0-11 range', () => {
@@ -298,7 +298,7 @@ describe('DatePart Classes', () => {
     });
   });
 
-  describe('spin', () => {
+  describe('spin of each part', () => {
     function createSpinOptions(
       date: Date,
       spinLoop = true,

@@ -128,7 +128,7 @@ describe('Calendar Rendering', () => {
     });
   });
 
-  describe('API', () => {
+  describe('Properties and active date', () => {
     beforeEach(async () => {
       calendar = await createCalendarElement();
     });

@@ -751,6 +751,23 @@ describe('Date picker', () => {
         expect(picker.displayFormat).to.equal(picker.inputFormat);
       });
 
+      it('returns the locale formats before the first render', () => {
+        const fresh = document.createElement(IgcDatePickerComponent.tagName);
+
+        expect(fresh.inputFormat).to.equal('MM/dd/yyyy');
+        expect(fresh.displayFormat).to.equal('M/d/yyyy');
+      });
+
+      it('formats the bound of a min/max message before the first render', () => {
+        const fresh = document.createElement(IgcDatePickerComponent.tagName);
+        fresh.inputFormat = 'dd-MM-yyyy';
+        fresh.min = new Date(2025, 0, 10);
+        fresh.value = new Date(2025, 0, 1);
+
+        expect(fresh.displayFormat).to.equal('dd-MM-yyyy');
+        expect(fresh.validationMessage).to.contain('10-01-2025');
+      });
+
       it('forwards its calendar strings to the calendar', async () => {
         picker.resourceStrings = { calendar_previous_month: 'Back' };
         await elementUpdated(picker);

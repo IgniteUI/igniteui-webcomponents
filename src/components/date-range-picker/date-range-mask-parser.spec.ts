@@ -7,7 +7,7 @@ import {
 } from './date-range-mask-parser.js';
 
 describe('DateRangeMaskParser', () => {
-  describe('Initialization', () => {
+  describe('Parser initialization', () => {
     it('creates parser with default format and separator', () => {
       const parser = new DateRangeMaskParser();
 
@@ -198,6 +198,37 @@ describe('DateRangeMaskParser', () => {
 
       expect(formatted).to.equal('__/__/____ - __/__/____');
     });
+
+    it('widens the year part of each end alone', () => {
+      const parser = new DateRangeMaskParser({ format: 'MM/dd/yyyy' });
+      const range = {
+        start: new Date(10_000, 0, 1),
+        end: new Date(2026, 0, 1),
+      };
+
+      const formatted = parser.formatValue(range);
+      expect(formatted).to.equal('01/01/10000 - 01/01/2026');
+      expect(parser.mask).to.equal('MM/dd/yyyy - MM/dd/yyyy');
+
+      const parsed = parser.parseValue(formatted, true)!;
+      expect(parsed.start!.getFullYear()).to.equal(10_000);
+      expect(parsed.end!.getFullYear()).to.equal(2026);
+
+      const endYear = parser.parts.findLast(
+        (part) => part.type === DatePartType.Year
+      )!;
+      expect([endYear.start, endYear.end]).to.eql([20, 24]);
+
+      const spun = parser.spinText(
+        formatted,
+        { part: DatePart.Year, position: DateRangePosition.Start },
+        { sign: -1, spinLoop: false, seed: new Date() }
+      );
+      expect(spun.masked).to.equal('01/01/9999 - 01/01/2026');
+      expect(parser.parseValue(spun.masked, true)!.end!.getFullYear()).to.equal(
+        2026
+      );
+    });
   });
 
   describe('Part Queries', () => {
@@ -247,7 +278,7 @@ describe('DateRangeMaskParser', () => {
     });
   });
 
-  describe('Spinning', () => {
+  describe('Range part spinning', () => {
     const request = (sign: 1 | -1, spinLoop = true) => ({
       sign,
       spinLoop,

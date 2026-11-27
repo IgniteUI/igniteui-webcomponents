@@ -67,7 +67,7 @@ describe('Tabs component', () => {
 
   let element: IgcTabsComponent;
 
-  describe('', () => {
+  describe('Rendering and defaults', () => {
     beforeEach(async () => {
       element = await fixture<IgcTabsComponent>(html`<igc-tabs></igc-tabs>`);
     });
@@ -80,7 +80,7 @@ describe('Tabs component', () => {
     });
   });
 
-  describe('', () => {
+  describe('Selection, keyboard and alignment', () => {
     beforeEach(async () => {
       element = await fixture<IgcTabsComponent>(html`
         <igc-tabs>
@@ -2292,114 +2292,117 @@ describe('Tabs component', () => {
     });
   });
 
-  describe('issue-1140', () => {
-    it('Tabs throw if a child tab is immediately appended', async () => {
-      // https://github.com/IgniteUI/igniteui-webcomponents/pull/1705#issuecomment-2912189331
-      const tabs = document.createElement(IgcTabsComponent.tagName);
-      const tab = document.createElement(IgcTabComponent.tagName);
-      document.body.appendChild(tabs);
-
-      expect(() => tabs.appendChild(tab)).not.to.throw();
-    });
-  });
-
-  describe('issue-713', () => {
-    it('Nested tabs selection', async () => {
-      const tabs = await fixture<IgcTabsComponent>(html`
-        <igc-tabs>
-          <igc-tab label="1">
-            Panel 1
-            <igc-tabs>
-              <igc-tab label="1.1">Panel 1.1</igc-tab>
-              <igc-tab label="1.2" selected>Panel 1.2</igc-tab>
-            </igc-tabs>
-          </igc-tab>
-          <igc-tab label="2">Panel 2</igc-tab>
-        </igc-tabs>
-      `);
-
-      const nestedTabs = tabs.querySelector(IgcTabsComponent.tagName)!;
-
-      verifySelection(tabs, firstOf(tabs.tabs));
-      verifySelection(nestedTabs, lastOf(nestedTabs.tabs));
-
-      simulateClick(getTabDOM(firstOf(nestedTabs.tabs)).header);
-      await elementUpdated(tabs);
-
-      verifySelection(tabs, firstOf(tabs.tabs));
-      verifySelection(nestedTabs, firstOf(nestedTabs.tabs));
-
-      simulateClick(getTabDOM(lastOf(tabs.tabs)).header);
-      await elementUpdated(tabs);
-
-      verifySelection(tabs, lastOf(tabs.tabs));
-      verifySelection(nestedTabs, firstOf(nestedTabs.tabs));
-    });
-  });
-
-  describe('issue-2416', () => {
-    let tabs: IgcTabsComponent;
-    const reasons: unknown[] = [];
-
-    const onRejection = (event: PromiseRejectionEvent) => {
-      event.preventDefault();
-      reasons.push(event.reason);
-    };
-
-    beforeEach(() => {
-      reasons.length = 0;
-      window.addEventListener('unhandledrejection', onRejection);
-
-      tabs = document.createElement(IgcTabsComponent.tagName);
-
-      for (const label of ['One', 'Two']) {
+  describe('Regressions', () => {
+    describe('issue-1140', () => {
+      it('Tabs throw if a child tab is immediately appended', async () => {
+        // https://github.com/IgniteUI/igniteui-webcomponents/pull/1705#issuecomment-2912189331
+        const tabs = document.createElement(IgcTabsComponent.tagName);
         const tab = document.createElement(IgcTabComponent.tagName);
-        tab.label = label;
-        tabs.append(tab);
+        document.body.appendChild(tabs);
+
+        expect(() => tabs.appendChild(tab)).not.to.throw();
+      });
+    });
+
+    describe('issue-713', () => {
+      it('Nested tabs selection', async () => {
+        const tabs = await fixture<IgcTabsComponent>(html`
+          <igc-tabs>
+            <igc-tab label="1">
+              Panel 1
+              <igc-tabs>
+                <igc-tab label="1.1">Panel 1.1</igc-tab>
+                <igc-tab label="1.2" selected>Panel 1.2</igc-tab>
+              </igc-tabs>
+            </igc-tab>
+            <igc-tab label="2">Panel 2</igc-tab>
+          </igc-tabs>
+        `);
+
+        const nestedTabs = tabs.querySelector(IgcTabsComponent.tagName)!;
+
+        verifySelection(tabs, firstOf(tabs.tabs));
+        verifySelection(nestedTabs, lastOf(nestedTabs.tabs));
+
+        simulateClick(getTabDOM(firstOf(nestedTabs.tabs)).header);
+        await elementUpdated(tabs);
+
+        verifySelection(tabs, firstOf(tabs.tabs));
+        verifySelection(nestedTabs, firstOf(nestedTabs.tabs));
+
+        simulateClick(getTabDOM(lastOf(tabs.tabs)).header);
+        await elementUpdated(tabs);
+
+        verifySelection(tabs, lastOf(tabs.tabs));
+        verifySelection(nestedTabs, firstOf(nestedTabs.tabs));
+      });
+    });
+
+    describe('issue-2416', () => {
+      let tabs: IgcTabsComponent;
+      const reasons: unknown[] = [];
+
+      const onRejection = (event: PromiseRejectionEvent) => {
+        event.preventDefault();
+        reasons.push(event.reason);
+      };
+
+      beforeEach(() => {
+        reasons.length = 0;
+        window.addEventListener('unhandledrejection', onRejection);
+
+        tabs = document.createElement(IgcTabsComponent.tagName);
+
+        for (const label of ['One', 'Two']) {
+          const tab = document.createElement(IgcTabComponent.tagName);
+          tab.label = label;
+          tabs.append(tab);
+        }
+      });
+
+      afterEach(() => {
+        window.removeEventListener('unhandledrejection', onRejection);
+        tabs.remove();
+      });
+
+      const removals: Record<string, () => unknown> = {
+        'in the same task': () => tabs.remove(),
+        'after a microtask': () => Promise.resolve().then(() => tabs.remove()),
+        'after its first update': () =>
+          tabs.updateComplete.then(() => tabs.remove()),
+      };
+
+      for (const [when, remove] of Object.entries(removals)) {
+        it(`does not throw when removed ${when}`, async () => {
+          document.body.append(tabs);
+          await remove();
+          await nextFrame();
+          await nextFrame();
+
+          expect(reasons).to.be.empty;
+        });
       }
-    });
 
-    afterEach(() => {
-      window.removeEventListener('unhandledrejection', onRejection);
-      tabs.remove();
-    });
-
-    const removals: Record<string, () => unknown> = {
-      'in the same task': () => tabs.remove(),
-      'after a microtask': () => Promise.resolve().then(() => tabs.remove()),
-      'after its first update': () =>
-        tabs.updateComplete.then(() => tabs.remove()),
-    };
-
-    for (const [when, remove] of Object.entries(removals)) {
-      it(`does not throw when removed ${when}`, async () => {
+      it('follows resizes when added back after an early removal', async () => {
         document.body.append(tabs);
-        await remove();
-        await nextFrame();
+        tabs.remove();
         await nextFrame();
 
+        document.body.append(tabs);
+        await elementUpdated(tabs);
+
+        const { container } = getTabsDOM(tabs);
+        const width = () =>
+          container.style.getPropertyValue('--_ig-tabs-width');
+
+        tabs.style.width = '200px';
+
+        await waitUntil(
+          () => width() === `${container.getBoundingClientRect().width}px`,
+          'The layout did not follow the resize'
+        );
         expect(reasons).to.be.empty;
       });
-    }
-
-    it('follows resizes when added back after an early removal', async () => {
-      document.body.append(tabs);
-      tabs.remove();
-      await nextFrame();
-
-      document.body.append(tabs);
-      await elementUpdated(tabs);
-
-      const { container } = getTabsDOM(tabs);
-      const width = () => container.style.getPropertyValue('--_ig-tabs-width');
-
-      tabs.style.width = '200px';
-
-      await waitUntil(
-        () => width() === `${container.getBoundingClientRect().width}px`,
-        'The layout did not follow the resize'
-      );
-      expect(reasons).to.be.empty;
     });
   });
 

@@ -443,8 +443,6 @@ export default class IgcCarouselComponent extends I18nMixin(
     await this.updateComplete;
     // Republish for consumers created after their own first render (Blazor timing).
     this._context.publish();
-
-    this._activateInitialSlide();
   }
 
   protected override updated(): void {
@@ -481,29 +479,27 @@ export default class IgcCarouselComponent extends I18nMixin(
 
   //#region Event listeners
 
-  private _handleSlotChange(
-    params: SlotChangeCallbackParameters<InferSlotNames<typeof Slots>>
-  ): void {
-    if (params.isDefault || params.isInitial) {
+  private _handleSlotChange({
+    slot,
+    isDefault,
+    isInitial,
+  }: SlotChangeCallbackParameters<InferSlotNames<typeof Slots>>): void {
+    if (isInitial || isDefault) {
       const previousSlide = this._activeSlide;
       const previousIndex = this.current;
 
-      this._slides = this._slots.getAssignedElements(DefaultSlot, {
-        selector: IgcCarouselSlideComponent.tagName,
-      });
+      this._slides = this._querySlides();
 
       if (previousSlide && !this._slides.includes(previousSlide)) {
         this._reactivateSlide(previousSlide, previousIndex);
-      } else if (this.hasUpdated && !this._activeSlide) {
-        // Slides came into an empty carousel after the first render, so activate one.
+      } else if (!this._activeSlide) {
+        // No slide is active yet, so activate one.
         this._activateInitialSlide();
       }
     }
 
-    if (params.slot === 'indicator') {
-      this._projectedIndicators = this._slots.getAssignedElements('indicator', {
-        selector: IgcCarouselIndicatorComponent.tagName,
-      });
+    if (isInitial || slot === 'indicator') {
+      this._projectedIndicators = this._queryProjectedIndicators();
     }
   }
 
@@ -565,6 +561,18 @@ export default class IgcCarouselComponent extends I18nMixin(
   //#endregion
 
   //#region Internal API
+
+  private _querySlides(): IgcCarouselSlideComponent[] {
+    return this._slots.getAssignedElements(DefaultSlot, {
+      selector: IgcCarouselSlideComponent.tagName,
+    });
+  }
+
+  private _queryProjectedIndicators(): IgcCarouselIndicatorComponent[] {
+    return this._slots.getAssignedElements('indicator', {
+      selector: IgcCarouselIndicatorComponent.tagName,
+    });
+  }
 
   private _handleNavigationInteractionNext(): void {
     this._handleInteraction(this.next);
@@ -815,16 +823,16 @@ export default class IgcCarouselComponent extends I18nMixin(
       index = this._slides.indexOf(slide);
     }
 
-    if (index === this.current || index === -1 || !slide) {
+    if (
+      index === this.current ||
+      index === -1 ||
+      !slide ||
+      !this._activeSlide
+    ) {
       return false;
     }
 
     const dir = animationDirection ?? (index > this.current ? 'next' : 'prev');
-
-    if (!this._activeSlide) {
-      this._activateSlide(slide);
-      return true;
-    }
 
     await this._animateSlides(slide, this._activeSlide, dir);
     return true;

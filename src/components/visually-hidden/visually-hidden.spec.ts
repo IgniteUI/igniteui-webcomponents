@@ -2,7 +2,7 @@ import { expect, fixture, html } from '@open-wc/testing';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
 import IgcVisuallyHiddenComponent from './visually-hidden.js';
 
-describe('VisuallyHidden', () => {
+describe('VisuallyHidden default', () => {
   before(() => {
     defineComponents(IgcVisuallyHiddenComponent);
   });

@@ -172,7 +172,7 @@ describe('Dropdown', () => {
     });
   });
 
-  describe('Detached (non-slotted anchor)', () => {
+  describe('Detached anchor', () => {
     const getButton = () => document.getElementById('btn')!;
 
     function checkTargetARIA(state: 'true' | 'false') {
@@ -1068,30 +1068,32 @@ describe('Dropdown', () => {
     });
   });
 
-  describe('issue-1123', () => {
-    beforeEach(async () => {
-      dropDown = await fixture<IgcDropdownComponent>(html`
-        <igc-dropdown>
-          <igc-dropdown-item value="Orange"
-            ><span id="click-target">Orange</span></igc-dropdown-item
-          >
-          <igc-dropdown-item value="Apple"
-            ><span>Apple</span></igc-dropdown-item
-          >
-          <igc-dropdown-item value="Banana">Banana</igc-dropdown-item>
-          <igc-dropdown-item value="Mango">Mango</igc-dropdown-item>
-        </igc-dropdown>
-      `);
-    });
+  describe('Regressions', () => {
+    describe('issue-1123', () => {
+      beforeEach(async () => {
+        dropDown = await fixture<IgcDropdownComponent>(html`
+          <igc-dropdown>
+            <igc-dropdown-item value="Orange"
+              ><span id="click-target">Orange</span></igc-dropdown-item
+            >
+            <igc-dropdown-item value="Apple"
+              ><span>Apple</span></igc-dropdown-item
+            >
+            <igc-dropdown-item value="Banana">Banana</igc-dropdown-item>
+            <igc-dropdown-item value="Mango">Mango</igc-dropdown-item>
+          </igc-dropdown>
+        `);
+      });
 
-    it('selects the item a click landed inside of', async () => {
-      await openDropdown();
+      it('selects the item a click landed inside of', async () => {
+        await openDropdown();
 
-      const inner = document.getElementById('click-target')!;
-      simulateClick(inner);
-      await elementUpdated(dropDown);
+        const inner = document.getElementById('click-target')!;
+        simulateClick(inner);
+        await elementUpdated(dropDown);
 
-      expect(dropDown.selectedItem?.value).to.equal('Orange');
+        expect(dropDown.selectedItem?.value).to.equal('Orange');
+      });
     });
   });
 

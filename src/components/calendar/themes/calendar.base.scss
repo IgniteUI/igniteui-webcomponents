@@ -82,6 +82,16 @@
     &[part~='vertical'] {
         transform: rotate(90deg);
     }
+
+    // At the edge of the year range.
+    &:disabled {
+        opacity: .38;
+        pointer-events: none;
+
+        @media (forced-colors: active) {
+            color: GrayText;
+        }
+    }
 }
 
 [part='navigation-buttons'] {

@@ -26,7 +26,7 @@
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
   - [Test scenarios](#test-scenarios)
-    - [Default](#default)
+    - [Defaults and properties](#defaults-and-properties)
     - [Accessibility tests](#accessibility-tests)
     - [Rendering](#rendering)
     - [Selection animation](#selection-animation-1)
@@ -54,6 +54,7 @@
 |       7 | 2026-11-18 | Animate a selection change by the user; a change from code shows at once or joins the running animation of the user |
 |       8 | 2026-11-20 | While a change from code shows at once, all the transitions of the chip stop, also on slotted elements and over the transitions that the app sets on parts, not only those of the base and the indicator |
 |       9 | 2026-11-25 | The first render shows the slotted content |
+|      10 | 2026-11-27 | The `Default` test scenarios are `Defaults and properties`, as their `describe` block |
 
 ## Overview
 
@@ -251,7 +252,7 @@ The detail of `igcSelect` is the new `selected` state of the chip.
 | ------ | ------------- |
 | `Chip` | `chip.spec.ts` |
 
-### Default
+### Defaults and properties
 
 1. The component passes the accessibility audit and is initialized with its default values.
 2. The `variant`, `disabled`, `outlined`, `selectable`, `removable` and `selected` properties are applied.

@@ -59,9 +59,9 @@ const metadata: Meta<IgcBadgeComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     shape: {
-      type: { name: 'enum', value: ['square', 'rounded'] },
+      type: { name: 'enum', value: ['rounded', 'square'] },
       description: 'The shape of the badge.',
-      options: ['square', 'rounded'],
+      options: ['rounded', 'square'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'rounded' } },
     },
@@ -83,7 +83,7 @@ interface IgcBadgeArgs {
   /** Whether the badge has an outline. */
   outlined: boolean;
   /** The shape of the badge. */
-  shape: 'square' | 'rounded';
+  shape: 'rounded' | 'square';
   /** Whether the badge renders as a small dot without content. */
   dot: boolean;
 }

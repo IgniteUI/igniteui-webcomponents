@@ -2,7 +2,7 @@ import { expect, fixture, html } from '@open-wc/testing';
 
 import { defineComponents, IgcNavbarComponent } from '../../index.js';
 
-describe('Navbar component', () => {
+describe('Navbar rendering', () => {
   before(() => {
     defineComponents(IgcNavbarComponent);
   });

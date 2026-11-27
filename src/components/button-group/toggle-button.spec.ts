@@ -30,7 +30,7 @@ describe('Toggle Button', () => {
 
   let button: IgcToggleButtonComponent;
 
-  describe('', () => {
+  describe('Toggle button tests', () => {
     beforeEach(async () => {
       button = await createButtonComponent();
     });

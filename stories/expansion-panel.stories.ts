@@ -63,9 +63,9 @@ const metadata: Meta<IgcExpansionPanelComponent> = {
       table: { defaultValue: { summary: 'false' } },
     },
     indicatorPosition: {
-      type: { name: 'enum', value: ['none', 'start', 'end'] },
+      type: { name: 'enum', value: ['start', 'end', 'none'] },
       description: 'The indicator position of the expansion panel.',
-      options: ['none', 'start', 'end'],
+      options: ['start', 'end', 'none'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'start' } },
     },
@@ -84,7 +84,7 @@ interface IgcExpansionPanelArgs {
    */
   disabled: boolean;
   /** The indicator position of the expansion panel. */
-  indicatorPosition: 'none' | 'start' | 'end';
+  indicatorPosition: 'start' | 'end' | 'none';
 }
 type Story = StoryObj<IgcExpansionPanelArgs>;
 

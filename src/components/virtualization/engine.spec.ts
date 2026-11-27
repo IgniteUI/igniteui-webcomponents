@@ -54,7 +54,7 @@ describe('VirtualScrollEngine', () => {
     return engine;
   }
 
-  describe('Sizing', () => {
+  describe('Sizes and offsets', () => {
     it('fills new items with the estimated size', () => {
       const engine = createEngine(10);
 

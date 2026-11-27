@@ -28,14 +28,16 @@
     - [CSS custom states](#css-custom-states)
     - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
-    - [Default](#default)
-    - [Interaction](#interaction)
+    - [Without attributes](#without-attributes)
+      - [Defaults and rendering](#defaults-and-rendering)
+      - [Interaction](#interaction)
     - [Value precision](#value-precision)
     - [Form integration tests](#form-integration-tests)
     - [Default value](#default-value)
     - [Accessibility tests](#accessibility-tests)
     - [Hover](#hover)
     - [Host ARIA](#host-aria)
+    - [Focus](#focus)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -59,6 +61,7 @@
 |      10 | 2026-11-25 | `disabled` is marked as reflected. `name` and `readOnly` update their attributes at once |
 |      11 | 2026-11-25 | The `defaultValue` row has the JSDoc wording |
 |      12 | 2026-11-25 | The first render shows the slotted content, and draws no default symbols next to projected ones |
+|      13 | 2026-11-27 | Test scenarios mirror the `Without attributes` and `Default value` blocks |
 
 ## Overview
 
@@ -285,7 +288,11 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 | ------------------ | ---------------- |
 | `Rating component` | `rating.spec.ts` |
 
-### Default
+### Without attributes
+
+The groups follow the nested `describe` blocks of `Without attributes`.
+
+#### Defaults and rendering
 
 1. The component is initialized with its default values and with passed attributes, and passes the accessibility
    audit.
@@ -294,7 +301,7 @@ Setting `value` from code does not emit `igcChange`, and neither does an interac
 4. The default symbols render, projected symbols render in their place, and `max` follows the number of projected
    symbols. With projected symbols, the first render draws no default symbols.
 
-### Interaction
+#### Interaction
 
 5. `stepUp()` and `stepDown()` change the value.
 6. A click sets the value, with a step of `1` and with a fractional one, rounding to the next step.

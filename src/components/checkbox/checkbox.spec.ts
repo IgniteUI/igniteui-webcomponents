@@ -40,168 +40,172 @@ describe('Checkbox', () => {
     ],
   };
 
-  describe('', () => {
+  describe('With a label', () => {
     beforeEach(async () => {
       element = await fixture(html`<igc-checkbox>${label}</igc-checkbox>`);
       input = element.renderRoot.querySelector('input')!;
     });
 
-    it('should initialize checkbox component with default values', async () => {
-      expect(input.id).to.equal('checkbox-1');
-      expect(element.name).to.be.undefined;
-      expect(input.name).to.be.empty;
-      expect(element.value).to.be.undefined;
-      expect(input.value).to.equal('on');
-      expect(element.checked).to.be.false;
-      expect(input.checked).to.be.false;
-      expect(element.indeterminate).to.be.false;
-      expect(input.indeterminate).to.be.false;
-      expect(element.invalid).to.be.false;
-      expect(element.disabled).to.be.false;
-      expect(input.disabled).to.be.false;
-      expect(element.labelPosition).to.equal('after');
-    });
+    describe('Rendering and properties', () => {
+      it('should initialize checkbox component with default values', async () => {
+        expect(input.id).to.equal('checkbox-1');
+        expect(element.name).to.be.undefined;
+        expect(input.name).to.be.empty;
+        expect(element.value).to.be.undefined;
+        expect(input.value).to.equal('on');
+        expect(element.checked).to.be.false;
+        expect(input.checked).to.be.false;
+        expect(element.indeterminate).to.be.false;
+        expect(input.indeterminate).to.be.false;
+        expect(element.invalid).to.be.false;
+        expect(element.disabled).to.be.false;
+        expect(input.disabled).to.be.false;
+        expect(element.labelPosition).to.equal('after');
+      });
 
-    it('should render a checkbox component successfully', async () => {
-      await expect(element).shadowDom.to.be.accessible();
-      await expect(element).to.be.accessible();
-    });
+      it('should render a checkbox component successfully', async () => {
+        await expect(element).shadowDom.to.be.accessible();
+        await expect(element).to.be.accessible();
+      });
 
-    it('paints the indicator under an earlier page layer', async () => {
-      try {
-        configureTheme('material');
-        element.checked = true;
-        await elementUpdated(element);
+      it('paints the indicator under an earlier page layer', async () => {
+        try {
+          configureTheme('material');
+          element.checked = true;
+          await elementUpdated(element);
 
-        const indicator = element.renderRoot.querySelector(
-          '[part~="indicator"]'
-        )!;
+          const indicator = element.renderRoot.querySelector(
+            '[part~="indicator"]'
+          )!;
 
-        expect(isUnderPageLayer(element, indicator)).to.be.true;
-      } finally {
-        configureTheme('bootstrap');
-      }
-    });
+          expect(isUnderPageLayer(element, indicator)).to.be.true;
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
 
-    it('should render the correct SVG in indigo theme', async () => {
-      // Indigo renders `<svg><rect/><path/></svg>`. Other themes omit the `<rect>`.
+      it('should render the correct SVG in indigo theme', async () => {
+        // Indigo renders `<svg><rect/><path/></svg>`. Other themes omit the `<rect>`.
 
-      const root = element.renderRoot;
+        const root = element.renderRoot;
 
-      expect(root.querySelector('svg > rect')).to.be.null;
+        expect(root.querySelector('svg > rect')).to.be.null;
 
-      configureTheme('indigo');
-      await elementUpdated(element);
-
-      expect(root.querySelector('svg > rect')).to.be.not.null;
-
-      configureTheme('bootstrap');
-    });
-
-    it('should hide the indicator from assistive technologies in every theme', async () => {
-      const indicator = () =>
-        element.renderRoot
-          .querySelector('svg')!
-          .closest('[aria-hidden="true"]');
-
-      expect(indicator()).to.not.be.null;
-
-      try {
         configureTheme('indigo');
         await elementUpdated(element);
 
-        expect(indicator()).to.not.be.null;
-      } finally {
+        expect(root.querySelector('svg > rect')).to.be.not.null;
+
         configureTheme('bootstrap');
-      }
+      });
+
+      it('should hide the indicator from assistive technologies in every theme', async () => {
+        const indicator = () =>
+          element.renderRoot
+            .querySelector('svg')!
+            .closest('[aria-hidden="true"]');
+
+        expect(indicator()).to.not.be.null;
+
+        try {
+          configureTheme('indigo');
+          await elementUpdated(element);
+
+          expect(indicator()).to.not.be.null;
+        } finally {
+          configureTheme('bootstrap');
+        }
+      });
+
+      it('should set the checkbox name property correctly', async () => {
+        const name = 'fruit';
+
+        element.name = name;
+        await elementUpdated(element);
+
+        expect(input).dom.to.equal(`<input name="${name}"/>`, DIFF_OPTIONS);
+      });
+
+      it('should set the checkbox label position correctly', async () => {
+        element.labelPosition = 'before';
+        await elementUpdated(element);
+
+        expect(element).dom.to.equal(
+          `<igc-checkbox label-position="before">${label}</igc-checkbox>`
+        );
+
+        element.labelPosition = 'after';
+        await elementUpdated(element);
+
+        expect(element).dom.to.equal(
+          `<igc-checkbox label-position="after">${label}</igc-checkbox>`
+        );
+      });
+
+      it('should set the checkbox value property correctly', async () => {
+        const value = 'apple';
+
+        element.value = value;
+        await elementUpdated(element);
+
+        expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
+      });
+
+      it('should correctly report validity status', () => {
+        element.required = true;
+        expect(element.reportValidity()).to.be.false;
+
+        element.checked = true;
+        expect(element.reportValidity()).to.be.true;
+
+        element.checked = false;
+        element.required = false;
+        expect(element.reportValidity()).to.be.true;
+      });
+
+      it('should set the checkbox disabled property correctly', async () => {
+        const DIFF_OPTIONS = {
+          ignoreAttributes: [
+            'id',
+            'part',
+            'aria-checked',
+            'aria-labelledby',
+            'tabindex',
+            'type',
+          ],
+        };
+
+        element.disabled = true;
+        await elementUpdated(element);
+
+        expect(input).dom.to.equal('<input disabled />', DIFF_OPTIONS);
+
+        element.disabled = false;
+        await elementUpdated(element);
+
+        expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
+      });
     });
 
-    it('should set the checkbox name property correctly', async () => {
-      const name = 'fruit';
+    describe('Interactions and events', () => {
+      it('should emit click event only once', async () => {
+        const eventSpy = spy(element, 'click');
 
-      element.name = name;
-      await elementUpdated(element);
+        element.addEventListener('click', eventSpy);
+        element.click();
 
-      expect(input).dom.to.equal(`<input name="${name}"/>`, DIFF_OPTIONS);
-    });
+        await elementUpdated(element);
+        expect(eventSpy.callCount).to.equal(1);
+      });
 
-    it('should set the checkbox label position correctly', async () => {
-      element.labelPosition = 'before';
-      await elementUpdated(element);
+      it('should emit igcChange event when the checkbox checked state changes', async () => {
+        const eventSpy = spy(element, 'emitEvent');
+        element.click();
 
-      expect(element).dom.to.equal(
-        `<igc-checkbox label-position="before">${label}</igc-checkbox>`
-      );
-
-      element.labelPosition = 'after';
-      await elementUpdated(element);
-
-      expect(element).dom.to.equal(
-        `<igc-checkbox label-position="after">${label}</igc-checkbox>`
-      );
-    });
-
-    it('should set the checkbox value property correctly', async () => {
-      const value = 'apple';
-
-      element.value = value;
-      await elementUpdated(element);
-
-      expect(input).dom.to.equal(`<input value="${value}"/>`, DIFF_OPTIONS);
-    });
-
-    it('should correctly report validity status', () => {
-      element.required = true;
-      expect(element.reportValidity()).to.be.false;
-
-      element.checked = true;
-      expect(element.reportValidity()).to.be.true;
-
-      element.checked = false;
-      element.required = false;
-      expect(element.reportValidity()).to.be.true;
-    });
-
-    it('should set the checkbox disabled property correctly', async () => {
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-checked',
-          'aria-labelledby',
-          'tabindex',
-          'type',
-        ],
-      };
-
-      element.disabled = true;
-      await elementUpdated(element);
-
-      expect(input).dom.to.equal('<input disabled />', DIFF_OPTIONS);
-
-      element.disabled = false;
-      await elementUpdated(element);
-
-      expect(input).dom.to.equal('<input />', DIFF_OPTIONS);
-    });
-
-    it('should emit click event only once', async () => {
-      const eventSpy = spy(element, 'click');
-
-      element.addEventListener('click', eventSpy);
-      element.click();
-
-      await elementUpdated(element);
-      expect(eventSpy.callCount).to.equal(1);
-    });
-
-    it('should emit igcChange event when the checkbox checked state changes', async () => {
-      const eventSpy = spy(element, 'emitEvent');
-      element.click();
-
-      await elementUpdated(element);
-      expect(eventSpy).calledWithExactly('igcChange', {
-        detail: { checked: true, value: undefined },
+        await elementUpdated(element);
+        expect(eventSpy).calledWithExactly('igcChange', {
+          detail: { checked: true, value: undefined },
+        });
       });
     });
   });

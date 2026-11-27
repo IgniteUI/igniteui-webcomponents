@@ -329,6 +329,10 @@ private readonly _slots = addSlotController(this, {
   no content. In the first render, a query also reports content for a slot that the template
   does not render, and a flattened query does not return fallback content.
 
+  A handler that must keep state, such as a list of child components, sets `initial: true`. The
+  handler then also runs once before the first render, after `willUpdate()`, and its queries see
+  the slotted content. After a hydration, that call runs when the hydration ends.
+
 ## Shadow DOM and CSS Parts
 
 - All components use an open shadow root.
@@ -405,7 +409,9 @@ themes/
 
 - `src/styles/common/component.scss` holds the rules that every component shares: sizing,
   `box-sizing`, scrollbars and `[hidden]`. It compiles once, to `componentBase`. Put
-  `componentBase` first in `static styles`. Do not `@use` this file in a base file.
+  `componentBase` first in `static styles`. Do not `@use` this file in a base file. A
+  component without `componentBase` that sets a host `display` puts the `[hidden]` rule
+  alone, from `src/styles/common/hidden.css.js`, first in `static styles`.
 - Theme values come from the `igniteui-theming` schemas. `_themes.scss` digests them, and
   `var-get()` reads them. `light/[component].shared.scss` emits the full `$base` variable set.
   A light theme file emits only `diff($base, $theme)`. In dark mode, the component adopts the
@@ -633,20 +639,21 @@ Each component has tests in `[component].spec.ts`. They cover:
 - Test the light DOM and the shadow DOM (`expect(el).dom…`, `expect(el).shadowDom…`).
 - Use the shared helpers in `#internals/testing/`:
 
-  | Module                        | Provides                                                                       |
-  | ----------------------------- | ------------------------------------------------------------------------------ |
-  | `simulate.spec.js`            | `simulateClick`, `simulateKeyboard`, `simulatePointerDown`, `simulateInput`, … |
-  | `form-testbed.spec.js`        | `createFormAssociatedTestBed` and the shared label and ARIA projection suites  |
-  | `validity-helpers.spec.js`    | Validity assertions and `runValidationContainerTests`. Await it.               |
-  | `invoker-commands.spec.js`    | `runInvokerCommandsTests`                                                      |
-  | `first-render.spec.js`        | `readFirstUpdate` and `runFirstRenderLabelTests`                               |
-  | `focus-before-render.spec.js` | `runFocusBeforeRenderTests`                                                    |
-  | `helpers.spec.js`             | Animation, focus, scroll and style helpers, and `axeReflectedRelationsOptions` |
-  | `motion.spec.js`              | `transitionsIn` and `withTheme`                                                |
-  | `value-state.spec.js`         | `runValueStateMotionTests`                                                     |
-  | `fast-check-setup.spec.js`    | `fc` with the seed, `SLOW_PROPERTY_RUNS`, `orderedPair` and `withFixture`      |
-  | `date-arbitraries.spec.js`    | Date arbitraries, wall clocks and `assumeWallClock` for date properties        |
-  | `qr-decoder.spec.js`          | `prepareQrDecoder`, `readQr` for an image and `readQrMatrix` for a QR matrix   |
+  | Module                        | Provides                                                                                         |
+  | ----------------------------- | ------------------------------------------------------------------------------------------------ |
+  | `simulate.spec.js`            | `simulateClick`, `simulateKeyboard`, `simulatePointerDown`, `simulateInput`, …                   |
+  | `form-testbed.spec.js`        | `createFormAssociatedTestBed` and the shared label and ARIA projection suites                    |
+  | `validity-helpers.spec.js`    | Validity assertions and `runValidationContainerTests`. Await it.                                 |
+  | `invoker-commands.spec.js`    | `runInvokerCommandsTests`                                                                        |
+  | `first-render.spec.js`        | `readFirstUpdate`, `runFirstRenderLabelTests`, and `parseServerRendered` with `waitForHydration` |
+  | `focus-before-render.spec.js` | `runFocusBeforeRenderTests`                                                                      |
+  | `helpers.spec.js`             | Animation, focus, scroll and style helpers, and `axeReflectedRelationsOptions`                   |
+  | `motion.spec.js`              | `transitionsIn` and `withTheme`                                                                  |
+  | `value-state.spec.js`         | `runValueStateMotionTests` and `instantMarksEnded`                                               |
+  | `defined-tags.spec.js`        | `definedTags` and `fixtureTag`, for a check over every component                                 |
+  | `fast-check-setup.spec.js`    | `fc` with the seed, `SLOW_PROPERTY_RUNS`, `orderedPair` and `withFixture`                        |
+  | `date-arbitraries.spec.js`    | Date arbitraries, wall clocks and `assumeWallClock` for date properties                          |
+  | `qr-decoder.spec.js`          | `prepareQrDecoder`, `readQr` for an image and `readQrMatrix` for a QR matrix                     |
 
   Use the simulated events, not `element.click()` or a hand-built `KeyboardEvent`. They send
   the full event sequence of a real user interaction.
@@ -1219,20 +1226,20 @@ export const Basic: Story = {
 
 ## Verifying Your Work
 
-| Command                         | What it does                                                                               |
-| ------------------------------- | ------------------------------------------------------------------------------------------ |
-| `npm run build:styles`          | Compiles SCSS into the generated `.css.ts` files                                           |
-| `npm run check`                 | Import aliases, dependency-cruiser rules, TypeScript, registration and the public API      |
-| `npm run lint`                  | oxlint, lit-analyzer, oxfmt and Stylelint                                                  |
-| `npm run format`                | Applies the oxlint and oxfmt fixes                                                         |
-| `npm run test`                  | Builds the styles and runs the Web Test Runner suite with coverage                         |
-| `npm run test:ssr`              | Builds the package and renders every tag through Lit SSR; fails when a render throws       |
-| `npm run build:publish`         | Builds the package in `dist`, then writes and checks the single-theme aggregators          |
-| `npm run cem`                   | Regenerates `custom-elements.json`                                                         |
-| `npm run public-api:update`     | Rewrites `public-api.json` and `api-reference/` after a public API or JSDoc change         |
-| `npm run report:spec-scenarios` | Lists `spec.md` test scenarios out of step with the specs, and specs without an a11y audit |
-| `npm run build:meta`            | Regenerates the story metadata regions                                                     |
-| `npm run storybook`             | Dev server with style, manifest and story watchers                                         |
+| Command                        | What it does                                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `npm run build:styles`         | Compiles SCSS into the generated `.css.ts` files                                                                    |
+| `npm run check`                | Import aliases, dependency-cruiser rules, TypeScript, registration, the public API and the `spec.md` test scenarios |
+| `npm run check-spec-scenarios` | Fails when `spec.md` test scenarios are out of step with the specs; lists the specs without an a11y audit           |
+| `npm run lint`                 | oxlint, lit-analyzer, oxfmt and Stylelint                                                                           |
+| `npm run format`               | Applies the oxlint and oxfmt fixes                                                                                  |
+| `npm run test`                 | Builds the styles and runs the Web Test Runner suite with coverage                                                  |
+| `npm run test:ssr`             | Builds the package and renders every tag through Lit SSR; fails when a render throws                                |
+| `npm run build:publish`        | Builds the package in `dist`, then writes and checks the single-theme aggregators                                   |
+| `npm run cem`                  | Regenerates `custom-elements.json`                                                                                  |
+| `npm run public-api:update`    | Rewrites `public-api.json` and `api-reference/` after a public API or JSDoc change                                  |
+| `npm run build:meta`           | Regenerates the story metadata regions                                                                              |
+| `npm run storybook`            | Dev server with style, manifest and story watchers                                                                  |
 
 Before you open a PR, run `npm run check`, `npm run lint` and `npm run test`.
 

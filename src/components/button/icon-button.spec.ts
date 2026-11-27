@@ -27,7 +27,7 @@ describe('IconButton component', () => {
   };
   let el: IgcIconButtonComponent;
 
-  describe('', () => {
+  describe('Icon button tests', () => {
     beforeEach(async () => {
       el = await createIconButtonComponent();
     });
