@@ -39,6 +39,7 @@
     - [Layout and theming](#layout-and-theming)
     - [Indicator container](#indicator-container)
     - [Hidden ancestor](#hidden-ancestor)
+    - [First render](#first-render)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -59,6 +60,7 @@
 |       7 | 2026-10-29 | The carousel takes the height of its tallest slide; the arrow color tokens reach the navigation buttons |
 |       8 | 2026-10-29 | The navigation buttons have no transition, and the indicator dots transition only their border color; the active slide, the active indicator and its dot no longer set `visibility: visible`; so the carousel hides at the same time as a hidden ancestor |
 |       9 | 2026-11-02 | A `focus()` call before the first render applies after the render; `focus()` and `blur()` in the API                                                                                                                                                      |
+|      10 | 2026-11-26 | The first render shows the active slide and the indicators; a hydrated carousel uses the projected indicators |
 
 ## Overview
 
@@ -208,6 +210,7 @@ for the two states. An indicator with no matching slide is not activated.
   default orientation, vertical ones while `vertical` is set.
 - Removing the active slide moves the active state to another slide, and removing the last one leaves the
   carousel empty without throwing. A slide added to an empty carousel becomes the active one.
+- The first render shows the active slide and its indicator, or the label.
 - Detaching the carousel stops the rotation, and re-attaching a playing one resumes it.
 - The slides share one grid cell, so the carousel takes the height of its tallest slide, and at least 240px. A
   `height` or `max-height` on the carousel, or a height from its parent, also in a flex or grid layout, sets the
@@ -446,10 +449,19 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 39. The carousel, also the active slide and the active indicator dot, hides at the same time as a hidden ancestor in
     each theme, at rest and after a focus or a hover: no element transitions `visibility` or sets it to `visible`.
 40. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
-    the same element as a call after the first render. The call waits for the render after the `slotchange`, which
-    adds the indicators. `blur()`, a later `focus()` on another element and a removal that lasts until the render
+    the same element as a call after the first render. The call waits until no update of the carousel is pending.
+    `blur()`, a later `focus()` on another element and a removal that lasts until the render
     cancel the call, but a move in the same task keeps it. After the render, `focus()` takes the focus at once and
     `blur()` removes it. The suite runs with and without `hide-navigation`.
+
+### First render
+
+41. The first render shows the authored active slide, or the first slide, and the active indicator. It shows the
+    label when there are more slides than `maximumIndicatorsCount`. With `disableLoop`, it disables both navigation
+    buttons of a single slide, and the next button at an authored active last slide. It renders no default indicators
+    next to projected ones, and the projected indicators get their state before their own first render. After a
+    hydrating first update with no `slotchange`, the carousel activates the authored active slide and uses the
+    projected indicators.
 
 ### Not covered by the suite
 
@@ -465,6 +477,8 @@ In a right-to-left context, <kbd>←</kbd> and <kbd>→</kbd> swap their meaning
 - The carousel does not adapt the number of visible slides; it always shows exactly one.
 - The `igcSlideChanged`, `igcPlaying` and `igcPaused` events are notifications and cannot be canceled.
 - `igcPlaying` and `igcPaused` are emitted for user interaction only, not for the `play()` and `pause()` calls.
+- A carousel that hydrates from a server render shows the active slide and the indicators after its first update,
+  because the server render has no slides.
 
 ## Accessibility
 

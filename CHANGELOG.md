@@ -92,6 +92,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - The `hidden` attribute hides the banner. Before, it still rendered.
 - #### Calendar, Date picker, Date range picker, Date time input
   - An ISO string with a signed six digit year, such as `+010000-01-01T00:00:00.000Z`, sets the value. `toISOString()` gives this format for dates before year 0 and after year 9999. Before, the value became `null`.
+- #### Carousel
+  - The first render shows the active slide and its indicator, or the label when there are more slides than `maximumIndicatorsCount`. A navigation button at an end that `disableLoop` stops is disabled from the first render too. Before, the carousel showed these states only after the next update.
+  - After the hydration of a server render, the carousel uses the projected indicators. Before, when the carousel loaded after the page, it added its default indicators and the projected indicators stayed inactive.
 - #### Checkbox, Radio, Switch
   - A change of `value` no longer makes a checked control dirty, so a later `defaultChecked` still sets the checked state, as for a native checkbox or radio.
 - #### Color picker
