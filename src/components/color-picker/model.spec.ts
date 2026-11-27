@@ -74,7 +74,7 @@ describe('ColorModel', () => {
     });
   });
 
-  describe('parse', () => {
+  describe('Color string parsing', () => {
     it('should parse hex colors', () => {
       const color = ColorModel.parse('#ff0000');
 
@@ -446,7 +446,7 @@ describe('ColorModel', () => {
     });
   });
 
-  describe('edge cases', () => {
+  describe('Extreme values and conversion drift', () => {
     it('should handle zero values', () => {
       const color = ColorModel.default();
 
@@ -492,7 +492,7 @@ describe('ColorModel', () => {
     });
   });
 
-  describe('factory methods', () => {
+  describe('HSL and HSV factories and hex parsing', () => {
     it('should create color from HSL values', () => {
       const color = ColorModel.fromHSL(120, 100, 50);
 
@@ -556,7 +556,7 @@ describe('ColorModel', () => {
     });
   });
 
-  describe('utility methods', () => {
+  describe('Clone, equality and tuple methods', () => {
     it('should clone a color', () => {
       const original = new ColorModel([128, 64, 192], 0.5);
       const clone = original.clone();

@@ -169,6 +169,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - #### Splitter
   - On a bar too short for the drag handle, the two expanders and the 48px gaps between them, the drag handle keeps 25% of the bar length and the gaps get narrower. Before, the gaps stayed 48px, so the handle shrank and the expanders touched the ends of the bar. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
   - In the Indigo theme, the minimum sizes of the panes count the full thickness of the bar while it is idle. Before, they counted the thickness that the idle bar shows, so two minimums that filled the splitter overflowed it. [#2634](https://github.com/IgniteUI/igniteui-webcomponents/issues/2634)
+- #### Stepper
+  - After the hydration of a server render, the stepper finds its steps and activates one. Before, when the stepper loaded after the page, it had no steps until they changed.
 
 ## [7.5.0] - 2026-11-16
 ### Added

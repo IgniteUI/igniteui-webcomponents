@@ -34,12 +34,14 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
     - [igc-tab](#igc-tab)
   - [Test scenarios](#test-scenarios)
     - [Rendering and defaults](#rendering-and-defaults)
+    - [Selection, keyboard and alignment](#selection-keyboard-and-alignment)
     - [Selection state](#selection-state)
     - [Scrolling](#scrolling)
     - [Composition](#composition)
     - [Tab component](#tab-component)
     - [Regressions](#regressions)
     - [Host ARIA](#host-aria)
+    - [Link header](#link-header)
     - [Link tabs](#link-tabs-1)
     - [Layout](#layout)
     - [Hidden ancestor](#hidden-ancestor)
@@ -49,6 +51,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
       - [Column themes](#column-themes)
     - [Content found by the browser](#content-found-by-the-browser-1)
     - [First render motion](#first-render-motion)
+    - [Not covered by the suites](#not-covered-by-the-suites)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -74,6 +77,7 @@ This directory hosts two public components: [`igc-tabs`](#igc-tabs) and [`igc-ta
 |      13 | 2026-11-05 | With `prefers-reduced-motion: reduce`, the scroll buttons and the selection scroll the header strip at once; the scroll buttons follow the `scroll-behavior` of the `tabs` part |
 |      14 | 2026-11-12 | Find-in-page and links to an element in a panel select its tab; a panel that is not selected has `hidden="until-found"` |
 |      15 | 2026-11-20 | The first render shows at once: the selected indicator and the colors of the selected header do not animate, also when the tabs show later than they render |
+|      16 | 2026-11-27 | Test scenarios mirror the `Rendering and defaults`, `Selection, keyboard and alignment`, `Regressions`, `Tab component` and `Link header` blocks |
 
 ## Overview
 
@@ -458,25 +462,53 @@ The groups below mirror the `describe` blocks.
 
 ### Rendering and defaults
 
-1. The component renders its header strip and the body of the selected tab, and passes the accessibility audit. The
-   selected indicator starts at the start of the strip, also when the page sets `text-align` on the host.
-2. The default alignment and activation are applied.
-3. `tabs`, `selected` and `selectedTab` report the current state.
+1. An empty `igc-tabs` renders with the `start` alignment, the `auto` activation and no tabs.
+
+### Selection, keyboard and alignment
+
+The cases use four tabs. The first one is disabled, and two take their label from the `label` slot.
+
+2. The component passes the accessibility audit and reports its four tabs in `tabs`. The first enabled tab is selected
+   when nothing else is specified, and a tab with the `selected` attribute in the markup is selected. The body of the
+   selected tab shows.
+3. A click selects a tab that is not disabled. `select` selects a tab by IDREF and by reference, and keeps the
+   selection for a value that matches no tab.
+4. The arrow keys select the next and the previous tab, also in a right-to-left context, and <kbd>Home</kbd> and
+   <kbd>End</kbd> select the first and the last enabled tab. With `manual` activation, the keys only move the focus,
+   and <kbd>Space</kbd> and <kbd>Enter</kbd> select the focused tab. The activation keys cancel their default action.
+5. The selected indicator aligns with the selected tab, also in a right-to-left context, and starts at the start of
+   the strip when the page sets `text-align` on the host.
+6. A click and an arrow key emit `igcChange`. A click or a key press inside the tab content does not change the
+   selected tab.
+7. `alignment` `justify`, `start` and `center` place the headers, and `justify` gives every tab the same width,
+   whatever the labels.
+8. The `selected` property of a tab updates the selection. When the selected tab is removed, the selection moves to
+   another tab, and the removal of other tabs keeps it. Tabs added at run time keep the selection, and an added
+   selected tab takes it.
 
 ### Selection state
 
-4. A tab marked `selected` in markup becomes the initial selection.
-5. `select` works by reference, by IDREF and by label, and ignores disabled tabs and unmatched values.
-6. Clicking a header selects the tab and emits `igcChange`.
-7. The keyboard navigation moves focus, wraps at the ends and skips disabled tabs and tabs that do not render.
-8. With `activation="auto"` focus selects the tab; with `manual` it does not.
+The cases use three tabs. The last one is disabled.
+
+9. The arrow keys skip a tab that does not render. With `manual` activation, an arrow key emits no `igcChange`, and
+   the activation of a tab emits it once.
+10. The deselection of the active tab, and the removal of the last remaining tab, clear the selection. A tab added
+    while nothing is selected takes the selection. An added selected tab wins when the active tab is deselected in the
+    same task, and so does the selected tab of new markup. A selected tab that moves keeps the selection, and of
+    several tabs selected at once the last one in document order wins.
+11. `select` ignores disabled tabs, accepts a label, round-trips with the `selected` getter and emits no `igcChange`.
+    A `selected` state on a disabled tab is reverted, a disabled tab marked as selected in the markup is not selected,
+    and tabs that are not children of the component are ignored.
+12. When the active tab is disabled, the selection moves to the next tab. The disabled state of another tab keeps the
+    selection, and the disabled state of every tab clears it. A disabled tab that is enabled again gets a tab stop.
+13. A tab that has not rendered yet can be selected, and `selectedTab` reports the selected tab.
 
 ### Scrolling
 
-9. The scroll buttons appear when the headers overflow and scroll the strip. Their arrows point along the writing
-   direction, also when `dir` is on the tabs or on an ancestor. The scroll buttons and the selection scroll the strip
-   smoothly, and at once with reduced motion.
-10. Selecting a tab outside the visible area scrolls it into view. Under an ancestor `zoom` or `transform`, the strip is
+14. The scroll buttons appear when the headers overflow and scroll the strip. Their arrows point along the writing
+    direction, also when `dir` is on the tabs or on an ancestor. The scroll buttons and the selection scroll the strip
+    smoothly, and at once with reduced motion.
+15. Selecting a tab outside the visible area scrolls it into view. Under an ancestor `zoom` or `transform`, the strip is
     measured in its own CSS pixels, and a selected tab scrolls into view between the scroll buttons. A hidden tab does not
     move the strip, neither through the scroll buttons nor when it is selected. A tab selected in the initial markup
     scrolls fully into view, also when the scroll buttons show only after the headers are measured again. A tab
@@ -486,149 +518,162 @@ The groups below mirror the `describe` blocks.
 
 ### Composition
 
-11. Tabs added or removed at run time are picked up, and the selection is updated when the selected tab is removed.
-    A tab added as selected takes the selection, also when the selected tab is deselected in the same task or the
-    markup is replaced. A selected tab that moves keeps the selection, and of several tabs selected at once the last one
-    in document order wins. Tabs projected through the slot of another component are picked up, work with the
-    keyboard, and are followed when their state changes or tabs are added or removed. The selected indicator stays on a
-    projected header, and a selected projected header scrolls into view. Changes made while the tabs are detached apply
-    when they connect again.
-12. Prefix, label and suffix content renders in the header.
+16. Tabs projected through the slot of another component are picked up, work with the keyboard, and are followed when
+    their state changes or tabs are added or removed. The selected indicator stays on a projected header, and a
+    selected projected header scrolls into view.
+17. Changes made while the tabs are detached apply when they connect again.
 
 ### Tab component
 
-13. The tab renders its header and body parts, reflects `selected` and `disabled`, and resolves its label from the
-    property and the slot.
+18. The component passes the accessibility audit. A tab has an empty `label` and is not selected or disabled by
+    default.
+19. A tab without an `id` gets a generated one, and an author `id` stays. The header has the `tab` role, the body has
+    the `tabpanel` role, and each one references the other, also after a change of the public `id`.
+20. Each header exposes its position in the set, and the set information follows tabs that are added and removed. A
+    standalone tab exposes no set information.
+21. The selected tab has the roving tab stop, and a tab stop stays when nothing is selected.
+22. Only the selected panel takes the focus. The other panels are hidden until found and hidden from assistive
+    technology.
+23. The header reflects the selected and the disabled state.
 
 ### Regressions
 
-14. Issue #1140.
-15. Issue #713.
-16. Issue #2416. Tabs removed in the same task, after a microtask or after their first update throw no error. Tabs
+24. Issue #1140 - a tab appended to tabs that were just added to the document throws no error.
+25. Issue #713 - nested tabs keep their own selection: a click in the nested tabs does not change the outer
+    selection, and a click in the outer tabs does not change the nested one.
+26. Issue #2416. Tabs removed in the same task, after a microtask or after their first update throw no error. Tabs
     added again after such a removal follow a change of size.
 
 ### Host ARIA
 
-17. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+27. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
     target and follow a change, and an axe audit passes with a host label.
+
+### Link header
+
+28. A tab with `href` renders an anchor with the tab role, `href`, `target`, `rel`, the selected state, the panel
+    reference, the set position and the roving tab index, and passes the accessibility audit and the host ARIA suite.
+    The link header has no underline and the color of a plain header.
+29. A disabled link tab has no `href` and keeps the same header element. Without `href`, the plain header renders
+    again. A focused header keeps the focus when `href` is added or removed, and focus in the panel stays there.
 
 ### Link tabs
 
-18. A tab with `href` renders an anchor with the tab role, `href`, `target`, `rel`, the selected state, the panel
-    reference, the set position and the roving tab index, and passes the accessibility audit and the host ARIA suite.
-    The link header has no underline and the color of a plain header.
-19. A disabled link tab has no `href` and keeps the same header element. Without `href`, the plain header renders
-    again. A focused header keeps the focus when `href` is added or removed, and focus in the panel stays there.
-20. A plain click selects the tab, emits `igcChange` and follows the link. When the application cancels the click,
+30. A plain click selects the tab, emits `igcChange` and follows the link. When the application cancels the click,
     the tab is still selected, the link is not followed and no `igcNavigate` is emitted.
-21. A click with a modifier key or another button, and a click on a tab whose `target` is not `_self`, change no
+31. A click with a modifier key or another button, and a click on a tab whose `target` is not `_self`, change no
     selection, emit no event and are not canceled by the tabs. The target of a `<base>` element applies, without regard
     to case.
-22. Enter and Space click the header of a link tab: the keydown is canceled, the tab is selected and the link is
+32. Enter and Space click the header of a link tab: the keydown is canceled, the tab is selected and the link is
     followed. Ctrl+Enter is left to the browser.
-23. With `activation="auto"`, the arrow keys select link tabs without a click, and do not select a tab whose `target`
+33. With `activation="auto"`, the arrow keys select link tabs without a click, and do not select a tab whose `target`
     is not `_self`.
-24. Link and plain tabs navigate alike, and a disabled link tab is skipped.
-25. A key pressed on an element other than a tab header, such as an element slotted into a label, is not canceled,
+34. Link and plain tabs navigate alike, and a disabled link tab is skipped.
+35. A key pressed on an element other than a tab header, such as an element slotted into a label, is not canceled,
     and does not select or focus a tab.
-26. A plain click, Enter or Space on a link tab emits `igcNavigate` on the tab, also on the selected tab, and the
+36. A plain click, Enter or Space on a link tab emits `igcNavigate` on the tab, also on the selected tab, and the
     event does not bubble or reach a shadow host around the tabs. When the application cancels it, the tabs cancel
     the click and the link is not followed. A plain or disabled tab, and a click in the panel, emit no event.
 
 ### Layout
 
-27. Changes inside a panel, such as new content or a change of height, do not make the tabs measure the strip.
-28. A click selection is handled once: the `selected` attribute that the tabs reflect does not run it again. An
+37. Changes inside a panel, such as new content or a change of height, do not make the tabs measure the strip.
+38. A click selection is handled once: the `selected` attribute that the tabs reflect does not run it again. An
     application that deselects the tab in the `igcChange` handler leaves no selection.
-29. A change of size of a tab header, also of a header that a change of `href` replaced, moves the selected
+39. A change of size of a tab header, also of a header that a change of `href` replaced, moves the selected
     indicator. So does a change of direction, also on an ancestor, in the frame of the change.
-30. The tab headers are painted under an earlier page layer with `z-index: 1`.
-31. An element with `position: fixed` in the selected panel is placed against the viewport.
-32. In a row, the header strip covers only the header row, not the panels.
-33. The selected indicator stays on its header with padding on the tabs, the `tabs` part and the `inner` part, and with
+40. The tab headers are painted under an earlier page layer with `z-index: 1`.
+41. An element with `position: fixed` in the selected panel is placed against the viewport.
+42. In a row, the header strip covers only the header row, not the panels.
+43. The selected indicator stays on its header with padding on the tabs, the `tabs` part and the `inner` part, and with
     a positioned `tabs` part, in a row in LTR and RTL and in a column.
 
 ### Hidden ancestor
 
-34. The tabs, also the selected indicator, hide at the same time as a hidden ancestor in each theme, at rest and after a
+44. The tabs, also the selected indicator, hide at the same time as a hidden ancestor in each theme, at rest and after a
     focus or a hover: no element transitions `visibility` or sets it to `visible`.
 
 ### Header position
 
-35. The default position is `top`. The attribute reflects. The tab list has the horizontal orientation in a row and the
+45. The default position is `top`. The attribute reflects. The tab list has the horizontal orientation in a row and the
     vertical orientation in a column, also after a change.
-36. In a column, Up and Down move the focus between the enabled tabs that render, and wrap. With `activation="auto"`,
+46. In a column, Up and Down move the focus between the enabled tabs that render, and wrap. With `activation="auto"`,
     they select the tab. With `manual`, they only move the focus. They do not mirror in a right-to-left column.
-37. Left and Right in a column, and Up and Down in a row, do nothing and are not canceled.
-38. A change of position keeps the selected tab, the focused header and the header elements, and emits no `igcChange`.
+47. Left and Right in a column, and Up and Down in a row, do nothing and are not canceled.
+48. A change of position keeps the selected tab, the focused header and the header elements, and emits no `igcChange`.
     A selection made in the same task as a change of position stays.
 
 #### Column layout
 
-39. The headers form a column on the `start` or the `end` side of the panels, in LTR and RTL. The header strip covers
+49. The headers form a column on the `start` or the `end` side of the panels, in LTR and RTL. The header strip covers
     only the header column.
-40. The column is as wide as the widest header, up to the width limit of a header, also with `justify`. The panel
+50. The column is as wide as the widest header, up to the width limit of a header, also with `justify`. The panel
     takes the rest of the width. In a narrow column, a long label wraps and the panel keeps part of the width. Tabs
     that size to their content keep a label on one line.
-41. `alignment` `start`, `center`, `end` and `justify` place the headers along the column.
-42. With an auto height, the panel sizes the tabs. With a set height, the height of the tabs limits the panel, also
+51. `alignment` `start`, `center`, `end` and `justify` place the headers along the column.
+52. With an auto height, the panel sizes the tabs. With a set height, the height of the tabs limits the panel, also
     after a row with a set height changes to a column. The limit goes away with the set height. In a grid or a flex
     row that sizes the tabs from their content, the tabs grow with the panel, also with content added to it later. A
     height that the grid or the flex row sets limits the panel. A change of the limit keeps the scroll offset of the
     selected panel.
-43. A row of tabs in the panel of a column lays out as a row.
-44. The accessibility audit passes on both sides. The headers of a column are painted under an earlier page layer.
-45. When a panel grows, the indicator follows the headers that `center` or `end` alignment moves. With `start`, the
+53. A row of tabs in the panel of a column lays out as a row.
+54. The accessibility audit passes on both sides. The headers of a column are painted under an earlier page layer.
+55. When a panel grows, the indicator follows the headers that `center` or `end` alignment moves. With `start`, the
     indicator does not move.
-46. Each header of a column is as tall as a header row.
-47. With `justify`, a hidden tab leaves no gap, in a row and in a column. Tabs in a panel of a `justify` row keep the
+56. Each header of a column is as tall as a header row.
+57. With `justify`, a hidden tab leaves no gap, in a row and in a column. Tabs in a panel of a `justify` row keep the
     width limit of a header. A tab that hides or shows gives no ResizeObserver loop error.
-48. A `max-height` on the tabs is a height limit without their padding and border. A higher `max-height` applies also
+58. A `max-height` on the tabs is a height limit without their padding and border. A higher `max-height` applies also
     while the limit caps the panel.
-49. A tab that leaves its tabs drops the position.
-50. Under an ancestor `transform`, also `scale(0)`, the first frame of a scale-in animation, a set height or a
+59. A tab that leaves its tabs drops the position.
+60. Under an ancestor `transform`, also `scale(0)`, the first frame of a scale-in animation, a set height or a
     `max-height` limits the panels in CSS pixels.
 
 #### Column scrolling
 
-51. With a set height, scroll buttons show above and below the headers when the headers do not fit. Their arrows point
+61. With a set height, scroll buttons show above and below the headers when the headers do not fit. Their arrows point
     up and down, also in a right-to-left column. The panel stays at the top of the column while the headers scroll.
-52. The scroll buttons scroll the column. A selected tab scrolls into view, and the page does not scroll. A header that
+62. The scroll buttons scroll the column. A selected tab scrolls into view, and the page does not scroll. A header that
     gets the focus with `manual` activation scrolls into view. A tab selected while the tabs are hidden scrolls into
     view when they show again.
-53. The scroll offset stays in range when tabs are removed or the tabs get taller. The scroll buttons show and hide when
+63. The scroll offset stays in range when tabs are removed or the tabs get taller. The scroll buttons show and hide when
     a header changes height, and hide when the height limit goes away, with no ResizeObserver loop error.
-54. Under an ancestor `zoom`, the column is measured in its own CSS pixels. Changes inside a panel do not make the tabs
+64. Under an ancestor `zoom`, the column is measured in its own CSS pixels. Changes inside a panel do not make the tabs
     measure the column.
-55. The indicator moves along the column with the selected header. A change of position resets the scroll offsets,
+65. The indicator moves along the column with the selected header. A change of position resets the scroll offsets,
     keeps the focused header in view, and moves the indicator to the new axis without a transition.
-56. A `max-height` on the tabs limits the panel and scrolls the headers as a set height does, and a change of it
+66. A `max-height` on the tabs limits the panel and scrolls the headers as a set height does, and a change of it
     applies.
 
 #### Column themes
 
-57. In the Material, Fluent and Indigo themes, the indicator is on the side of the headers that faces the panels, for
+67. In the Material, Fluent and Indigo themes, the indicator is on the side of the headers that faces the panels, for
     both positions, in LTR and RTL. The lines of the Bootstrap theme and the header lines of the Indigo theme are on
     the side of the panels.
-58. Each tab gets the position, also a tab added later.
-59. A column hides at the same time as a hidden ancestor (the shared `runHiddenAncestorTests` suite).
+68. Each tab gets the position, also a tab added later.
+69. A column hides at the same time as a hidden ancestor (the shared `runHiddenAncestorTests` suite).
 
 ### Content found by the browser
 
-60. A link to an element in a panel selects its tab with `igcChange`, hides the other panels until found, and does
+70. A link to an element in a panel selects its tab with `igcChange`, hides the other panels until found, and does
     not move the focus.
-61. A disabled tab hides its panel with plain `hidden` and is not selected.
-62. A click on the selected panel reaches its content: the hidden panels in the shared area take no height.
-63. A height, padding and a border on `::part(tab-body)` do not give the hidden panels a box.
-64. A link tab is selected without following its link.
-65. A collapsed expansion panel in a panel opens, and the tab is selected.
+71. A disabled tab hides its panel with plain `hidden` and is not selected.
+72. A click on the selected panel reaches its content: the hidden panels in the shared area take no height.
+73. A height, padding and a border on `::part(tab-body)` do not give the hidden panels a box.
+74. A link tab is selected without following its link.
+75. A collapsed expansion panel in a panel opens, and the tab is selected.
 
 ### First render motion
 
-66. The first render starts no transitions in the Material, Fluent and Indigo themes: the indicator does not slide in,
+76. The first render starts no transitions in the Material, Fluent and Indigo themes: the indicator does not slide in,
     and the selected header does not fade in. This also applies to a tab that the application selects and to a column.
-67. Tabs that show for the first time after they render, as under a `display: none` parent, start no transitions.
-68. A selection change after the first render slides the indicator.
+77. Tabs that show for the first time after they render, as under a `display: none` parent, start no transitions.
+78. A selection change after the first render slides the indicator.
+
+### Not covered by the suites
+
+- The `prefix` and `suffix` slots of a tab have no rendering case. The suites use the `suffix` slot only for a key
+  press on slotted content.
 
 ## Assumptions and limitations
 

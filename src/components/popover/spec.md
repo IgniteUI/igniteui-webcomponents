@@ -36,8 +36,12 @@
     - [Arrow element tests](#arrow-element-tests)
     - [Rectangle anchor tests](#rectangle-anchor-tests)
     - [Anchor visibility](#anchor-visibility)
-    - [Scroll strategy tests](#scroll-strategy-tests)
-    - [Fallback positioning strategy](#fallback-positioning-strategy)
+    - [Popover](#popover)
+      - [Positioning](#positioning)
+      - [Position strategy switching](#position-strategy-switching)
+      - [Detached before the first render](#detached-before-the-first-render)
+      - [Scroll strategy tests](#scroll-strategy-tests)
+      - [Fallback positioning strategy](#fallback-positioning-strategy)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -52,6 +56,7 @@
 |       2 | 2026-10-26 | The arrow gets its side part before it is measured      |
 |       3 | 2026-10-30 | `anchorRect` anchors the content to a viewport rectangle |
 |       4 | 2026-10-30 | `zoom` in the fallback; the arrow stays inside the content    |
+|       5 | 2026-11-27 | Test scenarios mirror the `Popover` block and its groups; `Fallback positioning strategy` block |
 
 ## Overview
 
@@ -354,20 +359,40 @@ the same expectations. The groups below mirror the `describe` blocks.
 29. The content hides when the anchor leaves the DOM, and shows again when a new anchor resolves.
 30. The content tracks the anchor as it scrolls into and out of view.
 
-### Scroll strategy tests
+### Popover
 
-31. `hide` hides the content while the anchor is fully out of view, and shows it again afterwards.
-32. `scroll` keeps the content visible and anchored.
-33. `close` emits `igcPopoverScrollClose` on each scroll, without changing `open` itself.
-34. `close` still emits after the anchor changes while the content shows.
+The groups follow the nested `describe` blocks of `Popover`.
 
-### Fallback positioning strategy
+#### Positioning
 
-35. The whole positioning surface is re-run with the floating strategy forced, covering the browsers without native
-    CSS anchor positioning.
-36. With the fallback forced, the content follows an anchor in the top layer that moves without a scroll or a
+31. The groups from `Slotted anchor element` to `Anchor visibility` run one time with each position strategy forced.
+    The native run is skipped in a browser without native CSS anchor positioning.
+
+#### Position strategy switching
+
+The group is skipped in a browser without native CSS anchor positioning.
+
+32. An SVG anchor that needs the fallback clears the native anchoring, and the content stays open.
+33. An anchor that can use native anchoring again clears the fallback styles, and the content is at the anchor.
+
+#### Detached before the first render
+
+34. A popover that is removed before its first render opens when it connects again.
+
+#### Scroll strategy tests
+
+35. `hide` hides the content while the anchor is fully out of view, and shows it again afterwards.
+36. `scroll` keeps the content visible and anchored.
+37. `close` emits `igcPopoverScrollClose` on each scroll, without changing `open` itself.
+38. `close` still emits after the anchor changes while the content shows.
+
+#### Fallback positioning strategy
+
+39. With the fallback forced, the content follows an anchor in the top layer that moves without a scroll or a
     resize.
-37. With the fallback forced, the content stays at an anchor inside a top-layer element while the page scrolls.
+40. With the fallback forced, the content stays at an anchor inside a top-layer element while the page scrolls.
+41. With the fallback forced, the content uses the `fixed` strategy with a sticky ancestor, direct or not, and the
+    `absolute` strategy without one.
 
 ## Assumptions and limitations
 

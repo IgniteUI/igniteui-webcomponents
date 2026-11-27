@@ -23,7 +23,7 @@
     - [CSS Shadow parts](#css-shadow-parts)
     - [CSS custom properties](#css-custom-properties)
   - [Test scenarios](#test-scenarios)
-    - [Default](#default)
+    - [Ripple element](#ripple-element)
     - [Motion](#motion)
     - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
@@ -39,6 +39,7 @@
 |       1 | 2026-09-21 | Initial specification                                  |
 |       2 | 2026-10-14 | Respect `prefers-reduced-motion`; clean up on a cancel |
 |       3 | 2026-10-21 | API descriptions aligned with the JSDoc.               |
+|       4 | 2026-11-27 | The `Default` test scenarios are `Ripple element`, as their `describe` block |
 
 ## Overview
 
@@ -155,7 +156,7 @@ None applicable.
 | -------- | ---------------- |
 | `Ripple` | `ripple.spec.ts` |
 
-### Default
+### Ripple element
 
 1. The DOM state is correct before and after the ripple animation, so the animation element is created and then
    cleaned up.

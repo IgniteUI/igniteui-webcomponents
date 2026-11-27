@@ -37,6 +37,8 @@
     - [Methods](#methods-1)
     - [Events](#events-1)
     - [Regressions](#regressions)
+    - [Part names](#part-names)
+    - [Validity writes](#validity-writes)
     - [Form integration](#form-integration-1)
     - [Form validity checks](#form-validity-checks)
     - [defaultValue](#defaultvalue)
@@ -44,7 +46,9 @@
     - [External label association](#external-label-association)
     - [Host ARIA](#host-aria)
     - [Host combobox state](#host-combobox-state)
+    - [Material search field](#material-search-field)
     - [Hidden ancestor](#hidden-ancestor)
+    - [Enter submission](#enter-submission)
     - [Value state motion](#value-state-motion)
     - [Invalid state motion](#invalid-state-motion)
     - [Not covered by the suite](#not-covered-by-the-suite)
@@ -79,6 +83,7 @@
 |      19 | 2026-11-20 | A value from code and the first render show at once, also the Material label that moves up; no transitions with reduced motion; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
 |      20 | 2026-11-25 | `name` and `readOnly` update their attributes at once |
 |      21 | 2026-11-25 | The first render shows the slotted content |
+|      22 | 2026-11-27 | Test scenarios mirror the `Regressions`, `Part names` and `Validity writes` blocks |
 
 ## Overview
 
@@ -542,69 +547,81 @@ The groups below mirror the `describe` blocks of the suite.
 
 ### Properties
 
-4. Sets the `type` property.
-5. Sets the `disabled` property.
-6. Sets the `label` property.
-7. Sets the `name` property.
-8. Sets the `placeholder` property.
-9. Sets the `min` and `max` properties.
-10. Sets the `minLength` and `maxLength` properties.
-11. Sets the `pattern` property.
-12. Sets the `required` property.
-13. Sets the `value` property.
-14. Issue #1026 - passing `undefined` sets the underlying input value to `undefined`.
+5. Sets the `type` property.
+6. Sets the `disabled` property.
+7. Sets the `label` property.
+8. Sets the `name` property.
+9. Sets the `placeholder` property.
+10. Sets the `min` and `max` properties.
+11. Sets the `minLength` and `maxLength` properties.
+12. Sets the `pattern` property.
+13. Sets the `required` property.
+14. Sets the `value` property.
+15. Issue #1026 - passing `undefined` sets the underlying input value to `undefined`.
 
 ### Methods
 
-15. `stepUp` and `stepDown` increment and decrement the value. Before the first render, they and `setRangeText` keep
+16. `stepUp` and `stepDown` increment and decrement the value. Before the first render, they and `setRangeText` keep
     the value.
-16. `setRangeText` replaces the given range, and the selection when it gets no range.
-17. `setSelectionRange` sets the selection, and `selectionStart` and `selectionEnd` report it.
-18. `selectionStart` and `selectionEnd` are `null` for the `email` and `number` types.
-19. `focus` and `blur` move focus to and from the inner input.
+17. `setRangeText` replaces the given range, and the selection when it gets no range.
+18. `setSelectionRange` sets the selection, and `selectionStart` and `selectionEnd` report it.
+19. `selectionStart` and `selectionEnd` are `null` for the `email` and `number` types.
+20. `focus` and `blur` move focus to and from the inner input.
 
 ### Events
 
-20. Emits `igcInput`.
-21. Emits `igcChange`.
-22. A click on the label lets a single click escape the shadow root - it must not be duplicated.
+21. Emits `igcInput`.
+22. Emits `igcChange`.
+23. A click on the label lets a single click escape the shadow root - it must not be duplicated.
 
 ### Regressions
 
-23. Issue #1066 - the component validates synchronously.
-24. Issue #1521.
-25. Issue #1632 - the control does not enter the `invalid` state while pristine when validator properties change
+24. Issue #1066 - the component validates synchronously. In an `igcInput` handler, `checkValidity()` already reflects
+    the new value of a required `email` input.
+25. Issue #1521 - a `number` input with `step="0.1"` accepts `1` and `1.1` and rejects `1.11`, until `step` becomes
+    `0.01`.
+26. Issue #1632 - the control does not enter the `invalid` state while pristine when validator properties change
     dynamically.
+
+### Part names
+
+27. A change of the value queries the `prefix` and the `suffix` slots once each, and the render keeps the `input`
+    part, the `prefixed` container part and the `filled` input part.
+
+### Validity writes
+
+28. The validity is written to the element internals only when the validity flags or the message change: three
+    valid values in a row write once, and a value that is too short writes again.
 
 ### Form integration
 
 Driven by `createFormAssociatedTestBed`.
 
-26. Is form associated.
-27. Is not associated on submit when it has no value.
-28. Is associated on submit.
-29. Is correctly reset on form reset, including after a `setAttribute` call.
-30. Reflects the disabled state of an ancestor `fieldset`.
-31. Fulfils the required, min, max, step, minimum length, maximum length, pattern and custom constraints.
-32. Validates the `email` and `url` schema types.
+29. Is form associated.
+30. Is not associated on submit when it has no value.
+31. Is associated on submit.
+32. Is correctly reset on form reset, including after a `setAttribute` call.
+33. Reflects the disabled state of an ancestor `fieldset`.
+34. Fulfils the required, min, max, step, minimum length, maximum length, pattern and custom constraints.
+35. Validates the `email` and `url` schema types.
 
 ### Form validity checks
 
-33. A failed submit and `form.reportValidity()` focus the first invalid control, past the `fieldset` of the test bed,
+36. A failed submit and `form.reportValidity()` focus the first invalid control, past the `fieldset` of the test bed,
     also before an invalid native control. `reportValidity()` focuses its control. `form.checkValidity()` keeps the
     focus, and a report or a submit inside it, of the same form or of another form, still moves the focus. A native
     control that is invalid first takes the focus.
-34. Editing an invalid field sends no `invalid` event, keeps the focus and still applies the invalid styles.
+37. Editing an invalid field sends no `invalid` event, keeps the focus and still applies the invalid styles.
     `checkValidity()`, `reportValidity()`, `form.checkValidity()` and a failed submit each send one.
 
 ### defaultValue
 
-35. Form integration - correct initial state, correct submission, correct reset, submission on <kbd>Enter</kbd>, and
+38. Form integration - correct initial state, correct submission, correct reset, submission on <kbd>Enter</kbd>, and
     no submission on <kbd>Enter</kbd> while the value is invalid. A listener on the host or an ancestor that cancels the
     `keydown` stops the submission, and a listener that stops the `keydown` delays it to the next task. The
     <kbd>Enter</kbd> that commits an IME composition does not submit, also when it comes after `compositionend` with
     the `keyCode` 229. A change of the `value` attribute keeps the control pristine.
-36. Validation - a passing and a failing case for each of required, minlength, maxlength, pattern, email schema, url
+39. Validation - a passing and a failing case for each of required, minlength, maxlength, pattern, email schema, url
     schema, min, max and step. A pattern that matches only a part of the value fails, a pattern compiles with the `v`
     flag, and an invalid pattern sets no constraint.
 
@@ -613,55 +630,55 @@ Driven by `createFormAssociatedTestBed`.
 Generated by `runValidationContainerTests`. Each case renders the control with the slot projected, forces the
 constraint to fail, and asserts the slot is present and has content:
 
-37. `value-missing` with `required`.
-38. `type-mismatch` with `type="email"`.
-39. `pattern-mismatch` with a `pattern`.
-40. `too-long` with `maxLength`, and `too-short` with `minLength`.
-41. `range-overflow` with `max`, `range-underflow` with `min`, and `step-mismatch` with `step`, for `type="number"`.
-42. `custom-error` after `setCustomValidity`.
-43. `invalid` with `required`.
-44. Two slots at once - `type-mismatch` and `too-short` on an email input with `minLength`.
+40. `value-missing` with `required`.
+41. `type-mismatch` with `type="email"`.
+42. `pattern-mismatch` with a `pattern`.
+43. `too-long` with `maxLength`, and `too-short` with `minLength`.
+44. `range-overflow` with `max`, `range-underflow` with `min`, and `step-mismatch` with `step`, for `type="number"`.
+45. `custom-error` after `setCustomValidity`.
+46. `invalid` with `required`.
+47. Two slots at once - `type-mismatch` and `too-short` on an email input with `minLength`.
 
 ### External label association
 
 Generated by `runExternalLabelAssociationTests`.
 
-45. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
+48. An external `label` bound through `for`, and a `label` wrapping the host, are projected onto the native input as
     `ariaLabelledByElements`.
-46. Clicking that label focuses the host and the native input. A `label` added after the first render names the control
+49. Clicking that label focuses the host and the native input. A `label` added after the first render names the control
     from the first focus, an axe audit passes with only an external `label`, and the host `aria-labelledby` and
     `aria-label` follow the [naming order](#naming-order).
 
 ### Host ARIA
 
-47. The shared host description suite: the host `aria-describedby` describes the native control after the helper
+50. The shared host description suite: the host `aria-describedby` describes the native control after the helper
     text, and follows a change and a removal.
 
 ### Host combobox state
 
 Generated by `runHostComboboxTests`, except the last case.
 
-48. A host `role`, `aria-expanded`, `aria-autocomplete`, `aria-controls` and `aria-activedescendant` make the native
+51. A host `role`, `aria-expanded`, `aria-autocomplete`, `aria-controls` and `aria-activedescendant` make the native
     input a combobox over a listbox of the page, and an axe audit passes.
-49. The native input follows a change of the host `aria-activedescendant` and `aria-controls`, and each set of the host
+52. The native input follows a change of the host `aria-activedescendant` and `aria-controls`, and each set of the host
     `ariaActiveDescendantElement`. A reference to no element forwards nothing.
-50. Each host attribute, also `aria-haspopup`, goes to the native input and goes away with the host attribute. A role
+53. Each host attribute, also `aria-haspopup`, goes to the native input and goes away with the host attribute. A role
     other than `combobox` and an `aria-expanded` without a role stay on the host. The host state sets no `data-role`
     or `data-haspopup`.
-51. A projected value wins over the host state. A value that the projection removes comes from the host. `data-role`
+54. A projected value wins over the host state. A value that the projection removes comes from the host. `data-role`
     follows the projection. In [`aria-projection.spec.ts`](../../internals/controllers/aria-projection.spec.ts).
 
 ### Material search field
 
-52. The floated label stays inside the filled and the outlined `type="search"` field - with a placeholder, focused,
+55. The floated label stays inside the filled and the outlined `type="search"` field - with a placeholder, focused,
     and with a value.
-53. The label stays inside the focused read-only filled and outlined search field.
+56. The label stays inside the focused read-only filled and outlined search field.
 
 ### Hidden ancestor
 
-54. The input with a prefix and a suffix hides at the same time as a hidden ancestor in each theme, at rest and after a
+57. The input with a prefix and a suffix hides at the same time as a hidden ancestor in each theme, at rest and after a
     focus or a hover: no element transitions `visibility` or sets it to `visible`.
-55. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
+58. The shared focus suite (`runFocusBeforeRenderTests`): a `focus()` call right after the element connects focuses
     the same element as a call after the first render. `blur()`, a later `focus()` on another element and a removal
     that lasts until the render cancel the call, but a move in the same task keeps it. After the render, `focus()`
     takes the focus at once and `blur()` removes it. A `focus()` call before the render on a component with
@@ -669,13 +686,13 @@ Generated by `runHostComboboxTests`, except the last case.
 
 ### Enter submission
 
-56. A form with one text field and no submit button submits on <kbd>Enter</kbd>. A checkbox, a hidden input and a
+59. A form with one text field and no submit button submits on <kbd>Enter</kbd>. A checkbox, a hidden input and a
     textarea do not count as text fields. Another text field, also a disabled native one or an `igc-input`, stops the
     submission.
-57. <kbd>Enter</kbd> clicks the default button, the first submit button after a `type="button"` one, and the `submit`
+60. <kbd>Enter</kbd> clicks the default button, the first submit button after a `type="button"` one, and the `submit`
     event has it as the `submitter`. An image button that comes first is the default button. A disabled default button,
     or a `click` listener that cancels the click, stops the submission.
-58. A `keydown` listener that disables the input stops the submission. A synthetic `keydown` and `keypress` pair
+61. A `keydown` listener that disables the input stops the submission. A synthetic `keydown` and `keypress` pair
     submits once. A real <kbd>Enter</kbd> submits once. A real <kbd>Enter</kbd> with a `keydown` or a `keypress`
     listener that cancels the event does not submit.
 
@@ -683,14 +700,14 @@ Generated by `runHostComboboxTests`, except the last case.
 
 Generated by `runValueStateMotionTests` in the Material theme.
 
-59. A focus and an input start transitions.
-60. A change from code starts none.
-61. A first render in the changed state starts none.
-62. With reduced motion, a focus and an input start none.
+62. A focus and an input start transitions.
+63. A change from code starts none.
+64. A first render in the changed state starts none.
+65. With reduced motion, a focus and an input start none.
 
 ### Invalid state motion
 
-63. A required input that loses the focus fades its invalid state and its label, without the at-once mark.
+66. A required input that loses the focus fades its invalid state and its label, without the at-once mark.
 
 ### Not covered by the suite
 

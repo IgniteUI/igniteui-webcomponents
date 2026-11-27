@@ -7,7 +7,7 @@ import {
 } from './date-range-mask-parser.js';
 
 describe('DateRangeMaskParser', () => {
-  describe('Initialization', () => {
+  describe('Parser initialization', () => {
     it('creates parser with default format and separator', () => {
       const parser = new DateRangeMaskParser();
 
@@ -278,7 +278,7 @@ describe('DateRangeMaskParser', () => {
     });
   });
 
-  describe('Spinning', () => {
+  describe('Range part spinning', () => {
     const request = (sign: 1 | -1, spinLoop = true) => ({
       sign,
       spinLoop,

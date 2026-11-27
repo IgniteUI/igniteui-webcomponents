@@ -124,7 +124,7 @@ describe('Focus trap', () => {
     });
   });
 
-  describe('Mix of Light/Shadow and content editable elements', () => {
+  describe('Mixed content', () => {
     beforeEach(async () => {
       trap = await fixture(html`
         <igc-focus-trap>

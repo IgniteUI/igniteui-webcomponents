@@ -61,7 +61,7 @@ describe('Predefined Area', () => {
     `;
   }
 
-  describe('Predefined Area Component Tests', () => {
+  describe('Predefined ranges area', () => {
     it('passes the a11y audit', async () => {
       await expect(component).to.be.accessible();
       await expect(component).shadowDom.to.be.accessible();

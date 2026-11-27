@@ -39,7 +39,7 @@ describe('Tree Selection', () => {
   let treeSelectionService: IgcTreeSelectionService;
   let initialSelection: IgcTreeItemComponent[];
 
-  describe('Basic', () => {
+  describe('Basic selection', () => {
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(selectedItemsTree);
       treeSelectionService = tree.selectionService;
@@ -188,7 +188,7 @@ describe('Tree Selection', () => {
     });
   });
 
-  describe('Multiple', () => {
+  describe('Multiple selection', () => {
     let topLevelItems: IgcTreeItemComponent[];
     let eventSpy: any;
 
@@ -433,7 +433,7 @@ describe('Tree Selection', () => {
     });
   });
 
-  describe('Cascading', () => {
+  describe('Cascading selection', () => {
     let topLevelItems: IgcTreeItemComponent[];
 
     beforeEach(async () => {
@@ -837,7 +837,7 @@ describe('Tree Selection', () => {
     });
   });
 
-  describe('Removal', () => {
+  describe('Subtree removal', () => {
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(cascadeSelectionTree);
       treeSelectionService = tree.selectionService;

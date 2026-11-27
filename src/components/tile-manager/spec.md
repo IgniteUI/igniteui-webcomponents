@@ -27,20 +27,28 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
     - [igc-tile](#igc-tile)
   - [Test scenarios](#test-scenarios)
     - [Initialization](#initialization)
+    - [Accessibility tests](#accessibility-tests)
     - [Column spans](#column-spans)
+    - [Resize handles and `--grid-padding`](#resize-handles-and---grid-padding)
+    - [Stacking](#stacking)
     - [Maximize](#maximize)
     - [Slot assignment](#slot-assignment)
+    - [Tile manager context](#tile-manager-context)
+    - [Fullscreen sync](#fullscreen-sync)
     - [Tile state changes](#tile-state-changes)
     - [Serialization tests](#serialization-tests)
     - [API tests](#api-tests)
     - [Positioning](#positioning)
-    - [Drag and drop tests](#drag-and-drop-tests)
+    - [Reading order](#reading-order)
+    - [Default drag mode](#default-drag-mode)
+    - [Tile drag](#tile-drag)
+    - [Tile header drag](#tile-header-drag)
+    - [Drag guards](#drag-guards)
     - [Resize tests](#resize-tests)
-    - [Serialization properties](#serialization-properties)
-    - [Accessibility tests](#accessibility-tests)
-    - [Fullscreen sync](#fullscreen-sync)
     - [Right-to-left resize](#right-to-left-resize)
-    - [Layout and input](#layout-and-input)
+    - [Serialization properties](#serialization-properties)
+    - [Tile resize state properties](#tile-resize-state-properties)
+    - [Not covered by the suite](#not-covered-by-the-suite)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
     - [ARIA roles and properties](#aria-roles-and-properties)
@@ -65,6 +73,7 @@ This directory hosts two public components: [`igc-tile-manager`](#igc-tile-manag
 |      12 | 2026-11-02 | Percentage gaps in a resize, CSS `direction` in a drag, a drag copy that does not act as a tile, no count loop with the page scrollbar |
 |      13 | 2026-11-02 | View transition names only during a transition of the manager, a stacking context for the content of a tile, a drag target that stays while the pointer is in it |
 |      14 | 2026-11-25 | The first render shows the slotted content |
+|      15 | 2026-11-27 | Test scenarios mirror the `describe` blocks in suite order; the drag and drop, layout and input groups split into their blocks; the resize state property suite |
 
 ## Overview
 
@@ -448,15 +457,16 @@ During a drag or a resize, the `part` attribute of the tile host also has `dragg
 
 ## Test scenarios
 
-The component is covered by four suites in this directory, all running in a real browser through
+The component is covered by five suites in this directory, all running in a real browser through
 `@web/test-runner` with `@open-wc/testing` fixtures and assertions:
 
 | Suite | Scope |
 | ----- | ----- |
-| [`tile-manager.spec.ts`](./tile-manager.spec.ts) | The manager: layout, spans, maximize, slots, serialization and API. |
+| [`tile-manager.spec.ts`](./tile-manager.spec.ts) | The manager: layout, spans, maximize, slots, fullscreen, serialization and API. |
 | [`tile-dnd.spec.ts`](./tile-dnd.spec.ts) | Drag and drop of the tiles. |
 | [`tile-resize.spec.ts`](./tile-resize.spec.ts) | Resizing of the tiles. |
 | [`serializer.property.spec.ts`](./serializer.property.spec.ts) | Property-based (fuzz) tests for the layout serialization. |
+| [`resize-state.property.spec.ts`](./resize-state.property.spec.ts) | Property-based (fuzz) tests for the parse of a computed grid placement. |
 
 The groups below mirror the `describe` blocks.
 
@@ -465,143 +475,205 @@ The groups below mirror the `describe` blocks.
 1. The manager renders its grid container and projects only tile elements into it.
 2. The default property values are applied, and the CSS custom properties follow the attributes.
 3. The component passes the accessibility audit.
+4. The header of a tile, with its title, stays visible when `disableFullscreen` and `disableMaximize` are set (issue
+   2051).
+
+### Accessibility tests
+
+5. A tile is a region that its title names. A change of the title element and an `aria-label` on the host change the
+   name.
+6. The default actions are named by what they do next, also in the locale of the tile or of the manager, and the
+   header divider is hidden from assistive technology.
 
 ### Column spans
 
-4. `colSpan` and `rowSpan` size the tiles in the grid. A tile of a nested manager does not take the placement of the
+7. `colSpan` and `rowSpan` size the tiles in the grid. A tile of a nested manager does not take the placement of the
    tile that holds the manager.
-5. A fixed `columnCount` and a responsive layout derived from `minColumnWidth` both lay the tiles out correctly. With a
+8. A fixed `columnCount` and a responsive layout derived from `minColumnWidth` both lay the tiles out correctly. With a
    column count from the attribute or a style sheet, and in the responsive layout, a tile does not span past the last
    column, and `colSpan` keeps its value. The responsive count follows the width, `minColumnWidth`, and a
    `--min-col-width` or `--grid-gap` from a style sheet. A start after the last column moves the tile back so that its
    span fits, and `colStart` keeps its value. A fractional column count is truncated. `--grid-padding` sets the padding of the grid, and a nested manager does not take the padding, the
    column count or the gap of the outer manager. The content of a tile fills the tile under the header.
-
-### Maximize
-
-6. `maximized` makes the tile occupy the layout, and restoring it returns the previous arrangement. A maximized tile
-   is painted under an earlier page layer with `z-index: 1`.
-7. `disableMaximize` removes the action and its slot.
-
-### Slot assignment
-
-8. Manual slot assignment places the tile content in the expected containers.
-9. The header slots - title, actions, maximize and fullscreen actions - render as expected.
-10. The resize adorner slots render the side, bottom and corner handles. Custom adorners sit flush with the tile edges.
-
-### Tile state changes
-
-11. Changing the state of a tile - maximized, fullscreen, disabled interactions - updates the layout and emits the
-    matching events.
-
-### Serialization tests
-
-12. `saveLayout` returns a JSON payload describing the current tiles.
-13. `loadLayout` restores a previously saved arrangement.
-14. `loadLayout` copies only the serialized tile properties, and ignores a value that is not an array of tiles.
-
-### API tests
-
-15. `tiles` returns the tiles sorted by their position.
-
-### Positioning
-
-16. `position`, `colStart` and `rowStart` place the tiles at the expected coordinates.
-
-### Drag and drop tests
-
-17. A tile drag reorders the tiles, in the tile and the header drag modes.
-18. `igcTileDragStart` is cancelable, and `igcTileDragEnd` and `igcTileDragCancel` report the outcome.
-19. Special scenarios - dragging over a maximized tile, dragging outside the manager - settle consistently.
-
-### Resize tests
-
-20. Dragging the side, bottom and corner adorners changes the span of the tile.
-21. `igcTileResizeStart` is cancelable, and `igcTileResizeEnd` and `igcTileResizeCancel` report the outcome.
-22. `disableResize` on a tile prevents resizing regardless of the manager mode.
-
-### Serialization properties
-
-23. For generated layouts, `loadLayout` restores what `saveLayout` returned. For any layout, with keys such as
-    `innerHTML` and `__proto__`, it applies only the serialized properties, and each tile keeps its class and
-    content. A JSON value that is not a layout changes nothing.
-
-### Accessibility tests
-
-24. A tile is a region that its title names. A change of the title element and an `aria-label` on the host change the
-    name.
-25. The default actions are named by what they do next, also in the locale of the tile or of the manager, and the
-    header divider is hidden from assistive technology.
-26. While a tile is maximized, the other tiles are hidden and their content is skipped, also when a descendant sets
-    `visibility: visible`. A covered tile that goes fullscreen stays visible. Removing the maximized tile releases the
-    grid height.
-27. Maximize and fullscreen keep the focus on the action, also when the tile can be resized.
-28. Where the browser supports `reading-flow`, Tab follows `position` and the dense packing.
-
-### Fullscreen sync
-
-29. The tile follows the browser after Escape, also when a listener cancels the exit event, after a custom action
-    calls `requestFullscreen()`, and after the browser rejects a request or an exit. The event after such a change is not
-    cancelable. While an element inside the tile is fullscreen, the tile stays fullscreen.
-
-### Right-to-left resize
-
-30. In RTL, from a `dir` attribute or a CSS `direction`, the side and corner handles sit on the inline-end edge, and
-    the tile and its ghost grow toward it. The `resizable` directive measures the width from the inline-start edge. A
-    drag swaps a tile back toward the inline start.
-
-### Layout and input
-
-31. A tile that moves in the DOM keeps its position, and so do the other tiles.
-32. In a manager that is narrower than `minColumnWidth`, a responsive column fits the manager.
-33. A maximized tile does not cancel `touchstart`, so its content scrolls by touch. In `tile-header` mode, only the
-    header cancels `touchstart` and `dragstart`.
-34. Several tiles that move in one task keep their positions. `loadLayout` gives every tile a unique position, and a
-    fractional position becomes a whole number. A value that applies to no tile changes no position.
-35. Escape after a drag that swaps a tile back and forth restores every tile. The positions stay whole when tiles
-    leave or move to another manager during the drag, and when the next drag starts before the restore applies. A start
-    column after the last column of a smaller column count comes back, and a layout from `loadLayout()` stays. A swap with a tile that leaves
-    before the swap applies does not happen.
-36. A tile that leaves the page during a drag or a resize cancels the operation, and so does `pointercancel`. The
-    events of another pointer are ignored, and an error in the start callback ends the operation. A start listener that
-    moves the tile cancels the operation.
-37. Resizing works with a grid placement from author CSS, and the spans and starts are whole numbers. A resize keeps
-    a column span that the column count cuts, and does not widen a tile past the last column. A tile that moved back
-    from a start after the last column stays in place when a resize changes its column span. A start from a
-    negative or a named line comes from the place of the tile. A minimum row height in `rem` makes the same new rows as
-    the same height in pixels. A percentage gap snaps as the grid resolves it.
-38. In nested tile managers, only the innermost tile drags, and it does not swap with an outer tile. A drag swaps with
-    a tile that the pointer reaches straight from another tile. A swap of tiles that hold nested managers animates. The tile
-    under the pointer stays the target while the pointer is in it, with no new hit test, and a view transition ends it.
-39. The drag and resize ghosts render over the tile in the closest top-layer element, such as a modal dialog, also
-    through slots. A ghost there is fixed, so the border, scroll and overflow of that element do not move or clip it.
-    A translate or a scale on that element does not move the ghost off the tile. A rotation is not supported.
-40. A fullscreen tile that leaves the page is not fullscreen when it returns.
-41. A tile outside a manager has no drag and no resize. The tiles of a manager that the browser defines later connect
-    to it, and a tile that moves to another manager takes its features.
-42. Two quick maximize clicks set the state that their events report.
-43. In the page body, the drag and resize ghosts cover the tile, also with a body margin, a positioned or filtered
-    body and a page scroll during the operation. The drag ghost copies the tile, but the copy does not join a radio
-    group or a form, load a frame or play media.
-44. `igcTileDragEnd` and `igcTileDragCancel` fire after the view transition applies the positions, and before the
-    start event of the next drag.
-45. A maximize, a restore or a resize marks the tile with `igc-tile-resize` (and `igc-tile-rtl` in RTL) until its view
-    transition ends, also after two quick clicks. The view transition classes of the author stay, and an inline one
-    returns when the transition ends. While a tile is maximized, the covered tiles have no view transition name. With a
-    theme style sheet, the new content of a maximizing tile fades in, and the drag ghost has no animation in a swap.
-    The tiles of a manager have a view transition name only while its transition runs, also after two quick clicks. A
-    swap and a restore name only the tiles of their manager, and an inline name of the author stays.
+9. In a manager that is narrower than `minColumnWidth`, a responsive column fits the manager.
 
 ### Resize handles and `--grid-padding`
 
-46. The default side, corner and bottom handles stand half out of the tile, also in RTL. With a smaller
+10. The default side, corner and bottom handles stand half out of the tile, also in RTL. With a smaller
     `--grid-padding`, they stand out only by the padding. With `0`, `0px` or a padding of more than one value, they
     stay inside the tile, and the grid does not scroll.
 
 ### Stacking
 
-47. The content of a tile, also fixed content with a z-index, stays under the next tile, and so do the resize handles
+11. The content of a tile, also fixed content with a z-index, stays under the next tile, and so do the resize handles
     of the tile. The resize handles stay above content with any z-index.
+
+### Maximize
+
+12. A maximized tile is painted under an earlier page layer with `z-index: 1`.
+13. Maximizing the only tile with the maximum row span keeps the height of the grid (issue 2029). The height stays
+    locked while any tile is maximized, and is released when no tile is maximized or the maximized tile is removed.
+14. While a tile is maximized, the other tiles are hidden and their content is out of reach, also when a descendant
+    sets `visibility: visible`. A covered tile that goes fullscreen shows.
+15. A maximize marks the tile with `igc-tile-resize` (and `igc-tile-rtl` in RTL) until its view transition ends, also
+    after two quick clicks. A view transition class of the author, inline or from a style sheet, stays, and an inline
+    one is the only class left when the transition ends. With a theme style sheet, the new content of a maximizing
+    tile fades in.
+16. While a tile is maximized, the covered tiles have no view transition name. The tiles of a manager have a view
+    transition name only while its transition runs, also after two quick clicks, and an inline name of the author
+    stays.
+
+### Slot assignment
+
+17. Manual slot assignment places the tile content in the expected containers. A child that is not a tile does not
+    change the tiles or their positions.
+18. The header slots - title, actions, maximize and fullscreen actions - render as expected. `disableMaximize` and
+    `disableFullscreen` hide their actions.
+19. The resize adorner slots render the side, bottom and corner handles. Custom adorners sit flush with the tile edges.
+
+### Tile manager context
+
+20. A tile outside a manager has no drag and no resize. The tiles of a manager that the browser defines later connect
+    to it, and a tile that moves to another manager takes its features.
+
+### Fullscreen sync
+
+21. The tile follows a fullscreen request from a custom action, and follows the browser when it leaves fullscreen,
+    also when a listener cancels the exit event. The event after such a change is not cancelable.
+22. A fullscreen tile that leaves the page is not fullscreen when it returns.
+23. The tile stays fullscreen when the browser rejects the exit, and while an element inside the tile is fullscreen.
+
+### Tile state changes
+
+24. The fullscreen and maximize actions change the state of the tile, switch their icons and emit
+    `igcTileFullscreen` and `igcTileMaximize`, which can be canceled. The maximize action hides while the tile is
+    fullscreen.
+25. `fullscreen` follows a `fullscreenchange`, as after <kbd>Escape</kbd>. When the browser rejects the request, a
+    second `igcTileFullscreen`, which is not cancelable, reports the rollback.
+26. Maximize and fullscreen keep the focus on the action, also when the tile can be resized, and the fullscreen action
+    is named after the next state.
+27. Two quick maximize clicks set the state that their events report.
+
+### Serialization tests
+
+28. `saveLayout` returns a JSON payload describing the current tiles.
+29. `loadLayout` restores a previously saved arrangement.
+30. `loadLayout` copies only the serialized tile properties, and ignores a value that is not an array of tiles.
+
+### API tests
+
+31. `tiles` returns the tiles sorted by their position.
+
+### Positioning
+
+32. `position`, `colStart` and `rowStart` place the tiles at the expected coordinates.
+33. A tile that moves in the DOM keeps its position, and so do the other tiles. Several tiles that move in one task
+    keep their positions.
+34. `loadLayout` gives every tile a unique position, and a fractional position becomes a whole number. A value that
+    applies to no tile changes no position.
+
+### Reading order
+
+35. Where the browser supports `reading-flow`, Tab follows `position` and the dense packing.
+
+### Default drag mode
+
+36. In the default drag mode, a drag does not move the tiles and emits no event.
+37. The tile has the `draggable` part in the `tile` and `tile-header` drag modes, and not in `none`.
+
+### Tile drag
+
+38. `igcTileDragStart` is cancelable, `igcTileDragEnd` reports the drop, and <kbd>Escape</kbd> cancels the drag with
+    `igcTileDragCancel`.
+39. The drag ghost copies the tile, but the copy does not uncheck a radio that the user checked in the tile, also in a
+    radio group. The copy does not join a form, also one around its top layer, load a frame or play media.
+40. A drag swaps with a tile that the pointer reaches straight from another tile, and a swap with a tile that leaves
+    before the swap applies does not happen.
+41. <kbd>Escape</kbd> after a drag that swaps a tile back and forth restores every tile. A drag swaps back toward the
+    inline start of a CSS `direction: rtl` manager.
+42. The positions stay whole when tiles leave or move to another manager during the drag, and when the next drag
+    starts before the restore applies. A start column after the last column of a smaller column count comes back, and
+    a layout from `loadLayout()` stays.
+43. The tiles of the manager have a view transition name only while a swap or a restore runs. `igcTileDragEnd` and
+    `igcTileDragCancel` fire after the view transition applies the positions, and before the start event of the next
+    drag. With a theme style sheet, the drag ghost has no animation in a swap.
+44. An `igcTileDragStart` listener that moves the tile, and a tile that leaves the page during the drag, cancel the
+    drag.
+45. In nested tile managers, only the innermost tile drags, and it does not swap with the outer tile that holds it. A
+    swap of tiles that hold nested managers animates.
+46. The drag ghost covers the tile in the page body, in an open modal dialog and in the dialog of an open
+    `igc-dialog`, and the ghost of an inner tile stays out of an outer manager in the top layer. In a top-layer
+    manager, the ghost stays out of the tiles, covers a tile with grid starts, keeps the size of the tile with a theme
+    style sheet and does not scroll the grid.
+47. A drop swaps the positions of the tiles, and a drop of a tile onto itself changes nothing. A smaller tile over a
+    bigger one swaps once, and the swap works in RTL and with rows, columns and spans set. The pointer swaps back in
+    the top or the bottom quarter of the swapped tile, not in its middle.
+
+### Tile header drag
+
+48. A tile dragged by its header rearranges the tiles on the drop.
+49. Only the header cancels `touchstart`, so the content scrolls by touch.
+50. A drag does not start when the pointer is not over the header.
+
+### Drag guards
+
+51. A maximized tile and a fullscreen tile do not drag. A maximized tile does not cancel `touchstart`, so its content
+    scrolls by touch.
+52. The default and the slotted tile actions do not start a drag, in the `tile` and the `tile-header` drag modes.
+
+### Resize tests
+
+53. Dragging the side, bottom and corner adorners changes the span of the tile. The `resizable` part follows
+    `resizeMode` and `disableResize`, and the tile has the `resizing` part during a resize.
+54. A resize of the last row creates new rows, and a minimum row height in `rem` makes the same new rows as the same
+    height in pixels. With an auto grid, a resize grows and shrinks the tile, and creates and removes implicit rows.
+55. The ghost appears on resize start, follows the pointer, and keeps its snapped size when the pointer moves without
+    a delta. A horizontal resize snaps with the column gap, and a percentage gap snaps as the grid resolves it.
+56. The resize stops at the column count. A `colSpan` larger than the column count fills the columns, a valid
+    `colStart` stays when the span does not fit, and a start after the last column moves the tile back so that its
+    span fits, with no change to `colStart` and `colSpan`.
+57. A resize keeps `colStart` and `rowStart`, also on a corner resize, keeps a column span that the column count cuts,
+    and does not widen a tile in the last column past the column count. A tile that moved back from a start after the
+    last column stays in place.
+58. Resizing works with a grid placement from author CSS, and the spans and starts are whole numbers.
+59. In `hover` mode, the handles show only while the pointer is over the tile.
+60. `igcTileResizeStart` is cancelable, and `igcTileResizeEnd` and `igcTileResizeCancel` report the outcome.
+    <kbd>Escape</kbd> cancels the resize.
+61. `disableResize` on a tile prevents resizing regardless of the manager mode.
+62. A tile that leaves the page during the resize, and an `igcTileResizeStart` listener that moves the tile, cancel
+    the resize. An `igcTileResizeEnd` listener that removes the tile does not cancel it.
+63. A resize marks the tile with `igc-tile-resize` while its spans change, and a resize that changes no span ends at
+    once, without a view transition.
+64. The resize ghost covers the tile in an open modal dialog.
+
+### Right-to-left resize
+
+65. In RTL, from a `dir` attribute or a CSS `direction`, the side and corner handles sit on the inline-end edge, and
+    the tile and its ghost grow toward it.
+
+### Serialization properties
+
+66. For generated layouts, `loadLayout` restores what `saveLayout` returned. For any layout, with keys such as
+    `innerHTML` and `__proto__`, it applies only the serialized properties, and each tile keeps its class and
+    content. A JSON value that is not a layout changes nothing.
+
+### Tile resize state properties
+
+67. The start and the span of a computed `grid-column` placement are parsed.
+68. A computed placement without a start gives start -1, so the start comes from the place of the tile. Another
+    placement from author CSS, such as a negative or a named line, gives start -1 and the span of the tile.
+69. For any text, the parse gives start -1 or a line, and a positive whole span.
+
+### Not covered by the suite
+
+The suites of the `draggable()` and `resizable()` directives in
+[`src/internals/directives`](../../internals/directives) cover the parts of a drag and a resize that the tile manager
+takes from them: `pointercancel`, the events of another pointer and an error in the start callback end the operation.
+The ghost covers its target in a positioned body with a margin, in a scrolled page, during a page scroll and in a
+layer with a border, a scroll or a transform, and it stays under the pointer in a scaled layer and in a filtered body
+that scrolls. The drag target stays while the pointer is in it, with no new hit
+test, and a view transition ends it. In RTL, the `resizable` directive measures the width from the inline-start edge.
+A rotation of a top-layer element is not supported.
 
 ## Assumptions and limitations
 

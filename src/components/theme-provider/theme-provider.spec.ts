@@ -36,105 +36,107 @@ describe('Theme Provider', () => {
     );
   });
 
-  it('passes the a11y audit', async () => {
-    const el = await fixture<IgcThemeProviderComponent>(
-      html`<igc-theme-provider></igc-theme-provider>`
-    );
+  describe('Defaults and attributes', () => {
+    it('passes the a11y audit', async () => {
+      const el = await fixture<IgcThemeProviderComponent>(
+        html`<igc-theme-provider></igc-theme-provider>`
+      );
 
-    await expect(el).shadowDom.to.be.accessible();
-    await expect(el).to.be.accessible();
-  });
+      await expect(el).shadowDom.to.be.accessible();
+      await expect(el).to.be.accessible();
+    });
 
-  it('should initialize with default values', async () => {
-    const el = await fixture<IgcThemeProviderComponent>(
-      html`<igc-theme-provider></igc-theme-provider>`
-    );
+    it('should initialize with default values', async () => {
+      const el = await fixture<IgcThemeProviderComponent>(
+        html`<igc-theme-provider></igc-theme-provider>`
+      );
 
-    expect(el.theme).to.equal('bootstrap');
-    expect(el.variant).to.equal('light');
-  });
+      expect(el.theme).to.equal('bootstrap');
+      expect(el.variant).to.equal('light');
+    });
 
-  it('should reflect theme attribute', async () => {
-    const el = await fixture<IgcThemeProviderComponent>(
-      html`<igc-theme-provider></igc-theme-provider>`
-    );
+    it('should reflect theme attribute', async () => {
+      const el = await fixture<IgcThemeProviderComponent>(
+        html`<igc-theme-provider></igc-theme-provider>`
+      );
 
-    expect(el).dom.to.equal(
-      `<igc-theme-provider theme="bootstrap" variant="light"></igc-theme-provider>`
-    );
-  });
+      expect(el).dom.to.equal(
+        `<igc-theme-provider theme="bootstrap" variant="light"></igc-theme-provider>`
+      );
+    });
 
-  it('should accept theme property via attribute', async () => {
-    const el = await fixture<IgcThemeProviderComponent>(
-      html`<igc-theme-provider theme="material"></igc-theme-provider>`
-    );
+    it('should accept theme property via attribute', async () => {
+      const el = await fixture<IgcThemeProviderComponent>(
+        html`<igc-theme-provider theme="material"></igc-theme-provider>`
+      );
 
-    expect(el.theme).to.equal('material');
-    expect(el).attribute('theme').to.equal('material');
-  });
+      expect(el.theme).to.equal('material');
+      expect(el).attribute('theme').to.equal('material');
+    });
 
-  it('should accept variant property via attribute', async () => {
-    const el = await fixture<IgcThemeProviderComponent>(
-      html`<igc-theme-provider variant="dark"></igc-theme-provider>`
-    );
+    it('should accept variant property via attribute', async () => {
+      const el = await fixture<IgcThemeProviderComponent>(
+        html`<igc-theme-provider variant="dark"></igc-theme-provider>`
+      );
 
-    expect(el.variant).to.equal('dark');
-    expect(el).attribute('variant').to.equal('dark');
-  });
+      expect(el.variant).to.equal('dark');
+      expect(el).attribute('variant').to.equal('dark');
+    });
 
-  it('should update theme property and reflect to attribute', async () => {
-    const el = await fixture<IgcThemeProviderComponent>(
-      html`<igc-theme-provider></igc-theme-provider>`
-    );
+    it('should update theme property and reflect to attribute', async () => {
+      const el = await fixture<IgcThemeProviderComponent>(
+        html`<igc-theme-provider></igc-theme-provider>`
+      );
 
-    el.theme = 'fluent';
-    await elementUpdated(el);
+      el.theme = 'fluent';
+      await elementUpdated(el);
 
-    expect(el.theme).to.equal('fluent');
-    expect(el).attribute('theme').to.equal('fluent');
-  });
+      expect(el.theme).to.equal('fluent');
+      expect(el).attribute('theme').to.equal('fluent');
+    });
 
-  it('should update variant property and reflect to attribute', async () => {
-    const el = await fixture<IgcThemeProviderComponent>(
-      html`<igc-theme-provider></igc-theme-provider>`
-    );
+    it('should update variant property and reflect to attribute', async () => {
+      const el = await fixture<IgcThemeProviderComponent>(
+        html`<igc-theme-provider></igc-theme-provider>`
+      );
 
-    el.variant = 'dark';
-    await elementUpdated(el);
+      el.variant = 'dark';
+      await elementUpdated(el);
 
-    expect(el.variant).to.equal('dark');
-    expect(el).attribute('variant').to.equal('dark');
-  });
+      expect(el.variant).to.equal('dark');
+      expect(el).attribute('variant').to.equal('dark');
+    });
 
-  it('should render slotted content', async () => {
-    const el = await fixture<IgcThemeProviderComponent>(
-      html`<igc-theme-provider
-        ><div id="content">Test Content</div></igc-theme-provider
-      >`
-    );
+    it('should render slotted content', async () => {
+      const el = await fixture<IgcThemeProviderComponent>(
+        html`<igc-theme-provider
+          ><div id="content">Test Content</div></igc-theme-provider
+        >`
+      );
 
-    const slottedContent = el.querySelector('#content');
-    expect(slottedContent).to.not.be.null;
-    expect(slottedContent?.textContent).to.equal('Test Content');
-  });
+      const slottedContent = el.querySelector('#content');
+      expect(slottedContent).to.not.be.null;
+      expect(slottedContent?.textContent).to.equal('Test Content');
+    });
 
-  it('should have display: contents style', async () => {
-    const el = await fixture<IgcThemeProviderComponent>(
-      html`<igc-theme-provider></igc-theme-provider>`
-    );
+    it('should have display: contents style', async () => {
+      const el = await fixture<IgcThemeProviderComponent>(
+        html`<igc-theme-provider></igc-theme-provider>`
+      );
 
-    const computedStyle = getComputedStyle(el);
-    expect(computedStyle.display).to.equal('contents');
-  });
+      const computedStyle = getComputedStyle(el);
+      expect(computedStyle.display).to.equal('contents');
+    });
 
-  it('hides its content with `hidden`', async () => {
-    const el = await fixture<IgcThemeProviderComponent>(
-      html`<igc-theme-provider hidden
-        ><div id="content">Test Content</div></igc-theme-provider
-      >`
-    );
+    it('hides its content with `hidden`', async () => {
+      const el = await fixture<IgcThemeProviderComponent>(
+        html`<igc-theme-provider hidden
+          ><div id="content">Test Content</div></igc-theme-provider
+        >`
+      );
 
-    expect(el.querySelector('#content')!.checkVisibility()).to.be.false;
+      expect(el.querySelector('#content')!.checkVisibility()).to.be.false;
+    });
   });
 
   describe('Context Provider', () => {

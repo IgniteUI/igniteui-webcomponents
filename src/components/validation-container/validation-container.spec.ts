@@ -64,104 +64,106 @@ describe('Validation container', () => {
     return getValidationContainer(input)!.getBoundingClientRect().height;
   }
 
-  it('container does not render non-slotted content on error', async () => {
-    await createFixture(html`<igc-input required></igc-input>`);
+  describe('Rendering and projection', () => {
+    it('container does not render non-slotted content on error', async () => {
+      await createFixture(html`<igc-input required></igc-input>`);
 
-    ValidityHelpers.hasInvalidStyles(input).to.be.false;
-    ValidityHelpers.hasSlots(input, helperSlot).to.be.true;
-    ValidityHelpers.hasSlots(input, valueMissingSlot).to.be.false;
+      ValidityHelpers.hasInvalidStyles(input).to.be.false;
+      ValidityHelpers.hasSlots(input, helperSlot).to.be.true;
+      ValidityHelpers.hasSlots(input, valueMissingSlot).to.be.false;
 
-    input.checkValidity();
-    ValidityHelpers.isValid(input).to.be.false;
-    ValidityHelpers.hasInvalidStyles(input).to.be.false;
+      input.checkValidity();
+      ValidityHelpers.isValid(input).to.be.false;
+      ValidityHelpers.hasInvalidStyles(input).to.be.false;
 
-    input.reportValidity();
-    await elementUpdated(input);
+      input.reportValidity();
+      await elementUpdated(input);
 
-    ValidityHelpers.isValid(input).to.be.false;
-    ValidityHelpers.hasInvalidStyles(input).to.be.true;
-    ValidityHelpers.hasSlots(input, helperSlot, valueMissingSlot).to.be.true;
-    ValidityHelpers.hasSlottedContent(input, helperSlot).to.be.false;
-    ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.false;
-  });
+      ValidityHelpers.isValid(input).to.be.false;
+      ValidityHelpers.hasInvalidStyles(input).to.be.true;
+      ValidityHelpers.hasSlots(input, helperSlot, valueMissingSlot).to.be.true;
+      ValidityHelpers.hasSlottedContent(input, helperSlot).to.be.false;
+      ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.false;
+    });
 
-  it('non-slotted validation message slots does not override slotted helper-text', async () => {
-    await createFixture(html`
-      <igc-input required>
-        <div slot=${helperSlot}>Helper text</div>
-      </igc-input>
-    `);
+    it('non-slotted validation message slots does not override slotted helper-text', async () => {
+      await createFixture(html`
+        <igc-input required>
+          <div slot=${helperSlot}>Helper text</div>
+        </igc-input>
+      `);
 
-    ValidityHelpers.isValid(input).to.be.false;
-    ValidityHelpers.hasInvalidStyles(input).to.be.false;
-    ValidityHelpers.hasSlots(input, helperSlot).to.be.true;
-    ValidityHelpers.hasSlottedContent(input, helperSlot).to.be.true;
+      ValidityHelpers.isValid(input).to.be.false;
+      ValidityHelpers.hasInvalidStyles(input).to.be.false;
+      ValidityHelpers.hasSlots(input, helperSlot).to.be.true;
+      ValidityHelpers.hasSlottedContent(input, helperSlot).to.be.true;
 
-    input.reportValidity();
-    await elementUpdated(input);
+      input.reportValidity();
+      await elementUpdated(input);
 
-    ValidityHelpers.isValid(input).to.be.false;
-    ValidityHelpers.hasInvalidStyles(input).to.be.true;
-    ValidityHelpers.hasSlots(input, helperSlot, valueMissingSlot);
-    ValidityHelpers.hasSlottedContent(input, helperSlot).to.be.true;
-    ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.false;
-  });
+      ValidityHelpers.isValid(input).to.be.false;
+      ValidityHelpers.hasInvalidStyles(input).to.be.true;
+      ValidityHelpers.hasSlots(input, helperSlot, valueMissingSlot);
+      ValidityHelpers.hasSlottedContent(input, helperSlot).to.be.true;
+      ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.false;
+    });
 
-  it('slotted validation message slots override slotted helper-text when invalid', async () => {
-    await createFixture(html`
-      <igc-input required>
-        <div slot=${helperSlot}>Helper text</div>
-        <div slot=${valueMissingSlot}>Value missing</div>
-      </igc-input>
-    `);
-
-    ValidityHelpers.isValid(input).to.be.false;
-    ValidityHelpers.hasInvalidStyles(input).to.be.false;
-    ValidityHelpers.hasSlots(input, helperSlot).to.be.true;
-    ValidityHelpers.hasSlots(input, valueMissingSlot).to.be.false;
-
-    await ValidityHelpers.checkValidationSlots(input, 'valueMissing');
-  });
-
-  it('validation messages survive a re-render after a failed form submission', async () => {
-    const form = await fixture<HTMLFormElement>(html`
-      <form>
-        <igc-input name="input" required>
+    it('slotted validation message slots override slotted helper-text when invalid', async () => {
+      await createFixture(html`
+        <igc-input required>
+          <div slot=${helperSlot}>Helper text</div>
           <div slot=${valueMissingSlot}>Value missing</div>
         </igc-input>
-      </form>
-    `);
+      `);
 
-    input = form.querySelector(IgcInputComponent.tagName)!;
+      ValidityHelpers.isValid(input).to.be.false;
+      ValidityHelpers.hasInvalidStyles(input).to.be.false;
+      ValidityHelpers.hasSlots(input, helperSlot).to.be.true;
+      ValidityHelpers.hasSlots(input, valueMissingSlot).to.be.false;
 
-    form.requestSubmit();
-    await elementUpdated(input);
+      await ValidityHelpers.checkValidationSlots(input, 'valueMissing');
+    });
 
-    ValidityHelpers.hasInvalidStyles(input).to.be.true;
-    ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
+    it('validation messages survive a re-render after a failed form submission', async () => {
+      const form = await fixture<HTMLFormElement>(html`
+        <form>
+          <igc-input name="input" required>
+            <div slot=${valueMissingSlot}>Value missing</div>
+          </igc-input>
+        </form>
+      `);
 
-    // A later host update, such as a slotchange or an unrelated property, must
-    // keep the messages.
-    input.requestUpdate();
-    await elementUpdated(input);
+      input = form.querySelector(IgcInputComponent.tagName)!;
 
-    ValidityHelpers.hasInvalidStyles(input).to.be.true;
-    ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
-  });
+      form.requestSubmit();
+      await elementUpdated(input);
 
-  it('projects validation messages for a host that starts out invalid', async () => {
-    await createFixture(html`
-      <igc-input required invalid>
-        <div slot=${valueMissingSlot}>Value missing</div>
-      </igc-input>
-    `);
+      ValidityHelpers.hasInvalidStyles(input).to.be.true;
+      ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
 
-    // Wait for the second host render requested by the container.
-    await elementUpdated(input);
+      // A later host update, such as a slotchange or an unrelated property, must
+      // keep the messages.
+      input.requestUpdate();
+      await elementUpdated(input);
 
-    ValidityHelpers.hasInvalidStyles(input).to.be.true;
-    ValidityHelpers.hasSlots(input, valueMissingSlot).to.be.true;
-    ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
+      ValidityHelpers.hasInvalidStyles(input).to.be.true;
+      ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
+    });
+
+    it('projects validation messages for a host that starts out invalid', async () => {
+      await createFixture(html`
+        <igc-input required invalid>
+          <div slot=${valueMissingSlot}>Value missing</div>
+        </igc-input>
+      `);
+
+      // Wait for the second host render requested by the container.
+      await elementUpdated(input);
+
+      ValidityHelpers.hasInvalidStyles(input).to.be.true;
+      ValidityHelpers.hasSlots(input, valueMissingSlot).to.be.true;
+      ValidityHelpers.hasSlottedContent(input, valueMissingSlot).to.be.true;
+    });
   });
 
   describe('create()', () => {

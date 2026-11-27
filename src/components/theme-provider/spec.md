@@ -25,7 +25,7 @@
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
   - [Test scenarios](#test-scenarios)
-    - [Default](#default)
+    - [Defaults and attributes](#defaults-and-attributes)
     - [Context provider](#context-provider)
     - [Theme and variant combinations](#theme-and-variant-combinations)
     - [Not covered by the suite](#not-covered-by-the-suite)
@@ -43,6 +43,7 @@
 |       2 | 2026-10-07 | Describe the theme variables that the provider keeps as-is |
 |       3 | 2026-10-21 | API descriptions aligned with the JSDoc.                   |
 |       4 | 2026-11-27 | `hidden` hides the provider and its content                |
+|       5 | 2026-11-27 | The `Default` test scenarios are `Defaults and attributes`, as their `describe` block |
 
 ## Overview
 
@@ -229,7 +230,7 @@ None applicable.
 | ---------------- | ------------------------- |
 | `Theme Provider` | `theme-provider.spec.ts`  |
 
-### Default
+### Defaults and attributes
 
 1. The component passes the accessibility audit and is initialized with its default values.
 2. The `theme` and `variant` properties are accepted through their attributes and reflected back when they change.

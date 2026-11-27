@@ -26,15 +26,17 @@
     - [Slots](#slots)
     - [CSS Shadow parts](#css-shadow-parts)
   - [Test scenarios](#test-scenarios)
-    - [Initialization](#initialization)
-    - [Properties tests](#properties-tests)
-    - [Selection tests](#selection-tests)
-    - [UI tests](#ui-tests)
+    - [With three buttons](#with-three-buttons)
+      - [Initialization](#initialization)
+      - [Properties tests](#properties-tests)
+      - [Selection tests](#selection-tests)
+      - [UI tests](#ui-tests)
     - [Selection reconciliation tests](#selection-reconciliation-tests)
     - [Disabled state tests](#disabled-state-tests)
     - [ARIA tests](#aria-tests)
-    - [Roving tab index](#roving-tab-index)
-    - [Arrow navigation](#arrow-navigation)
+    - [Keyboard navigation](#keyboard-navigation)
+      - [Roving tab index](#roving-tab-index)
+      - [Arrow navigation](#arrow-navigation)
     - [Toggle button tests](#toggle-button-tests)
     - [Host ARIA](#host-aria)
     - [Hidden ancestor](#hidden-ancestor)
@@ -59,6 +61,7 @@
 |       6 | 2026-10-29 | Transition only the properties that change, so the toggle buttons hide at the same time as a hidden ancestor |
 |       7 | 2026-11-02 | A `focus()` call before the first render applies after the render                                            |
 |       8 | 2026-11-20 | Only a selection by the user animates a toggle button, also the button that a single selection deselects; a change from code and the first render show at once; no transitions with reduced motion; while a change shows at once, the transitions that the app sets on parts and slotted elements stop too |
+|       9 | 2026-11-27 | Test scenarios mirror the `With three buttons`, `Keyboard navigation` and `Toggle button tests` blocks |
 
 ## Overview
 
@@ -258,17 +261,21 @@ Emitted by `igc-button-group`, for user interaction only.
 | `Button Group`  | `button-group.spec.ts`  |
 | `Toggle Button` | `toggle-button.spec.ts` |
 
-### Initialization
+### With three buttons
+
+The groups follow the nested `describe` blocks of `With three buttons`.
+
+#### Initialization
 
 1. The group passes the accessibility audit and is initialized with its toggle buttons and its default state.
 2. The group renders the correct role and attributes. A selected button is painted under an earlier page layer with
    `z-index: 1`.
 
-### Properties tests
+#### Properties tests
 
 3. The `selection`, `disabled` and `alignment` properties are applied.
 
-### Selection tests
+#### Selection tests
 
 4. The initial selection is resolved from the attribute of the group and from the attributes of the children, and
    the child attribute takes priority.
@@ -278,7 +285,7 @@ Emitted by `igc-button-group`, for user interaction only.
 8. Changing the selection mode clears the selection, and so does an empty array or falsy values in
    `selectedItems`.
 
-### UI tests
+#### UI tests
 
 9. Only one button can be selected through the UI in single mode, several in multiple mode, and a required
    selection cannot be cleared.
@@ -304,7 +311,11 @@ Emitted by `igc-button-group`, for user interaction only.
 19. The role sits on the host, so that a label of the author names the group.
 20. `aria-orientation` mirrors the alignment, and the semantics are updated when the selection mode changes.
 
-### Roving tab index
+### Keyboard navigation
+
+The groups follow the nested `describe` blocks of `Keyboard navigation`.
+
+#### Roving tab index
 
 21. Without a selection the first button is the only tab stop; with one, the selected button is, and the tab stop
     follows the selection.
@@ -315,7 +326,7 @@ Emitted by `igc-button-group`, for user interaction only.
     another group is handed over to it.
 25. The tab stops follow the selection mode.
 
-### Arrow navigation
+#### Arrow navigation
 
 26. The arrows move the focus and the selection to the next and the previous button, and wrap at both ends.
 27. Disabled buttons are skipped.
@@ -329,8 +340,7 @@ Emitted by `igc-button-group`, for user interaction only.
 
 32. The button passes the accessibility audit, renders correctly and is initialized with its default state.
 33. The rendered attributes are correct, and `value`, `selected`, `disabled` and `aria-label` are applied. A change
-    of
-    `aria-label` reaches the native button.
+    of `aria-label` reaches the native button.
 34. `focus()`, `blur()` and `click()` behave as expected.
 
 ### Host ARIA

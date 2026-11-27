@@ -2,7 +2,6 @@ import {
   elementUpdated,
   expect,
   fixture,
-  fixtureSync,
   html,
   nextFrame,
   waitUntil,
@@ -22,7 +21,11 @@ import {
   tabKey,
 } from '#internals/controllers/key-bindings.js';
 import { defineComponents } from '#internals/definitions/defineComponents.js';
-import { readFirstUpdate } from '#internals/testing/first-render.spec.js';
+import {
+  parseServerRendered,
+  readFirstUpdate,
+  waitForHydration,
+} from '#internals/testing/first-render.spec.js';
 import { runFocusBeforeRenderTests } from '#internals/testing/focus-before-render.spec.js';
 import {
   allowMotion,
@@ -94,25 +97,12 @@ describe('Carousel', () => {
     </igc-carousel>
   `;
 
-  /**
-   * Parses a carousel with a declarative shadow root that holds the server
-   * slots. The `slotchange` events of the parse do not reach the carousel, as
-   * when the carousel loads after the parse.
-   */
-  function parseServerRendered(children: string): IgcCarouselComponent {
-    const container = fixtureSync<HTMLDivElement>(html`<div></div>`);
-    container.setHTMLUnsafe(
-      `<igc-carousel><template shadowrootmode="open"><slot name="indicator"></slot><slot></slot></template>${children}</igc-carousel>`
+  function parseCarousel(children: string): IgcCarouselComponent {
+    return parseServerRendered(
+      IgcCarouselComponent.tagName,
+      children,
+      '<slot name="indicator"></slot><slot></slot>'
     );
-
-    const host = container.firstElementChild as IgcCarouselComponent;
-    host.shadowRoot!.addEventListener(
-      'slotchange',
-      (event) => event.stopImmediatePropagation(),
-      { capture: true }
-    );
-
-    return host;
   }
 
   let carousel: IgcCarouselComponent;
@@ -470,11 +460,6 @@ describe('Carousel', () => {
       );
     }
 
-    async function settle(host: IgcCarouselComponent): Promise<void> {
-      await nextFrame();
-      await elementUpdated(host);
-    }
-
     it('shows the authored active slide and its indicator', async () => {
       const host = createHost({ activeIndex: 1 });
 
@@ -578,10 +563,10 @@ describe('Carousel', () => {
     });
 
     it('activates the authored active slide after a hydrating first update', async () => {
-      const host = parseServerRendered(
+      const host = parseCarousel(
         '<igc-carousel-slide></igc-carousel-slide><igc-carousel-slide active></igc-carousel-slide>'
       );
-      await settle(host);
+      await waitForHydration(host);
 
       expect(host.current).to.equal(1);
       expect(host.slides.map((slide) => slide.active)).to.eql([false, true]);
@@ -592,10 +577,10 @@ describe('Carousel', () => {
     });
 
     it('reads the projected indicators after a hydrating first update', async () => {
-      const host = parseServerRendered(
+      const host = parseCarousel(
         `${'<igc-carousel-indicator></igc-carousel-indicator>'.repeat(2)}<igc-carousel-slide></igc-carousel-slide><igc-carousel-slide active></igc-carousel-slide>`
       );
-      await settle(host);
+      await waitForHydration(host);
 
       const projected = Array.from(
         host.querySelectorAll(IgcCarouselIndicatorComponent.tagName)
@@ -2051,7 +2036,7 @@ describe('Carousel', () => {
     });
 
     it('selects a slide once a hydrated carousel has updated', async () => {
-      const el = parseServerRendered(
+      const el = parseCarousel(
         '<igc-carousel-slide></igc-carousel-slide>'.repeat(3)
       );
 

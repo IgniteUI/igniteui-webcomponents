@@ -30,11 +30,14 @@ This directory hosts two public components: [`igc-stepper`](#igc-stepper) and [`
     - [Events tests](#events-tests)
     - [Navigation API tests](#navigation-api-tests)
     - [Dynamic steps](#dynamic-steps)
+    - [Step updates](#step-updates)
     - [Linear mode tests](#linear-mode-tests)
     - [Appearance](#appearance)
     - [Animation duration](#animation-duration)
+    - [Step animations](#step-animations)
     - [Keyboard navigation](#keyboard-navigation)
     - [Context binding](#context-binding)
+    - [First render and hydration](#first-render-and-hydration)
     - [Host ARIA](#host-aria)
   - [Assumptions and limitations](#assumptions-and-limitations)
   - [Accessibility](#accessibility)
@@ -53,6 +56,7 @@ This directory hosts two public components: [`igc-stepper`](#igc-stepper) and [`
 |       5 | 2026-10-23 | The stepper makes a stacking context, so the z-index of the step headers and bodies does not compete with the layers of the page |
 |       6 | 2026-10-28 | `active` applies at once, so the last one set wins; navigation from an inaccessible active step; enabling a step of a fully disabled stepper; a step that an `igcActiveStepChanging` handler activates stays |
 |       7 | 2026-11-25 | The first render shows the slotted content |
+|       8 | 2026-11-27 | The stepper knows its steps before the first render and after a hydration; test scenarios mirror the `Step updates`, `Step animations` and `First render and hydration` blocks |
 
 ## Overview
 
@@ -350,36 +354,54 @@ with `@open-wc/testing` fixtures and assertions. The groups below mirror the `de
     that becomes active in the same task as the change stays active, unless a step added after it has `active`. A
     step added with `active` also takes over when the active step deactivates in that task.
 
+### Step updates
+
+17. A step inserted first renumbers every step.
+18. A change of step state updates only the steps whose state changes: the step itself, and the next one for its
+    `previousCompleted` state.
+
 ### Linear mode tests
 
-17. An invalid step blocks the steps after it.
-18. An optional invalid step does not block the navigation.
-19. Completing a step unblocks the next one.
+19. An invalid step blocks the steps after it.
+20. An optional invalid step does not block the navigation.
+21. Completing a step unblocks the next one.
 
 ### Appearance
 
-20. `orientation`, `stepType`, `titlePosition` and `contentTop` are reflected and change the layout.
+22. `orientation`, `stepType`, `titlePosition` and `contentTop` are reflected and change the layout.
 
 ### Animation duration
 
-21. The animation duration is applied through the corresponding CSS custom property, and `0` disables the animation.
+23. The animation duration is applied through the corresponding CSS custom property, and `0` disables the animation.
+
+### Step animations
+
+24. In a vertical stepper, the default `grow` animation grows the body and fades the content in.
+25. A vertical or a horizontal `fade` animation fades only the content.
+26. A step outside of a stepper slides in with the default duration of 320 ms.
 
 ### Keyboard navigation
 
-22. The arrow keys move focus between the headers of the enabled steps and of the active step, in both orientations.
-23. <kbd>Home</kbd> and <kbd>End</kbd> jump to the first and the last step that is enabled or active.
-24. <kbd>Enter</kbd> and <kbd>Space</kbd> activate the focused step.
-25. The stepper does not handle a key on a control in a step title: the key keeps its default action, the focus stays
+27. The arrow keys move focus between the headers of the enabled steps and of the active step, in both orientations.
+28. <kbd>Home</kbd> and <kbd>End</kbd> jump to the first and the last step that is enabled or active.
+29. <kbd>Enter</kbd> and <kbd>Space</kbd> activate the focused step.
+30. The stepper does not handle a key on a control in a step title: the key keeps its default action, the focus stays
     on the control and the active step does not change.
 
 ### Context binding
 
-26. The steps receive their configuration - orientation, step type, title position and linear mode - from the
+31. The steps receive their configuration - orientation, step type, title position and linear mode - from the
     stepper through context, including for steps added later.
+
+### First render and hydration
+
+32. The first render knows the steps, the active step and the step count.
+33. On load, only the authored active step is visited, so an invalid step before it shows no error state.
+34. A hydrated stepper finds its steps and activates one once the hydration ends.
 
 ### Host ARIA
 
-27. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
+35. The shared `runHostAriaTests` suite: the host `aria-label`, `aria-labelledby` and `aria-describedby` reach the
     target and follow a change, and an axe audit passes with a host label.
 
 ## Assumptions and limitations

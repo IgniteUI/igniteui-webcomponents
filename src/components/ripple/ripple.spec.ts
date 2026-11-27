@@ -24,50 +24,54 @@ describe('Ripple', () => {
     ripple = button.querySelector(IgcRippleComponent.tagName)!;
   });
 
-  it('DOM state before and after ripple animation', async () => {
-    ripple.addEventListener(
-      'animationstart',
-      () =>
-        expect(ripple).shadowDom.to.equal('<span></span>', {
-          ignoreAttributes: ['style'],
-        }),
-      { once: true }
-    );
+  describe('Ripple element', () => {
+    it('DOM state before and after ripple animation', async () => {
+      ripple.addEventListener(
+        'animationstart',
+        () =>
+          expect(ripple).shadowDom.to.equal('<span></span>', {
+            ignoreAttributes: ['style'],
+          }),
+        { once: true }
+      );
 
-    ripple.addEventListener(
-      'animationend',
-      () => expect(ripple).shadowDom.to.equal('<!----><!--?-->'),
-      { once: true }
-    );
+      ripple.addEventListener(
+        'animationend',
+        () => expect(ripple).shadowDom.to.equal('<!----><!--?-->'),
+        { once: true }
+      );
 
-    simulatePointerDown(ripple);
-  });
+      simulatePointerDown(ripple);
+    });
 
-  it('No ripple on non-primary pointer button', async () => {
-    ripple.addEventListener(
-      'animationstart',
-      () =>
-        expect.fail('Ripple animation should not start on non-primary button'),
-      { once: true }
-    );
+    it('No ripple on non-primary pointer button', async () => {
+      ripple.addEventListener(
+        'animationstart',
+        () =>
+          expect.fail(
+            'Ripple animation should not start on non-primary button'
+          ),
+        { once: true }
+      );
 
-    simulatePointerDown(ripple, { button: 1 });
-    await elementUpdated(ripple);
-  });
+      simulatePointerDown(ripple, { button: 1 });
+      await elementUpdated(ripple);
+    });
 
-  it('removes the ripple element when its animation finishes', async () => {
-    simulatePointerDown(ripple);
+    it('removes the ripple element when its animation finishes', async () => {
+      simulatePointerDown(ripple);
 
-    const wave = ripple.renderRoot.querySelector('span')!;
-    expect(wave).to.exist;
+      const wave = ripple.renderRoot.querySelector('span')!;
+      expect(wave).to.exist;
 
-    const [animation] = wave.getAnimations();
-    animation.finish();
-    await animation.finished;
-    await elementUpdated(ripple);
+      const [animation] = wave.getAnimations();
+      animation.finish();
+      await animation.finished;
+      await elementUpdated(ripple);
 
-    expect(wave.isConnected).to.be.false;
-    expect(ripple.renderRoot.querySelector('span')).to.be.null;
+      expect(wave.isConnected).to.be.false;
+      expect(ripple.renderRoot.querySelector('span')).to.be.null;
+    });
   });
 
   describe('Motion', () => {

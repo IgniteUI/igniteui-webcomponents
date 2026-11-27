@@ -1639,7 +1639,7 @@ describe('Tile Manager component', () => {
     });
   });
 
-  describe('Native fullscreen', () => {
+  describe('Fullscreen sync', () => {
     let tile: IgcTileComponent;
     let plainTile: IgcTileComponent;
 

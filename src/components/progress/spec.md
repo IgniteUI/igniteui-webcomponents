@@ -30,6 +30,7 @@
     - [Attributes and properties](#attributes-and-properties)
     - [Rendering](#rendering)
     - [Gradients](#gradients)
+    - [Styles](#styles)
     - [ARIA state](#aria-state)
     - [Issues](#issues)
     - [Not covered by the suite](#not-covered-by-the-suite)
@@ -50,6 +51,7 @@
 |       5 | 2026-11-06 | The circular indicator: reduced motion, forced colors, the box of the ring |
 |       6 | 2026-11-06 | The linear indicator: reduced motion |
 |       7 | 2026-11-25 | The first render shows the slotted content |
+|       8 | 2026-11-27 | Test scenarios mirror the `ARIA state` blocks of both suites |
 
 ## Overview
 

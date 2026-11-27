@@ -1250,7 +1250,7 @@ describe('Tree', () => {
       );
     });
 
-    describe('singleBranchExpand', async () => {
+    describe('Single branch expand', async () => {
       let topLevelItems: IgcTreeItemComponent[];
 
       beforeEach(async () => {

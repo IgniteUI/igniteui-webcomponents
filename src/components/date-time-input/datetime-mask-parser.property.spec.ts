@@ -113,147 +113,149 @@ const typedInput = fc.string({
 });
 
 describe('Date-time mask parser properties', () => {
-  it('parses a complete mask the same in both modes, and a partial one as null when strict', () => {
-    fc.assert(
-      fc.property(anyFormat, typedInput, (format, input) => {
-        const parser = new DateTimeMaskParser({ format });
-        const masked = parser.apply(input);
-        const strict = parser.parseValue(masked, true);
-        const lenient = parser.parseValue(masked, false);
+  describe('Parsing and formatting', () => {
+    it('parses a complete mask the same in both modes, and a partial one as null when strict', () => {
+      fc.assert(
+        fc.property(anyFormat, typedInput, (format, input) => {
+          const parser = new DateTimeMaskParser({ format });
+          const masked = parser.apply(input);
+          const strict = parser.parseValue(masked, true);
+          const lenient = parser.parseValue(masked, false);
 
-        expect(!lenient || isValidDate(lenient), masked).to.be.true;
+          expect(!lenient || isValidDate(lenient), masked).to.be.true;
 
-        if (parser.isBlank(masked)) {
-          expect(lenient, masked).to.be.null;
-        }
+          if (parser.isBlank(masked)) {
+            expect(lenient, masked).to.be.null;
+          }
 
-        if (masked.includes(parser.prompt)) {
-          expect(strict, masked).to.be.null;
-        } else {
-          expect(strict?.getTime(), masked).to.equal(lenient?.getTime());
-        }
-      })
-    );
-  });
-
-  it('reads the prompt only in the parts, also when a literal is the prompt', () => {
-    const prompts = ['-', '/', '.', ':'];
-    // Mostly digits, so most masks are complete. Only characters that fit a part, so
-    // both parsers place them the same.
-    const partInput = fc.string({
-      unit: fc.oneof(
-        { weight: 9, arbitrary: fc.constantFrom(...'0123456789') },
-        { weight: 1, arbitrary: fc.constantFrom(...'APMapm') }
-      ),
-      minLength: 8,
-      maxLength: 24,
+          if (masked.includes(parser.prompt)) {
+            expect(strict, masked).to.be.null;
+          } else {
+            expect(strict?.getTime(), masked).to.equal(lenient?.getTime());
+          }
+        })
+      );
     });
 
-    fc.assert(
-      fc.property(
-        formatOf(ALL_PARTS, prompts),
-        partInput,
-        fc.constantFrom(...prompts),
-        fc.option(date, { nil: null }),
-        (format, input, prompt, previous) => {
-          // No format uses `_`, the default prompt.
-          const reference = new DateTimeMaskParser({ format });
-          const parser = new DateTimeMaskParser({
-            format,
-            promptCharacter: prompt,
-          });
-          const typed = reference.apply(input);
-          const masked = parser.apply(input);
-          const strict = reference.parseValue(typed, true);
-          const edit = reference.isBlank(typed) ? null : (strict ?? previous);
+    it('reads the prompt only in the parts, also when a literal is the prompt', () => {
+      const prompts = ['-', '/', '.', ':'];
+      // Mostly digits, so most masks are complete. Only characters that fit a part, so
+      // both parsers place them the same.
+      const partInput = fc.string({
+        unit: fc.oneof(
+          { weight: 9, arbitrary: fc.constantFrom(...'0123456789') },
+          { weight: 1, arbitrary: fc.constantFrom(...'APMapm') }
+        ),
+        minLength: 8,
+        maxLength: 24,
+      });
 
-          expect(parser.isComplete(masked), masked).to.equal(
-            !typed.includes(reference.prompt)
+      fc.assert(
+        fc.property(
+          formatOf(ALL_PARTS, prompts),
+          partInput,
+          fc.constantFrom(...prompts),
+          fc.option(date, { nil: null }),
+          (format, input, prompt, previous) => {
+            // No format uses `_`, the default prompt.
+            const reference = new DateTimeMaskParser({ format });
+            const parser = new DateTimeMaskParser({
+              format,
+              promptCharacter: prompt,
+            });
+            const typed = reference.apply(input);
+            const masked = parser.apply(input);
+            const strict = reference.parseValue(typed, true);
+            const edit = reference.isBlank(typed) ? null : (strict ?? previous);
+
+            expect(parser.isComplete(masked), masked).to.equal(
+              !typed.includes(reference.prompt)
+            );
+            expect(parser.parseValue(masked, true)?.getTime(), masked).to.equal(
+              strict?.getTime()
+            );
+            expect(
+              parser.parseEdit(masked, previous)?.getTime(),
+              masked
+            ).to.equal(edit?.getTime());
+          }
+        )
+      );
+    });
+
+    it('round-trips a date through formatValue and parseDate', () => {
+      fc.assert(
+        fc.property(paddedFormat, date, (format, value) => {
+          const clock = assumeWallClock(format, value);
+          const parser = new DateTimeMaskParser({ format });
+          const masked = parser.formatValue(value);
+          const parsed = parser.parseDate(masked);
+
+          expect(masked).to.have.lengthOf(parser.emptyMask.length);
+          expect(parsed, masked).to.be.an.instanceOf(Date);
+          expect(parser.formatValue(parsed)).to.equal(masked);
+          expect(toWallClock(parsed!), masked).to.deep.equal(clock);
+        })
+      );
+    });
+
+    it('resolves a two-digit year to the 1950 to 2049 range', () => {
+      fc.assert(
+        fc.property(fc.integer({ min: 0, max: 99 }), (year) => {
+          const parser = new DateTimeMaskParser({ format: 'MM/dd/yy' });
+          const typed = String(year).padStart(2, '0');
+
+          expect(parser.parseDate(`01/01/${typed}`)!.getFullYear()).to.equal(
+            pivotTwoDigitYear(year)
           );
-          expect(parser.parseValue(masked, true)?.getTime(), masked).to.equal(
-            strict?.getTime()
+        })
+      );
+    });
+
+    it('never throws, and parses any string to null or a valid date', () => {
+      fc.assert(
+        fc.property(anyFormat, anyString, (format, value) => {
+          const parser = new DateTimeMaskParser({ format });
+          const masked = parser.apply(value);
+
+          expect(masked).to.have.lengthOf(parser.emptyMask.length);
+          parser.isBlank(masked);
+
+          for (const parsed of [
+            parser.parseDate(value),
+            parser.parseDate(masked),
+          ]) {
+            expect(parsed === null || isValidDate(parsed)).to.be.true;
+          }
+        })
+      );
+    });
+
+    it('keeps each part inside the mask', () => {
+      fc.assert(
+        fc.property(anyFormat, (format) => {
+          const parser = new DateTimeMaskParser({ format });
+          let previousEnd = 0;
+
+          for (const part of parser.parts) {
+            expect(part.start).to.equal(previousEnd);
+            expect(part.end).to.be.above(part.start);
+            previousEnd = part.end;
+          }
+
+          expect(previousEnd).to.equal(parser.emptyMask.length);
+          expect(parser.hasDateParts() || parser.hasTimeParts()).to.equal(
+            parser.parts.some(
+              (part) =>
+                part.type !== DatePartType.Literal &&
+                part.type !== DatePartType.AmPm
+            )
           );
-          expect(
-            parser.parseEdit(masked, previous)?.getTime(),
-            masked
-          ).to.equal(edit?.getTime());
-        }
-      )
-    );
-  });
-
-  it('round-trips a date through formatValue and parseDate', () => {
-    fc.assert(
-      fc.property(paddedFormat, date, (format, value) => {
-        const clock = assumeWallClock(format, value);
-        const parser = new DateTimeMaskParser({ format });
-        const masked = parser.formatValue(value);
-        const parsed = parser.parseDate(masked);
-
-        expect(masked).to.have.lengthOf(parser.emptyMask.length);
-        expect(parsed, masked).to.be.an.instanceOf(Date);
-        expect(parser.formatValue(parsed)).to.equal(masked);
-        expect(toWallClock(parsed!), masked).to.deep.equal(clock);
-      })
-    );
-  });
-
-  it('resolves a two-digit year to the 1950 to 2049 range', () => {
-    fc.assert(
-      fc.property(fc.integer({ min: 0, max: 99 }), (year) => {
-        const parser = new DateTimeMaskParser({ format: 'MM/dd/yy' });
-        const typed = String(year).padStart(2, '0');
-
-        expect(parser.parseDate(`01/01/${typed}`)!.getFullYear()).to.equal(
-          pivotTwoDigitYear(year)
-        );
-      })
-    );
-  });
-
-  it('never throws, and parses any string to null or a valid date', () => {
-    fc.assert(
-      fc.property(anyFormat, anyString, (format, value) => {
-        const parser = new DateTimeMaskParser({ format });
-        const masked = parser.apply(value);
-
-        expect(masked).to.have.lengthOf(parser.emptyMask.length);
-        parser.isBlank(masked);
-
-        for (const parsed of [
-          parser.parseDate(value),
-          parser.parseDate(masked),
-        ]) {
-          expect(parsed === null || isValidDate(parsed)).to.be.true;
-        }
-      })
-    );
-  });
-
-  it('keeps each part inside the mask', () => {
-    fc.assert(
-      fc.property(anyFormat, (format) => {
-        const parser = new DateTimeMaskParser({ format });
-        let previousEnd = 0;
-
-        for (const part of parser.parts) {
-          expect(part.start).to.equal(previousEnd);
-          expect(part.end).to.be.above(part.start);
-          previousEnd = part.end;
-        }
-
-        expect(previousEnd).to.equal(parser.emptyMask.length);
-        expect(parser.hasDateParts() || parser.hasTimeParts()).to.equal(
-          parser.parts.some(
-            (part) =>
-              part.type !== DatePartType.Literal &&
-              part.type !== DatePartType.AmPm
-          )
-        );
-        expect(formatHasDateParts(format)).to.equal(parser.hasDateParts());
-        expect(formatHasTimeParts(format)).to.equal(parser.hasTimeParts());
-      })
-    );
+          expect(formatHasDateParts(format)).to.equal(parser.hasDateParts());
+          expect(formatHasTimeParts(format)).to.equal(parser.hasTimeParts());
+        })
+      );
+    });
   });
 
   describe('Part editing', () => {

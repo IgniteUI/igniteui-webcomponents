@@ -1430,7 +1430,7 @@ describe('Chat', () => {
     });
   });
 
-  describe('Additional behavior', () => {
+  describe('Attachments, focus and names', () => {
     const createDragEvent = (
       type: string,
       init: DragEventInit = {},
@@ -2505,7 +2505,7 @@ describe('Chat', () => {
     });
   });
 
-  describe('adoptRootStyles behavior', () => {
+  describe('Adopted root styles', () => {
     let chat: IgcChatComponent;
 
     const renderer = ({ message }: ChatMessageRenderContext) =>
